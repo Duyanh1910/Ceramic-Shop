@@ -1,4 +1,4 @@
-import { CustomerModel } from "../models/index.js";
+import { CustomerModel, AccountModel } from "../models/index.js";
 
 export const getAllCustomersService = async () => {
   const users = await CustomerModel.findAll({
@@ -7,4 +7,17 @@ export const getAllCustomersService = async () => {
     },
   });
   return users;
+};
+
+export const getCustomerService = async (id) => {
+  const user = await CustomerModel.findOne({
+    where: {
+      MaKhachHang: id,
+    },
+    include: {
+      model: AccountModel,
+      attributes: ["Username", "Email"],
+    },
+  });
+  return user;
 };
