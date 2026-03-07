@@ -10,6 +10,7 @@ import ErrorHandler from "../utils/error_handler.js";
 const JWT_SECRET = process.env.JWT_SECRET;
 const EXPIRES_IN = process.env.JWT_EXPIRES_IN;
 import { SALT_ROUNDS } from "../config/app_config.js";
+import { Op } from "sequelize";
 
 export const customerRegisterService = async (
   username,
@@ -19,46 +20,54 @@ export const customerRegisterService = async (
   email,
   address,
 ) => {
-  const account = await AccountModel.findOne({
+  const existingAccount = await AccountModel.findOne({
     where: {
-      Username: username,
+      [Op.or]: [{ Username: username }, { Email: email }],
     },
   });
-  if (account == null) {
-    const transaction = await sequelize.transaction();
-    try {
-      const hashed = await bcrypt.hash(password, Number(SALT_ROUNDS));
-      const newAccount = await AccountModel.create(
-        {
-          Username: username,
-          Password: hashed,
-          ID_PhanQuyen: 3,
-        },
-        { transaction },
-      );
-      await CustomerModel.create(
-        {
-          ID_TaiKhoan: newAccount.ID_TaiKhoan,
-          TenKhachHang: name,
-          SDT: phone_number,
-          Email: email,
-          DiaChi: address,
-        },
-        {
-          transaction,
-        },
-      );
-      await transaction.commit();
-      return {
-        username,
-        role: "customer",
-      };
-    } catch (err) {
-      await transaction.rollback();
-      throw new ErrorHandler(`Lỗi server!`, 500);
+
+  if (existingAccount) {
+    if (existingAccount.Username === username) {
+      throw new ErrorHandler("Tài khoản này đã tồn tại!", 400);
     }
-  } else {
-    throw new ErrorHandler("Tài khoản này đã tồn tại!", 400);
+    if (existingAccount.Email === email) {
+      throw new ErrorHandler("Đã tồn tại Email này!", 400);
+    }
+  }
+
+  const transaction = await sequelize.transaction();
+  try {
+    const hashed = await bcrypt.hash(password, Number(SALT_ROUNDS));
+    const newAccount = await AccountModel.create(
+      {
+        Username: username,
+        Email: email,
+        Password: hashed,
+        MaPhanQuyen: 3,
+      },
+      { transaction },
+    );
+    const newCustomer = await CustomerModel.create(
+      {
+        MaTaiKhoan: newAccount.MaTaiKhoan,
+        TenKhachHang: name || newAccount.Username,
+        SDT: phone_number || null,
+        Diachi: address || null,
+      },
+      {
+        transaction,
+      },
+    );
+    await transaction.commit();
+    return {
+      username,
+      email,
+      role: "Customer",
+    };
+  } catch (err) {
+    await transaction.rollback();
+    console.error(err);
+    throw new ErrorHandler("Lỗi server! Không thể tạo tài khoản.", 500);
   }
 };
 
@@ -74,29 +83,31 @@ export const loginService = async (username, password) => {
       },
     ],
   });
+
   if (account == null) {
     throw new ErrorHandler("Tên đăng nhập hoặc mật khẩu không chính xác!", 401);
   }
-  const isMatch = account
-    ? await bcrypt.compare(password, account.Password)
-    : false;
+
+  const isMatch = await bcrypt.compare(password, account.Password);
+
   if (!isMatch) {
     throw new ErrorHandler("Tên đăng nhập hoặc mật khẩu không chính xác!", 401);
   }
-  const role = account.PhanQuyen.TenPhanQuyen;
+
   const token = jwt.sign(
     {
-      id: account.ID_TaiKhoan,
-      role: role,
+      id: account.MaTaiKhoan,
+      role: "Customer",
     },
     JWT_SECRET,
     {
       expiresIn: String(EXPIRES_IN),
     },
   );
+
   return {
     username,
     token,
-    role: role,
+    role: "Customer",
   };
 };

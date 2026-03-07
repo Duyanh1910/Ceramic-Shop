@@ -4,13 +4,13 @@ import sequelize from "../config/database.js";
 const RoleModel = sequelize.define(
   "PhanQuyen",
   {
-    ID_PhanQuyen: {
+    MaPhanQuyen: {
       type: DataTypes.INTEGER.UNSIGNED,
       primaryKey: true,
       autoIncrement: true,
     },
     TenPhanQuyen: {
-      type: DataTypes.STRING(30),
+      type: DataTypes.STRING(50),
       allowNull: false,
       unique: true,
     },
@@ -18,7 +18,7 @@ const RoleModel = sequelize.define(
   {
     tableName: "PhanQuyen",
     timestamps: false,
-  }
+  },
 );
 
 export default RoleModel;

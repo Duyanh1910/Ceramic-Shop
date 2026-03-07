@@ -4,36 +4,32 @@ import sequelize from "../config/database.js";
 const CustomerModel = sequelize.define(
   "KhachHang",
   {
-    ID_KhachHang: {
-      type: DataTypes.BIGINT.UNSIGNED,
+    MaKhachHang: {
+      type: DataTypes.INTEGER.UNSIGNED,
       primaryKey: true,
       autoIncrement: true,
     },
-    ID_TaiKhoan: {
-      type: DataTypes.BIGINT.UNSIGNED,
+    MaTaiKhoan: {
+      type: DataTypes.INTEGER.UNSIGNED,
       unique: true,
     },
     TenKhachHang: {
       type: DataTypes.STRING(100),
-      allowNull: false,
     },
     SDT: {
       type: DataTypes.STRING(10),
-      allowNull: false,
-    },
-    Email: {
-      type: DataTypes.STRING(100),
-      allowNull: false,
     },
     DiaChi: {
       type: DataTypes.STRING(255),
-      allowNull: false,
+    },
+    Avatar: {
+      type: DataTypes.STRING(255),
     },
   },
   {
     tableName: "KhachHang",
     timestamps: false,
-  }
+  },
 );
 
 export default CustomerModel;

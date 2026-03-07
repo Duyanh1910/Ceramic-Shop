@@ -4,13 +4,13 @@ import sequelize from "../config/database.js";
 const StaffModel = sequelize.define(
   "NhanVien",
   {
-    ID_NhanVien: {
-      type: DataTypes.BIGINT.UNSIGNED,
+    MaNhanVien: {
+      type: DataTypes.INTEGER.UNSIGNED,
       primaryKey: true,
       autoIncrement: true,
     },
-    ID_TaiKhoan: {
-      type: DataTypes.BIGINT.UNSIGNED,
+    MaTaiKhoan: {
+      type: DataTypes.INTEGER.UNSIGNED,
       unique: true,
     },
     TenNhanVien: {
@@ -25,10 +25,6 @@ const StaffModel = sequelize.define(
       type: DataTypes.DATEONLY,
       allowNull: false,
     },
-    Email: {
-      type: DataTypes.STRING(100),
-      allowNull: false,
-    },
     DiaChi: {
       type: DataTypes.STRING(255),
       allowNull: false,
@@ -37,7 +33,7 @@ const StaffModel = sequelize.define(
   {
     tableName: "NhanVien",
     timestamps: false,
-  }
+  },
 );
 
 export default StaffModel;

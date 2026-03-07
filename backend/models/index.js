@@ -5,24 +5,24 @@ import CustomerModel from "./customer.model.js";
 import StaffModel from "./staff.model.js";
 
 RoleModel.hasMany(AccountModel, {
-  foreignKey: "ID_PhanQuyen",
+  foreignKey: "MaPhanQuyen",
 });
 AccountModel.belongsTo(RoleModel, {
-  foreignKey: "ID_PhanQuyen",
+  foreignKey: "MaPhanQuyen",
 });
 
 AccountModel.hasOne(StaffModel, {
-  foreignKey: "ID_TaiKhoan",
+  foreignKey: "MaTaiKhoan",
 });
 StaffModel.belongsTo(AccountModel, {
-  foreignKey: "ID_TaiKhoan",
+  foreignKey: "MaTaiKhoan",
 });
 
 AccountModel.hasOne(CustomerModel, {
-  foreignKey: "ID_TaiKhoan",
+  foreignKey: "MaTaiKhoan",
 });
 CustomerModel.belongsTo(AccountModel, {
-  foreignKey: "ID_TaiKhoan",
+  foreignKey: "MaTaiKhoan",
 });
 
 export { sequelize, AccountModel, RoleModel, StaffModel, CustomerModel };

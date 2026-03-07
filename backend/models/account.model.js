@@ -4,8 +4,8 @@ import sequelize from "../config/database.js";
 const AccountModel = sequelize.define(
   "TaiKhoan",
   {
-    ID_TaiKhoan: {
-      type: DataTypes.BIGINT.UNSIGNED,
+    MaTaiKhoan: {
+      type: DataTypes.INTEGER.UNSIGNED,
       primaryKey: true,
       autoIncrement: true,
     },
@@ -14,11 +14,16 @@ const AccountModel = sequelize.define(
       allowNull: false,
       unique: true,
     },
+    Email: {
+      type: DataTypes.STRING(100),
+      allowNull: false,
+      unique: true,
+    },
     Password: {
       type: DataTypes.STRING(255),
       allowNull: false,
     },
-    ID_PhanQuyen: {
+    MaPhanQuyen: {
       type: DataTypes.INTEGER.UNSIGNED,
       allowNull: false,
     },
@@ -26,7 +31,7 @@ const AccountModel = sequelize.define(
   {
     tableName: "TaiKhoan",
     timestamps: false,
-  }
+  },
 );
 
 export default AccountModel;

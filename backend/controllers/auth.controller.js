@@ -3,7 +3,12 @@ import {
   loginService,
   customerRegisterService,
 } from "../services/auth.services.js";
-import { checkValidate, isStringEmpty } from "../utils/helpers.js";
+import {
+  checkValidate,
+  isStringEmpty,
+  isValidEmail,
+  isValidPhoneNumber,
+} from "../utils/helpers.js";
 
 export const login = async (req, res, next) => {
   try {
@@ -28,11 +33,23 @@ export const customerRegister = async (req, res, next) => {
     if (!checkValidate(username, password)) {
       throw new ErrorHandler("Username và password không được để trống!", 400);
     }
+    if (!checkValidate(email)) {
+      throw new ErrorHandler("Email không được để trống!", 400);
+    }
+    if (!isValidEmail(email)) {
+      throw new ErrorHandler("Định dạng email không hợp lệ!", 400);
+    }
+    if (!isStringEmpty(name) && name.length > 100) {
+      throw new ErrorHandler("Tên khách hàng không hợp lệ!", 400);
+    }
+    if (!isStringEmpty(phone_number) && !isValidPhoneNumber(phone_number)) {
+      throw new ErrorHandler("Số điện thoại không hợp lệ!", 400);
+    }
+    if (!isStringEmpty(address) && address.length > 255) {
+      throw new ErrorHandler("Địa chỉ không hợp lệ!", 400);
+    }
     if (password.length < 6) {
       throw new ErrorHandler(`Mật khẩu phải dài hơn 6 ký tự!`, 400);
-    }
-    if (!checkValidate(name, phone_number, email, address)) {
-      throw new ErrorHandler(`Vui lòng điền đầy đủ thông tin khách hàng!`, 400);
     }
     const result = await customerRegisterService(
       username,
