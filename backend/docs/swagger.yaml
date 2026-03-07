@@ -1,272 +1,193 @@
 openapi: 3.0.0
 info:
-  title: CeramicShop API Documentation
-  version: 1.0.0
-  description: Tài liệu API cho hệ thống cửa hàng gốm sứ CeramicShop.
+  title: CeramicShop API Documentation
+  version: 1.0.0
+  description: Tài liệu API cho hệ thống cửa hàng gốm sứ CeramicShop.
 
 servers:
-  - url: http://localhost:3000/api
-    description: Local server
+  - url: http://localhost:3000/api
+    description: Local server
 
 tags:
-  - name: Auth
-    description: Các API xác thực (Đăng nhập, Đăng ký)
+  - name: Auth
+    description: Các API xác thực (Đăng nhập, Đăng ký)
 
 paths:
+  /auth/register:
+    post:
+      tags:
+        - Auth
+      summary: Đăng ký tài khoản khách hàng
+      description: Tạo tài khoản khách hàng mới trong hệ thống.
 
-  /auth/register:
-    post:
-      tags:
-        - Auth
-      summary: Đăng ký tài khoản khách hàng
-      description: Tạo tài khoản khách hàng mới trong hệ thống.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+                - email
+              properties:
+                username:
+                  type: string
+                  maxLength: 100
+                  example: nguyenvana
+                  description: Tên đăng nhập
 
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - username
-                - password
-                - email
-              properties:
+                password:
+                  type: string
+                  minLength: 6
+                  example: "123456"
+                  description: Mật khẩu (tối thiểu 6 ký tự)
 
-                username:
-                  type: string
-                  maxLength: 100
-                  example: nguyenvana
-                  description: Tên đăng nhập
+                email:
+                  type: string
+                  format: email
+                  example: nguyenvana@gmail.com
+                  description: Email người dùng
 
-                password:
-                  type: string
-                  minLength: 6
-                  example: 123456
-                  description: Mật khẩu (tối thiểu 6 ký tự)
+                name:
+                  type: string
+                  maxLength: 100
+                  example: Nguyễn Văn A
+                  description: Tên khách hàng
 
-                email:
-                  type: string
-                  format: email
-                  example: nguyenvana@gmail.com
-                  description: Email người dùng
+                phone_number:
+                  type: string
+                  pattern: "^0\\d{9}$"
+                  example: "0987654321"
+                  description: Số điện thoại (10 số)
 
-                name:
-                  type: string
-                  maxLength: 100
-                  example: Nguyễn Văn A
-                  description: Tên khách hàng
+                address:
+                  type: string
+                  maxLength: 255
+                  example: "123 Bát Tràng, Hà Nội"
+                  description: Địa chỉ giao hàng
 
-                phone_number:
-                  type: string
-                  pattern: "^0\\d{9}$"
-                  example: "0987654321"
-                  description: Số điện thoại (10 số)
+      responses:
+        "201":
+          description: Tạo tài khoản thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Tạo tài khoản mới thành công!
+                  result:
+                    type: object
+                    properties:
+                      username:
+                        type: string
+                        example: nguyenvana
+                      email:
+                        type: string
+                        example: nguyenvana@gmail.com
+                      role:
+                        type: string
+                        example: Customer
 
-                address:
-                  type: string
-                  maxLength: 255
-                  example: "123 Bát Tràng, Hà Nội"
-                  description: Địa chỉ giao hàng
+        "400":
+          description: Lỗi dữ liệu đầu vào
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
-      responses:
+        "500":
+          description: Lỗi server
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
-        "201":
-          description: Tạo tài khoản thành công
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Đăng nhập hệ thống
+      description: Đăng nhập bằng username và password.
 
-                  success:
-                    type: boolean
-                    example: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                  example: nguyenvana
+                password:
+                  type: string
+                  example: "123456"
 
-                  message:
-                    type: string
-                    example: Tạo tài khoản mới thành công!
+      responses:
+        "200":
+          description: Đăng nhập thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Đăng nhập thành công!
+                  result:
+                    type: object
+                    properties:
+                      username:
+                        type: string
+                        example: nguyenvana
+                      token:
+                        type: string
+                        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                      role:
+                        type: string
+                        example: Customer
 
-                  result:
-                    type: object
-                    properties:
+        "400":
+          description: Thiếu thông tin
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
-                      username:
-                        type: string
-                        example: nguyenvana
+        "401":
+          description: Sai thông tin đăng nhập
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
-                      email:
-                        type: string
-                        example: nguyenvana@gmail.com
-
-                      role:
-                        type: string
-                        example: Customer
-
-
-        "400":
-          description: Lỗi dữ liệu đầu vào
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-              examples:
-
-                EmptyFields:
-                  value:
-                    success: false
-                    message: Username và password không được để trống!
-
-                EmailEmpty:
-                  value:
-                    success: false
-                    message: Email không được để trống!
-
-                InvalidEmail:
-                  value:
-                    success: false
-                    message: Định dạng email không hợp lệ!
-
-                InvalidPhone:
-                  value:
-                    success: false
-                    message: Số điện thoại không hợp lệ!
-
-                DuplicateUsername:
-                  value:
-                    success: false
-                    message: Tài khoản này đã tồn tại!
-
-                DuplicateEmail:
-                  value:
-                    success: false
-                    message: Đã tồn tại Email này!
-
-                WeakPassword:
-                  value:
-                    success: false
-                    message: Mật khẩu phải dài hơn 6 ký tự!
-
-
-        "500":
-          description: Lỗi server
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
-
-
-  /auth/login:
-    post:
-      tags:
-        - Auth
-      summary: Đăng nhập hệ thống
-      description: Đăng nhập bằng username và password.
-
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - username
-                - password
-              properties:
-
-                username:
-                  type: string
-                  example: nguyenvana
-
-                password:
-                  type: string
-                  example: 123456
-
-      responses:
-
-        "200":
-          description: Đăng nhập thành công
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-
-                  success:
-                    type: boolean
-                    example: true
-
-                  message:
-                    type: string
-                    example: Đăng nhập thành công!
-
-                  result:
-                    type: object
-                    properties:
-
-                      username:
-                        type: string
-                        example: nguyenvana
-
-                      token:
-                        type: string
-                        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-
-                      role:
-                        type: string
-                        example: Customer
-
-
-        "400":
-          description: Thiếu thông tin
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-              examples:
-
-                MissingFields:
-                  value:
-                    success: false
-                    message: Username và password không được để trống!
-
-
-        "401":
-          description: Sai thông tin đăng nhập
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-              examples:
-
-                WrongCredentials:
-                  value:
-                    success: false
-                    message: Tên đăng nhập hoặc mật khẩu không chính xác!
-
-
-        "500":
-          description: Lỗi server
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
-
+        "500":
+          description: Lỗi server
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
 components:
-
-  schemas:
-
-    ErrorResponse:
-      type: object
-      properties:
-
-        success:
-          type: boolean
-          example: false
-
-        message:
-          type: string
-          example: Nội dung lỗi
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: Nội dung lỗi

@@ -17,7 +17,7 @@ export const login = async (req, res, next) => {
       throw new ErrorHandler("Username và password không được để trống!", 400);
     }
     const result = await loginService(username, password);
-    res.json({
+    res.status(200).json({
       success: true,
       message: "Đăng nhập thành công!",
       result,
