@@ -5,7 +5,20 @@ import {
 import ErrorHandler from "../utils/error_handler.js";
 export const getCustomers = async (req, res, next) => {
   try {
-    const users = await getAllCustomersService();
+    const {
+      page = 1,
+      limit = 10,
+      search = "",
+      sort = "",
+      order = "",
+    } = req.query;
+    const users = await getAllCustomersService(
+      Number(page),
+      Number(limit),
+      search,
+      sort,
+      order,
+    );
     res.status(200).json({
       success: true,
       message: "Lấy thông tin danh sách khách hàng thành công!",
