@@ -1,27 +1,25 @@
 import { useState } from 'react';
 import axios from 'axios';
-import { Button, Input, Form, message, Card } from 'antd';
+import { Button, Input, Form, message, Card, Typography } from 'antd';
+
+const { Text, Link } = Typography;
 
 function App() {
   const [loading, setLoading] = useState(false);
-  const [token, setToken] = useState('');
 
-  // Hàm này sẽ chạy khi bạn bấm nút Đăng nhập
   const handleLogin = async (values) => {
     setLoading(true);
     try {
-      // Dùng axios bắn dữ liệu sang Backend cổng 3000 của bạn
       const response = await axios.post('http://localhost:3000/api/v1/auth/login', {
         username: values.username,
         password: values.password
       });
 
-      // Nếu thành công, Backend sẽ trả về token
+      localStorage.setItem('token', response.data.result.token);
+
       message.success('Đăng nhập thành công!');
-      setToken(response.data.result.token); // Lưu token lại để hiện lên màn hình
       
     } catch (error) {
-      // Nếu Backend báo lỗi (sai pass, không thấy user...)
       const errorMsg = error.response?.data?.message || 'Có lỗi xảy ra!';
       message.error(errorMsg);
     } finally {
@@ -50,18 +48,16 @@ function App() {
             <Input.Password placeholder="Nhập mật khẩu" />
           </Form.Item>
 
+          <div style={{ marginBottom: '20px', textAlign: 'right' }}>
+            <Text>Chưa có tài khoản? </Text>
+            {/*Register*/}
+            <Link href="#">Đăng ký ngay</Link>
+          </div>
+
           <Button type="primary" htmlType="submit" block loading={loading}>
             Đăng Nhập
           </Button>
         </Form>
-
-        {/* Chỗ này để khoe cái Token lấy được từ Backend */}
-        {token && (
-          <div style={{ marginTop: 20, padding: 10, background: '#f6ffed', border: '1px solid #b7eb8f', wordWrap: 'break-word' }}>
-            <strong>Lấy được Vòng Tay VIP (Token):</strong> <br/>
-            <span style={{ fontSize: '12px', color: '#52c41a' }}>{token}</span>
-          </div>
-        )}
 
       </Card>
     </div>
