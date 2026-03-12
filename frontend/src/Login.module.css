@@ -1,0 +1,75 @@
+:global(body) {
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+.loginContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vw;
+  position: relative;
+  z-index: 1;
+}
+
+.loginContainer::before {
+  content: "";
+  position: absolute;
+  top: -20px; left: -20px; right: -20px; bottom: -20px;
+  background-image: url('gom-su-dong-trieu.jpg'); 
+  background-size: cover;
+  background-position: center;
+  filter: blur(10px);
+  z-index: -1;
+}
+
+.combinedCard {
+  display: flex;
+  width: 850px; 
+  min-height: 480px;
+  background-color: rgba(255, 255, 255, 0.7);
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+  overflow: hidden;
+}
+
+
+.cardImage {
+  flex: 1;
+  background-image: url('sidelogin.png');
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-color: rgba(255, 255, 255, 0.0);
+}
+
+
+.cardForm {
+  flex: 1;
+  padding: 40px 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.0);
+}
+
+
+.customInput {
+  height: 45px;
+  border-radius: 8px;
+}
+
+.customButton {
+  height: 45px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  background-color: #3b81e3 !important;
+  border: none;
+}
+.customButton:hover {
+  background-color: #003380 !important; 
+}
