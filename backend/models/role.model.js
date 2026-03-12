@@ -9,7 +9,7 @@ const RoleModel = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
-    TenPhanQuyen: {
+    TenQuyen: {
       type: DataTypes.STRING(50),
       allowNull: false,
       unique: true,

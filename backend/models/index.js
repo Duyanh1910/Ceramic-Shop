@@ -5,10 +5,13 @@ import CustomerModel from "./customer.model.js";
 import StaffModel from "./staff.model.js";
 
 RoleModel.hasMany(AccountModel, {
-  foreignKey: "MaPhanQuyen",
+  foreignKey: "MaQuyen",
+  sourceKey: "MaPhanQuyen",
 });
+
 AccountModel.belongsTo(RoleModel, {
-  foreignKey: "MaPhanQuyen",
+  foreignKey: "MaQuyen",
+  targetKey: "MaPhanQuyen",
 });
 
 AccountModel.hasOne(StaffModel, {

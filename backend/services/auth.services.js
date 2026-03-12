@@ -43,7 +43,7 @@ export const customerRegisterService = async (
         Username: username,
         Email: email,
         Password: hashed,
-        MaPhanQuyen: 3,
+        MaQuyen: 3,
       },
       { transaction },
     );
@@ -79,7 +79,7 @@ export const loginService = async (username, password) => {
     include: [
       {
         model: RoleModel,
-        attributes: ["TenPhanQuyen"],
+        attributes: ["TenQuyen"],
       },
     ],
   });

@@ -23,7 +23,7 @@ const AccountModel = sequelize.define(
       type: DataTypes.STRING(255),
       allowNull: false,
     },
-    MaPhanQuyen: {
+    MaQuyen: {
       type: DataTypes.INTEGER.UNSIGNED,
       allowNull: false,
     },
