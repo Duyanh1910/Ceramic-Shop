@@ -20,6 +20,7 @@ function App() {
       localStorage.setItem('token', response.data.result.token);
 
       message.success('Đăng nhập thành công!');
+      navigate('/home');
       
     } catch (error) {
       const errorMsg = error.response?.data?.message || 'Có lỗi xảy ra!';
