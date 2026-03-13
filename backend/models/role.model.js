@@ -13,6 +13,7 @@ const RoleModel = sequelize.define(
       type: DataTypes.STRING(50),
       allowNull: false,
       unique: true,
+      field: "TenPhanQuyen",
     },
   },
   {

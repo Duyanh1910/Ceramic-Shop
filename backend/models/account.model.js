@@ -26,6 +26,7 @@ const AccountModel = sequelize.define(
     MaQuyen: {
       type: DataTypes.INTEGER.UNSIGNED,
       allowNull: false,
+      field: "MaPhanQuyen",
     },
   },
   {
