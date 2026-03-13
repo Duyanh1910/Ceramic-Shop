@@ -9,8 +9,8 @@ export const getCustomers = async (req, res, next) => {
       page = 1,
       limit = 10,
       search = "",
-      sort = "",
-      order = "",
+      sort = "MaKhachHang",
+      order = "DESC",
     } = req.query;
     const users = await getAllCustomersService(
       Number(page),

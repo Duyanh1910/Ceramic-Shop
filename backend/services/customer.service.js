@@ -48,7 +48,7 @@ export const getAllCustomersService = async (
   sortField.forEach((field, index) => {
     if (allowedField.includes(field)) {
       const direction =
-        orderField[index]?.toUpperCase() === "ASC" ? "ASC" : "DESC" || "DESC";
+        orderField[index]?.toUpperCase() === "ASC" ? "ASC" : "DESC";
       if (field === "Username" || field === "Email") {
         orderQuery.push([{ model: AccountModel }, field, direction]);
       } else {
@@ -98,4 +98,3 @@ export const getCustomerService = async (id) => {
   });
   return user;
 };
-
