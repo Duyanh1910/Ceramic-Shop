@@ -3,13 +3,15 @@ use CeramicShop;
 
 CREATE TABLE PhanQuyen (
     MaPhanQuyen INT AUTO_INCREMENT PRIMARY KEY,
-    TenQuyen VARCHAR(50) NOT NULL
+    TenPhanQuyen VARCHAR(50) NOT NULL
 );
 
 CREATE TABLE DanhMucSanPham (
     MaDanhMuc INT AUTO_INCREMENT PRIMARY KEY,
     TenDanhMuc VARCHAR(100) NOT NULL,
-    MoTa VARCHAR(255)
+    MoTa VARCHAR(255),
+    ParentID INT,
+    FOREIGN KEY (ParentID) REFERENCES DanhMucSanPham(MaDanhMuc)
 );
 
 CREATE TABLE ThuocTinh (
@@ -49,15 +51,15 @@ CREATE TABLE TaiKhoan (
     Username VARCHAR(100) NOT NULL UNIQUE,
     Email VARCHAR(100) NOT NULL UNIQUE,
     Password VARCHAR(255) NOT NULL,
-    MaQuyen INT,
-    FOREIGN KEY (MaQuyen) REFERENCES PhanQuyen(MaPhanQuyen)
+    MaPhanQuyen INT,
+    FOREIGN KEY (MaPhanQuyen) REFERENCES PhanQuyen(MaPhanQuyen)
 );
 
 CREATE TABLE SanPham (
     MaSanPham INT AUTO_INCREMENT PRIMARY KEY,
     MaDanhMuc INT,
     TenSanPham VARCHAR(100) NOT NULL,
-    MoTa VARCHAR(255),
+    MoTa TEXT,
     FOREIGN KEY (MaDanhMuc) REFERENCES DanhMucSanPham(MaDanhMuc)
 );
 
@@ -217,11 +219,11 @@ CREATE TABLE ChiTietKhuyenMaiDonHang (
 
 CREATE TABLE ChiTietPhiVanChuyenDonHang (
     MaDonHang INT,
-    MaLoaiPhi INT,
+    MaPhi  INT,
     SoTienPhi DECIMAL(10,2) NOT NULL,
-    PRIMARY KEY (MaDonHang, MaLoaiPhi),
+    PRIMARY KEY (MaDonHang, MaPhi),
     FOREIGN KEY (MaDonHang) REFERENCES DonHang(MaDonHang),
-    FOREIGN KEY (MaLoaiPhi) REFERENCES LoaiPhiVanChuyen(MaLoaiPhi)
+    FOREIGN KEY (MaPhi) REFERENCES PhiVanChuyen(MaPhi)
 );
 
 CREATE TABLE ChiTietPhieuNhap (
@@ -237,13 +239,13 @@ CREATE TABLE ChiTietPhieuNhap (
 
 CREATE TABLE DanhGia (
     MaDanhGia INT AUTO_INCREMENT PRIMARY KEY,
-    MaKH INT,
+    MaKhachHang INT,
     MaCTDH INT,
     DiemDanhGia INT CHECK (DiemDanhGia BETWEEN 1 AND 5),
     NoiDung VARCHAR(255),
     NgayGui DATETIME DEFAULT CURRENT_TIMESTAMP,
     TrangThai TINYINT DEFAULT 1,
-    FOREIGN KEY (MaKH) REFERENCES KhachHang(MaKhachHang),
+    FOREIGN KEY (MaKhachHang) REFERENCES KhachHang(MaKhachHang),
     FOREIGN KEY (MaCTDH) REFERENCES ChiTietDonHang(MaCTDH)
 );
 
@@ -308,3 +310,12 @@ CREATE TABLE RuiRo (
     GhiChu VARCHAR(255),
     FOREIGN KEY (MaDonHang) REFERENCES DonHang(MaDonHang)
 );
+
+CREATE INDEX idx_sanpham_danhmuc
+ON SanPham(MaDanhMuc);
+
+CREATE INDEX idx_bienthe_sanpham
+ON BienTheSanPham(MaSanPham);
+
+CREATE INDEX idx_donhang_khachhang
+ON DonHang(MaKhachHang);

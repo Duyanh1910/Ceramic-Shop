@@ -194,5 +194,5 @@ INSERT INTO TaiKhoan (Username, Email, Password, MaQuyen) VALUES ('khachhang41',
 INSERT INTO KhachHang (MaTaiKhoan, TenKhachHang, SDT, Diachi, Avatar) VALUES (LAST_INSERT_ID(), 'Bùi Thị Tâm', '0987654041', '890 Phan Đăng Lưu, Phú Nhuận', 'default_avatar.jpg');
 
 UPDATE khachhang
-SET Avatar = 'https://res.cloudinary.com/dcmwz0uis/image/upload/v1773106721/phap_vxww0i.jpg'
+SET Avatar = 'https://res.cloudinary.com/dcmwz0uis/image/upload/v1773107213/default_avatar_gojcul.png'
 where 1=1
