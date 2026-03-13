@@ -1,7 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-
+import {HelmetProvider} from 'react-helmet-async';
 import Home from './Home.jsx' 
 import Login from './Login.jsx'
 import Register from './Register.jsx'
@@ -14,7 +14,7 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-const PublicRoute = ({ children }) => {
+const PublicRoute = ({ children }) => { 
   const token = localStorage.getItem('token');
   if (token) {
     return <Navigate to="/home" replace />;

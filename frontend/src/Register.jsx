@@ -4,6 +4,7 @@ import { Button, Input, Form, message, Typography } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import styles from './Register.module.css';
 const { Link } = Typography;
+import {Helmet} from 'react-helmet-async';
 
 function Register() {
   const [loading, setLoading] = useState(false);
@@ -36,7 +37,9 @@ function Register() {
         <div className={styles.cardImage}></div>
 
         <div className={styles.cardForm}>
-          
+          <Helmet>
+            <title>Đăng ký</title>
+          </Helmet>
           <h2 style={{ textAlign: 'center', marginBottom: '20px', color: '#333', fontFamily: 'serif' }}>
             ĐĂNG KÝ
           </h2>
