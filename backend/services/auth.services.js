@@ -52,7 +52,7 @@ export const customerRegisterService = async (
         MaTaiKhoan: newAccount.MaTaiKhoan,
         TenKhachHang: name || newAccount.Username,
         SDT: phone_number || null,
-        Diachi: address || null,
+        DiaChi: address || null,
       },
       {
         transaction,
