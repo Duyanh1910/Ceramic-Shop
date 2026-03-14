@@ -1,4 +1,9 @@
-import { ProductModel, CategoryModel } from "../models/index.js";
+import {
+  ProductModel,
+  CategoryModel,
+  VariantModel,
+  VariantImageModel,
+} from "../models/index.js";
 import { Op, literal } from "sequelize";
 
 export const getAllProductsService = async (
@@ -130,4 +135,31 @@ export const getAllProductsService = async (
     totalPages: Math.ceil(total / limit),
     page,
   };
+};
+
+export const getProductService = async (id) => {
+  const product = await ProductModel.findByPk(id, {
+    attributes: ["MaSanPham", "TenSanPham", "MoTa", "MaDanhMuc"],
+
+    include: [
+      {
+        model: CategoryModel,
+        attributes: ["MaDanhMuc", "TenDanhMuc"],
+      },
+
+      {
+        model: VariantModel,
+        attributes: ["MaBienThe", "TenBienThe", "Gia", "SoLuong"],
+
+        include: [
+          {
+            model: VariantImageModel,
+            attributes: ["DuongDan"],
+          },
+        ],
+      },
+    ],
+  });
+
+  return product;
 };
