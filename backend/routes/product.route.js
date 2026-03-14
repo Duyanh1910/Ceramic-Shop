@@ -1,7 +1,10 @@
 import express from "express";
-import { getProducts } from "../controllers/product.controller.js";
+import {
+  getProducts,
+  getProductInfo,
+} from "../controllers/product.controller.js";
 
 const router = express.Router();
 router.get("/", getProducts);
-//router.get("/:id", getCustomerInfo);
+router.get("/:id", getProductInfo);
 export default router;
