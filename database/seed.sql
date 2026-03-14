@@ -1,8 +1,10 @@
 INSERT INTO PhanQuyen (TenPhanQuyen) VALUES
+INSERT INTO PhanQuyen (TenPhanQuyen) VALUES
 ('Admin'),
 ('Staff'),
 ('Customer');
 
+INSERT INTO TaiKhoan (Username, Email, Password, MaPhanQuyen)
 INSERT INTO TaiKhoan (Username, Email, Password, MaPhanQuyen)
 VALUES ('admin', 'admin@ceramicshop.vn', '$2a$12$aSFyRPFhsl9iTtCSjfSh/.MfIJm2CFpvmMH3jZoexgOMaZy4gHV9W', 1);
 
@@ -13,7 +15,9 @@ VALUES (LAST_INSERT_ID(), 'Trần Quản Trị', '0901234567', '1990-05-15', '12
 
 -- ==========================================
 -- 2. TẠO TÀI KHOẢN STAFF (MaPhanQuyen = 2)
+-- 2. TẠO TÀI KHOẢN STAFF (MaPhanQuyen = 2)
 -- ==========================================
+INSERT INTO TaiKhoan (Username, Email, Password, MaPhanQuyen)
 INSERT INTO TaiKhoan (Username, Email, Password, MaPhanQuyen)
 VALUES ('staff01', 'staff01@ceramicshop.vn', '$2a$12$aSFyRPFhsl9iTtCSjfSh/.MfIJm2CFpvmMH3jZoexgOMaZy4gHV9W', 2);
 
@@ -24,7 +28,9 @@ VALUES (LAST_INSERT_ID(), 'Nguyễn Thị Bán Hàng', '0912345678', '1998-10-20
 
 -- ==========================================
 -- 3. TẠO TÀI KHOẢN CUSTOMER (MaPhanQuyen = 3)
+-- 3. TẠO TÀI KHOẢN CUSTOMER (MaPhanQuyen = 3)
 -- ==========================================
+INSERT INTO TaiKhoan (Username, Email, Password, MaPhanQuyen)
 INSERT INTO TaiKhoan (Username, Email, Password, MaPhanQuyen)
 VALUES ('khachhang1', 'khachhang1@gmail.com', '$2a$12$aSFyRPFhsl9iTtCSjfSh/.MfIJm2CFpvmMH3jZoexgOMaZy4gHV9W', 3);
 
