@@ -3,407 +3,225 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pottery Shop - Gốm Sứ Tinh Hoa</title>
+    <title>Danh mục Gốm Sứ | Pottery Shop</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        /* CSS Variables cho tone màu Gốm sứ */
         :root {
-            --primary-color: #C16A54; 
-            --primary-hover: #A05542;
-            --bg-color: #F7F5F0;      
-            --sidebar-bg: #FFFFFF;
-            --text-main: #333333;
-            --text-muted: #777777;
-            --border-color: #E6E2D8;
-            --card-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            --primary: #8C5A4A; /* Nâu gốm sang trọng */
+            --primary-hover: #6D4335;
+            --bg-color: #F9F7F3;
+            --surface: #FFFFFF;
+            --text-main: #2C2C2C;
+            --text-muted: #888888;
+            --border: #EAE5D9;
+            --danger: #D32F2F;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
+            --shadow-md: 0 8px 24px rgba(140, 90, 74, 0.08);
+            --radius: 12px;
         }
 
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg-color); color: var(--text-main); }
 
-        body {
-            margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-        }
-
-        .container {
-            display: flex;
-            max-width: 1400px;
-            margin: 0 auto;
-            min-height: 100vh;
-        }
+        .container { display: flex; max-width: 1440px; margin: 0 auto; min-height: 100vh; }
 
         /* --- SIDEBAR --- */
         .sidebar {
-            width: 260px;
-            background: var(--sidebar-bg);
-            border-right: 1px solid var(--border-color);
-            padding: 25px 20px;
-            position: sticky;
-            top: 0;
-            height: 100vh;
-            overflow-y: auto;
+            width: 280px; background: var(--surface); border-right: 1px solid var(--border);
+            padding: 30px 24px; position: sticky; top: 0; height: 100vh; overflow-y: auto;
         }
+        .sidebar h2 { color: var(--primary); font-size: 20px; margin-bottom: 24px; display: flex; align-items: center; gap: 10px; }
+        .menu-item { padding: 12px 16px; border-radius: 8px; cursor: pointer; transition: all 0.2s; color: var(--text-main); font-size: 15px; margin-bottom: 4px; }
+        .menu-item:hover { background: #F4EFEA; color: var(--primary); }
+        .menu-item.active { background: var(--primary); color: white; font-weight: 500; box-shadow: 0 4px 12px rgba(140, 90, 74, 0.2); }
+        .parent { font-weight: 600; margin-top: 16px; border-bottom: 1px solid var(--border); border-radius: 0; padding-bottom: 8px;}
+        .parent:hover { background: transparent; color: var(--primary); }
+        .child { margin-left: 12px; font-size: 14px; position: relative; }
+        .child::before { content: ''; position: absolute; left: 0; top: 50%; width: 6px; height: 1px; background: var(--border); }
 
-        .sidebar h2 {
-            margin-top: 0;
-            color: var(--primary-color);
-            font-size: 22px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid var(--bg-color);
-            margin-bottom: 20px;
+        /* --- MAIN AREA --- */
+        .main { flex: 1; padding: 30px 40px; }
+
+        /* Toolbar */
+        .toolbar {
+            background: var(--surface); padding: 16px 24px; border-radius: var(--radius);
+            box-shadow: var(--shadow-sm); margin-bottom: 30px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap;
         }
-
-        .menu-item {
-            padding: 10px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .menu-item.active {
-            background-color: #F0EAE1;
-            color: var(--primary-color);
-            font-weight: bold;
-        }
-
-        .parent {
-            font-weight: bold;
-            margin-top: 15px;
-            font-size: 15px;
-            color: #555;
-        }
-
-        .child {
-            padding-left: 25px;
-            margin-top: 4px;
-            font-size: 14px;
-            color: var(--text-muted);
-        }
-
-        .menu-item:hover:not(.active) {
-            background-color: var(--bg-color);
-            color: var(--primary-color);
-        }
-
-        /* --- MAIN CONTENT --- */
-        .main {
-            flex: 1;
-            padding: 30px 40px;
-        }
-
-        /* Controls (Search & Sort) */
-        .controls {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 30px;
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: var(--card-shadow);
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .search-group {
-            display: flex;
-            flex: 1;
-            min-width: 300px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            overflow: hidden;
-            transition: border-color 0.2s;
-        }
-
-        .search-group:focus-within {
-            border-color: var(--primary-color);
-        }
-
-        .search-group select {
-            border: none;
-            background-color: #f8f9fa;
-            padding: 10px;
-            border-right: 1px solid var(--border-color);
-            outline: none;
-            font-size: 14px;
-            color: #555;
-            cursor: pointer;
-        }
-
-        .search-group input {
-            flex: 1;
-            border: none;
-            padding: 10px 15px;
-            font-size: 14px;
-            outline: none;
-        }
-
-        .controls > select {
-            padding: 10px 15px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-size: 14px;
-            outline: none;
-            cursor: pointer;
-        }
-
-        button {
-            padding: 10px 20px;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background 0.2s;
-        }
-
-        button:hover { background-color: var(--primary-hover); }
-        button:disabled { background-color: #ccc; cursor: not-allowed; }
+        .search-box { flex: 1; display: flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; min-width: 300px; transition: border 0.3s; }
+        .search-box:focus-within { border-color: var(--primary); }
+        .search-box select { border: none; background: #FAFAFA; padding: 0 16px; border-right: 1px solid var(--border); outline: none; color: var(--text-muted); cursor: pointer; }
+        .search-box input { flex: 1; border: none; padding: 14px 16px; outline: none; font-size: 15px; }
+        .filter-select { padding: 14px 16px; border: 1px solid var(--border); border-radius: 8px; outline: none; cursor: pointer; background: white; }
+        .btn-search { background: var(--primary); color: white; border: none; padding: 0 24px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+        .btn-search:hover { background: var(--primary-hover); transform: translateY(-1px); }
 
         /* Product Grid */
-        .products {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 25px;
-        }
-
+        .products { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 24px; }
         .card {
-            background: white;
-            border-radius: 12px;
-            padding: 15px;
-            box-shadow: var(--card-shadow);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            border: 1px solid transparent;
-            cursor: pointer; /* CHỈNH SỬA: Thêm con trỏ chuột dạng bàn tay */
+            background: var(--surface); border-radius: var(--radius); overflow: hidden;
+            box-shadow: var(--shadow-sm); transition: all 0.3s ease; cursor: pointer; border: 1px solid transparent;
+            position: relative; display: flex; flex-direction: column;
+        }
+        .card:hover:not(.disabled) { transform: translateY(-6px); box-shadow: var(--shadow-md); border-color: #E8DCCB; }
+        
+        .card-img-wrapper { position: relative; width: 100%; padding-top: 100%; /* Aspect ratio 1:1 */ overflow: hidden; background: #f0f0f0; }
+        .card-img-wrapper img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
+        .card:hover:not(.disabled) .card-img-wrapper img { transform: scale(1.05); }
+        
+        /* Trạng thái Hết hàng / Ngừng kinh doanh */
+        .card.disabled { opacity: 0.8; cursor: not-allowed; }
+        .card-overlay {
+            position: absolute; inset: 0; background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(2px);
+            display: flex; align-items: center; justify-content: center; z-index: 10;
+        }
+        .overlay-badge {
+            background: rgba(0, 0, 0, 0.75); color: white; padding: 10px 20px;
+            border-radius: 30px; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-            border-color: var(--border-color);
-        }
-
-        .card img {
-            width: 100%;
-            height: 220px;
-            object-fit: cover;
-            border-radius: 8px;
-            background-color: var(--bg-color);
-        }
-
-        .card-content {
-            padding-top: 15px;
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-        }
-
-        .category-tag {
-            font-size: 12px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 5px;
-        }
-
-        .card h3 {
-            margin: 0 0 10px 0;
-            font-size: 16px;
-            line-height: 1.4;
-            color: var(--text-main);
-            flex: 1;
-        }
-
-        .price {
-            color: var(--primary-color);
-            font-weight: bold;
-            font-size: 18px;
-        }
+        .card-content { padding: 20px; display: flex; flex-direction: column; flex: 1; }
+        .cat-tag { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .card h3 { font-size: 16px; color: var(--text-main); margin-bottom: 12px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; flex: 1; }
+        .price-row { display: flex; justify-content: space-between; align-items: center; }
+        .price { color: var(--primary); font-size: 18px; font-weight: 700; }
+        .stock-info { font-size: 12px; color: var(--text-muted); }
 
         /* Pagination */
-        .pagination {
-            margin-top: 40px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 15px;
-        }
+        .pagination { display: flex; justify-content: center; align-items: center; gap: 20px; margin-top: 40px; }
+        .btn-page { padding: 10px 20px; border: 1px solid var(--border); background: white; border-radius: 8px; cursor: pointer; transition: 0.2s; font-weight: 500; }
+        .btn-page:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
+        .btn-page:disabled { opacity: 0.5; cursor: not-allowed; background: #f5f5f5; }
 
-        #pageInfo { font-weight: bold; color: var(--text-muted); }
-
-        .loading-state {
-            grid-column: 1 / -1;
-            text-align: center;
-            padding: 40px;
-            color: var(--text-muted);
-            font-size: 16px;
+        /* Toast Notification */
+        #toast {
+            visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center;
+            border-radius: 8px; padding: 16px; position: fixed; z-index: 1000; left: 50%; bottom: 30px;
+            transform: translateX(-50%); opacity: 0; transition: opacity 0.3s, bottom 0.3s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); font-size: 14px;
         }
+        #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
+
+        .loading-state { grid-column: 1/-1; text-align: center; padding: 60px; color: var(--text-muted); font-size: 16px; }
+        .loading-spinner { border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 16px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="sidebar">
-        <h2>Danh mục Gốm</h2>
-
-        <div id="cat-all" onclick="selectCategory(null)" class="menu-item parent active">
-            Tất cả sản phẩm
-        </div>
-
+        <h2><i class="fas fa-vase"></i> Gốm Sứ Tinh Hoa</h2>
+        <div id="cat-all" onclick="selectCategory(null)" class="menu-item active"><i class="fas fa-border-all"></i> Tất cả sản phẩm</div>
         <div id="category-list"></div>
     </div>
 
     <div class="main">
-        <div class="controls">
-            <div class="search-group">
-                <select id="searchField" title="Chọn trường tìm kiếm">
-                    <option value="">Tất cả (Mặc định)</option>
-                    <option value="TenSanPham">Tên Sản Phẩm</option>
+        <div class="toolbar">
+            <div class="search-box">
+                <select id="searchField">
+                    <option value="">Tất cả</option>
+                    <option value="TenSanPham">Tên SP</option>
                     <option value="MaSanPham">Mã SP</option>
-                    <option value="MoTa">Mô tả</option>
                 </select>
-                <input type="text" id="search" placeholder="Nhập từ khóa tìm kiếm..." onkeypress="handleKeyPress(event)">
+                <input type="text" id="search" placeholder="Tìm kiếm bộ ấm trà, bình hoa..." onkeypress="if(event.key === 'Enter') searchProducts()">
             </div>
-            
-            <select id="sort" onchange="loadProducts()">
-                <option value="MaSanPham">Sắp xếp theo ID</option>
-                <option value="Gia">Sắp xếp theo Giá</option>
+            <select id="sort" class="filter-select" onchange="loadProducts()">
+                <option value="MaSanPham">Sắp xếp: Mới nhất</option>
+                <option value="Gia">Sắp xếp: Theo Giá</option>
             </select>
-
-            <select id="order" onchange="loadProducts()">
-                <option value="DESC">Mới nhất / Giảm dần</option>
-                <option value="ASC">Cũ nhất / Tăng dần</option>
+            <select id="order" class="filter-select" onchange="loadProducts()">
+                <option value="DESC">Giảm dần (Cao -> Thấp)</option>
+                <option value="ASC">Tăng dần (Thấp -> Cao)</option>
             </select>
-
-            <button onclick="searchProducts()">Tìm kiếm</button>
+            <button class="btn-search" onclick="searchProducts()"><i class="fas fa-search"></i> Tìm</button>
         </div>
 
-        <div id="products" class="products">
-            </div>
+        <div id="products" class="products"></div>
 
         <div class="pagination">
-            <button id="btnPrev" onclick="prevPage()">❮ Trước</button>
-            <span id="pageInfo">Trang 1 / 1</span>
-            <button id="btnNext" onclick="nextPage()">Sau ❯</button>
+            <button class="btn-page" id="btnPrev" onclick="prevPage()">❮ Trang trước</button>
+            <span id="pageInfo" style="font-weight: 600; color: var(--text-muted);">Trang 1 / 1</span>
+            <button class="btn-page" id="btnNext" onclick="nextPage()">Trang sau ❯</button>
         </div>
     </div>
 </div>
 
+<div id="toast">Thông báo hệ thống</div>
+
 <script>
     const PRODUCT_API = "http://localhost:3000/api/v1/products";
     const CATEGORY_API = "http://localhost:3000/api/v1/categories";
+    let currentPage = 1, totalPages = 1, currentCategory = null;
 
-    let currentPage = 1;
-    let totalPages = 1;
-    let currentCategory = null;
+    function showToast(message) {
+        const toast = document.getElementById("toast");
+        toast.innerText = message;
+        toast.className = "show";
+        setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+    }
 
-    /* 1. TẢI VÀ RENDER DANH MỤC TỪ API */
     async function loadCategories() {
         try {
             const res = await fetch(CATEGORY_API);
             const data = await res.json();
             const categories = data.result || [];
-
             const catList = document.getElementById("category-list");
             catList.innerHTML = "";
 
             const parents = categories.filter(c => c.MaDanhMuc <= 5);
             const children = categories.filter(c => c.MaDanhMuc > 5);
-
-            const mapChildToParent = {
-                1: [6, 7, 8],     // Đồ phòng bếp
-                2: [9],           // Đồ phòng khách
-                3: [10, 11],      // Đồ thờ
-                4: [12, 13],      // Đồ phong thủy
-                5: [14, 15]       // Đồ trang trí
-            };
+            const mapChildToParent = { 1: [6, 7, 8], 2: [9], 3: [10, 11], 4: [12, 13], 5: [14, 15] };
 
             parents.forEach(parent => {
-                catList.innerHTML += `
-                    <div id="cat-${parent.MaDanhMuc}" class="menu-item parent" style="margin-top:15px; cursor:pointer;" onclick="selectCategory(${parent.MaDanhMuc})">
-                        ${parent.TenDanhMuc}
-                    </div>
-                `;
-
-                const childIds = mapChildToParent[parent.MaDanhMuc] || [];
-                const childCats = children.filter(c => childIds.includes(c.MaDanhMuc));
-
+                catList.innerHTML += `<div class="menu-item parent">${parent.TenDanhMuc}</div>`;
+                const childCats = children.filter(c => (mapChildToParent[parent.MaDanhMuc] || []).includes(c.MaDanhMuc));
                 childCats.forEach(child => {
-                    catList.innerHTML += `
-                        <div id="cat-${child.MaDanhMuc}" class="menu-item child" onclick="selectCategory(${child.MaDanhMuc})">
-                            ${child.TenDanhMuc}
-                        </div>
-                    `;
+                    catList.innerHTML += `<div id="cat-${child.MaDanhMuc}" class="menu-item child" onclick="selectCategory(${child.MaDanhMuc})">${child.TenDanhMuc}</div>`;
                 });
             });
-
-            updateActiveCategory(currentCategory);
-
-        } catch (error) {
-            console.error("Lỗi khi tải danh mục:", error);
-            document.getElementById("category-list").innerHTML = "<p style='color:red; text-align:center;'>Lỗi tải danh mục</p>";
-        }
+        } catch (error) { console.error(error); }
     }
 
-    function updateActiveCategory(id) {
+    function selectCategory(id) {
+        currentCategory = id; currentPage = 1;
         document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
-        if (id === null) {
-            document.getElementById('cat-all')?.classList.add('active');
-        } else {
-            const activeEl = document.getElementById('cat-' + id);
-            if(activeEl) activeEl.classList.add('active');
-        }
+        if (id === null) document.getElementById('cat-all').classList.add('active');
+        else document.getElementById('cat-' + id)?.classList.add('active');
+        loadProducts();
     }
 
-    /* 2. TẢI VÀ RENDER SẢN PHẨM TỪ API */
+    function searchProducts() { currentPage = 1; loadProducts(); }
+
     async function loadProducts() {
         const container = document.getElementById("products");
-        container.innerHTML = `<div class="loading-state">Đang tải sản phẩm...</div>`;
+        container.innerHTML = `<div class="loading-state"><div class="loading-spinner"></div>Đang tải tinh hoa gốm sứ...</div>`;
 
         try {
-            const searchVal = document.getElementById("search").value.trim();
-            const searchFieldVal = document.getElementById("searchField").value; 
-            const sortVal = document.getElementById("sort").value;
-            const orderVal = document.getElementById("order").value;
-
             const params = new URLSearchParams({
-                page: currentPage,
-                limit: 6,
-                sort: sortVal,
-                order: orderVal
+                page: currentPage, limit: 8,
+                sort: document.getElementById("sort").value,
+                order: document.getElementById("order").value
             });
-
+            const searchVal = document.getElementById("search").value.trim();
             if (searchVal) {
                 params.append("search", searchVal);
-                if (searchFieldVal) params.append("searchField", searchFieldVal); 
+                params.append("searchField", document.getElementById("searchField").value);
             }
             if (currentCategory !== null) params.append("category", currentCategory);
 
-            const url = `${PRODUCT_API}?${params.toString()}`;
-            
-            const res = await fetch(url);
+            const res = await fetch(`${PRODUCT_API}?${params.toString()}`);
             const data = await res.json();
-
-            let productList = [];
-            if (data.data) { 
-                productList = data.data;
-                totalPages = data.totalPages || 1;
-                currentPage = data.page || 1;
-            } else if (data.result) { 
-                productList = data.result.data || [];
-                totalPages = data.result.totalPages || 1;
-                currentPage = data.result.page || 1;
-            }
+            const productList = data.data || data.result?.data || [];
+            totalPages = data.totalPages || data.result?.totalPages || 1;
+            currentPage = data.page || data.result?.page || 1;
 
             renderProducts(productList);
-            updatePaginationUI();
-
+            document.getElementById("pageInfo").innerText = `Trang ${currentPage} / ${totalPages}`;
+            document.getElementById("btnPrev").disabled = (currentPage <= 1);
+            document.getElementById("btnNext").disabled = (currentPage >= totalPages);
         } catch (error) {
-            console.error("Lỗi khi tải sản phẩm:", error);
-            container.innerHTML = `<div class="loading-state" style="color: red;">Lỗi kết nối đến Server. Vui lòng kiểm tra lại.</div>`;
+            container.innerHTML = `<div class="loading-state" style="color:var(--danger)">Lỗi kết nối máy chủ.</div>`;
         }
     }
 
@@ -411,94 +229,51 @@
         const container = document.getElementById("products");
         container.innerHTML = "";
 
-        if (!Array.isArray(products) || products.length === 0) {
-            container.innerHTML = `<div class="loading-state">Không tìm thấy sản phẩm nào phù hợp.</div>`;
+        if (products.length === 0) {
+            container.innerHTML = `<div class="loading-state"><i class="fas fa-box-open fa-3x" style="color:#ddd; margin-bottom:15px"></i><br>Không tìm thấy sản phẩm.</div>`;
             return;
         }
 
         products.forEach(p => {
+            const isSoldOut = p.TongSoLuong <= 0;
+            const isDiscontinued = p.TrangThai === 0;
             const card = document.createElement("div");
-            card.className = "card";
+            card.className = `card ${isDiscontinued ? 'disabled' : ''}`;
             
-            // CHỈNH SỬA: Thêm sự kiện onclick chuyển trang tại đây
             card.onclick = () => {
-                window.location.href = `product-detail.html?id=${p.MaSanPham}`;
+                if (isDiscontinued) showToast("Sản phẩm này hiện đã ngừng kinh doanh.");
+                else window.location.href = `product-detail.html?id=${p.MaSanPham}`;
             };
-            
-            const imgUrl = p.Thumbnail ? p.Thumbnail : 'https://via.placeholder.com/300x220?text=No+Image';
-            
-            const priceStr = p.GiaThapNhat 
-                ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(p.GiaThapNhat)
-                : 'Liên hệ';
+
+            let overlayHtml = '';
+            if (isDiscontinued) overlayHtml = `<div class="card-overlay"><div class="overlay-badge">Ngừng Bán</div></div>`;
+            else if (isSoldOut) overlayHtml = `<div class="card-overlay"><div class="overlay-badge">Hết Hàng</div></div>`;
+
+            const imgUrl = p.Thumbnail || 'https://via.placeholder.com/300x300?text=No+Image';
+            const priceStr = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(p.GiaThapNhat);
 
             card.innerHTML = `
-                <img src="${imgUrl}" alt="${p.TenSanPham}" onerror="this.src='https://via.placeholder.com/300x220?text=Error'">
+                <div class="card-img-wrapper">
+                    ${overlayHtml}
+                    <img src="${imgUrl}" alt="${p.TenSanPham}" onerror="this.src='https://via.placeholder.com/300x300?text=Lỗi+Ảnh'">
+                </div>
                 <div class="card-content">
-                    <div class="category-tag">${p.DanhMuc?.TenDanhMuc || 'Chưa phân loại'}</div>
+                    <div class="cat-tag">${p.DanhMuc?.TenDanhMuc || 'Chưa phân loại'}</div>
                     <h3>${p.TenSanPham}</h3>
-                    <div class="price">${priceStr}</div>
+                    <div class="price-row">
+                        <span class="price">${priceStr}</span>
+                        <span class="stock-info">Kho: ${p.TongSoLuong}</span>
+                    </div>
                 </div>
             `;
             container.appendChild(card);
         });
     }
 
-    /* 3. CÁC HÀM XỬ LÝ SỰ KIỆN TƯƠNG TÁC */
-    function selectCategory(id) {
-        currentCategory = id;
-        currentPage = 1;
-        
-        if (id === null) {
-            document.getElementById("search").value = "";
-        }
+    function nextPage() { if (currentPage < totalPages) { currentPage++; loadProducts(); } }
+    function prevPage() { if (currentPage > 1) { currentPage--; loadProducts(); } }
 
-        updateActiveCategory(id);
-        loadProducts();
-    }
-
-    function searchProducts() {
-        const value = document.getElementById("search").value.trim();
-        
-        if (value === "") {
-            currentCategory = null;
-            updateActiveCategory(null);
-        }
-        
-        currentPage = 1;
-        loadProducts();
-    }
-
-    function handleKeyPress(event) {
-        if (event.key === 'Enter') {
-            searchProducts();
-        }
-    }
-
-    function updatePaginationUI() {
-        document.getElementById("pageInfo").innerText = `Trang ${currentPage} / ${totalPages}`;
-        document.getElementById("btnPrev").disabled = (currentPage <= 1);
-        document.getElementById("btnNext").disabled = (currentPage >= totalPages);
-    }
-
-    function nextPage() {
-        if (currentPage < totalPages) {
-            currentPage++;
-            loadProducts();
-        }
-    }
-
-    function prevPage() {
-        if (currentPage > 1) {
-            currentPage--;
-            loadProducts();
-        }
-    }
-
-    /* KHỞI TẠO LẦN ĐẦU */
-    loadCategories();
-    loadProducts();
-
+    loadCategories(); loadProducts();
 </script>
-
 </body>
 </html>

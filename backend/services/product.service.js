@@ -76,7 +76,15 @@ export const getAllProductsService = async (
       "MaSanPham",
       "TenSanPham",
       "MoTa",
-
+      "TrangThai",
+      [
+        literal(`(
+          SELECT SUM(SoLuong)
+          FROM BienTheSanPham
+          WHERE BienTheSanPham.MaSanPham = SanPham.MaSanPham
+        )`),
+        "TongSoLuong",
+      ],
       [
         literal(`(
           SELECT MIN(Gia)
@@ -125,6 +133,7 @@ export const getAllProductsService = async (
     DanhMuc: p.DanhMucSanPham,
     GiaThapNhat: Number(p.get("GiaThapNhat")) || 0,
     Thumbnail: p.get("Thumbnail") || null,
+    TongSoLuong: Number(p.get("TongSoLuong")) || 0,
   }));
 
   const total = products.count;
@@ -139,7 +148,7 @@ export const getAllProductsService = async (
 
 export const getProductService = async (id) => {
   const product = await ProductModel.findByPk(id, {
-    attributes: ["MaSanPham", "TenSanPham", "MoTa", "MaDanhMuc"],
+    attributes: ["MaSanPham", "TenSanPham", "MoTa", "MaDanhMuc", "TrangThai"],
 
     include: [
       {

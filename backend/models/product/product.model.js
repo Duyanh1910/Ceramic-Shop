@@ -21,6 +21,11 @@ const ProductModel = sequelize.define(
       type: DataTypes.TEXT,
       allowNull: true,
     },
+    TrangThai: {
+      type: DataTypes.TINYINT.UNSIGNED,
+      defaultValue: 1,
+      allowNull: false,
+    },
   },
   {
     tableName: "SanPham",
