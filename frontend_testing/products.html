@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Pottery Shop Test</title>
+
+<style>
+
+body{
+    margin:0;
+    font-family:Arial;
+    background:#f5f5f5;
+}
+
+.container{
+    display:flex;
+}
+
+/* sidebar */
+
+.sidebar{
+    width:250px;
+    background:white;
+    padding:20px;
+    border-right:1px solid #ddd;
+}
+
+.category{
+    margin-bottom:15px;
+}
+
+.parent{
+    font-weight:bold;
+    cursor:pointer;
+    margin-bottom:5px;
+}
+
+.child{
+    padding-left:15px;
+    cursor:pointer;
+    color:#444;
+}
+
+/* main */
+
+.main{
+    flex:1;
+    padding:20px;
+}
+
+.controls{
+    margin-bottom:20px;
+}
+
+.products{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+    gap:20px;
+}
+
+.card{
+    background:white;
+    border-radius:8px;
+    padding:10px;
+    box-shadow:0 2px 5px rgba(0,0,0,0.1);
+}
+
+.card img{
+    width:100%;
+    height:160px;
+    object-fit:cover;
+}
+
+.price{
+    color:red;
+    font-weight:bold;
+}
+
+.pagination{
+    margin-top:20px;
+}
+
+button{
+    cursor:pointer;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<!-- sidebar -->
+<div class="sidebar" id="categoryList"></div>
+
+<!-- main -->
+<div class="main">
+
+<div class="controls">
+
+<input id="search" placeholder="Tìm sản phẩm">
+
+<select id="sort">
+<option value="MaSanPham">Sort ID</option>
+<option value="TenSanPham">Sort Name</option>
+<option value="Gia">Sort Price</option>
+</select>
+
+<select id="order">
+<option value="DESC">DESC</option>
+<option value="ASC">ASC</option>
+</select>
+
+<button onclick="searchProducts()">Search</button>
+
+</div>
+
+<div class="products" id="productList"></div>
+
+<div class="pagination">
+
+<button onclick="prevPage()">Prev</button>
+<span id="pageInfo"></span>
+<button onclick="nextPage()">Next</button>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+let currentPage = 1
+let totalPages = 1
+let currentCategory = null
+
+/* category data từ SQL của bạn */
+
+const categories = [
+{
+id:1,
+name:"Đồ phòng bếp",
+children:[
+{id:6,name:"Bộ đồ ăn"},
+{id:7,name:"Bát / Chén lẻ"},
+{id:8,name:"Sứ dưỡng sinh"}
+]
+},
+{
+id:2,
+name:"Đồ phòng khách",
+children:[
+{id:9,name:"Bộ ấm trà"}
+]
+},
+{
+id:3,
+name:"Đồ thờ",
+children:[
+{id:10,name:"Bát hương"},
+{id:11,name:"Mâm bồng"}
+]
+},
+{
+id:4,
+name:"Đồ phong thủy",
+children:[
+{id:12,name:"Lục bình"},
+{id:13,name:"Tượng phong thủy"}
+]
+},
+{
+id:5,
+name:"Đồ trang trí",
+children:[
+{id:14,name:"Tượng gốm"},
+{id:15,name:"Bình hoa"}
+]
+}
+]
+
+/* render category */
+
+function renderCategories(){
+
+const container = document.getElementById("categoryList")
+
+categories.forEach(cat=>{
+
+const div = document.createElement("div")
+div.className="category"
+
+let html = `<div class="parent" onclick="selectCategory(${cat.id})">${cat.name}</div>`
+
+cat.children.forEach(child=>{
+html += `<div class="child" onclick="selectCategory(${child.id})">${child.name}</div>`
+})
+
+div.innerHTML = html
+
+container.appendChild(div)
+
+})
+
+}
+
+/* select category */
+
+function selectCategory(id){
+
+currentCategory = id
+currentPage = 1
+loadProducts()
+
+}
+
+/* search */
+
+function searchProducts(){
+
+currentPage = 1
+loadProducts()
+
+}
+
+/* load products */
+
+async function loadProducts(){
+
+const search = document.getElementById("search").value
+const sort = document.getElementById("sort").value
+const order = document.getElementById("order").value
+
+let url = `http://localhost:3000/api/v1/products?page=${currentPage}&limit=8&search=${search}&sort=${sort}&order=${order}`
+
+if(currentCategory){
+url += `&category=${currentCategory}`
+}
+
+const res = await fetch(url)
+const data = await res.json()
+
+const products = data.result.data
+
+totalPages = data.result.totalPages
+currentPage = data.result.page
+
+renderProducts(products)
+
+document.getElementById("pageInfo").innerText =
+`Page ${currentPage} / ${totalPages}`
+
+}
+
+/* render product */
+
+function renderProducts(products){
+
+const container = document.getElementById("productList")
+
+container.innerHTML=""
+
+products.forEach(p=>{
+
+const card = document.createElement("div")
+card.className="card"
+
+card.innerHTML = `
+<img src="${p.Thumbnail || 'https://via.placeholder.com/200'}">
+
+<h3>${p.TenSanPham}</h3>
+
+<div>${p.DanhMuc.TenDanhMuc}</div>
+
+<div class="price">${p.GiaThapNhat.toLocaleString()} đ</div>
+`
+
+container.appendChild(card)
+
+})
+
+}
+
+/* pagination */
+
+function nextPage(){
+
+if(currentPage < totalPages){
+
+currentPage++
+loadProducts()
+
+}
+
+}
+
+function prevPage(){
+
+if(currentPage > 1){
+
+currentPage--
+loadProducts()
+
+}
+
+}
+
+/* init */
+
+renderCategories()
+loadProducts()
+
+</script>
+
+</body>
+</html>
