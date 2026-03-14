@@ -60,6 +60,7 @@ CREATE TABLE SanPham (
     MaDanhMuc INT,
     TenSanPham VARCHAR(100) NOT NULL,
     MoTa TEXT,
+    TrangThai TINYINT DEFAULT 1,
     FOREIGN KEY (MaDanhMuc) REFERENCES DanhMucSanPham(MaDanhMuc)
 );
 
@@ -74,7 +75,7 @@ CREATE TABLE KhuyenMai (
     MaKhuyenMai INT AUTO_INCREMENT PRIMARY KEY,
     MaLoaiKM INT NOT NULL,
     TenKhuyenMai VARCHAR(255) NOT NULL,
-    GiaTri DECIMAL(10,2) NOT NULL,
+    GiaTri DECIMAL(15,2) NOT NULL,
     NgayBatDau DATETIME,
     NgayKetThuc DATETIME,
     TrangThai TINYINT DEFAULT 1,
@@ -84,7 +85,7 @@ CREATE TABLE KhuyenMai (
 CREATE TABLE PhiVanChuyen (
     MaPhi INT AUTO_INCREMENT PRIMARY KEY,
     MaLoaiPhi INT NOT NULL,
-    GiaTri DECIMAL(10,2) NOT NULL,
+    GiaTri DECIMAL(15,2) NOT NULL,
     FOREIGN KEY (MaLoaiPhi) REFERENCES LoaiPhiVanChuyen(MaLoaiPhi)
 );
 
@@ -113,7 +114,7 @@ CREATE TABLE BienTheSanPham (
     MaBienThe INT AUTO_INCREMENT PRIMARY KEY,
     MaSanPham INT NOT NULL,
     TenBienThe VARCHAR(100) NOT NULL,
-    Gia DECIMAL(10,2) NOT NULL,
+    Gia DECIMAL(15,2) NOT NULL,
     SoLuong INT DEFAULT 0,
     TrangThai TINYINT DEFAULT 1,
     MoTa VARCHAR(255),
@@ -168,10 +169,10 @@ CREATE TABLE DonHang (
     MaDonHang INT AUTO_INCREMENT PRIMARY KEY,
     MaKhachHang INT NOT NULL,
     NgayDat DATETIME DEFAULT CURRENT_TIMESTAMP,
-    TongTienHang DECIMAL(10,2) DEFAULT 0,
-    TongPhiVanChuyen DECIMAL(10,2) DEFAULT 0,
-    TongGiamGia DECIMAL(10,2) DEFAULT 0,
-    TongThanhToan DECIMAL(10,2) DEFAULT 0,
+    TongTienHang DECIMAL(15,2) DEFAULT 0,
+    TongPhiVanChuyen DECIMAL(15,2) DEFAULT 0,
+    TongGiamGia DECIMAL(15,2) DEFAULT 0,
+    TongThanhToan DECIMAL(15,2) DEFAULT 0,
     DiaChiGiaoHang VARCHAR(255),
     TenNguoiNhan VARCHAR(100),
     SDT VARCHAR(10),
@@ -188,7 +189,7 @@ CREATE TABLE PhieuNhap (
     MaNhaCC INT,
     MaNhanVien INT,
     NgayNhap DATETIME DEFAULT CURRENT_TIMESTAMP,
-    TongTien DECIMAL(10,2) DEFAULT 0,
+    TongTien DECIMAL(15,2) DEFAULT 0,
     GhiChu VARCHAR(255),
     TrangThai TINYINT DEFAULT 0,
     FOREIGN KEY (MaNhaCC) REFERENCES NhaCungCap(MaNhaCC),
@@ -202,8 +203,8 @@ CREATE TABLE ChiTietDonHang (
     MaDonHang INT NOT NULL,
     MaBienThe INT NOT NULL,
     SoLuong INT NOT NULL,
-    GiaBan DECIMAL(10,2) NOT NULL,
-    ThanhTien DECIMAL(10,2) NOT NULL,
+    GiaBan DECIMAL(15,2) NOT NULL,
+    ThanhTien DECIMAL(15,2) NOT NULL,
     FOREIGN KEY (MaDonHang) REFERENCES DonHang(MaDonHang),
     FOREIGN KEY (MaBienThe) REFERENCES BienTheSanPham(MaBienThe)
 );
@@ -211,7 +212,7 @@ CREATE TABLE ChiTietDonHang (
 CREATE TABLE ChiTietKhuyenMaiDonHang (
     MaDonHang INT,
     MaKhuyenMai INT,
-    SoTienChietKhau DECIMAL(10,2) NOT NULL,
+    SoTienChietKhau DECIMAL(15,2) NOT NULL,
     PRIMARY KEY (MaDonHang, MaKhuyenMai),
     FOREIGN KEY (MaDonHang) REFERENCES DonHang(MaDonHang),
     FOREIGN KEY (MaKhuyenMai) REFERENCES KhuyenMai(MaKhuyenMai)
@@ -220,7 +221,7 @@ CREATE TABLE ChiTietKhuyenMaiDonHang (
 CREATE TABLE ChiTietPhiVanChuyenDonHang (
     MaDonHang INT,
     MaPhi  INT,
-    SoTienPhi DECIMAL(10,2) NOT NULL,
+    SoTienPhi DECIMAL(15,2) NOT NULL,
     PRIMARY KEY (MaDonHang, MaPhi),
     FOREIGN KEY (MaDonHang) REFERENCES DonHang(MaDonHang),
     FOREIGN KEY (MaPhi) REFERENCES PhiVanChuyen(MaPhi)
@@ -231,8 +232,8 @@ CREATE TABLE ChiTietPhieuNhap (
     MaPhieuNhap INT,
     MaBienThe INT,
     SoLuong INT NOT NULL,
-    GiaNhap DECIMAL(10,2) NOT NULL,
-    ThanhTien DECIMAL(10,2) NOT NULL,
+    GiaNhap DECIMAL(15,2) NOT NULL,
+    ThanhTien DECIMAL(15,2) NOT NULL,
     FOREIGN KEY (MaPhieuNhap) REFERENCES PhieuNhap(MaPhieuNhap),
     FOREIGN KEY (MaBienThe) REFERENCES BienTheSanPham(MaBienThe)
 );
@@ -311,11 +312,39 @@ CREATE TABLE RuiRo (
     FOREIGN KEY (MaDonHang) REFERENCES DonHang(MaDonHang)
 );
 
-CREATE INDEX idx_sanpham_danhmuc
-ON SanPham(MaDanhMuc);
+CREATE INDEX idx_product_category ON SanPham (MaDanhMuc);
+CREATE INDEX idx_product_status ON SanPham (TrangThai);
+CREATE INDEX idx_product_category_status ON SanPham (MaDanhMuc, TrangThai);
+CREATE INDEX idx_product_name ON SanPham (TenSanPham);
 
-CREATE INDEX idx_bienthe_sanpham
-ON BienTheSanPham(MaSanPham);
+CREATE INDEX idx_variant_product ON BienTheSanPham (MaSanPham);
+CREATE INDEX idx_variant_status ON BienTheSanPham (TrangThai);
+CREATE INDEX idx_variant_price ON BienTheSanPham (Gia);
 
-CREATE INDEX idx_donhang_khachhang
-ON DonHang(MaKhachHang);
+CREATE INDEX idx_category_parent ON DanhMucSanPham (ParentID);
+
+CREATE INDEX idx_variant_image_variant ON HinhAnhBienThe (MaBienThe);
+
+CREATE INDEX idx_cart_customer ON GioHang (MaKhachHang);
+
+CREATE INDEX idx_cart_detail_cart ON ChiTietGioHang (MaGioHang);
+CREATE INDEX idx_cart_detail_variant ON ChiTietGioHang (MaBienThe);
+
+CREATE INDEX idx_order_customer ON DonHang (MaKhachHang);
+CREATE INDEX idx_order_status ON DonHang (TrangThaiDonHang);
+CREATE INDEX idx_order_date ON DonHang (NgayDat);
+
+CREATE INDEX idx_order_detail_order ON ChiTietDonHang (MaDonHang);
+CREATE INDEX idx_order_detail_variant ON ChiTietDonHang (MaBienThe);
+
+CREATE INDEX idx_inventory_variant ON LichSuTonKho (MaBienThe);
+CREATE INDEX idx_inventory_reference ON LichSuTonKho (MaThamChieu);
+
+CREATE INDEX idx_review_customer ON DanhGia (MaKhachHang);
+CREATE INDEX idx_review_order_detail ON DanhGia (MaCTDH);
+
+CREATE INDEX idx_import_supplier ON PhieuNhap (MaNhaCC);
+CREATE INDEX idx_import_employee ON PhieuNhap (MaNhanVien);
+
+CREATE INDEX idx_import_detail_import ON ChiTietPhieuNhap (MaPhieuNhap);
+CREATE INDEX idx_import_detail_variant ON ChiTietPhieuNhap (MaBienThe);

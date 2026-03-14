@@ -22,65 +22,65 @@ INSERT INTO DanhMucSanPham (MaDanhMuc, TenDanhMuc, MoTa, ParentID) VALUES
 (14, 'Tượng gốm', 'Tượng gốm trang trí', 5),
 (15, 'Bình hoa', 'Bình hoa trang trí', 5);
 
-INSERT INTO SanPham (MaSanPham, MaDanhMuc, TenSanPham, MoTa) VALUES
+INSERT INTO SanPham (MaSanPham, MaDanhMuc, TenSanPham, MoTa, TrangThai) VALUES
 
 (1, 9, 'Bộ trà Camellia',
- 'Kỹ lưỡng từ khâu nguyên liệu đến quy trình sản xuất, trau chuốt từ kiểu dáng đến màu sắc hoa văn, bộ bàn ăn Camellia mang phong cách sang trọng, hiện đại mà hiếm sản phẩm nào có được.'),
+ 'Kỹ lưỡng từ khâu nguyên liệu đến quy trình sản xuất, trau chuốt từ kiểu dáng đến màu sắc hoa văn, bộ bàn ăn Camellia mang phong cách sang trọng, hiện đại mà hiếm sản phẩm nào có được.',1),
 (2, 9, 'Bộ trà Anna',
- 'Không họa tiết rườm rà hay kiểu cách cầu kỳ nhưng Anna vẫn toát lên sự sang trọng, tinh tế cần có của một bộ trà. Anna đa dạng dòng sản phẩm, từ trắng ngà và chỉ vàng đến họa tiết sen quen thuộc nhằm đáp ứng đa dạng sở thích của khách hàng mà vẫn đảm bảo hoàn hảo về kỹ thuật và mỹ thuật, lưu giữ trọn vẹn hương-vị-sắc của trà và là cầu nối gắn kết những mối tình thâm... '),
+ 'Không họa tiết rườm rà hay kiểu cách cầu kỳ nhưng Anna vẫn toát lên sự sang trọng, tinh tế cần có của một bộ trà. Anna đa dạng dòng sản phẩm, từ trắng ngà và chỉ vàng đến họa tiết sen quen thuộc nhằm đáp ứng đa dạng sở thích của khách hàng mà vẫn đảm bảo hoàn hảo về kỹ thuật và mỹ thuật, lưu giữ trọn vẹn hương-vị-sắc của trà và là cầu nối gắn kết những mối tình thâm... ',1),
 (3, 9, 'Bộ trà Đài Các',
- 'Bộ trà Đài Các toát lên vẻ đẹp kiêu sa, lộng lẫy theo phong cách quyền quý hoàng gia. Bộ sản phẩm có kiểu dáng sang trọng, nhiều đường nét được cách điệu, uốn lượn với dáng điệu mềm mại, mảnh mai.'),
+ 'Bộ trà Đài Các toát lên vẻ đẹp kiêu sa, lộng lẫy theo phong cách quyền quý hoàng gia. Bộ sản phẩm có kiểu dáng sang trọng, nhiều đường nét được cách điệu, uốn lượn với dáng điệu mềm mại, mảnh mai.',1),
 
 (4, 6, 'Bộ đồ ăn Jasmine',
- 'Bức tranh làng quê hiện ra sống động như gom hết thảy không gian, cảnh vật, con người… trên những cánh đồng, những mái nhà tranh, bến nước, chợ quê … vào trong từng sản phẩm của bộ đồ ăn Jasmine'),
+ 'Bức tranh làng quê hiện ra sống động như gom hết thảy không gian, cảnh vật, con người… trên những cánh đồng, những mái nhà tranh, bến nước, chợ quê … vào trong từng sản phẩm của bộ đồ ăn Jasmine',1),
 (5, 6, 'Bộ đồ ăn Daisy',
- 'Mỗi chiếc đĩa, tô, chén… của nhà Daisy đều được tạo hình cân đối, tròn đều, không một vết trầy xước. Sản phẩm được nung ở nhiệt độ cao theo công nghệ của Đức, không chì, camidium, an toàn tuyệt đối cho người sử dụng.'),
+ 'Mỗi chiếc đĩa, tô, chén… của nhà Daisy đều được tạo hình cân đối, tròn đều, không một vết trầy xước. Sản phẩm được nung ở nhiệt độ cao theo công nghệ của Đức, không chì, camidium, an toàn tuyệt đối cho người sử dụng.',1),
 (6, 6, 'Bộ đồ ăn Tulip',
  '
-Tulip là loài hoa biểu tượng của xứ sở Hà Lan nhưng ngày nay đã được phụ nữ khắp nơi trên thế giới yêu thích bởi nét đẹp vừa giản dị nhưng lại vừa kiêu sa, vừa gần gũi mà cũng có phần xa cách.'),
+Tulip là loài hoa biểu tượng của xứ sở Hà Lan nhưng ngày nay đã được phụ nữ khắp nơi trên thế giới yêu thích bởi nét đẹp vừa giản dị nhưng lại vừa kiêu sa, vừa gần gũi mà cũng có phần xa cách.',1),
 
 (7, 15, 'Bình hoa Lộc Phát',
- 'Khoác lên vẻ truyền thống, nền nã của loài hoa Á Đông nhưng lại không kém phần tinh tế hiện đại, những cánh sen bung tròn, phúc hậu ôm lấy nhụy đã được tái hiện sống động bằng màu sắc đặc trưng của cung đình Huế.'),
+ 'Khoác lên vẻ truyền thống, nền nã của loài hoa Á Đông nhưng lại không kém phần tinh tế hiện đại, những cánh sen bung tròn, phúc hậu ôm lấy nhụy đã được tái hiện sống động bằng màu sắc đặc trưng của cung đình Huế.',1),
 (8, 15, 'Bình hoa Sen',
- 'Bình hoa Sen với thiết kế thanh thoát và họa tiết hoa sen tinh tế, được chế tác từ sứ cao cấp với lớp men mịn đẹp mắt. Sản phẩm thích hợp để cắm hoa hoặc trang trí không gian phòng khách, phòng làm việc, mang lại vẻ đẹp trang nhã và cảm giác thanh bình cho ngôi nhà.'),
+ 'Bình hoa Sen với thiết kế thanh thoát và họa tiết hoa sen tinh tế, được chế tác từ sứ cao cấp với lớp men mịn đẹp mắt. Sản phẩm thích hợp để cắm hoa hoặc trang trí không gian phòng khách, phòng làm việc, mang lại vẻ đẹp trang nhã và cảm giác thanh bình cho ngôi nhà.',1),
 (9, 15, 'Bình hoa Kim Ngọc',
- 'Bình hoa Kim Ngọc được chế tác từ sứ cao cấp với thiết kế thanh lịch và lớp men sáng bóng. Sản phẩm phù hợp để cắm hoa hoặc trang trí không gian phòng khách, mang lại vẻ đẹp sang trọng và tinh tế cho ngôi nhà.'),
+ 'Bình hoa Kim Ngọc được chế tác từ sứ cao cấp với thiết kế thanh lịch và lớp men sáng bóng. Sản phẩm phù hợp để cắm hoa hoặc trang trí không gian phòng khách, mang lại vẻ đẹp sang trọng và tinh tế cho ngôi nhà.',1),
 
 (10, 8, 'Nồi sứ Vesta',
  'ĐẶC TÍNH SẢN PHẨM:
 - Nấu thực phẩm không cần nước mà vẫn giữ màu sắc rau củ tươi như ban đầu (dưỡng chất còn lại 70 -80%).
 - Chiên ở nhiệt độ thấp mà vẫn chín sâu, giòn lâu.
 - Nấu chín thức ăn bằng cơ chế phát ra tia hồng ngoại nên hầm nhanh mềm, tạo rất ít váng bọt nên nước trong và thơm hơn, giúp tiết kiệm thời gian và nhiên liệu.
-- Sản phẩm được nung ở nhiệt độ cao 1280 độ C giúp sản phẩm không bị rạn men, bung men trong quá trình sử dụng lâu dài.'),
+- Sản phẩm được nung ở nhiệt độ cao 1280 độ C giúp sản phẩm không bị rạn men, bung men trong quá trình sử dụng lâu dài.',1),
 (11, 8, 'Chảo sứ dưỡng sinh',
- 'Với chất liệu tinh tuyển từ đất hiếm thiên nhiên, lành tính, không chứa các chất độc hại, Healthycook sở hữu nhiều tính năng nổi bật góp phần đem lại những bữa ăn ngon – lành cho gia đình.'),
+ 'Với chất liệu tinh tuyển từ đất hiếm thiên nhiên, lành tính, không chứa các chất độc hại, Healthycook sở hữu nhiều tính năng nổi bật góp phần đem lại những bữa ăn ngon – lành cho gia đình.',1),
 (12, 8, 'Ấm nước dưỡng sinh',
- 'Với chất liệu tinh tuyển từ đất hiếm thiên nhiên, lành tính, không chứa các chất độc hại, Healthycook sở hữu nhiều tính năng nổi bật góp phần đem lại những bữa ăn ngon – lành cho gia đình.'),
+ 'Với chất liệu tinh tuyển từ đất hiếm thiên nhiên, lành tính, không chứa các chất độc hại, Healthycook sở hữu nhiều tính năng nổi bật góp phần đem lại những bữa ăn ngon – lành cho gia đình.',1),
 
 -- Tượng gốm (MaDanhMuc = 14)
-(13, 14, 'Tượng cô gái gốm', 'Tượng trang trí mang vẻ đẹp dịu dàng và tinh tế'),
-(14, 14, 'Tượng cá chép gốm', 'Biểu tượng may mắn và thịnh vượng'),
-(15, 14, 'Tượng thiên nga gốm', 'Biểu tượng của sự thanh lịch và tình yêu'),
+(13, 14, 'Tượng cô gái gốm', 'Tượng trang trí mang vẻ đẹp dịu dàng và tinh tế',1),
+(14, 14, 'Tượng cá chép gốm', 'Biểu tượng may mắn và thịnh vượng',1),
+(15, 14, 'Tượng thiên nga gốm', 'Biểu tượng của sự thanh lịch và tình yêu',1),
 
 -- Bát hương (MaDanhMuc = 10)
-(16, 10, 'Bát hương men lam', 'Bát hương họa tiết truyền thống'),
-(17, 10, 'Bát hương rồng nổi', 'Chạm khắc rồng nổi tinh xảo'),
-(18, 10, 'Bát hương men rạn', 'Men rạn cổ điển'),
+(16, 10, 'Bát hương men lam', 'Bát hương họa tiết truyền thống',1),
+(17, 10, 'Bát hương rồng nổi', 'Chạm khắc rồng nổi tinh xảo',1),
+(18, 10, 'Bát hương men rạn', 'Men rạn cổ điển',1),
 
 -- Mâm bồng (MaDanhMuc = 11)
-(19, 11, 'Mâm bồng men lam', 'Mâm bồng họa tiết truyền thống'),
-(20, 11, 'Mâm bồng vẽ vàng', 'Mâm bồng trang trí vàng sang trọng'),
-(21, 11, 'Mâm bồng họa tiết sen', 'Mâm bồng trang trí hoa sen'),
+(19, 11, 'Mâm bồng men lam', 'Mâm bồng họa tiết truyền thống',1),
+(20, 11, 'Mâm bồng vẽ vàng', 'Mâm bồng trang trí vàng sang trọng',1),
+(21, 11, 'Mâm bồng họa tiết sen', 'Mâm bồng trang trí hoa sen',1),
 
 -- Lục bình (MaDanhMuc = 12)
-(22, 12, 'Lục bình Phúc Lộc Thọ', 'Biểu tượng phúc lộc thọ'),
-(23, 12, 'Lục bình Tứ quý', 'Trang trí tứ quý bốn mùa'),
-(24, 12, 'Lục bình Công đào', 'Họa tiết chim công và hoa đào'),
+(22, 12, 'Lục bình Phúc Lộc Thọ', 'Biểu tượng phúc lộc thọ',1),
+(23, 12, 'Lục bình Tứ quý', 'Trang trí tứ quý bốn mùa',1),
+(24, 12, 'Lục bình Công đào', 'Họa tiết chim công và hoa đào',1),
 
 -- Tượng phong thủy (MaDanhMuc = 13)
-(25, 13, 'Tượng Di Lặc', 'Mang lại niềm vui và tài lộc'),
-(26, 13, 'Tượng Thần Tài', 'Biểu tượng tài lộc'),
-(27, 13, 'Tượng Cá chép hóa rồng', 'Biểu tượng thành công và thăng tiến');
+(25, 13, 'Tượng Di Lặc', 'Mang lại niềm vui và tài lộc',1),
+(26, 13, 'Tượng Thần Tài', 'Biểu tượng tài lộc',1),
+(27, 13, 'Tượng Cá chép hóa rồng', 'Biểu tượng thành công và thăng tiến',1);
 
 INSERT INTO BienTheSanPham (MaBienThe, MaSanPham, TenBienThe, Gia, SoLuong, TrangThai) VALUES
 
@@ -230,10 +230,6 @@ INSERT INTO GiaTriThuocTinh VALUES
 (45,2,'Tứ quý'),
 (46,2,'Công đào');
 
-INSERT INTO GiaTriThuocTinh (MaGiaTri, MaThuocTinh, GiaTri) VALUES
-(47, 2, 'Sen vàng nền trắng'),
-(48, 2, 'Sen vàng nền vàng'),
-(49, 2, 'Sen vàng nền xanh ngọc');
 
 INSERT INTO ChiTietBienThe VALUES
 
