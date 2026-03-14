@@ -1,10 +1,4 @@
-import {
-  ProductModel,
-  CategoryModel,
-  VariantModel,
-  VariantImageModel,
-} from "../models/index.js";
-
+import { ProductModel, CategoryModel } from "../models/index.js";
 import { Op, literal } from "sequelize";
 
 export const getAllProductsService = async (
@@ -15,12 +9,26 @@ export const getAllProductsService = async (
   order = "DESC",
   category = null,
 ) => {
+  const allowedSortFields = ["MaSanPham", "TenSanPham", "Gia"];
+  const allowedOrder = ["ASC", "DESC"];
+
+  if (!allowedSortFields.includes(sort)) {
+    sort = "MaSanPham";
+  }
+
+  if (!allowedOrder.includes(order.toUpperCase())) {
+    order = "DESC";
+  }
+
+  page = page || 1;
+  limit = limit || 10;
+
   const offset = (page - 1) * limit;
 
-  let searchCondition = {};
+  const whereCondition = {};
 
   if (search) {
-    searchCondition[Op.or] = [
+    whereCondition[Op.or] = [
       { TenSanPham: { [Op.like]: `%${search}%` } },
       { "$DanhMucSanPham.TenDanhMuc$": { [Op.like]: `%${search}%` } },
     ];
@@ -34,93 +42,85 @@ export const getAllProductsService = async (
 
     const childIds = childCategories.map((c) => c.MaDanhMuc);
 
-    searchCondition.MaDanhMuc = {
+    whereCondition.MaDanhMuc = {
       [Op.in]: [category, ...childIds],
     };
   }
 
-  const sortField = sort ? sort.split(",") : [];
-  const orderField = order ? order.split(",") : [];
+  let orderQuery;
 
-  const orderQuery = [];
-
-  sortField.forEach((field, index) => {
-    const direction =
-      orderField[index]?.toUpperCase() === "ASC" ? "ASC" : "DESC";
-
-    if (field === "Gia") {
-      orderQuery.push([
+  if (sort === "Gia") {
+    orderQuery = [
+      [
         literal(`(
           SELECT MIN(Gia)
-          FROM BienTheSanPhams
-          WHERE BienTheSanPhams.MaSanPham = SanPhams.MaSanPham
+          FROM BienTheSanPham
+          WHERE BienTheSanPham.MaSanPham = SanPham.MaSanPham
         )`),
-        direction,
-      ]);
-    } else if (field === "MaSanPham" || field === "TenSanPham") {
-      orderQuery.push([field, direction]);
-    }
-  });
-
-  if (orderQuery.length === 0) {
-    orderQuery.push(["MaSanPham", "DESC"]);
+        order,
+      ],
+    ];
+  } else {
+    orderQuery = [[sort, order]];
   }
 
   const products = await ProductModel.findAndCountAll({
-    where: searchCondition,
+    where: whereCondition,
+
+    attributes: [
+      "MaSanPham",
+      "TenSanPham",
+      "MoTa",
+
+      [
+        literal(`(
+          SELECT MIN(Gia)
+          FROM BienTheSanPham
+          WHERE BienTheSanPham.MaSanPham = SanPham.MaSanPham
+        )`),
+        "GiaThapNhat",
+      ],
+
+      [
+        literal(`(
+          SELECT DuongDan
+          FROM HinhAnhBienThe
+          WHERE MaBienThe = (
+            SELECT MaBienThe
+            FROM BienTheSanPham
+            WHERE BienTheSanPham.MaSanPham = SanPham.MaSanPham
+            ORDER BY Gia ASC
+            LIMIT 1
+          )
+          LIMIT 1
+        )`),
+        "Thumbnail",
+      ],
+    ],
 
     include: [
       {
         model: CategoryModel,
         attributes: ["MaDanhMuc", "TenDanhMuc"],
       },
-      {
-        model: VariantModel,
-        attributes: ["MaBienThe", "Gia"],
-        include: [
-          {
-            model: VariantImageModel,
-            attributes: ["DuongDan"],
-          },
-        ],
-      },
     ],
-    distinct: true,
-    subQuery: false,
-    limit: Number(limit),
-    offset: Number(offset),
+
+    limit,
+    offset,
+
     order: orderQuery,
+
+    distinct: true,
   });
 
-  const result = products.rows.map((product) => {
-    const variants = product.BienTheSanPhams || [];
-
-    if (!variants.length) {
-      return {
-        MaSanPham: product.MaSanPham,
-        TenSanPham: product.TenSanPham,
-        MoTa: product.MoTa,
-        DanhMuc: product.DanhMucSanPham,
-        GiaThapNhat: 0,
-        Thumbnail: null,
-      };
-    }
-
-    const cheapestVariant = variants.reduce((min, v) =>
-      !min || Number(v.Gia) < Number(min.Gia) ? v : min,
-    );
-
-    const thumbnail = cheapestVariant?.HinhAnhBienThes?.[0]?.DuongDan || null;
-
-    return {
-      MaSanPham: product.MaSanPham,
-      TenSanPham: product.TenSanPham,
-      MoTa: product.MoTa,
-      DanhMuc: product.DanhMucSanPham,
-      GiaThapNhat: Number(cheapestVariant.Gia),
-      Thumbnail: thumbnail,
-    };
-  });
+  const result = products.rows.map((p) => ({
+    MaSanPham: p.MaSanPham,
+    TenSanPham: p.TenSanPham,
+    MoTa: p.MoTa,
+    DanhMuc: p.DanhMucSanPham,
+    GiaThapNhat: Number(p.get("GiaThapNhat")) || 0,
+    Thumbnail: p.get("Thumbnail") || null,
+  }));
 
   const total = products.count;
 
@@ -128,22 +128,6 @@ export const getAllProductsService = async (
     data: result,
     total,
     totalPages: Math.ceil(total / limit),
-    page: Number(page),
+    page,
   };
-};
-
-export const getProductService = async (id) => {
-  const product = await ProductModel.findByPk(id, {
-    include: [
-      {
-        model: CategoryModel,
-        attributes: ["MaDanhMuc", "TenDanhMuc"],
-      },
-      {
-        model: VariantModel,
-        attributes: ["MaDanhMuc", "TenDanhMuc"],
-      },
-    ],
-  });
-  return product;
 };
