@@ -6,7 +6,7 @@ const checkRole = (...allowedRoles) => {
     }
     const { role } = req.user;
     if (!allowedRoles.includes(role)) {
-      return next(new ErrorHandler("401 Unauthorized", 401));
+      return next(new ErrorHandler("403 Forbidden", 401));
     }
     next();
   };

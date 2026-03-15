@@ -1,10 +1,8 @@
 import express from "express";
-import {
-  getCustomers,
-  getCustomerInfo,
-} from "../controllers/customer.controller.js";
-
+import { updateCustomerMe } from "../controllers/customer.controller.js";
+import jwtMiddleware from "../middlewares/jwt.middlewares.js";
+import checkRole from "../middlewares/authorize.middlewares.js";
 const router = express.Router();
-router.get("/", getCustomers);
-router.get("/:id", getCustomerInfo);
+
+router.patch("/me", jwtMiddleware, checkRole("Customer"), updateCustomerMe);
 export default router;

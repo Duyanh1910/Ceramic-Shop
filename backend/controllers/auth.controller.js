@@ -2,6 +2,7 @@ import ErrorHandler from "../utils/error_handler.js";
 import {
   loginService,
   customerRegisterService,
+  getMeService,
 } from "../services/auth.services.js";
 import {
   checkValidate,
@@ -63,6 +64,23 @@ export const customerRegister = async (req, res, next) => {
       success: true,
       message: "Tạo tài khoản mới thành công!",
       result,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getMe = async (req, res, next) => {
+  try {
+    const id = Number(req.user.id);
+    const user = await getMeService(id);
+    if (!user) {
+      return next(new ErrorHandler("Không tìm thấy người dùng này!", 404));
+    }
+    res.status(200).json({
+      success: true,
+      message: "Lấy thông tin tài khoản thành công!",
+      user,
     });
   } catch (err) {
     next(err);

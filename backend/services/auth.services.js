@@ -5,6 +5,7 @@ import {
   CustomerModel,
   RoleModel,
   sequelize,
+  StaffModel,
 } from "../models/index.js";
 import ErrorHandler from "../utils/error_handler.js";
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -87,17 +88,16 @@ export const loginService = async (username, password) => {
   if (account == null) {
     throw new ErrorHandler("Tên đăng nhập hoặc mật khẩu không chính xác!", 401);
   }
-
   const isMatch = await bcrypt.compare(password, account.Password);
 
   if (!isMatch) {
     throw new ErrorHandler("Tên đăng nhập hoặc mật khẩu không chính xác!", 401);
   }
-
+  const role = account.PhanQuyen.TenQuyen;
   const token = jwt.sign(
     {
       id: account.MaTaiKhoan,
-      role: "Customer",
+      role: role,
     },
     JWT_SECRET,
     {
@@ -108,6 +108,44 @@ export const loginService = async (username, password) => {
   return {
     username,
     token,
-    role: "Customer",
+    role: role,
+  };
+};
+
+export const getMeService = async (id) => {
+  const user = await AccountModel.findByPk(id, {
+    attributes: ["Username", "Email"],
+    include: [
+      {
+        model: StaffModel,
+        attributes: ["TenNhanVien", "SDT", "NgaySinh", "DiaChi"],
+      },
+      {
+        model: CustomerModel,
+        attributes: ["TenKhachHang", "SDT", "DiaChi", "Avatar"],
+      },
+      {
+        model: RoleModel,
+        attributes: ["MaPhanQuyen", "TenQuyen"],
+      },
+    ],
+  });
+  if (!user) {
+    return null;
+  }
+  const role = user.PhanQuyen.TenQuyen;
+  let profile = null;
+  if (role === "Customer" && user.KhachHang) {
+    profile = user.KhachHang;
+  }
+  if ((role === "Staff" || role === "Admin") && user.NhanVien) {
+    profile = user.NhanVien;
+  }
+  return {
+    id: id,
+    username: user.Username,
+    email: user.Email,
+    role: role,
+    profile,
   };
 };
