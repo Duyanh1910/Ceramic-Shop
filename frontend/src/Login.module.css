@@ -1,40 +1,66 @@
 :global(body) {
   margin: 0 !important;
   padding: 0 !important;
-  overflow: hidden;
 }
-
 .loginContainer {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  min-height: 100vh; 
   width: 100vw;
-  position: relative;
-  z-index: 1;
-}
-
-.loginContainer::before {
-  content: "";
-  position: absolute;
-  top: -20px; left: -20px; right: -20px; bottom: -20px;
-  background-image: url('gom-su-dong-trieu.jpg'); 
+  background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('login.jpg'); 
   background-size: cover;
   background-position: center;
-  filter: blur(10px);
-  z-index: -1;
+  background-repeat: no-repeat;
 }
 
 .combinedCard {
   display: flex;
   width: 850px; 
+  max-width: 95vw; 
+  max-height: 90vh; 
   min-height: 480px;
-  background-color: rgba(255, 255, 255, 0.7);
-  border-radius: 16px;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-  overflow: hidden;
+  background-color: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  border: 1px solid #7c94ab;
+  box-shadow: 
+    0 0 0 4px rgba(255, 255, 255, 0.95),
+    0 0 0 7px #7c94ab,
+    0 15px 35px rgba(0, 0, 0, 0.4);
+  overflow: hidden; 
+  margin: 20px; 
+  position: relative; 
+}
+.cornerPattern {
+  position: absolute;
+  width: 50px; 
+  height: 50px;
+  background-image: url('pattern.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  z-index: 10;
+  pointer-events: none;
 }
 
+
+.topLeft { 
+  top: 0; left: 0; 
+  transform: scaleY(-1);
+}
+
+.topRight { 
+  top: 0; right: 0; 
+  transform: scale(-1, -1);
+}
+
+.bottomLeft { 
+  bottom: 0; left: 0; 
+}
+
+.bottomRight { 
+  bottom: 0; right: 0; 
+  transform: scaleX(-1);
+}
 
 .cardImage {
   flex: 1;
@@ -42,10 +68,8 @@
   background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
-  background-position: center;
   background-color: rgba(255, 255, 255, 0.0);
 }
-
 
 .cardForm {
   flex: 1;
@@ -53,23 +77,26 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  background-color: rgba(255, 255, 255, 0.0);
-}
-
-
-.customInput {
-  height: 45px;
-  border-radius: 8px;
+  overflow-y: auto; 
 }
 
 .customButton {
   height: 45px;
-  border-radius: 8px;
+  border-radius: 25px; 
   font-size: 16px;
   font-weight: bold;
   background-color: #3b81e3 !important;
-  border: none;
+  border: 2px solid #3b81e3 !important; 
+  box-shadow: 0 4px 10px rgba(59, 129, 227, 0.3); 
+  transition: all 0.3s ease;
 }
+
 .customButton:hover {
-  background-color: #003380 !important; 
+  background-color: white !important; 
+  color: #3b81e3 !important; 
+}
+
+.customInput {
+  height: 45px;
+  border-radius: 12px; 
 }

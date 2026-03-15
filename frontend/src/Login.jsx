@@ -1,14 +1,22 @@
 import { useState } from 'react';
 import axios from 'axios';
-import { Button, Input, Form, message, Card, Typography } from 'antd';
+import { Button, Input, Form, message, Typography } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import styles from './Login.module.css';
+import { 
+  UserOutlined, 
+  MailOutlined, 
+  LockOutlined, 
+  PhoneOutlined, 
+  HomeOutlined 
+} from '@ant-design/icons';
 
 const { Text, Link } = Typography;
 
 function App() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
   const handleLogin = async (values) => {
     setLoading(true);
     try {
@@ -32,13 +40,14 @@ function App() {
 
   return (
     <div className={styles.loginContainer}>
-      
       <div className={styles.combinedCard}>
-        
+        <div className={`${styles.cornerPattern} ${styles.topLeft}`}></div>
+        <div className={`${styles.cornerPattern} ${styles.topRight}`}></div>
+        <div className={`${styles.cornerPattern} ${styles.bottomLeft}`}></div>
+        <div className={`${styles.cornerPattern} ${styles.bottomRight}`}></div>
         <div className={styles.cardImage}></div>
 
         <div className={styles.cardForm}>
-          
           <h2 style={{ textAlign: 'center', marginBottom: '30px', color: '#333' }}>
             ĐĂNG NHẬP
           </h2>
@@ -49,7 +58,11 @@ function App() {
               name="username" 
               rules={[{ required: true, message: 'Vui lòng nhập tên đăng nhập!' }]}
             >
-              <Input className={styles.customInput} placeholder="Nhập tên đăng nhập" />
+              <Input 
+                prefix={<UserOutlined style={{ color: '#bfbfbf' }} />} 
+                className={styles.customInput} 
+                placeholder="Nhập tên đăng nhập" 
+              />
             </Form.Item>
 
             <Form.Item 
@@ -57,7 +70,11 @@ function App() {
               name="password" 
               rules={[{ required: true, message: 'Vui lòng nhập mật khẩu!' }]}
             >
-              <Input.Password className={styles.customInput} placeholder="Nhập mật khẩu" />
+              <Input.Password 
+                prefix={<LockOutlined style={{ color: '#bfbfbf' }} />} 
+                className={styles.customInput} 
+                placeholder="Nhập mật khẩu" 
+              />
             </Form.Item>
 
             <div style={{ marginBottom: '20px', textAlign: 'right' }}>
@@ -69,10 +86,8 @@ function App() {
               Đăng Nhập
             </Button>
           </Form>
-
         </div>
       </div>
-
     </div>
   );
 }

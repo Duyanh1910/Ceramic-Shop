@@ -3,8 +3,14 @@ import axios from 'axios';
 import { Button, Input, Form, message, Typography } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import styles from './Register.module.css';
+import { Helmet } from 'react-helmet-async';
+import { 
+  UserOutlined, 
+  MailOutlined, 
+  LockOutlined
+} from '@ant-design/icons';
+
 const { Link } = Typography;
-import {Helmet} from 'react-helmet-async';
 
 function Register() {
   const [loading, setLoading] = useState(false);
@@ -16,7 +22,8 @@ function Register() {
       await axios.post('http://localhost:3000/api/v1/auth/register', {
         username: values.username,
         email: values.email,
-        password: values.password
+        password: values.password,
+        address: values.address
       });
 
       message.success('Đăng ký thành công! Vui lòng đăng nhập.');
@@ -34,6 +41,11 @@ function Register() {
     <div className={styles.registerContainer}>
       <div className={styles.combinedCard}>
         
+        <div className={`${styles.cornerPattern} ${styles.topLeft}`}></div>
+        <div className={`${styles.cornerPattern} ${styles.topRight}`}></div>
+        <div className={`${styles.cornerPattern} ${styles.bottomLeft}`}></div>
+        <div className={`${styles.cornerPattern} ${styles.bottomRight}`}></div>
+
         <div className={styles.cardImage}></div>
 
         <div className={styles.cardForm}>
@@ -52,7 +64,11 @@ function Register() {
               rules={[{ required: true, message: 'Vui lòng nhập tên đăng nhập!' }]}
               style={{ marginBottom: '15px' }}
             >
-              <Input className={styles.customInput} placeholder="Nhập tên đăng nhập" />
+              <Input 
+                prefix={<UserOutlined style={{ color: '#bfbfbf' }} />} 
+                className={styles.customInput} 
+                placeholder="Nhập tên đăng nhập" 
+              />
             </Form.Item>
 
             <Form.Item 
@@ -64,7 +80,11 @@ function Register() {
               ]}
               style={{ marginBottom: '15px' }}
             >
-              <Input className={styles.customInput} placeholder="Nhập địa chỉ email" />
+              <Input 
+                prefix={<MailOutlined style={{ color: '#bfbfbf' }} />} 
+                className={styles.customInput} 
+                placeholder="Nhập địa chỉ email" 
+              />
             </Form.Item>
 
             <Form.Item 
@@ -73,7 +93,11 @@ function Register() {
               rules={[{ required: true, message: 'Vui lòng nhập mật khẩu!' }]}
               style={{ marginBottom: '15px' }}
             >
-              <Input.Password className={styles.customInput} placeholder="Nhập mật khẩu" />
+              <Input.Password 
+                prefix={<LockOutlined style={{ color: '#bfbfbf' }} />} 
+                className={styles.customInput} 
+                placeholder="Nhập mật khẩu" 
+              />
             </Form.Item>
 
             <Form.Item 
@@ -93,11 +117,14 @@ function Register() {
               ]}
               style={{ marginBottom: '15px' }}
             >
-              <Input.Password className={styles.customInput} placeholder="Nhập lại mật khẩu" />
+              <Input.Password 
+                prefix={<LockOutlined style={{ color: '#bfbfbf' }} />} 
+                className={styles.customInput} 
+                placeholder="Nhập lại mật khẩu" 
+              />
             </Form.Item>
 
             <div style={{ marginBottom: '15px', textAlign: 'right' }}>
-
               <Link onClick={() => navigate('/login')}>Đăng nhập ngay</Link>
             </div>
 
