@@ -3,13 +3,7 @@ import axios from 'axios';
 import { Button, Input, Form, message, Typography } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import styles from './Login.module.css';
-import { 
-  UserOutlined, 
-  MailOutlined, 
-  LockOutlined, 
-  PhoneOutlined, 
-  HomeOutlined 
-} from '@ant-design/icons';
+import { UserOutlined, LockOutlined } from '@ant-design/icons';
 
 const { Text, Link } = Typography;
 
@@ -25,10 +19,30 @@ function App() {
         password: values.password
       });
 
-      localStorage.setItem('token', response.data.result.token);
+      const token = response.data.result.token;
+      
+      localStorage.setItem('token', token);
+      localStorage.setItem('username', values.username);
+
+      try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        
+        const payload = JSON.parse(jsonPayload);
+        
+        if (payload.name || payload.HoTen) {
+            localStorage.setItem('name', payload.name || payload.HoTen);
+        }
+        if (payload.role !== undefined) {
+            localStorage.setItem('role', payload.role);
+        }
+      } catch (e) {}
 
       message.success('Đăng nhập thành công!');
-      navigate('/home');
+      navigate('/home'); 
       
     } catch (error) {
       const errorMsg = error.response?.data?.message || 'Có lỗi xảy ra!';

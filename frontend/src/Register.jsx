@@ -125,6 +125,7 @@ function Register() {
             </Form.Item>
 
             <div style={{ marginBottom: '15px', textAlign: 'right' }}>
+              
               <Link onClick={() => navigate('/login')}>Đăng nhập ngay</Link>
             </div>
 
