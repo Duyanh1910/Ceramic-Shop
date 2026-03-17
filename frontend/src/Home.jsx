@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { Dropdown, Avatar, Space, Layout, Menu, Input, Select, Row, Col, Pagination, Spin, Badge, message, AutoComplete, Popover, Button, List } from 'antd';
 import { LogoutOutlined, SettingOutlined, SearchOutlined, ShoppingCartOutlined, DeleteOutlined, ReloadOutlined, AppstoreOutlined } from '@ant-design/icons';
@@ -22,24 +22,50 @@ function Home() {
   const [searchOptions, setSearchOptions] = useState([]);
   const [sortField, setSortField] = useState('');
   const [sortOrder, setSortOrder] = useState('');
-  const [userInfo, setUserInfo] = useState({ username: 'Khách hàng', status: 'Chưa đăng nhập' });
+  
+  const inputRef = useRef(null);
+  const [userInfo, setUserInfo] = useState({ username: '' });
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    const storedUsername = localStorage.getItem('username');
     const token = localStorage.getItem('token');
-    let currentRole = '';
-    let currentName = storedUsername;
+    let currentName = localStorage.getItem('name') || localStorage.getItem('username');
+
     if (token) {
       try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        if (payload.role === 1) currentRole = 'Quản trị viên';
-        if (!currentName && payload.username) currentName = payload.username;
-      } catch (error) {}
+        const base64Url = token.split('.')[1];
+        if (base64Url) {
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+
+            const payload = JSON.parse(jsonPayload);
+            const currentTime = Math.floor(Date.now() / 1000); 
+            
+            if (payload.exp && payload.exp < currentTime) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('username');
+                localStorage.removeItem('name');
+                localStorage.removeItem('role');
+                setIsLoggedIn(false);
+                return;
+            }
+
+            if (!currentName) {
+                currentName = payload.name || payload.username;
+            }
+            
+            setIsLoggedIn(true);
+            setUserInfo({ username: currentName || 'Khách hàng' });
+        }
+      } catch (error) {
+        setIsLoggedIn(false);
+      }
+    } else {
+      setIsLoggedIn(false);
     }
-    if (currentName) {
-      setUserInfo({ username: currentName, status: currentRole });
-    }
-  }, []);
+  }, [navigate]);
 
   const [cart, setCart] = useState(() => {
     const savedCart = localStorage.getItem('ceramic_cart');
@@ -53,7 +79,11 @@ function Home() {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('username');
-    navigate('/login');
+    localStorage.removeItem('name');
+    localStorage.removeItem('role');
+    setIsLoggedIn(false);
+    setUserInfo({ username: '' });
+    message.success("Đã đăng xuất");
   };
 
   const userMenu = [
@@ -120,39 +150,36 @@ function Home() {
       {cart.length === 0 ? (
         <div className={styles.emptyCart}>Giỏ hàng đang trống</div>
       ) : (
-        <List
-          className={styles.miniCartList}
-          itemLayout="horizontal"
-          dataSource={cart}
-          renderItem={item => (
-            <List.Item
-              className={styles.cartListItem}
-              actions={[<DeleteOutlined className={styles.cartDeleteIcon} onClick={() => handleRemoveFromCart(item.id)} />]}
-            >
-              <List.Item.Meta
-                avatar={<Avatar src={item.image} shape="square" className={styles.cartAvatar}/>}
-                title={<span className={styles.miniCartName} title={item.name}>{item.name}</span>}
-                description={
-                  <div className={styles.miniCartQtyWrap}>
-                    <span className={styles.miniCartPrice}>{formatPrice(item.price)}</span>
-                    <div className={styles.qtyControls}>
-                      <button className={styles.qtyBtn} onClick={() => decreaseQty(item.id)}>-</button>
-                      <input 
-                        type="number" 
-                        min="1"
-                        className={styles.qtyInput} 
-                        value={item.quantity} 
-                        onChange={(e) => handleQtyChange(item.id, e.target.value)} 
-                        onBlur={(e) => handleQtyBlur(item.id, e.target.value)}
-                      />
-                      <button className={styles.qtyBtn} onClick={() => increaseQty(item.id)}>+</button>
-                    </div>
+        <div className={styles.miniCartList}>
+          {cart.map(item => (
+            <div key={item.id} className={styles.cartListItemCustom}>
+              <div className={styles.cartItemAvatar}>
+                <Avatar src={item.image} shape="square" className={styles.cartAvatar}/>
+              </div>
+              <div className={styles.cartItemInfo}>
+                <span className={styles.miniCartName} title={item.name}>{item.name}</span>
+                <div className={styles.miniCartQtyWrap}>
+                  <span className={styles.miniCartPrice}>{formatPrice(item.price)}</span>
+                  <div className={styles.qtyControls}>
+                    <button className={styles.qtyBtn} onClick={() => decreaseQty(item.id)}>-</button>
+                    <input 
+                      type="number" 
+                      min="1"
+                      className={styles.qtyInput} 
+                      value={item.quantity} 
+                      onChange={(e) => handleQtyChange(item.id, e.target.value)} 
+                      onBlur={(e) => handleQtyBlur(item.id, e.target.value)}
+                    />
+                    <button className={styles.qtyBtn} onClick={() => increaseQty(item.id)}>+</button>
                   </div>
-                }
-              />
-            </List.Item>
-          )}
-        />
+                </div>
+              </div>
+              <div className={styles.cartItemAction}>
+                <DeleteOutlined className={styles.cartDeleteIcon} onClick={() => handleRemoveFromCart(item.id)} />
+              </div>
+            </div>
+          ))}
+        </div>
       )}
       <div className={styles.miniCartFooter}>
         <div className={styles.miniCartTotal}>Tổng: <span>{formatPrice(totalCartPrice)}</span></div>
@@ -173,13 +200,13 @@ function Home() {
       const res = await axios.get(`http://localhost:3000/api/v1/products?search=${value}&searchField=TenSanPham&limit=5`);
       const data = res.data.data || res.data.result?.data || [];
       const options = data.map(item => ({
-        value: item.TenSanPham,
+        value: item.TenSanPham, 
         label: (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }} onClick={(e) => { e.stopPropagation(); navigate(`/product/${item.MaSanPham}`); }}>
             <img src={item.Thumbnail || 'https://via.placeholder.com/40'} alt={item.TenSanPham} style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 4 }} />
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               <span style={{ fontWeight: 500, color: '#1b437c' }}>{item.TenSanPham}</span>
-              <span style={{ fontSize: 12, color: '#1b437c', fontWeight: 'bold' }}>{formatPrice(item.GiaThapNhat)}</span>
+              <span style={{ fontSize: 12, color: '#e74c3c', fontWeight: 'bold' }}>{formatPrice(item.GiaThapNhat)}</span>
             </div>
           </div>
         ),
@@ -191,9 +218,10 @@ function Home() {
   };
 
   const executeSearch = () => {
-    setAppliedSearchKw(searchKw);
+    setAppliedSearchKw(searchKw); 
     setCurrentPage(1);
-    setSearchOptions([]);
+    setSearchOptions([]); 
+    if (inputRef.current) inputRef.current.blur(); 
   };
 
   const handleSortFieldChange = (val) => {
@@ -229,13 +257,19 @@ function Home() {
       try {
         const res = await axios.get('http://localhost:3000/api/v1/categories');
         const catData = res.data.result || [];
+        
         const mapChildToParent = { 1: [6, 7, 8], 2: [9], 3: [10, 11], 4: [12, 13], 5: [14, 15] };
         const parents = catData.filter(c => c.MaDanhMuc <= 5);
         const childrenList = catData.filter(c => c.MaDanhMuc > 5);
-        const menuItems = [{ key: 'all', icon: <AppstoreOutlined />, label: 'Tất cả sản phẩm', className: styles.allProductsMenu }];
+
+        const menuItems = [
+          { key: 'all', icon: <AppstoreOutlined />, label: 'Tất cả sản phẩm', className: styles.allProductsMenu }
+        ];
+
         parents.forEach(p => {
            const childIds = mapChildToParent[p.MaDanhMuc] || [];
            const mappedChildren = childrenList.filter(c => childIds.includes(c.MaDanhMuc));
+
            if (mappedChildren.length > 0) {
                menuItems.push({
                    type: 'group',
@@ -247,6 +281,7 @@ function Home() {
                });
            }
         });
+
         setCategories(menuItems);
       } catch (error) {}
     };
@@ -257,11 +292,12 @@ function Home() {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        const params = { page: currentPage, limit: 9 };
+        const params = { page: currentPage, limit: 12 };
         if (sortField) params.sort = sortField;
         if (sortOrder) params.order = sortOrder;
         if (appliedSearchKw) { params.search = appliedSearchKw; params.searchField = 'TenSanPham'; }
         if (selectedCategory && selectedCategory !== 'all') { params.category = selectedCategory; }
+
         const res = await axios.get('http://localhost:3000/api/v1/products', { params });
         const data = res.data;
         setProducts(data.data || data.result?.data || []);
@@ -278,89 +314,181 @@ function Home() {
 
   return (
     <Layout className={styles.homeWrapper}>
-      <Helmet><title>Trang chủ | The Ceramic Shop</title></Helmet>
+      <Helmet>
+        <title>Trang chủ | The Ceramic Shop</title>
+      </Helmet>
+
       <Header className={styles.topHeader}>
         <div className={styles.logo}>CERAMIC-SHOP</div>
+        
         <div className={styles.headerSearch}>
           <div className={styles.searchWrapper}>
             <AutoComplete
               className={styles.searchAutoComplete}
               options={searchKw ? searchOptions : []}
+              onSelect={(value) => { 
+                setSearchKw(value); 
+                setAppliedSearchKw(value); 
+                setCurrentPage(1); 
+                setSearchOptions([]); 
+              }}
               onSearch={handleSearchInput}
               value={searchKw}
-              popupClassName={styles.searchPopup}
               notFoundContent={null}
               defaultActiveFirstOption={false} 
+              filterOption={false}
               backfill={false}
             >
               <Input 
+                ref={inputRef}
                 placeholder="Tìm kiếm ấm trà, bình hoa..." 
                 className={styles.searchInput}
                 onChange={(e) => setSearchKw(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') executeSearch(); }}
-                suffix={<SearchOutlined style={{ color: '#1b437c', cursor: 'pointer', fontSize: '18px' }} onClick={executeSearch} />}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    executeSearch(); 
+                  }
+                }}
+                suffix={
+                  <SearchOutlined 
+                    style={{ color: '#1b437c', cursor: 'pointer', fontSize: '18px' }} 
+                    onClick={executeSearch} 
+                  />
+                }
               />
             </AutoComplete>
           </div>
         </div>
+
         <div className={styles.headerActions}>
           <Popover content={miniCartContent} placement="bottomRight" trigger="hover" overlayClassName={styles.cartPopover}>
-            <Badge count={totalCartItems} style={{ backgroundColor: '#ff0000' }} offset={[-5, 5]}>
+            <Badge count={totalCartItems} style={{ backgroundColor: '#e74c3c' }} offset={[-5, 5]}>
               <ShoppingCartOutlined className={styles.cartIcon} onClick={() => navigate('/cart')}/>
             </Badge>
           </Popover>
-          <Dropdown menu={{ items: userMenu }} placement="bottomRight" arrow>
-            <Space className={styles.userProfile}>
-              <Avatar src="https://res.cloudinary.com/dcmwz0uis/image/upload/v1773107213/default_avatar_gojcul.png" />
-              <div className={styles.userInfoBox}>
-                <span className={styles.userName}>{userInfo.username}</span>
-                <span className={styles.userStatus}>{userInfo.status}</span>
-              </div>
-            </Space>
-          </Dropdown>
+          
+          {isLoggedIn ? (
+            <Dropdown menu={{ items: userMenu }} placement="bottomRight" arrow>
+              <Space className={styles.userProfile}>
+                <Avatar src="https://res.cloudinary.com/dcmwz0uis/image/upload/v1773107213/default_avatar_gojcul.png" />
+                <div className={styles.userInfoBox}>
+                  <span className={styles.userName}>{userInfo.username}</span>
+                </div>
+              </Space>
+            </Dropdown>
+          ) : (
+            <div className={styles.authButtons}>
+              <button className={styles.btnOutline} onClick={() => navigate('/register')}>
+                Đăng ký
+              </button>
+              <button className={styles.btnSolid} onClick={() => navigate('/login')}>
+                Đăng nhập
+              </button>
+            </div>
+          )}
         </div>
       </Header>
+
       <Layout className={styles.mainContainer}>
         <Sider width={260} className={styles.sidebar}>
-          <div className={styles.sidebarHeader}><div className={styles.sidebarLine}></div><h2 className={styles.sidebarTitle}>Gốm Sứ Tinh Hoa</h2><div className={styles.sidebarLine}></div></div>
-          <Menu mode="inline" selectedKeys={[selectedCategory]} onClick={handleMenuClick} items={categories} className={styles.customMenu} />
+          <div className={styles.sidebarHeader}>
+            <div className={styles.sidebarLine}></div>
+            <h2 className={styles.sidebarTitle}>Gốm Sứ Tinh Hoa</h2>
+            <div className={styles.sidebarLine}></div>
+          </div>
+          <Menu
+            mode="inline"
+            selectedKeys={[selectedCategory]}
+            onClick={handleMenuClick} 
+            items={categories}
+            className={styles.customMenu}
+          />
         </Sider>
+
         <Content className={styles.mainContent}>
           <div className={styles.contentHeader}>
-            <h2 className={styles.sectionTitle}>{appliedSearchKw ? `KẾT QUẢ CHO: "${appliedSearchKw}"` : 'SẢN PHẨM NỔI BẬT'}</h2>
+            <h2 className={styles.sectionTitle}>
+              {appliedSearchKw ? `KẾT QUẢ CHO: "${appliedSearchKw}"` : 'SẢN PHẨM NỔI BẬT'}
+            </h2>
+            
             <div className={styles.sortTools}>
               <Select value={sortField} className={styles.filterSelect} onChange={handleSortFieldChange}>
                 <Option value="">Tiêu chí (Tất cả)</Option>
                 <Option value="MaSanPham">Theo ngày</Option>
                 <Option value="Gia">Theo Giá</Option>
               </Select>
-              <Select value={sortOrder} className={styles.filterSelect} onChange={(val) => {setSortOrder(val); setCurrentPage(1);}} disabled={!sortField}>
+
+              <Select 
+                value={sortOrder} 
+                className={styles.filterSelect} 
+                onChange={(val) => {setSortOrder(val); setCurrentPage(1);}} 
+                disabled={!sortField}
+              >
                 <Option value="">Mặc định</Option>
-                {sortField === 'Gia' && (<><Option value="ASC">Thấp đến cao</Option><Option value="DESC">Cao đến thấp</Option></>)}
-                {sortField === 'MaSanPham' && (<><Option value="DESC">Gần đây nhất</Option><Option value="ASC">Cũ nhất</Option></>)}
+                {sortField === 'Gia' && (
+                  <>
+                    <Option value="ASC">Thấp đến cao</Option>
+                    <Option value="DESC">Cao đến thấp</Option>
+                  </>
+                )}
+                {sortField === 'MaSanPham' && (
+                  <>
+                    <Option value="DESC">Gần đây nhất</Option>
+                    <Option value="ASC">Cũ nhất</Option>
+                  </>
+                )}
               </Select>
-              <Button icon={<ReloadOutlined />} onClick={handleResetFilters} className={styles.resetBtn}>Xóa lọc</Button>
+
+              <Button icon={<ReloadOutlined />} onClick={handleResetFilters} className={styles.resetBtn}>
+                Xóa lọc
+              </Button>
             </div>
           </div>
+
           <div style={{ overflowX: 'hidden', padding: '0 10px' }}>
-            <Spin spinning={loading} tip="Đang tải dữ liệu...">
-              {products.length === 0 && !loading ? (<div className={styles.emptyState}>Không tìm thấy sản phẩm nào.</div>) : (
+            <Spin spinning={loading} description="Đang tải dữ liệu...">
+              {products.length === 0 && !loading ? (
+                 <div className={styles.emptyState}>Không tìm thấy sản phẩm nào.</div>
+              ) : (
                 <Row gutter={[24, 24]}> 
                   {products.map((p) => {
                     const isSoldOut = p.TongSoLuong <= 0;
                     const isDiscontinued = p.TrangThai === 0;
                     const imgUrl = p.Thumbnail || 'https://via.placeholder.com/300x300?text=No+Image';
+
                     return (
                       <Col xs={24} sm={12} md={12} lg={8} key={p.MaSanPham}>
-                        <Badge.Ribbon text={isDiscontinued ? 'Ngừng bán' : 'Hết hàng'} color={isDiscontinued ? 'red' : 'gray'} style={{ display: (isSoldOut || isDiscontinued) ? 'block' : 'none' }}>
-                          <div className={`${styles.customCard} ${isDiscontinued ? styles.disabledCard : ''}`} onClick={() => { if (!isDiscontinued) navigate(`/product/${p.MaSanPham}`); else message.warning("Sản phẩm đã ngừng kinh doanh."); }}>
-                            <div className={styles.cardImgWrapper}><img alt={p.TenSanPham} src={imgUrl} /></div>
+                        <Badge.Ribbon 
+                          text={isDiscontinued ? 'Ngừng bán' : 'Hết hàng'} 
+                          color={isDiscontinued ? 'red' : 'gray'} 
+                          style={{ display: (isSoldOut || isDiscontinued) ? 'block' : 'none' }}
+                        >
+                          <div 
+                            className={`${styles.customCard} ${isDiscontinued ? styles.disabledCard : ''}`} 
+                            onClick={() => {
+                              if (!isDiscontinued) navigate(`/product/${p.MaSanPham}`);
+                              else message.warning("Sản phẩm đã ngừng kinh doanh.");
+                            }}
+                          >
+                            <div className={styles.cardImgWrapper}>
+                              <img alt={p.TenSanPham} src={imgUrl} />
+                            </div>
+                            
                             <div className={styles.catTag}>{p.DanhMuc?.TenDanhMuc || 'Chưa phân loại'}</div>
                             <h3 className={styles.productName} title={p.TenSanPham}>{p.TenSanPham}</h3>
                             <div className={styles.productPrice}>{formatPrice(p.GiaThapNhat)}</div>
+                            
                             <div className={styles.cardButtons}>
-                              <button className={styles.btnBuy} disabled={isDiscontinued || isSoldOut} onClick={(e) => handleAddToCart(e, p)}>MUA NGAY</button>
-                              <button className={styles.btnDetail}>CHI TIẾT</button>
+                              <button 
+                                className={styles.btnBuy} 
+                                disabled={isDiscontinued || isSoldOut}
+                                onClick={(e) => handleAddToCart(e, p)}
+                              >
+                                MUA NGAY
+                              </button>
+                              <button className={styles.btnDetail}>
+                                CHI TIẾT
+                              </button>
                             </div>
                           </div>
                         </Badge.Ribbon>
@@ -371,7 +499,12 @@ function Home() {
               )}
             </Spin>
           </div>
-          {totalPages > 1 && (<div className={styles.paginationBox}><Pagination current={currentPage} total={totalPages * 10} onChange={(page) => setCurrentPage(page)} showSizeChanger={false} /></div>)}
+
+          {totalPages > 1 && (
+            <div className={styles.paginationBox}>
+              <Pagination current={currentPage} total={totalPages * 10} onChange={(page) => setCurrentPage(page)} showSizeChanger={false} />
+            </div>
+          )}
         </Content>
       </Layout>
     </Layout>
