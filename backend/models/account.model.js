@@ -28,6 +28,11 @@ const AccountModel = sequelize.define(
       allowNull: false,
       field: "MaPhanQuyen",
     },
+    TrangThai: {
+      type: DataTypes.TINYINT.UNSIGNED,
+      allowNull: false,
+      defaultValue: 1,
+    },
   },
   {
     tableName: "TaiKhoan",

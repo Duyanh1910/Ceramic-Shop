@@ -1,6 +1,7 @@
 create database CeramicShop;
 use CeramicShop;
 
+
 CREATE TABLE PhanQuyen (
     MaPhanQuyen INT AUTO_INCREMENT PRIMARY KEY,
     TenPhanQuyen VARCHAR(50) NOT NULL
@@ -45,13 +46,13 @@ CREATE TABLE LoaiPhiVanChuyen (
     MoTa VARCHAR(255)
 );
 
-
 CREATE TABLE TaiKhoan (
     MaTaiKhoan INT AUTO_INCREMENT PRIMARY KEY,
     Username VARCHAR(100) NOT NULL UNIQUE,
     Email VARCHAR(100) NOT NULL UNIQUE,
     Password VARCHAR(255) NOT NULL,
     MaPhanQuyen INT,
+    TrangThai TINYINT DEFAULT 1,
     FOREIGN KEY (MaPhanQuyen) REFERENCES PhanQuyen(MaPhanQuyen)
 );
 
@@ -59,6 +60,9 @@ CREATE TABLE SanPham (
     MaSanPham INT AUTO_INCREMENT PRIMARY KEY,
     MaDanhMuc INT,
     TenSanPham VARCHAR(100) NOT NULL,
+    Thumbnail VARCHAR(255),
+    ThuongHieu VARCHAR(100),
+    LuotXem INT DEFAULT 0,
     MoTa TEXT,
     TrangThai TINYINT DEFAULT 1,
     FOREIGN KEY (MaDanhMuc) REFERENCES DanhMucSanPham(MaDanhMuc)
@@ -76,6 +80,8 @@ CREATE TABLE KhuyenMai (
     MaLoaiKM INT NOT NULL,
     TenKhuyenMai VARCHAR(255) NOT NULL,
     GiaTri DECIMAL(15,2) NOT NULL,
+    GiaTriToiThieu DECIMAL(15,2),
+    GiamToiDa DECIMAL(15,2),
     NgayBatDau DATETIME,
     NgayKetThuc DATETIME,
     TrangThai TINYINT DEFAULT 1,
@@ -105,7 +111,7 @@ CREATE TABLE KhachHang (
     MaTaiKhoan INT UNIQUE,
     TenKhachHang VARCHAR(100) NOT NULL,
     SDT VARCHAR(10),
-    Diachi VARCHAR(255),
+    DiaChi VARCHAR(255),
     Avatar VARCHAR(255),
     FOREIGN KEY (MaTaiKhoan) REFERENCES TaiKhoan(MaTaiKhoan)
 );
@@ -120,8 +126,6 @@ CREATE TABLE BienTheSanPham (
     MoTa VARCHAR(255),
     FOREIGN KEY (MaSanPham) REFERENCES SanPham(MaSanPham)
 );
-
-
 
 CREATE TABLE TinTuc (
     MaTinTuc INT AUTO_INCREMENT PRIMARY KEY,

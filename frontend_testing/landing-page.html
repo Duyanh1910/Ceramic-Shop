@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sứ Xanh - Tinh Hoa Nghệ Thuật</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cobalt: '#12355B',    /* Xanh gốm sứ */
+                        lightBlue: '#E8F0F8', /* Xanh nhạt nền */
+                    },
+                    fontFamily: {
+                        serif: ['"Playfair Display"', 'serif'],
+                        sans: ['Roboto', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* CSS Custom cho những phần đặc thù không dùng được Tailwind */
+        body {
+            background-image: url('https://www.transparenttextures.com/patterns/rice-paper-2.png');
+        }
+
+        /* Khung sản phẩm dùng ảnh của bạn */
+        .product-frame {
+            background-image: url('frame-bg.jpg');
+            background-size: 100% 100%;
+            background-position: center;
+            background-repeat: no-repeat;
+            /* Căn chỉnh khoảng cách để đẩy lõi vào vùng trắng */
+            padding: 70px 45px 50px 45px;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .product-frame:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 25px -5px rgba(18, 53, 91, 0.15), 0 10px 10px -5px rgba(18, 53, 91, 0.04);
+        }
+
+        /* Hiệu ứng Splash lõi sản phẩm */
+        .image-core {
+            transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .product-frame:hover .image-core {
+            transform: scale(1.15);
+        }
+
+        /* Gradient Text */
+        .text-gradient {
+            background: linear-gradient(to right, #12355B, #2A4B7C);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="font-sans text-gray-800 antialiased bg-gray-50">
+
+    <header class="fixed w-full top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200 shadow-sm transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <a href="#" class="font-serif text-3xl font-bold text-cobalt tracking-widest flex items-center gap-2">
+                    <i class="fas fa-fan text-xl"></i> SỨ XANH
+                </a>
+                
+                <nav class="hidden md:flex space-x-8">
+                    <a href="#about" class="text-sm font-medium text-gray-600 hover:text-cobalt uppercase tracking-wider transition">Câu Chuyện</a>
+                    <a href="#products" class="text-sm font-medium text-gray-600 hover:text-cobalt uppercase tracking-wider transition">Sản Phẩm</a>
+                    <a href="#contact" class="text-sm font-medium text-gray-600 hover:text-cobalt uppercase tracking-wider transition">Liên Hệ</a>
+                </nav>
+
+                <div class="flex items-center space-x-5 text-cobalt">
+                    <button class="hover:text-blue-700 transition"><i class="fas fa-search text-lg"></i></button>
+                    <button class="relative hover:text-blue-700 transition">
+                        <i class="fas fa-shopping-bag text-lg"></i>
+                        <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center">0</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="relative h-screen flex items-center justify-center overflow-hidden">
+        <div class="absolute inset-0 z-0">
+            <img src="https://images.unsplash.com/photo-1610701596007-11502861dcfa?q=80&w=1920&auto=format&fit=crop" alt="Background" class="w-full h-full object-cover" />
+            <div class="absolute inset-0 bg-cobalt/40 mix-blend-multiply"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-gray-50 to-transparent opacity-90"></div>
+        </div>
+
+        <div class="relative z-10 text-center px-4 max-w-4xl mx-auto mt-20" data-aos="fade-up" data-aos-duration="1000">
+            <span class="block text-sm uppercase tracking-[0.3em] text-cobalt font-bold mb-4">Gốm Sứ Bát Tràng</span>
+            <h1 class="font-serif text-5xl md:text-7xl font-bold text-gray-900 mb-6 leading-tight">
+                Lưu Giữ <br/> <span class="text-gradient">Tinh Hoa Nghệ Thuật</span>
+            </h1>
+            <p class="text-lg text-gray-700 mb-10 max-w-2xl mx-auto font-light">
+                Sự kết hợp hoàn hảo giữa cốt gốm tinh khiết và họa tiết vẽ tay thủ công, mang đến vẻ đẹp sang trọng và bình yên cho không gian sống.
+            </p>
+            <a href="#products" class="inline-block bg-cobalt text-white px-10 py-4 rounded-full font-medium tracking-wide hover:bg-blue-900 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                Khám Phá Bộ Sưu Tập
+            </a>
+        </div>
+    </section>
+
+    <section id="about" class="py-24 bg-white relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                <div class="grid grid-cols-2 gap-4" data-aos="fade-right">
+                    <img src="https://images.unsplash.com/photo-1597899568018-519319568018?q=80&w=600&auto=format&fit=crop" alt="Gốm 1" class="rounded-2xl shadow-lg w-full h-64 object-cover mt-8">
+                    <img src="https://images.unsplash.com/photo-14711589303600601470?q=80&w=600&auto=format&fit=crop" alt="Gốm 2" class="rounded-2xl shadow-lg w-full h-80 object-cover">
+                </div>
+                <div data-aos="fade-left">
+                    <h2 class="font-serif text-4xl font-bold text-cobalt mb-6">Chế tác từ Đất và Lửa</h2>
+                    <div class="w-20 h-1 bg-cobalt mb-8"></div>
+                    <p class="text-gray-600 text-lg leading-relaxed mb-6 text-justify">
+                        Khởi nguồn từ tình yêu với nét văn hóa truyền thống, <strong>Sứ Xanh</strong> ra đời với sứ mệnh mang những tuyệt tác gốm sứ Bát Tràng đến gần hơn với mọi gia đình. Mỗi sản phẩm đều trải qua hàng chục công đoạn nhào nặn, vuốt, vẽ và nung ở nhiệt độ 1300°C.
+                    </p>
+                    <p class="text-gray-600 text-lg leading-relaxed mb-8 text-justify">
+                        Họa tiết chim hạc bay lượn hay những đóa hoa sen thanh tao không chỉ là nghệ thuật trang trí, mà còn là lời cầu chúc bình an, tài lộc đến tay người sở hữu.
+                    </p>
+                    <a href="#" class="text-cobalt font-bold uppercase tracking-wider text-sm flex items-center gap-2 hover:gap-4 transition-all">
+                        Tìm hiểu thêm về chúng tôi <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="products" class="py-24 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16" data-aos="fade-up">
+                <span class="text-cobalt font-medium tracking-widest uppercase text-sm">Cửa Hàng</span>
+                <h2 class="font-serif text-4xl md:text-5xl font-bold text-gray-900 mt-3">Bộ Sưu Tập Mới Nhất</h2>
+                <div class="w-24 h-1 bg-cobalt mx-auto mt-6 opacity-50"></div>
+            </div>
+
+            <div id="productList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 justify-items-center">
+                </div>
+
+            <div class="text-center mt-16" data-aos="fade-up">
+                <button id="btnLoadMore" onclick="fetchProducts()" class="border-2 border-cobalt text-cobalt px-10 py-3 rounded-full font-bold uppercase tracking-wider hover:bg-cobalt hover:text-white transition-colors duration-300 focus:outline-none focus:ring-4 focus:ring-blue-200">
+                    Xem Thêm Sản Phẩm
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <footer id="contact" class="bg-cobalt text-white pt-20 pb-10 border-t-8 border-lightBlue">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-12 mb-16 text-center md:text-left">
+                <div>
+                    <h3 class="font-serif text-3xl font-bold mb-6 tracking-widest">SỨ XANH</h3>
+                    <p class="text-blue-200 leading-relaxed max-w-sm mx-auto md:mx-0">Tinh hoa gốm sứ Bát Tràng. Mang nét đẹp truyền thống vào không gian sống hiện đại.</p>
+                </div>
+                <div>
+                    <h4 class="font-bold text-lg uppercase tracking-wider mb-6">Liên Hệ</h4>
+                    <ul class="space-y-3 text-blue-200">
+                        <li><i class="fas fa-map-marker-alt mr-2 w-5"></i> 123 Đường Gốm, Bát Tràng, Hà Nội</li>
+                        <li><i class="fas fa-phone mr-2 w-5"></i> 0988 123 456</li>
+                        <li><i class="fas fa-envelope mr-2 w-5"></i> cskh@suxanh.vn</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-lg uppercase tracking-wider mb-6">Đồ Án Tốt Nghiệp</h4>
+                    <p class="text-blue-200 mb-2">Thực hiện bởi nhóm sinh viên:</p>
+                    <ul class="space-y-1 text-blue-100 font-medium">
+                        <li><i class="fas fa-user-graduate mr-2 text-sm text-blue-300"></i> Trần Long Nhật</li>
+                        <li><i class="fas fa-user-graduate mr-2 text-sm text-blue-300"></i> Trần Duy Anh</li>
+                        <li><i class="fas fa-user-graduate mr-2 text-sm text-blue-300"></i> Vũ Quốc Pháp</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-white/20 pt-8 text-center text-sm text-blue-300 flex flex-col md:flex-row justify-between items-center">
+                <p>&copy; 2026 Sứ Xanh. All rights reserved.</p>
+                <div class="flex space-x-6 mt-4 md:mt-0">
+                    <a href="#" class="hover:text-white text-xl transition"><i class="fab fa-facebook"></i></a>
+                    <a href="#" class="hover:text-white text-xl transition"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    
+    <script>
+        // Khởi tạo hiệu ứng cuộn AOS
+        AOS.init({
+            once: true, // Hiệu ứng chỉ chạy 1 lần khi cuộn tới
+            offset: 100, // Cách mép dưới màn hình 100px thì bắt đầu chạy
+        });
+
+        // --- LOGIC GỌI API ---
+        let currentPage = 1;
+        const limitPerPage = 6;
+        let totalPages = 1;
+
+        const formatPrice = (price) => {
+            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+        };
+
+        const renderProducts = (products) => {
+            const productList = document.getElementById('productList');
+
+            products.forEach((product, index) => {
+                // Tạo độ trễ animation (delay) khác nhau cho từng card để xuất hiện so le
+                const delay = (index % 3) * 150; 
+
+                const productHTML = `
+                    <div class="product-frame w-[320px] h-[480px] flex flex-col justify-between items-center cursor-pointer group" data-aos="fade-up" data-aos-delay="${delay}">
+                        
+                        <div class="w-full h-[200px] flex items-center justify-center overflow-hidden mb-4 mt-2">
+                            <img src="${product.Thumbnail}" alt="${product.TenSanPham}" class="image-core w-[85%] h-[85%] object-contain mix-blend-multiply">
+                        </div>
+                        
+                        <div class="w-full text-center flex flex-col items-center">
+                            <h3 class="font-serif text-lg font-bold text-gray-800 mb-2 line-clamp-2 px-4 h-14 leading-tight group-hover:text-cobalt transition-colors">
+                                ${product.TenSanPham}
+                            </h3>
+                            <div class="text-red-700 font-bold text-xl mb-3 tracking-wide">
+                                ${formatPrice(product.GiaThapNhat)}
+                            </div>
+                            <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                <span class="text-xs uppercase tracking-widest font-bold text-cobalt border-b border-cobalt pb-1">Xem Chi Tiết</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                productList.innerHTML += productHTML;
+            });
+            // Cập nhật lại AOS để nó nhận diện các thẻ HTML vừa chèn thêm
+            AOS.refresh();
+        };
+
+        async function fetchProducts() {
+            const btnLoadMore = document.getElementById('btnLoadMore');
+            btnLoadMore.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Đang tải...';
+            btnLoadMore.disabled = true;
+
+            try {
+                // Đổi URL về API của bạn: http://localhost:3000/api/v1/products...
+                const apiUrl = `http://localhost:3000/api/v1/products?page=${currentPage}&limit=${limitPerPage}&order=asc`;
+                const response = await fetch(apiUrl);
+                
+                if (!response.ok) throw new Error('Network response was not ok');
+                
+                const responseData = await response.json();
+                
+                if(responseData.success) {
+                    const products = responseData.result.data;
+                    totalPages = responseData.result.totalPages;
+
+                    renderProducts(products);
+
+                    if (currentPage >= totalPages) {
+                        btnLoadMore.style.display = 'none';
+                    } else {
+                        btnLoadMore.innerHTML = 'Xem Thêm Sản Phẩm';
+                        btnLoadMore.disabled = false;
+                        currentPage++;
+                    }
+                }
+            } catch (error) {
+                console.warn('Đang dùng Mock Data vì API chưa kết nối được.');
+                
+                // MOCK DATA ĐỂ BẠN XEM TRƯỚC GIAO DIỆN
+                if (currentPage === 1) {
+                     const mockProducts = [
+                        { TenSanPham: "Tượng Cá chép hóa rồng", GiaThapNhat: 850000, Thumbnail: "https://res.cloudinary.com/dcmwz0uis/image/upload/v1773370680/ca_chep_hoa_rong_1_qgbxrl.jpg" },
+                        { TenSanPham: "Tượng Thần Tài Biểu Tượng Tài Lộc", GiaThapNhat: 550000, Thumbnail: "https://res.cloudinary.com/dcmwz0uis/image/upload/v1773370053/than_tai_1_jvvsff.jpg" },
+                        { TenSanPham: "Tượng Di Lặc", GiaThapNhat: 680000, Thumbnail: "https://res.cloudinary.com/dcmwz0uis/image/upload/v1773369991/di_lac_1_w2hy7r.jpg" },
+                        { TenSanPham: "Lục bình Công đào họa tiết nổi", GiaThapNhat: 5000000, Thumbnail: "https://res.cloudinary.com/dcmwz0uis/image/upload/v1773369371/luc_binh_cong_dao_1_tq0p51.jpg" },
+                        { TenSanPham: "Lục bình Tứ quý", GiaThapNhat: 4200000, Thumbnail: "https://res.cloudinary.com/dcmwz0uis/image/upload/v1773369259/luc_binh_tu_quy_1_oagyg2.jpg" },
+                        { TenSanPham: "Mâm bồng vẽ vàng", GiaThapNhat: 1200000, Thumbnail: "https://res.cloudinary.com/dcmwz0uis/image/upload/v1773368756/mam_bong_vang_1_a9xuhc.jpg" }
+                    ];
+                    renderProducts(mockProducts);
+                    btnLoadMore.style.display = 'none';
+                }
+            }
+        }
+
+        // Khởi chạy khi load trang
+        document.addEventListener('DOMContentLoaded', fetchProducts);
+    </script>
+</body>
+</html>

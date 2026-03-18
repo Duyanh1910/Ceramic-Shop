@@ -17,6 +17,19 @@ const ProductModel = sequelize.define(
       type: DataTypes.STRING(100),
       allowNull: false,
     },
+    Thumbnail: {
+      type: DataTypes.STRING(255),
+      allowNull: false,
+    },
+    ThuongHieu: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+    },
+    LuotXem: {
+      type: DataTypes.INTEGER.UNSIGNED,
+      allowNull: false,
+      defaultValue: 0,
+    },
     MoTa: {
       type: DataTypes.TEXT,
       allowNull: true,

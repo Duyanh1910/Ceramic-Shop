@@ -1,5 +1,7 @@
 import { APP_PORT, cookie, dbConfig } from "./config/app_config.js";
 import { connectDB } from "./config/database.js";
+import { connectRedis } from "./config/redis.config.js";
+import transporter from "./config/mail.config.js";
 import errorMiddleware from "./middlewares/error.middlewares.js";
 import express from "express";
 import fs from "fs";
@@ -43,12 +45,18 @@ app.use("/api/v1", router);
 
 app.use(errorMiddleware);
 async function startServer() {
-  await connectDB();
-
-  app.listen(APP_PORT, () => {
-    console.log(`🚀 Server chạy tại http://localhost:${APP_PORT}`);
-    console.log(`📚 Tài liệu API tại: http://localhost:${APP_PORT}/api-docs`);
-  });
+  try {
+    await connectDB();
+    await transporter.verify();
+    await connectRedis();
+    app.listen(APP_PORT, () => {
+      console.log(`🚀 Server chạy tại http://localhost:${APP_PORT}`);
+      console.log(`📚 Tài liệu API tại: http://localhost:${APP_PORT}/api-docs`);
+    });
+  } catch (err) {
+    console.log(err);
+    process.exit(1);
+  }
 }
 
 startServer();

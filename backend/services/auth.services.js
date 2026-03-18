@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import redisClient from "../config/redis.config.js";
 import {
   AccountModel,
   CustomerModel,

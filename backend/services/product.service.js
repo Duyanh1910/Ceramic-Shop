@@ -3,8 +3,10 @@ import {
   CategoryModel,
   VariantModel,
   VariantImageModel,
+  AttributeValueModel,
+  AttributeModel,
 } from "../models/index.js";
-import { Op, literal } from "sequelize";
+import { Sequelize, Op } from "sequelize";
 
 export const getAllProductsService = async (
   page = 1,
@@ -14,21 +16,20 @@ export const getAllProductsService = async (
   order = "DESC",
   category = null,
 ) => {
-  const allowedSortFields = ["MaSanPham", "TenSanPham", "Gia"];
+  const offset = (page - 1) * limit;
+
+  const allowedSortFields = [
+    "MaSanPham",
+    "TenSanPham",
+    "LuotXem",
+    "ThuongHieu",
+    "Gia",
+  ];
+
   const allowedOrder = ["ASC", "DESC"];
 
-  if (!allowedSortFields.includes(sort)) {
-    sort = "MaSanPham";
-  }
-
-  if (!allowedOrder.includes(order.toUpperCase())) {
-    order = "DESC";
-  }
-
-  page = page || 1;
-  limit = limit || 10;
-
-  const offset = (page - 1) * limit;
+  if (!allowedSortFields.includes(sort)) sort = "MaSanPham";
+  if (!allowedOrder.includes(order.toUpperCase())) order = "DESC";
 
   const whereCondition = {};
 
@@ -38,8 +39,7 @@ export const getAllProductsService = async (
       { "$DanhMucSanPham.TenDanhMuc$": { [Op.like]: `%${search}%` } },
     ];
   }
-
-  if (category !== null) {
+  if (category) {
     const childCategories = await CategoryModel.findAll({
       where: { ParentID: category },
       attributes: ["MaDanhMuc"],
@@ -52,63 +52,62 @@ export const getAllProductsService = async (
     };
   }
 
-  let orderQuery;
+  let orderCondition;
 
   if (sort === "Gia") {
-    orderQuery = [
+    orderCondition = [
       [
-        literal(`(
+        Sequelize.literal(`(
           SELECT MIN(Gia)
-          FROM BienTheSanPham
-          WHERE BienTheSanPham.MaSanPham = SanPham.MaSanPham
+          FROM BienTheSanPham v
+          WHERE v.MaSanPham = SanPham.MaSanPham
         )`),
         order,
       ],
     ];
   } else {
-    orderQuery = [[sort, order]];
+    orderCondition = [[sort, order]];
+  }
+  const productIdsResult = await ProductModel.findAll({
+    where: whereCondition,
+    attributes: ["MaSanPham"],
+
+    include: [
+      {
+        model: CategoryModel,
+        attributes: [],
+      },
+    ],
+
+    order: orderCondition,
+    limit,
+    offset,
+    raw: true,
+  });
+
+  const ids = productIdsResult.map((p) => p.MaSanPham);
+
+  if (ids.length === 0) {
+    return {
+      data: [],
+      total: 0,
+      totalPages: 0,
+      page,
+    };
   }
 
-  const products = await ProductModel.findAndCountAll({
-    where: whereCondition,
+  const products = await ProductModel.findAll({
+    where: {
+      MaSanPham: ids,
+    },
 
     attributes: [
       "MaSanPham",
       "TenSanPham",
+      "Thumbnail",
+      "ThuongHieu",
+      "LuotXem",
       "MoTa",
-      "TrangThai",
-      [
-        literal(`(
-          SELECT SUM(SoLuong)
-          FROM BienTheSanPham
-          WHERE BienTheSanPham.MaSanPham = SanPham.MaSanPham
-        )`),
-        "TongSoLuong",
-      ],
-      [
-        literal(`(
-          SELECT MIN(Gia)
-          FROM BienTheSanPham
-          WHERE BienTheSanPham.MaSanPham = SanPham.MaSanPham
-        )`),
-        "GiaThapNhat",
-      ],
-
-      [
-        literal(`(
-          SELECT DuongDan
-          FROM HinhAnhBienThe
-          WHERE MaBienThe = (
-            SELECT MaBienThe
-            FROM BienTheSanPham
-            WHERE BienTheSanPham.MaSanPham = SanPham.MaSanPham
-            ORDER BY Gia ASC
-            LIMIT 1
-          )
-          LIMIT 1
-        )`),
-        "Thumbnail",
-      ],
     ],
 
     include: [
@@ -116,27 +115,52 @@ export const getAllProductsService = async (
         model: CategoryModel,
         attributes: ["MaDanhMuc", "TenDanhMuc"],
       },
+      {
+        model: VariantModel,
+        attributes: ["Gia", "SoLuong"],
+      },
     ],
+  });
 
-    limit,
-    offset,
-
-    order: orderQuery,
-
+  const total = await ProductModel.count({
+    where: whereCondition,
+    include: [
+      {
+        model: CategoryModel,
+        attributes: [],
+      },
+    ],
     distinct: true,
   });
 
-  const result = products.rows.map((p) => ({
-    MaSanPham: p.MaSanPham,
-    TenSanPham: p.TenSanPham,
-    MoTa: p.MoTa,
-    DanhMuc: p.DanhMucSanPham,
-    GiaThapNhat: Number(p.get("GiaThapNhat")) || 0,
-    Thumbnail: p.get("Thumbnail") || null,
-    TongSoLuong: Number(p.get("TongSoLuong")) || 0,
-  }));
+  const productMap = new Map();
 
-  const total = products.count;
+  products.forEach((p) => {
+    productMap.set(p.MaSanPham, p);
+  });
+
+  const sortedProducts = ids.map((id) => productMap.get(id));
+
+  const result = sortedProducts.map((p) => {
+    const variants = p.BienTheSanPhams || [];
+
+    const giaThapNhat =
+      variants.length > 0 ? Math.min(...variants.map((v) => v.Gia)) : 0;
+
+    const tongSoLuong = variants.reduce((sum, v) => sum + (v.SoLuong || 0), 0);
+
+    return {
+      MaSanPham: p.MaSanPham,
+      TenSanPham: p.TenSanPham,
+      Thumbnail: p.Thumbnail,
+      ThuongHieu: p.ThuongHieu,
+      LuotXem: p.LuotXem,
+      MoTa: p.MoTa,
+      DanhMuc: p.DanhMucSanPham,
+      GiaThapNhat: giaThapNhat,
+      TongSoLuong: tongSoLuong,
+    };
+  });
 
   return {
     data: result,
@@ -148,7 +172,7 @@ export const getAllProductsService = async (
 
 export const getProductService = async (id) => {
   const product = await ProductModel.findByPk(id, {
-    attributes: ["MaSanPham", "TenSanPham", "MoTa", "MaDanhMuc", "TrangThai"],
+    attributes: ["MaSanPham", "TenSanPham", "MoTa", "Thumbnail"],
 
     include: [
       {
@@ -165,10 +189,24 @@ export const getProductService = async (id) => {
             model: VariantImageModel,
             attributes: ["DuongDan"],
           },
+
+          {
+            model: AttributeValueModel,
+            attributes: ["MaGiaTri", "GiaTri"],
+            through: { attributes: [] },
+            include: [
+              {
+                model: AttributeModel,
+                attributes: ["MaThuocTinh", "TenThuocTinh"],
+              },
+            ],
+          },
         ],
       },
     ],
   });
+
+  if (!product) return null;
 
   return product;
 };

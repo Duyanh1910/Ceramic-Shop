@@ -16,7 +16,6 @@ VALUES (LAST_INSERT_ID(), 'Trần Quản Trị', '0901234567', '1990-05-15', '12
 -- 2. TẠO TÀI KHOẢN STAFF (MaPhanQuyen = 2)
 -- 2. TẠO TÀI KHOẢN STAFF (MaPhanQuyen = 2)
 -- ==========================================
-
 INSERT INTO TaiKhoan (Username, Email, Password, MaPhanQuyen)
 VALUES ('staff01', 'staff01@ceramicshop.vn', '$2a$12$aSFyRPFhsl9iTtCSjfSh/.MfIJm2CFpvmMH3jZoexgOMaZy4gHV9W', 2);
 
