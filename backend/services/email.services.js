@@ -8,7 +8,7 @@ export const sendEmailVerifyService = async (email) => {
     const otp = raw.toString().padStart(6, "0");
 
     const info = await transporter.sendMail({
-      from: `"The Ceramic Shop" <${user}>`,
+      from: `"The Ceramic Shop" <${process.env.EMAIL_USERNAME}>`,
       to: email,
       subject: "[The Ceramic Shop] Mã xác thực OTP của bạn",
       html: `

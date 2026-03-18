@@ -36,6 +36,7 @@ export const getAllProductsService = async (
   if (search) {
     whereCondition[Op.or] = [
       { TenSanPham: { [Op.like]: `%${search}%` } },
+      { ThuongHieu: { [Op.like]: `%${search}%` } },
       { "$DanhMucSanPham.TenDanhMuc$": { [Op.like]: `%${search}%` } },
     ];
   }
