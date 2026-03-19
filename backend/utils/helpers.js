@@ -14,3 +14,8 @@ export const isValidPhoneNumber = (phone) => {
   const regex = /^0\d{9}$/;
   return regex.test(String(phone));
 };
+
+export const isValidDate = (date) => {
+  const d = new Date(date);
+  return d instanceof Date && !isNaN(d);
+};

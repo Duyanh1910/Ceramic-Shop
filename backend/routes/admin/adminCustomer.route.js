@@ -7,4 +7,5 @@ import {
 const router = express.Router();
 router.get("/", getCustomers);
 router.get("/:id", getCustomerInfo);
+
 export default router;
