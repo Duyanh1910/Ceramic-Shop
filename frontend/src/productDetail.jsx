@@ -29,7 +29,6 @@ function ProductDetail() {
   const [userInfo, setUserInfo] = useState({ username: '', status: '' });
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   
-  // LOGIC GIỎ HÀNG
   const [cart, setCart] = useState(() => {
     const savedCart = localStorage.getItem('ceramic_cart');
     return savedCart ? JSON.parse(savedCart) : [];
@@ -200,7 +199,7 @@ function ProductDetail() {
     let maxStock = selectedVariant ? selectedVariant.SoLuong : product.TongSoLuong;
     let newQty = currentQty + change;
     if (newQty < 1) newQty = 1;
-    if (newQty > maxStock) { newQty = maxStock; message.info(`Chỉ còn ${maxStock} sản phẩm.`); }
+    if (newQty > maxStock) { newQty = maxStock; message.info(`Số lượng sản phẩm chỉ có tối đa ${maxStock} sản phẩm.`); }
     setCurrentQty(newQty);
   };
 
@@ -235,7 +234,6 @@ function ProductDetail() {
     navigate('/cart');
   };
 
-  // --- CÁC HÀM XỬ LÝ MINI CART (Lấy từ Home, thêm variantId) ---
   const handleRemoveFromCart = (id, variantId) => {
     setCart(prevCart => prevCart.filter(item => !(item.id === id && item.variantId === variantId)));
   };
@@ -268,8 +266,6 @@ function ProductDetail() {
 
   const totalCartPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const totalCartItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-
-  // --- GIAO DIỆN MINI CART (Đồng bộ 100% css từ Home) ---
   const miniCartContent = (
     <div className={styles.miniCartContainer}>
       <div className={styles.miniCartHeader}>Sản phẩm đã thêm</div>

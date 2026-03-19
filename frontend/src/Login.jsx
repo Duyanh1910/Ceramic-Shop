@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Button, Input, Form, message, Typography } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import styles from './Login.module.css';
-import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import { UserOutlined, LockOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 
 const { Text, Link } = Typography;
 
@@ -42,7 +42,7 @@ function App() {
       } catch (e) {}
 
       message.success('Đăng nhập thành công!');
-      navigate('/home'); 
+      navigate('/'); 
       
     } catch (error) {
       const errorMsg = error.response?.data?.message || 'Có lỗi xảy ra!';
@@ -62,13 +62,19 @@ function App() {
         <div className={styles.cardImage}></div>
 
         <div className={styles.cardForm}>
-          <h2 style={{ textAlign: 'center', marginBottom: '30px', color: '#333' }}>
+          <div style={{ marginBottom: '10px', textAlign: 'left' }}>
+            <Button type="link" icon={<ArrowLeftOutlined />} onClick={() => navigate('/')} style={{ color: '#1b437c', fontWeight: 600, paddingLeft: 0 }}>
+              Quay về trang chủ
+            </Button>
+          </div>
+
+          <h2 style={{ textAlign: 'center', marginBottom: '30px', color: '#1b437c', fontFamily: "'Arsenal', serif", fontWeight: 700, fontSize: '28px' }}>
             ĐĂNG NHẬP
           </h2>
           
           <Form layout="vertical" onFinish={handleLogin}>
             <Form.Item 
-              label="Tên đăng nhập" 
+              label={<span style={{fontWeight: 500}}>Tên đăng nhập</span>} 
               name="username" 
               rules={[{ required: true, message: 'Vui lòng nhập tên đăng nhập!' }]}
             >
@@ -80,7 +86,7 @@ function App() {
             </Form.Item>
 
             <Form.Item 
-              label="Mật khẩu" 
+              label={<span style={{fontWeight: 500}}>Mật khẩu</span>} 
               name="password" 
               rules={[{ required: true, message: 'Vui lòng nhập mật khẩu!' }]}
             >
@@ -91,9 +97,9 @@ function App() {
               />
             </Form.Item>
 
-            <div style={{ marginBottom: '20px', textAlign: 'right' }}>
-              <Text>Chưa có tài khoản? </Text>
-              <Link onClick={() => navigate('/register')}>Đăng ký ngay</Link>
+            <div style={{ marginBottom: '25px', textAlign: 'right' }}>
+              <Text style={{color: '#666'}}>Chưa có tài khoản? </Text>
+              <Link onClick={() => navigate('/register')} style={{fontWeight: 600, color: '#50a1fe'}}>Đăng ký ngay</Link>
             </div>
 
             <Button className={styles.customButton} type="primary" htmlType="submit" block loading={loading}>

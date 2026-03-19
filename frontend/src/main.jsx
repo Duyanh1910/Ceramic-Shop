@@ -6,6 +6,8 @@ import Home from './Home.jsx'
 import Login from './Login.jsx'
 import Register from './Register.jsx'
 import ProductDetail from './productDetail.jsx'
+import LandingPage from './LandingPage.jsx'
+
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('token');
   if (!token) {
@@ -44,6 +46,11 @@ createRoot(document.getElementById('root')).render(
           } />
           {/* <Route path="/cart" element={<ProtectedRoute> <Cart /> </ProtectedRoute>} /> */}
           <Route path="/product/:id" element={<ProductDetail />} />
+          <Route path="/landing" element={
+            <PublicRoute>
+              <LandingPage/>
+            </PublicRoute>
+          }/>
         </Routes>
       </BrowserRouter>
     </HelmetProvider>

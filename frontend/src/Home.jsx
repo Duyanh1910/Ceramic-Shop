@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { Dropdown, Avatar, Space, Layout, Menu, Input, Select, Row, Col, Pagination, Spin, Badge, message, AutoComplete, Popover, Button, List } from 'antd';
-import { LogoutOutlined, SettingOutlined, SearchOutlined, ShoppingCartOutlined, DeleteOutlined, ReloadOutlined, AppstoreOutlined } from '@ant-design/icons';
+import { Dropdown, Avatar, Space, Layout, Menu, Input, Select, Row, Col, Pagination, Spin, Badge, message, AutoComplete, Popover, Button } from 'antd';
+import { LogoutOutlined, SettingOutlined, SearchOutlined, ShoppingCartOutlined, DeleteOutlined, ReloadOutlined, AppstoreOutlined, EyeOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import styles from './Home.module.css';
@@ -114,9 +114,14 @@ function Home() {
     message.success('Đã thêm sản phẩm vào giỏ hàng!');
   };
 
-  const handleRemoveFromCart = (id) => {
-    setCart(prevCart => prevCart.filter(item => item.id !== id));
+  // Nút MUA NGAY: Thêm vào giỏ + Chuyển hướng sang Cart
+  const handleBuyNow = (e, product) => {
+    e.stopPropagation();
+    handleAddToCart(e, product);
+    navigate('/cart');
   };
+
+  const handleRemoveFromCart = (id) => setCart(prevCart => prevCart.filter(item => item.id !== id));
 
   const handleQtyChange = (id, value) => {
     if (value === '') return; 
@@ -163,8 +168,7 @@ function Home() {
                   <div className={styles.qtyControls}>
                     <button className={styles.qtyBtn} onClick={() => decreaseQty(item.id)}>-</button>
                     <input 
-                      type="number" 
-                      min="1"
+                      type="number" min="1"
                       className={styles.qtyInput} 
                       value={item.quantity} 
                       onChange={(e) => handleQtyChange(item.id, e.target.value)} 
@@ -192,10 +196,7 @@ function Home() {
 
   const handleSearchInput = async (value) => {
     setSearchKw(value);
-    if (!value) {
-      setSearchOptions([]);
-      return;
-    }
+    if (!value) { setSearchOptions([]); return; }
     try {
       const res = await axios.get(`http://localhost:3000/api/v1/products?search=${value}&searchField=TenSanPham&limit=5`);
       const data = res.data.data || res.data.result?.data || [];
@@ -233,23 +234,11 @@ function Home() {
   };
 
   const handleResetFilters = () => {
-    setSortField('');
-    setSortOrder('');
-    setSearchKw('');
-    setAppliedSearchKw('');
-    setSelectedCategory('all');
-    setSearchOptions([]);
-    setCurrentPage(1);
+    setSortField(''); setSortOrder(''); setSearchKw(''); setAppliedSearchKw(''); setSelectedCategory('all'); setSearchOptions([]); setCurrentPage(1);
   };
 
   const handleMenuClick = (e) => {
-    setSortField('');
-    setSortOrder('');
-    setSearchKw('');
-    setAppliedSearchKw('');
-    setSearchOptions([]);
-    setSelectedCategory(e.key);
-    setCurrentPage(1);
+    setSortField(''); setSortOrder(''); setSearchKw(''); setAppliedSearchKw(''); setSearchOptions([]); setSelectedCategory(e.key); setCurrentPage(1);
   };
 
   useEffect(() => {
@@ -257,19 +246,15 @@ function Home() {
       try {
         const res = await axios.get('http://localhost:3000/api/v1/categories');
         const catData = res.data.result || [];
-        
         const mapChildToParent = { 1: [6, 7, 8], 2: [9], 3: [10, 11], 4: [12, 13], 5: [14, 15] };
         const parents = catData.filter(c => c.MaDanhMuc <= 5);
         const childrenList = catData.filter(c => c.MaDanhMuc > 5);
 
-        const menuItems = [
-          { key: 'all', icon: <AppstoreOutlined />, label: 'Tất cả sản phẩm', className: styles.allProductsMenu }
-        ];
+        const menuItems = [ { key: 'all', icon: <AppstoreOutlined />, label: 'Tất cả sản phẩm', className: styles.allProductsMenu } ];
 
         parents.forEach(p => {
            const childIds = mapChildToParent[p.MaDanhMuc] || [];
            const mappedChildren = childrenList.filter(c => childIds.includes(c.MaDanhMuc));
-
            if (mappedChildren.length > 0) {
                menuItems.push({
                    type: 'group',
@@ -281,7 +266,6 @@ function Home() {
                });
            }
         });
-
         setCategories(menuItems);
       } catch (error) {}
     };
@@ -319,7 +303,7 @@ function Home() {
       </Helmet>
 
       <Header className={styles.topHeader}>
-        <div className={styles.logo}>CERAMIC-SHOP</div>
+        <div className={styles.logo} onClick={() => navigate('/')}>CERAMIC-SHOP</div>
         
         <div className={styles.headerSearch}>
           <div className={styles.searchWrapper}>
@@ -327,10 +311,7 @@ function Home() {
               className={styles.searchAutoComplete}
               options={searchKw ? searchOptions : []}
               onSelect={(value) => { 
-                setSearchKw(value); 
-                setAppliedSearchKw(value); 
-                setCurrentPage(1); 
-                setSearchOptions([]); 
+                setSearchKw(value); setAppliedSearchKw(value); setCurrentPage(1); setSearchOptions([]); 
               }}
               onSearch={handleSearchInput}
               value={searchKw}
@@ -346,15 +327,12 @@ function Home() {
                 onChange={(e) => setSearchKw(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
+                    e.preventDefault();
+                    e.stopPropagation();
                     executeSearch(); 
                   }
                 }}
-                suffix={
-                  <SearchOutlined 
-                    style={{ color: '#1b437c', cursor: 'pointer', fontSize: '18px' }} 
-                    onClick={executeSearch} 
-                  />
-                }
+                suffix={ <SearchOutlined style={{ color: '#1b437c', cursor: 'pointer', fontSize: '18px', paddingRight: '8px' }} onClick={executeSearch} /> }
               />
             </AutoComplete>
           </div>
@@ -396,13 +374,7 @@ function Home() {
             <h2 className={styles.sidebarTitle}>Gốm Sứ Tinh Hoa</h2>
             <div className={styles.sidebarLine}></div>
           </div>
-          <Menu
-            mode="inline"
-            selectedKeys={[selectedCategory]}
-            onClick={handleMenuClick} 
-            items={categories}
-            className={styles.customMenu}
-          />
+          <Menu mode="inline" selectedKeys={[selectedCategory]} onClick={handleMenuClick} items={categories} className={styles.customMenu} />
         </Sider>
 
         <Content className={styles.mainContent}>
@@ -424,7 +396,6 @@ function Home() {
                 onChange={(val) => {setSortOrder(val); setCurrentPage(1);}} 
                 disabled={!sortField}
               >
-                <Option value="">Mặc định</Option>
                 {sortField === 'Gia' && (
                   <>
                     <Option value="ASC">Thấp đến cao</Option>
@@ -472,24 +443,48 @@ function Home() {
                           >
                             <div className={styles.cardImgWrapper}>
                               <img alt={p.TenSanPham} src={imgUrl} />
+                              
+                              <span className={styles.viewCount} title="Lượt xem">
+                                <EyeOutlined /> {p.LuotXem || 0}
+                              </span>
                             </div>
-                            
+
+
                             <div className={styles.catTag}>{p.DanhMuc?.TenDanhMuc || 'Chưa phân loại'}</div>
+
                             <h3 className={styles.productName} title={p.TenSanPham}>{p.TenSanPham}</h3>
                             <div className={styles.productPrice}>{formatPrice(p.GiaThapNhat)}</div>
-                            
-                            <div className={styles.cardButtons}>
-                              <button 
-                                className={styles.btnBuy} 
-                                disabled={isDiscontinued || isSoldOut}
-                                onClick={(e) => handleAddToCart(e, p)}
-                              >
-                                MUA NGAY
-                              </button>
-                              <button className={styles.btnDetail}>
-                                CHI TIẾT
-                              </button>
-                            </div>
+
+                              <div className={styles.cardButtons}>
+                                
+
+                                <button 
+                                  className={styles.btnBuy} 
+                                  disabled={isDiscontinued || isSoldOut}
+                                  onClick={(e) => handleBuyNow(e, p)}
+                                >
+                                  MUA NGAY
+                                </button>
+
+                                <button 
+                                  className={styles.btnAddToCartIcon} 
+                                  disabled={isDiscontinued || isSoldOut}
+                                  onClick={(e) => handleAddToCart(e, p)}
+                                  title="Thêm vào giỏ hàng"
+                                >
+                                  <ShoppingCartOutlined /> <span style={{fontSize: '12px', marginLeft: '2px', fontWeight: 'bold'}}>+</span>
+                                </button>
+                                
+                                <button 
+                                  className={styles.btnDetail} 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate(`/product/${p.MaSanPham}`);
+                                  }}
+                                >
+                                  CHI TIẾT
+                                </button>
+                              </div>
                           </div>
                         </Badge.Ribbon>
                       </Col>
