@@ -1,0 +1,492 @@
+@import url('https://fonts.googleapis.com/css2?family=Arsenal:wght@400;700&display=swap');
+.wrapper {
+    font-family: 'Arsenal', sans-serif;
+    color: #252a2b;
+    background-color: #fff;
+    line-height: 1.5;
+    overflow-x: hidden;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+    width: 100%;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+    transition: color 0.3s;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.topbar {
+    background-color: #f5f5f5;
+    padding: 8px 0;
+    border-bottom: 1px solid #ebebeb;
+}
+
+.topbarInner {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    font-size: 13px;
+    color: #666;
+}
+
+.topbarInner a:hover {
+    color: #BB9244;
+}
+
+.divider {
+    margin: 0 15px;
+    color: #ccc;
+}
+
+.mainHeader {
+    background: #fff;
+    padding: 25px 0;
+}
+
+.headerFlex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.searchBox {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #e1e1e1;
+    padding-bottom: 5px;
+    max-width: 250px;
+}
+
+.iconSearch {
+    font-size: 16px;
+    color: #888;
+    margin-right: 8px;
+}
+
+.searchInput {
+    border: none;
+    outline: none;
+    width: 100%;
+    font-family: 'Arsenal', sans-serif;
+    font-size: 14px;
+}
+
+.logoBox {
+    flex: 1;
+    text-align: center;
+    cursor: pointer;
+}
+
+.logoText {
+    font-family: 'Arsenal', serif;
+    font-size: 32px;
+    font-weight: 700;
+    margin: 0;
+    color: #173354;
+    letter-spacing: 2px;
+}
+
+.logoSub {
+    font-size: 12px;
+    letter-spacing: 3px;
+    color: #BB9244;
+}
+
+.utilityBox {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+    gap: 25px;
+}
+
+.iconItem {
+    font-size: 22px;
+    color: #333;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.3s;
+}
+
+.iconItem:hover {
+    color: #BB9244;
+}
+
+.cartBadge {
+    position: absolute;
+    top: -6px;
+    right: -10px;
+    background-color: #d0021b;
+    color: #fff;
+    font-size: 11px;
+    font-weight: bold;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.navBar {
+    background: #fff;
+    border-top: 1px solid #f2f2f2;
+    border-bottom: 1px solid #f2f2f2;
+    transition: all 0.3s ease;
+}
+
+.navBar.sticky {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    border-top: none;
+}
+
+.menuList {
+    display: flex;
+    justify-content: center;
+    gap: 45px;
+}
+
+.menuList li a {
+    display: block;
+    padding: 16px 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: #252a2b;
+    text-transform: uppercase;
+    position: relative;
+}
+
+.menuList li a:hover, .menuList li a.active {
+    color: #173354;
+}
+
+.menuList li a::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: #173354;
+    transition: width 0.3s;
+}
+
+.menuList li a:hover::after, .menuList li a.active::after {
+    width: 100%;
+}
+
+.bannerSection {
+    width: 100%;
+    max-height: 600px;
+    overflow: hidden;
+}
+
+.bannerImg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+.sectionHeading {
+    text-align: center;
+    margin: 50px 0 40px;
+}
+
+.sectionHeading h2 {
+    font-size: 26px;
+    font-weight: 700;
+    color: #252a2b;
+    text-transform: uppercase;
+    margin: 0 0 15px;
+    position: relative;
+    display: inline-block;
+}
+
+.sectionHeading h2::after {
+    content: '';
+    display: block;
+    width: 50px;
+    height: 2px;
+    background: #BB9244;
+    margin: 15px auto 0;
+}
+
+.categoryGrid {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+    margin-bottom: 60px;
+}
+
+.categoryItem {
+    text-align: center;
+    cursor: pointer;
+    width: 150px;
+}
+
+.categoryImgWrap {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin: 0 auto 15px;
+    border: 1px solid #eaeaea;
+    transition: all 0.3s ease;
+}
+
+.categoryItem:hover .categoryImgWrap {
+    border-color: #BB9244;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+}
+
+.categoryImgWrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.categoryItem:hover .categoryImgWrap img {
+    transform: scale(1.1);
+}
+
+.categoryItem h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+    text-transform: uppercase;
+    transition: color 0.3s;
+}
+
+.categoryItem:hover h3 {
+    color: #BB9244;
+}
+
+.productSection {
+    background-color: #fff;
+    padding-bottom: 60px;
+}
+
+.productGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+    margin-bottom: 40px;
+}
+
+.productCard {
+    text-align: center;
+    cursor: pointer;
+    position: relative;
+}
+
+.productImgWrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1/1;
+    overflow: hidden;
+    margin-bottom: 15px;
+    background: #fdfdfd;
+}
+
+.productImgWrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: transform 0.5s ease;
+}
+
+.productCard:hover .productImgWrap img {
+    transform: scale(1.05);
+}
+
+.productOverlay {
+    position: absolute;
+    bottom: -50px;
+    left: 0;
+    width: 100%;
+    background: rgba(255,255,255,0.9);
+    padding: 10px 0;
+    transition: bottom 0.3s ease;
+    display: flex;
+    justify-content: center;
+}
+
+.productCard:hover .productOverlay {
+    bottom: 0;
+}
+
+.btnAddToCart {
+    background: #173354;
+    color: #fff;
+    border: none;
+    padding: 8px 20px;
+    font-family: 'Arsenal', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    border-radius: 2px;
+    text-transform: uppercase;
+}
+
+.btnAddToCart:hover {
+    background: #BB9244;
+}
+
+.productInfo {
+    padding: 0 10px;
+}
+
+.productName {
+    font-size: 16px;
+    color: #252a2b;
+    font-weight: 400;
+    margin: 0 0 8px;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.productCard:hover .productName {
+    color: #BB9244;
+}
+
+.productPrice {
+    font-size: 16px;
+    font-weight: 700;
+    color: #d0021b; /* Đỏ đô */
+}
+
+.btnWrapCenter {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.btnViewAll {
+    background: #fff;
+    color: #252a2b;
+    border: 1px solid #e1e1e1;
+    padding: 12px 30px;
+    font-family: 'Arsenal', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btnViewAll:hover {
+    background: #173354;
+    color: #fff;
+    border-color: #173354;
+}
+
+.footer {
+    background-color: #f7f7f7;
+    padding: 50px 0 20px;
+    border-top: 1px solid #eaeaea;
+}
+
+.footerGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+    margin-bottom: 40px;
+}
+
+.footerCol h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #252a2b;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+}
+
+.footerCol ul li {
+    margin-bottom: 10px;
+    color: #555;
+    font-size: 15px;
+}
+
+.footerCol ul li a:hover {
+    color: #BB9244;
+}
+
+.footerText {
+    color: #555;
+    font-size: 15px;
+    margin-bottom: 15px;
+}
+
+.subscribeBox {
+    display: flex;
+    border: 1px solid #ddd;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.subscribeBox input {
+    flex: 1;
+    border: none;
+    padding: 10px 15px;
+    outline: none;
+    font-family: 'Arsenal', sans-serif;
+}
+
+.subscribeBox button {
+    background: #173354;
+    color: #fff;
+    border: none;
+    padding: 0 20px;
+    font-family: 'Arsenal', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.subscribeBox button:hover {
+    background: #BB9244;
+}
+
+.copyright {
+    text-align: center;
+    border-top: 1px solid #e1e1e1;
+    padding-top: 20px;
+    font-size: 13px;
+    color: #888;
+}
+
+@media (max-width: 991px) {
+    .productGrid { grid-template-columns: repeat(2, 1fr); }
+    .footerGrid { grid-template-columns: repeat(1, 1fr); gap: 20px; }
+    .navBar { display: none; } /* Trên mobile thường thay bằng hamburger menu */
+}
+@media (max-width: 576px) {
+    .productGrid { grid-template-columns: repeat(2, 1fr); gap: 15px; }
+    .categoryGrid { gap: 20px; }
+    .categoryItem { width: 100px; }
+    .categoryImgWrap { width: 90px; height: 90px; }
+    .topbar { display: none; }
+    .headerFlex { flex-wrap: wrap; justify-content: center; gap: 15px; }
+    .searchBox { display: none; }
+}

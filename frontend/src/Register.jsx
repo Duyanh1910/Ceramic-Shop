@@ -7,10 +7,11 @@ import { Helmet } from 'react-helmet-async';
 import { 
   UserOutlined, 
   MailOutlined, 
-  LockOutlined
+  LockOutlined,
+  ArrowLeftOutlined
 } from '@ant-design/icons';
 
-const { Link } = Typography;
+const { Text, Link } = Typography;
 
 function Register() {
   const [loading, setLoading] = useState(false);
@@ -52,14 +53,21 @@ function Register() {
           <Helmet>
             <title>Đăng ký</title>
           </Helmet>
-          <h2 style={{ textAlign: 'center', marginBottom: '20px', color: '#333', fontFamily: 'serif' }}>
+
+          <div style={{ marginBottom: '10px', textAlign: 'left' }}>
+            <Button type="link" icon={<ArrowLeftOutlined />} onClick={() => navigate('/')} style={{ color: '#1b437c', fontWeight: 600, paddingLeft: 0 }}>
+              Quay về trang chủ
+            </Button>
+          </div>
+
+          <h2 style={{ textAlign: 'center', marginBottom: '20px', color: '#1b437c', fontFamily: "'Arsenal', serif", fontWeight: 700, fontSize: '28px' }}>
             ĐĂNG KÝ
           </h2>
           
           <Form layout="vertical" onFinish={handleRegister}>
             
             <Form.Item 
-              label="Tên đăng nhập" 
+              label={<span style={{fontWeight: 500}}>Tên đăng nhập</span>} 
               name="username" 
               rules={[{ required: true, message: 'Vui lòng nhập tên đăng nhập!' }]}
               style={{ marginBottom: '15px' }}
@@ -72,7 +80,7 @@ function Register() {
             </Form.Item>
 
             <Form.Item 
-              label="Email" 
+              label={<span style={{fontWeight: 500}}>Email</span>} 
               name="email" 
               rules={[
                 { required: true, message: 'Vui lòng nhập email!' },
@@ -88,7 +96,7 @@ function Register() {
             </Form.Item>
 
             <Form.Item 
-              label="Mật khẩu" 
+              label={<span style={{fontWeight: 500}}>Mật khẩu</span>} 
               name="password" 
               rules={[{ required: true, message: 'Vui lòng nhập mật khẩu!' }]}
               style={{ marginBottom: '15px' }}
@@ -101,7 +109,7 @@ function Register() {
             </Form.Item>
 
             <Form.Item 
-              label="Xác nhận mật khẩu" 
+              label={<span style={{fontWeight: 500}}>Xác nhận mật khẩu</span>} 
               name="confirmPassword" 
               dependencies={['password']}
               rules={[
@@ -124,9 +132,9 @@ function Register() {
               />
             </Form.Item>
 
-            <div style={{ marginBottom: '15px', textAlign: 'right' }}>
-              
-              <Link onClick={() => navigate('/login')}>Đăng nhập ngay</Link>
+            <div style={{ marginBottom: '20px', textAlign: 'right' }}>
+              <Text style={{color: '#666'}}>Đã có tài khoản? </Text>
+              <Link onClick={() => navigate('/login')} style={{fontWeight: 600, color: '#50a1fe'}}>Đăng nhập ngay</Link>
             </div>
 
             <Button className={styles.customButton} type="primary" htmlType="submit" block loading={loading}>
