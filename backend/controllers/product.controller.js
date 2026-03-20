@@ -34,7 +34,7 @@ export const getProducts = async (req, res, next) => {
 export const getProductInfo = async (req, res, next) => {
   try {
     const id = Number(req.params.id);
-    if (!Number.isInteger) {
+    if (!Number.isInteger(id)) {
       return next(new ErrorHandler("ID không hợp lệ!", 400));
     }
     const product = await getProductService(id);

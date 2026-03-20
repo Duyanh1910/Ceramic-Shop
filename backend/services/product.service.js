@@ -3,8 +3,10 @@ import {
   CategoryModel,
   VariantModel,
   VariantImageModel,
+  VariantAttributeModel,
   AttributeValueModel,
   AttributeModel,
+  sequelize,
 } from "../models/index.js";
 import { Sequelize, Op } from "sequelize";
 
@@ -172,6 +174,12 @@ export const getAllProductsService = async (
 };
 
 export const getProductService = async (id) => {
+  await ProductModel.increment("LuotXem", {
+    where: {
+      MaSanPham: id,
+    },
+    by: 1,
+  });
   const product = await ProductModel.findByPk(id, {
     attributes: ["MaSanPham", "TenSanPham", "MoTa", "Thumbnail"],
 
@@ -210,4 +218,84 @@ export const getProductService = async (id) => {
   if (!product) return null;
 
   return product;
+};
+
+export const addNewProductService = async (
+  categoryID,
+  productName,
+  thumbnail,
+  brand,
+  description,
+  status = 1,
+  BienThe,
+) => {
+  const transaction = await sequelize.transaction();
+  try {
+    const category = await CategoryModel.findByPk(categoryID);
+    if (!category) {
+      throw new ErrorHandler("Không tồn tại danh mục này!", 400);
+    }
+    const countChild = await CategoryModel.count({
+      where: {
+        ParentID: categoryID,
+      },
+    });
+    if (countChild > 0) {
+      throw new ErrorHandler("Chỉ được thêm sản phẩm vào danh mục con!", 400);
+    }
+    const product = await ProductModel.create(
+      {
+        MaDanhMuc: categoryID,
+        TenSanPham: productName,
+        Thumbnail: thumbnail,
+        ThuongHieu: brand,
+        LuotXem: 0,
+        MoTa: description,
+        TrangThai: status,
+      },
+      {
+        transaction: transaction,
+      },
+    );
+    for (const item of BienThe) {
+      const variants = await VariantModel.create(
+        {
+          MaSanPham: product.MaSanPham,
+          TenBienThe: item.TenBienThe,
+          Gia: item.Gia,
+          SoLuong: item.SoLuong,
+          TrangThai: item.TrangThai,
+          MoTa: item.MoTa,
+        },
+        {
+          transaction: transaction,
+        },
+      );
+      if (item.images && item.images.length > 0) {
+        const images = item.images.map((img) => ({
+          MaBienThe: variants.MaBienThe,
+          DuongDan: img,
+        }));
+        await VariantImageModel.bulkCreate(images, {
+          transaction: transaction,
+        });
+      }
+      if (item.attributes && item.attributes.length > 0) {
+        const attributes = item.attributes.map((atrri) => ({
+          MaBienThe: variants.MaBienThe,
+          MaGiaTri: atrri,
+        }));
+        await VariantAttributeModel.bulkCreate(attributes, {
+          transaction: transaction,
+        });
+      }
+    }
+    await transaction.commit();
+    return product;
+  } catch (err) {
+    await transaction.rollback();
+    if (err.statusCode) throw err;
+    console.error(err);
+    throw new ErrorHandler("Lỗi server! Không thể thêm mới sản phẩm!", 500);
+  }
 };

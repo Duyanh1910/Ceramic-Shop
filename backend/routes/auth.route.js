@@ -15,7 +15,7 @@ const router = express.Router();
 router.post("/login", login);
 router.post("/register", customerRegister);
 
-router.post("/me", jwtMiddleware, getMe);
+router.get("/me", jwtMiddleware, getMe);
 
 router.post("/sendVerifyEmail", sendVerifyEmailController);
 router.post("/VerifyEmail", VerifyEmailController);
