@@ -1,0 +1,254 @@
+@import url('https://fonts.googleapis.com/css2?family=Arsenal:wght@400;600;700&display=swap');
+
+:global(body) {
+  margin: 0 !important;
+  padding: 0 !important;
+  background-color: #fdfdfd !important;
+  font-family: 'Arsenal', sans-serif !important;
+}
+
+.profileWrapper {
+  min-height: 100vh;
+  background-color: #fdfdfd;
+}
+
+/* ================= HEADER ================= */
+.topHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 50px;
+  background-color: #ffffff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+  height: 75px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo {
+  font-family: 'Arsenal', serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: #1b437c;
+  letter-spacing: 1px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo::before {
+  content: "";
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  background-image: url('logo.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+.btnBack {
+  color: #1b437c;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.btnBack:hover {
+  color: #c48c46;
+}
+
+/* ================= LAYOUT ================= */
+.mainContent {
+  padding: 40px 20px;
+}
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.innerLayout {
+  background: transparent;
+  display: flex;
+  gap: 30px;
+}
+
+/* ================= SIDEBAR ================= */
+.sidebar {
+  background: transparent !important;
+}
+
+.userInfoMini {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #eaeaea;
+  margin-bottom: 20px;
+}
+
+.avatarMini {
+  border: 1px solid #eaeaea;
+}
+
+.userNameMini strong {
+  display: block;
+  font-size: 16px;
+  color: #333;
+}
+
+.userNameMini span {
+  font-size: 13px;
+  color: #888;
+}
+
+.sidebarMenu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebarMenu li {
+  padding: 12px 10px;
+  font-size: 15px;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 6px;
+}
+
+.sidebarMenu li:hover {
+  color: #1b437c;
+  background: #f4f7fb;
+}
+
+.sidebarMenu li.active {
+  color: #c48c46;
+  font-weight: 600;
+}
+
+/* ================= FORM CONTENT ================= */
+.formContent {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  padding: 30px 40px;
+  border: 1px solid #f0f0f0;
+}
+
+.formHeader {
+  margin-bottom: 10px;
+}
+
+.formTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1b437c;
+  margin: 0 0 5px 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.formSub {
+  color: #666;
+  margin: 0;
+  font-size: 14px;
+}
+
+.divider {
+  margin: 15px 0 30px 0;
+  border-color: #f0f0f0;
+}
+
+.formBody {
+  display: flex;
+  gap: 50px;
+}
+
+.formLeft {
+  flex: 2;
+}
+
+.formRight {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  border-left: 1px solid #f0f0f0;
+}
+
+/* ================= INPUTS & BUTTONS ================= */
+.profileForm :global(.ant-form-item-label > label) {
+  font-weight: 500;
+  color: #555;
+}
+
+.customInput {
+  border-radius: 6px;
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  font-size: 15px;
+  transition: all 0.3s ease;
+}
+
+.customInput:focus, .customInput:hover {
+  border-color: #1b437c;
+  box-shadow: 0 0 0 2px rgba(27, 67, 124, 0.1);
+}
+
+.customInput[disabled] {
+  background-color: #f9f9f9;
+  color: #888;
+  cursor: not-allowed;
+}
+
+.btnSave {
+  background: #1b437c;
+  border-color: #1b437c;
+  height: 45px;
+  padding: 0 30px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  border-radius: 6px;
+  margin-top: 10px;
+}
+
+.btnSave:hover {
+  background: #13325c !important;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(27, 67, 124, 0.3);
+}
+
+/* ================= AVATAR UPLOAD ================= */
+.avatarSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.avatarBig {
+  border: 2px solid #f0f0f0;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.btnUpload {
+  border-radius: 20px;
+  color: #555;
+  border-color: #ddd;
+}
+
+.btnUpload:hover {
+  color: #1b437c;
+  border-color: #1b437c;
+}
+
+.avatarNote {
+  color: #999;
+  font-size: 13px;
+  text-align: center;
+  line-height: 1.6;
+}

@@ -24,12 +24,13 @@ function Home() {
   const [sortOrder, setSortOrder] = useState('');
   
   const inputRef = useRef(null);
-  const [userInfo, setUserInfo] = useState({ username: '' });
+  const [userInfo, setUserInfo] = useState({ username: '', avatar: '' });
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     let currentName = localStorage.getItem('name') || localStorage.getItem('username');
+    let currentAvatar = localStorage.getItem('avatar');
 
     if (token) {
       try {
@@ -48,6 +49,7 @@ function Home() {
                 localStorage.removeItem('username');
                 localStorage.removeItem('name');
                 localStorage.removeItem('role');
+                localStorage.removeItem('avatar');
                 setIsLoggedIn(false);
                 return;
             }
@@ -55,9 +57,15 @@ function Home() {
             if (!currentName) {
                 currentName = payload.name || payload.username;
             }
+            if (!currentAvatar) {
+                currentAvatar = payload.avatar || payload.Avatar;
+            }
             
             setIsLoggedIn(true);
-            setUserInfo({ username: currentName || 'Khách hàng' });
+            setUserInfo({ 
+                username: currentName || 'Khách hàng',
+                avatar: currentAvatar || 'https://res.cloudinary.com/dcmwz0uis/image/upload/v1773107213/default_avatar_gojcul.png'
+            });
         }
       } catch (error) {
         setIsLoggedIn(false);
@@ -81,13 +89,19 @@ function Home() {
     localStorage.removeItem('username');
     localStorage.removeItem('name');
     localStorage.removeItem('role');
+    localStorage.removeItem('avatar');
     setIsLoggedIn(false);
-    setUserInfo({ username: '' });
+    setUserInfo({ username: '', avatar: '' });
     message.success("Đã đăng xuất");
   };
 
   const userMenu = [
-    { key: '1', label: 'Sửa hồ sơ', icon: <SettingOutlined /> },
+    { 
+      key: '1', 
+      label: 'Sửa hồ sơ', 
+      icon: <SettingOutlined />,
+      onClick: () => navigate('/profile') 
+    },
     { type: 'divider' },
     { key: '2', danger: true, label: 'Đăng xuất', icon: <LogoutOutlined />, onClick: handleLogout },
   ];
@@ -114,7 +128,6 @@ function Home() {
     message.success('Đã thêm sản phẩm vào giỏ hàng!');
   };
 
-  // Nút MUA NGAY: Thêm vào giỏ + Chuyển hướng sang Cart
   const handleBuyNow = (e, product) => {
     e.stopPropagation();
     handleAddToCart(e, product);
@@ -246,15 +259,14 @@ function Home() {
       try {
         const res = await axios.get('http://localhost:3000/api/v1/categories');
         const catData = res.data.result || [];
-        const mapChildToParent = { 1: [6, 7, 8], 2: [9], 3: [10, 11], 4: [12, 13], 5: [14, 15] };
-        const parents = catData.filter(c => c.MaDanhMuc <= 5);
-        const childrenList = catData.filter(c => c.MaDanhMuc > 5);
-
+        
         const menuItems = [ { key: 'all', icon: <AppstoreOutlined />, label: 'Tất cả sản phẩm', className: styles.allProductsMenu } ];
 
+        const parents = catData.filter(c => !c.ParentID);
+
         parents.forEach(p => {
-           const childIds = mapChildToParent[p.MaDanhMuc] || [];
-           const mappedChildren = childrenList.filter(c => childIds.includes(c.MaDanhMuc));
+           const mappedChildren = catData.filter(c => c.ParentID === p.MaDanhMuc);
+           
            if (mappedChildren.length > 0) {
                menuItems.push({
                    type: 'group',
@@ -264,10 +276,18 @@ function Home() {
                        label: c.TenDanhMuc,
                    }))
                });
+           } else {
+               menuItems.push({
+                   key: p.MaDanhMuc.toString(),
+                   label: p.TenDanhMuc,
+               });
            }
         });
+        
         setCategories(menuItems);
-      } catch (error) {}
+      } catch (error) {
+        console.error("Lỗi lấy danh mục:", error);
+      }
     };
     fetchCategories();
   }, []);
@@ -348,7 +368,7 @@ function Home() {
           {isLoggedIn ? (
             <Dropdown menu={{ items: userMenu }} placement="bottomRight" arrow>
               <Space className={styles.userProfile}>
-                <Avatar src="https://res.cloudinary.com/dcmwz0uis/image/upload/v1773107213/default_avatar_gojcul.png" />
+                <Avatar src={userInfo.avatar} />
                 <div className={styles.userInfoBox}>
                   <span className={styles.userName}>{userInfo.username}</span>
                 </div>
@@ -449,15 +469,12 @@ function Home() {
                               </span>
                             </div>
 
-
                             <div className={styles.catTag}>{p.DanhMuc?.TenDanhMuc || 'Chưa phân loại'}</div>
 
                             <h3 className={styles.productName} title={p.TenSanPham}>{p.TenSanPham}</h3>
                             <div className={styles.productPrice}>{formatPrice(p.GiaThapNhat)}</div>
 
                               <div className={styles.cardButtons}>
-                                
-
                                 <button 
                                   className={styles.btnBuy} 
                                   disabled={isDiscontinued || isSoldOut}

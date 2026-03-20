@@ -1,0 +1,219 @@
+import React, { useState, useEffect } from 'react';
+import { Layout, Form, Input, Button, Avatar, message, Upload, Divider } from 'antd';
+import { UserOutlined, ArrowLeftOutlined, UploadOutlined, ProfileOutlined, ShoppingOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { Helmet } from 'react-helmet-async';
+import styles from './Profile.module.css';
+
+const { Header, Content, Sider } = Layout;
+
+function Profile() {
+  const navigate = useNavigate();
+  const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState('');
+
+  const CLOUDINARY_CLOUD_NAME = 'dcmwz0uis';
+  const CLOUDINARY_UPLOAD_PRESET = 'the_creamy_shop';
+
+  useEffect(() => {
+    fetchUserProfile();
+  }, []);
+
+  const fetchUserProfile = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get('http://localhost:3000/api/v1/auth/me', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      const userData = res.data.user || res.data.result;
+      const profileData = userData?.profile || userData;
+
+      if (userData) {
+        setAvatarUrl(profileData?.Avatar || 'https://res.cloudinary.com/dcmwz0uis/image/upload/v1773107213/default_avatar_gojcul.png');
+
+        form.setFieldsValue({
+          FullName: profileData?.TenKhachHang,
+          Email: userData?.email || userData?.Email,
+          SDT: profileData?.SDT,
+          Diachi: profileData?.DiaChi || profileData?.Diachi, 
+          Avatar: profileData?.Avatar,
+        });
+      }
+    } catch (error) {
+      message.error("Không thể tải thông tin tài khoản");
+    }
+  };
+
+  const handleAvatarChange = async (info) => {
+    const file = info.file;
+    if (file.size > 1024 * 1024) {
+      message.error('Dung lượng ảnh không được vượt quá 1MB!');
+      return;
+    }
+
+    setLoading(true);
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+
+    try {
+      const res = await axios.post(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, formData);
+      
+      const secureUrl = res.data.secure_url;
+      setAvatarUrl(secureUrl);
+      form.setFieldsValue({ Avatar: secureUrl });
+      message.success('Upload ảnh thành công!');
+    } catch (error) {
+      message.error('Upload ảnh thất bại!');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateProfile = async (values) => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const payload = {
+        TenKhachHang: values.FullName,
+        SDT: values.SDT,
+        DiaChi: values.Diachi,
+        Avatar: values.Avatar || avatarUrl,
+      };
+
+      const res = await axios.patch('http://localhost:3000/api/v1/customers/me', payload, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      message.success('Cập nhật hồ sơ thành công!');
+      
+      const updatedData = res.data.result;
+      localStorage.setItem('name', updatedData?.TenKhachHang || values.FullName);
+      localStorage.setItem('avatar', updatedData?.Avatar || values.Avatar || avatarUrl);
+      
+    } catch (error) {
+      const errorMsg = error.response?.data?.message || 'Cập nhật thất bại!';
+      message.error(errorMsg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Layout className={styles.profileWrapper}>
+      <Helmet>
+        <title>Hồ Sơ Của Tôi | Ceramic Shop</title>
+      </Helmet>
+
+      <Header className={styles.topHeader}>
+        <div className={styles.logo} onClick={() => navigate('/')}>CERAMIC-SHOP</div>
+        <div className={styles.headerActions}>
+          <Button type="link" icon={<ArrowLeftOutlined />} onClick={() => navigate('/')} className={styles.btnBack}>
+            Quay về trang chủ
+          </Button>
+        </div>
+      </Header>
+
+      <Content className={styles.mainContent}>
+        <div className={styles.container}>
+          <Layout className={styles.innerLayout}>
+            
+            <Sider width={250} className={styles.sidebar}>
+              <div className={styles.userInfoMini}>
+                <Avatar src={avatarUrl} size={60} className={styles.avatarMini} />
+                <div className={styles.userNameMini}>
+                  <strong>{form.getFieldValue('FullName')}</strong>
+                  <span><UserOutlined /> Thành viên</span>
+                </div>
+              </div>
+              <ul className={styles.sidebarMenu}>
+                <li className={styles.active}><ProfileOutlined /> Thông tin tài khoản</li>
+                <li><ShoppingOutlined /> Đơn hàng của tôi</li>
+              </ul>
+            </Sider>
+
+            <Content className={styles.formContent}>
+              <div className={styles.formHeader}>
+                <h2 className={styles.formTitle}>Hồ Sơ Của Tôi</h2>
+                <p className={styles.formSub}>Quản lý thông tin hồ sơ để bảo mật tài khoản</p>
+              </div>
+              <Divider className={styles.divider} />
+
+              <div className={styles.formBody}>
+                <div className={styles.formLeft}>
+                  <Form 
+                    form={form} 
+                    layout="vertical" 
+                    onFinish={handleUpdateProfile}
+                    className={styles.profileForm}
+                  >
+                    <Form.Item 
+                      label="Họ và Tên" 
+                      name="FullName"
+                      rules={[{ required: true, message: 'Vui lòng nhập họ tên!' }]}
+                    >
+                      <Input className={styles.customInput} />
+                    </Form.Item>
+
+                    <Form.Item label="Email" name="Email">
+                      <Input className={styles.customInput} disabled /> 
+                    </Form.Item>
+
+                    <Form.Item 
+                      label="Số điện thoại" 
+                      name="SDT"
+                      rules={[{ required: true, message: 'Vui lòng nhập số điện thoại!' }]}
+                    >
+                      <Input className={styles.customInput} />
+                    </Form.Item>
+
+                    <Form.Item label="Địa chỉ liên hệ" name="Diachi">
+                      <Input className={styles.customInput} />
+                    </Form.Item>
+
+                    <Form.Item name="Avatar" hidden>
+                      <Input /> 
+                    </Form.Item>
+
+                    <Form.Item>
+                      <Button type="primary" htmlType="submit" className={styles.btnSave} loading={loading}>
+                        LƯU THAY ĐỔI
+                      </Button>
+                    </Form.Item>
+                  </Form>
+                </div>
+
+                <div className={styles.formRight}>
+                  <div className={styles.avatarSection}>
+                    <Avatar src={avatarUrl} size={120} className={styles.avatarBig} />
+                    <Upload 
+                      showUploadList={false} 
+                      beforeUpload={() => false}
+                      onChange={handleAvatarChange}
+                      accept=".jpg,.jpeg,.png"
+                    >
+                      <Button icon={<UploadOutlined />} className={styles.btnUpload} loading={loading}>
+                        Chọn Ảnh
+                      </Button>
+                    </Upload>
+                    <p className={styles.avatarNote}>
+                      Dung lượng file tối đa 1 MB<br/>
+                      Định dạng: .JPEG, .PNG
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </Content>
+
+          </Layout>
+        </div>
+      </Content>
+    </Layout>
+  );
+}
+
+export default Profile;

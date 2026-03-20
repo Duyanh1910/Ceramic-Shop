@@ -7,7 +7,7 @@ import Login from './Login.jsx'
 import Register from './Register.jsx'
 import ProductDetail from './productDetail.jsx'
 import LandingPage from './LandingPage.jsx'
-
+import Profile from './Profile.jsx'
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('token');
   if (!token) {
@@ -51,6 +51,11 @@ createRoot(document.getElementById('root')).render(
               <LandingPage/>
             </PublicRoute>
           }/>
+          <Route path="/profile" element={
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        } />
         </Routes>
       </BrowserRouter>
     </HelmetProvider>
