@@ -18,6 +18,9 @@ VALUES (LAST_INSERT_ID(), 'Trần Quản Trị', '0901234567', '1990-05-15', '12
 INSERT INTO TaiKhoan (Username, Email, Password, MaPhanQuyen)
 VALUES ('staff01', 'staff01@ceramicshop.vn', '$2a$12$aSFyRPFhsl9iTtCSjfSh/.MfIJm2CFpvmMH3jZoexgOMaZy4gHV9W', 2);
 
+INSERT INTO TaiKhoan (Username, Email, Password, MaPhanQuyen)
+VALUES ('staff007', 'anh95693@st.vimaru.edu.vn', '$2a$12$aSFyRPFhsl9iTtCSjfSh/.MfIJm2CFpvmMH3jZoexgOMaZy4gHV9W', 2);
+
 -- Lưu thông tin cá nhân của Staff vào bảng NhanVien
 INSERT INTO NhanVien (MaTaiKhoan, TenNhanVien, SDT, NgaySinh, DiaChi)
 VALUES (LAST_INSERT_ID(), 'Nguyễn Thị Bán Hàng', '0912345678', '1998-10-20', '456 Phố Sứ, TP.HCM');

@@ -86,3 +86,12 @@ export const getMe = async (req, res, next) => {
     next(err);
   }
 };
+
+export const forgotPasswordController = async (req, res, next) => {
+  try {
+    
+  } catch (err) {
+    console.error(err);
+    next(err);
+  }
+};
