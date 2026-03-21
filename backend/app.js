@@ -33,11 +33,6 @@ app.use(
     saveUninitialized: false,
   }),
 );
-
-const file = fs.readFileSync("./docs/swagger.yaml", "utf8");
-const swaggerDocument = yaml.parse(file);
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-
 app.use(cookieParser());
 app.use(cors());
 
@@ -51,7 +46,6 @@ async function startServer() {
     await connectRedis();
     app.listen(APP_PORT, () => {
       console.log(`🚀 Server chạy tại http://localhost:${APP_PORT}`);
-      console.log(`📚 Tài liệu API tại: http://localhost:${APP_PORT}/api-docs`);
     });
   } catch (err) {
     console.log(err);
