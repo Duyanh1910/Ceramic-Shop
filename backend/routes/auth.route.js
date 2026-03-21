@@ -4,6 +4,7 @@ import {
   login,
   customerRegister,
   getMe,
+  changePasswordController,
 } from "../controllers/auth.controller.js";
 
 import {
@@ -29,4 +30,6 @@ router.post("/VerifyEmail", VerifyEmailController);
 router.post("/forgot-password", forgotPasswordController);
 router.post("/verify-reset-otp", verifyOTPResetPasswordController);
 router.post("/reset-password", resetPasswordController);
+
+router.post("/change-password", jwtMiddleware, changePasswordController);
 export default router;

@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import redisClient from "../config/redis.config.js";
+import ErrorHandler from "../utils/error_handler.js";
 import {
   AccountModel,
   CustomerModel,
@@ -8,7 +8,6 @@ import {
   sequelize,
   StaffModel,
 } from "../models/index.js";
-import ErrorHandler from "../utils/error_handler.js";
 const JWT_SECRET = process.env.JWT_SECRET;
 const EXPIRES_IN = process.env.JWT_EXPIRES_IN;
 import { SALT_ROUNDS } from "../config/app_config.js";
@@ -68,6 +67,7 @@ export const customerRegisterService = async (
     };
   } catch (err) {
     await transaction.rollback();
+    if (err.statusCode) throw err;
     console.error(err);
     throw new ErrorHandler("Lỗi server! Không thể tạo tài khoản.", 500);
   }
@@ -149,4 +149,25 @@ export const getMeService = async (id) => {
     role: role,
     profile,
   };
+};
+
+export const changePasswordService = async (id, oldPassword, newPassword) => {
+  try {
+    const account = await AccountModel.findByPk(id);
+    if (!account) {
+      throw new ErrorHandler("Không tìm thấy người dùng này!", 404);
+    }
+    const isMatch = await bcrypt.compare(oldPassword, account.Password);
+    if (!isMatch) {
+      throw new ErrorHandler("Mật khẩu không chính xác!", 401);
+    }
+    const SALT_ROUNDS = Number(process.env.SALT_ROUNDS);
+    const hashed_password = await bcrypt.hash(newPassword, SALT_ROUNDS);
+    account.Password = hashed_password;
+    account.save();
+  } catch (err) {
+    if (err.statusCode) throw err;
+    console.error(err);
+    throw new ErrorHandler("Lỗi server! Không thể đổi mật khẩu!", 500);
+  }
 };

@@ -3,6 +3,7 @@ import {
   loginService,
   customerRegisterService,
   getMeService,
+  changePasswordService,
 } from "../services/auth.services.js";
 import {
   checkValidate,
@@ -87,9 +88,24 @@ export const getMe = async (req, res, next) => {
   }
 };
 
-export const forgotPasswordController = async (req, res, next) => {
+export const changePasswordController = async (req, res, next) => {
   try {
-    
+    const { oldPassword, newPassword } = req.body;
+    const id = Number(req.user.id);
+    if (!checkValidate(oldPassword, newPassword)) {
+      return next(new ErrorHandler("Vui lòng nhập đầy đủ thông tin!", 400));
+    }
+    if (oldPassword === newPassword) {
+      return next(new ErrorHandler("Mật khẩu cũ và mới phải khác nhau!", 400));
+    }
+    if (newPassword.length < 6) {
+      return next(new ErrorHandler("Mật khẩu phải có ít nhất 6 ký tự!", 400));
+    }
+    await changePasswordService(id, oldPassword, newPassword);
+    return res.status(200).json({
+      success: true,
+      message: "Đổi mật khẩu thành công!",
+    });
   } catch (err) {
     console.error(err);
     next(err);
