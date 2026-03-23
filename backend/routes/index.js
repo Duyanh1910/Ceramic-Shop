@@ -9,7 +9,6 @@ import categoryRoutes from "./category.route.js";
 import attributeRoutes from "./attribute.route.js";
 import productRoutes from "./product.route.js";
 import cartRoutes from "./cart.route.js";
-
 import chatbotRoutes from "./chatbot.route.js";
 
 import jwtMiddleware from "../middlewares/jwt.middlewares.js";
@@ -51,6 +50,6 @@ router.use("/cart", jwtMiddleware, cartRoutes);
 
 router.use("/products", productRoutes);
 
-router.use("/chatbot", jwtMiddleware, chatbotRoutes);
+router.use("/chatbot", chatbotRoutes);
 
 export default router;
