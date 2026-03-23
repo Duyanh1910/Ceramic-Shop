@@ -121,10 +121,146 @@ export const addCartItemsService = async (idAccount, idVariant, quantity) => {
         SoLuong: quantity,
       });
     }
-    return getCartService(idAccount);
+    return await getCartService(idAccount);
   } catch (err) {
     if (err.statusCode) throw err;
     console.error(err);
-    throw new ErrorHandler("Lỗi server! Không thể xem giỏ hàng!", 500);
+    throw new ErrorHandler(
+      "Lỗi server! Không thể thêm sản phẩm vào giỏ hàng!",
+      500,
+    );
+  }
+};
+
+export const updateCartItemsService = async (
+  idAccount,
+  idVariant,
+  quantity,
+) => {
+  try {
+    const customer = await CustomerModel.findOne({
+      where: {
+        MaTaiKhoan: idAccount,
+      },
+    });
+    if (!customer) {
+      throw new ErrorHandler("Không tìm thấy khách hàng này!", 404);
+    }
+    const variant = await VariantModel.findByPk(idVariant, {
+      attributes: ["MaSanPham", "TenBienThe", "Gia", "SoLuong", "TrangThai"],
+    });
+    if (!variant) {
+      throw new ErrorHandler(
+        "Sản phẩm này không tồn tại hoặc đã ngừng kinh doanh!",
+        404,
+      );
+    }
+    const cart = await CartModel.findOne({
+      where: {
+        MaKhachHang: customer.MaKhachHang,
+      },
+    });
+    if (!cart) {
+      return null;
+    }
+    const existItem = await CartInfoModel.findOne({
+      where: {
+        MaGioHang: cart.MaGioHang,
+        MaBienThe: idVariant,
+      },
+    });
+    if (existItem) {
+      if (quantity > variant.SoLuong) {
+        throw new ErrorHandler("Sản phẩm vượt quá số lượng trong kho!", 400);
+      }
+      existItem.SoLuong = quantity;
+      await existItem.save();
+    } else {
+      throw new ErrorHandler(
+        "Không tìm thấy sản phẩm này trong giỏ hàng của bạn!",
+        404,
+      );
+    }
+    return await getCartService(idAccount);
+  } catch (err) {
+    if (err.statusCode) throw err;
+    console.error(err);
+    throw new ErrorHandler(
+      "Lỗi server! Không thể sửa số lượng sản phẩm trong giỏ hàng!",
+      500,
+    );
+  }
+};
+
+export const deleteCartItemsService = async (idAccount, idVariant) => {
+  try {
+    const customer = await CustomerModel.findOne({
+      where: {
+        MaTaiKhoan: idAccount,
+      },
+    });
+    if (!customer) {
+      throw new ErrorHandler("Không tìm thấy khách hàng này!", 404);
+    }
+    const cart = await CartModel.findOne({
+      where: {
+        MaKhachHang: customer.MaKhachHang,
+      },
+    });
+    if (!cart) {
+      return null;
+    }
+    const existItem = await CartInfoModel.findOne({
+      where: {
+        MaGioHang: cart.MaGioHang,
+        MaBienThe: idVariant,
+      },
+    });
+    if (!existItem) {
+      throw new ErrorHandler(
+        "Không tìm thấy sản phẩm này trong giỏ hàng!",
+        404,
+      );
+    }
+    await existItem.destroy();
+    return await getCartService(idAccount);
+  } catch (err) {
+    if (err.statusCode) throw err;
+    console.error(err);
+    throw new ErrorHandler(
+      "Lỗi server! Không thể xóa sản phẩm trong giỏ hàng!",
+      500,
+    );
+  }
+};
+
+export const deleteCartService = async (idAccount) => {
+  try {
+    const customer = await CustomerModel.findOne({
+      where: {
+        MaTaiKhoan: idAccount,
+      },
+    });
+    if (!customer) {
+      throw new ErrorHandler("Không tìm thấy khách hàng này!", 404);
+    }
+    const cart = await CartModel.findOne({
+      where: {
+        MaKhachHang: customer.MaKhachHang,
+      },
+    });
+    await CartInfoModel.destroy({
+      where: {
+        MaGioHang: cart.MaGioHang,
+      },
+    });
+    return await getCartService(idAccount);
+  } catch (err) {
+    if (err.statusCode) throw err;
+    console.error(err);
+    throw new ErrorHandler(
+      "Lỗi server! Không thể xóa sản phẩm trong giỏ hàng!",
+      500,
+    );
   }
 };
