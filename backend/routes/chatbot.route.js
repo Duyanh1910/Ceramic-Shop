@@ -32,7 +32,7 @@ router.post("/webhook", async (req, res) => {
 
     try {
       let sqlQuery = `
-                SELECT DISTINCT bt.TenBienThe, bt.Gia, bt.SoLuong, ha.DuongDan, sp.TenSanPham
+                SELECT bt.MaBienThe, bt.TenBienThe, bt.Gia, bt.SoLuong, MIN(ha.DuongDan) as DuongDan, sp.TenSanPham
                 FROM BienTheSanPham bt
                 JOIN SanPham sp ON bt.MaSanPham = sp.MaSanPham
                 LEFT JOIN HinhAnhBienThe ha ON bt.MaBienThe = ha.MaBienThe
@@ -50,6 +50,8 @@ router.post("/webhook", async (req, res) => {
           queryParams.push(searchTT);
         }
       });
+
+      sqlQuery += ` GROUP BY bt.MaBienThe, bt.TenBienThe, bt.Gia, bt.SoLuong, sp.TenSanPham`;
 
       const [rows] = await pool.execute(sqlQuery, queryParams);
 
