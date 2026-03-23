@@ -5,6 +5,7 @@ import { Layout, Input, Dropdown, Avatar, Space, Badge, Popover, Button, Spin, R
 import { SearchOutlined, ShoppingCartOutlined, SettingOutlined, LogoutOutlined, ArrowLeftOutlined, DeleteOutlined } from '@ant-design/icons';
 import { Helmet } from 'react-helmet-async';
 import styles from './ProductDetail.module.css';
+import ChatBot from './ChatBot'; // ĐÃ THÊM CHATBOT
 
 const { Header, Content } = Layout;
 
@@ -26,7 +27,8 @@ function ProductDetail() {
   const [showLens, setShowLens] = useState(false);
   const [zoomScale, setZoomScale] = useState(2);
 
-  const [userInfo, setUserInfo] = useState({ username: '', status: '' });
+  // ĐÃ SỬA: Đổi status thành avatar để đồng bộ với Home.jsx
+  const [userInfo, setUserInfo] = useState({ username: '', avatar: '' });
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   
   const [cart, setCart] = useState(() => {
@@ -42,10 +44,9 @@ function ProductDetail() {
   const [searchOptions, setSearchOptions] = useState([]);
   const inputRef = useRef(null);
 
+  // ĐÃ SỬA: Logic kiểm tra đăng nhập và lấy Avatar chuẩn như Home.jsx
   useEffect(() => {
     const token = localStorage.getItem('token');
-    let currentName = localStorage.getItem('name') || localStorage.getItem('username');
-    let currentRole = localStorage.getItem('role') == '1' || localStorage.getItem('role') === 'admin' ? 'Quản trị viên' : 'Đang hoạt động';
 
     if (token) {
       try {
@@ -58,17 +59,31 @@ function ProductDetail() {
 
             const payload = JSON.parse(jsonPayload);
             const currentTime = Math.floor(Date.now() / 1000); 
+            
             if (payload.exp && payload.exp < currentTime) {
                 handleLogout();
                 return;
             }
-            if (!currentName) currentName = payload.name || payload.username;
-            if (payload.role === 1 || payload.role === 'admin') currentRole = 'Quản trị viên';
             
             setIsLoggedIn(true);
-            setUserInfo({ username: currentName || 'Khách hàng', status: currentRole });
+
+            axios.get('http://localhost:3000/api/v1/auth/me', {
+              headers: { Authorization: `Bearer ${token}` }
+            }).then(res => {
+              const userData = res.data.user || res.data.result;
+              const profileData = userData?.profile || userData;
+              
+              const fetchedAvatar = profileData?.Avatar || 'https://res.cloudinary.com/dcmwz0uis/image/upload/v1773107213/default_avatar_gojcul.png';
+              const fetchedName = profileData?.TenKhachHang || profileData?.TenNhanVien || userData?.username || 'Thành viên';
+
+              setUserInfo({ username: fetchedName, avatar: fetchedAvatar });
+            }).catch(() => {
+              setIsLoggedIn(false);
+            });
         }
-      } catch (error) { setIsLoggedIn(false); }
+      } catch (error) {
+        setIsLoggedIn(false);
+      }
     } else {
       setIsLoggedIn(false);
     }
@@ -153,8 +168,9 @@ function ProductDetail() {
     localStorage.removeItem('username');
     localStorage.removeItem('name');
     localStorage.removeItem('role');
+    localStorage.removeItem('avatar');
     setIsLoggedIn(false);
-    setUserInfo({ username: '', status: '' });
+    setUserInfo({ username: '', avatar: '' });
     navigate('/login');
     message.success("Đã đăng xuất");
   };
@@ -312,8 +328,14 @@ function ProductDetail() {
     </div>
   );
 
+  // ĐÃ SỬA: Cập nhật Dropdown Menu giống Home.jsx
   const userMenu = [
-    { key: '1', label: 'Sửa hồ sơ', icon: <SettingOutlined /> },
+    { 
+      key: '1', 
+      label: 'Sửa hồ sơ', 
+      icon: <SettingOutlined />,
+      onClick: () => navigate('/profile') 
+    },
     { type: 'divider' },
     { key: '2', danger: true, label: 'Đăng xuất', icon: <LogoutOutlined />, onClick: handleLogout },
   ];
@@ -373,7 +395,8 @@ function ProductDetail() {
           {isLoggedIn ? (
             <Dropdown menu={{ items: userMenu }} placement="bottomRight" arrow zIndex={9999}>
               <Space className={styles.userProfile}>
-                <Avatar src="https://res.cloudinary.com/dcmwz0uis/image/upload/v1773107213/default_avatar_gojcul.png" />
+                {/* ĐÃ SỬA: Truyền ảnh Avatar thực tế thay vì ảnh cứng */}
+                <Avatar src={userInfo.avatar} />
                 <div className={styles.userInfoBox}><span className={styles.userName}>{userInfo.username}</span></div>
               </Space>
             </Dropdown>
@@ -493,6 +516,10 @@ function ProductDetail() {
           </div>
         </Content>
       </Layout>
+      
+      {/* ĐÃ THÊM: Chatbot ở trang chi tiết sản phẩm */}
+      <ChatBot />
+      
     </Layout>
   );
 }

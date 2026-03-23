@@ -5,6 +5,7 @@ import { LogoutOutlined, SettingOutlined, SearchOutlined, ShoppingCartOutlined, 
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import styles from './Home.module.css';
+import ChatBot from './ChatBot';
 
 const { Header, Sider, Content } = Layout;
 const { Option } = Select;
@@ -29,8 +30,6 @@ function Home() {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    let currentName = localStorage.getItem('name') || localStorage.getItem('username');
-    let currentAvatar = localStorage.getItem('avatar');
 
     if (token) {
       try {
@@ -45,26 +44,24 @@ function Home() {
             const currentTime = Math.floor(Date.now() / 1000); 
             
             if (payload.exp && payload.exp < currentTime) {
-                localStorage.removeItem('token');
-                localStorage.removeItem('username');
-                localStorage.removeItem('name');
-                localStorage.removeItem('role');
-                localStorage.removeItem('avatar');
-                setIsLoggedIn(false);
+                handleLogout();
                 return;
-            }
-
-            if (!currentName) {
-                currentName = payload.name || payload.username;
-            }
-            if (!currentAvatar) {
-                currentAvatar = payload.avatar || payload.Avatar;
             }
             
             setIsLoggedIn(true);
-            setUserInfo({ 
-                username: currentName || 'Khách hàng',
-                avatar: currentAvatar || 'https://res.cloudinary.com/dcmwz0uis/image/upload/v1773107213/default_avatar_gojcul.png'
+
+            axios.get('http://localhost:3000/api/v1/auth/me', {
+              headers: { Authorization: `Bearer ${token}` }
+            }).then(res => {
+              const userData = res.data.user || res.data.result;
+              const profileData = userData?.profile || userData;
+              
+              const fetchedAvatar = profileData?.Avatar || 'https://res.cloudinary.com/dcmwz0uis/image/upload/v1773107213/default_avatar_gojcul.png';
+              const fetchedName = profileData?.TenKhachHang || profileData?.TenNhanVien || userData?.username || 'Thành viên';
+
+              setUserInfo({ username: fetchedName, avatar: fetchedAvatar });
+            }).catch(() => {
+              setIsLoggedIn(false);
             });
         }
       } catch (error) {
@@ -285,9 +282,7 @@ function Home() {
         });
         
         setCategories(menuItems);
-      } catch (error) {
-        console.error("Lỗi lấy danh mục:", error);
-      }
+      } catch (error) {}
     };
     fetchCategories();
   }, []);
@@ -475,6 +470,8 @@ function Home() {
                             <div className={styles.productPrice}>{formatPrice(p.GiaThapNhat)}</div>
 
                               <div className={styles.cardButtons}>
+                                
+
                                 <button 
                                   className={styles.btnBuy} 
                                   disabled={isDiscontinued || isSoldOut}
@@ -519,6 +516,7 @@ function Home() {
           )}
         </Content>
       </Layout>
+      <ChatBot />
     </Layout>
   );
 }

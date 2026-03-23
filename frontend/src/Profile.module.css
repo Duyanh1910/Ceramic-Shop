@@ -10,9 +10,9 @@
 .profileWrapper {
   min-height: 100vh;
   background-color: #fdfdfd;
+  background: linear-gradient(rgba(255, 255, 255, 0.8), rgb(213, 233, 255)), url('bghome.avif');
 }
 
-/* ================= HEADER ================= */
 .topHeader {
   display: flex;
   justify-content: space-between;
@@ -58,7 +58,6 @@
   color: #c48c46;
 }
 
-/* ================= LAYOUT ================= */
 .mainContent {
   padding: 40px 20px;
 }
@@ -74,9 +73,12 @@
   gap: 30px;
 }
 
-/* ================= SIDEBAR ================= */
 .sidebar {
-  background: transparent !important;
+  padding: 10px;
+  background: white !important;
+  border-radius: 10px;
+  height: fit-content;
+  max-width: 200px;
 }
 
 .userInfoMini {
@@ -131,7 +133,6 @@
   font-weight: 600;
 }
 
-/* ================= FORM CONTENT ================= */
 .formContent {
   background: #ffffff;
   border-radius: 12px;
@@ -180,7 +181,6 @@
   border-left: 1px solid #f0f0f0;
 }
 
-/* ================= INPUTS & BUTTONS ================= */
 .profileForm :global(.ant-form-item-label > label) {
   font-weight: 500;
   color: #555;
@@ -222,7 +222,6 @@
   box-shadow: 0 5px 15px rgba(27, 67, 124, 0.3);
 }
 
-/* ================= AVATAR UPLOAD ================= */
 .avatarSection {
   display: flex;
   flex-direction: column;
