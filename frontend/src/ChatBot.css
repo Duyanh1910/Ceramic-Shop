@@ -1,0 +1,58 @@
+df-messenger {
+    --df-messenger-button-titlebar-color: #5492f6;
+    --df-messenger-button-titlebar-font-color: #FFFFFF;
+    --df-messenger-chat-background-color: #FFFFFF;
+    --df-messenger-font-color: #333333;
+    --df-messenger-user-message: #C06E52;
+    --df-messenger-message-user-font-color: #FFFFFF;
+    --df-messenger-bot-message: #F4EAE6;
+    --df-messenger-message-bot-font-color: #333333;
+    --df-messenger-send-icon: #538df8;
+    position: relative;
+    z-index: 9999999 !important;
+}
+
+.chibi-character {
+    position: fixed;
+    bottom: -200px; 
+    right: -120px; 
+    width: 600px; 
+    height: 600px;
+    cursor: pointer;
+    z-index: 999990;
+    transition: right 0.4s ease-in-out, transform 0.2s;
+    background-color: transparent; 
+}
+
+.chibi-character:hover {
+    transform: scale(1.05);
+}
+
+.chibi-character::part(default-progress-bar) {
+    display: none;
+}
+
+.change-anim-btn {
+    position: fixed;
+    bottom: 250px;
+    right: 80px;
+    background-color: #5262c0;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 999995;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    transition: right 0.4s ease-in-out, transform 0.2s, background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.change-anim-btn:hover {
+    transform: scale(1.1);
+    background-color: #ffffff;
+}
