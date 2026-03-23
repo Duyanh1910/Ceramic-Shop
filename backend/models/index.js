@@ -12,6 +12,8 @@ import AttributeModel from "./product/attribute.model.js";
 import AttributeValueModel from "./product/attribute_value.model.js";
 import VariantAttributeModel from "./product/variant_attribute.model.js";
 
+import { CartInfoModel, CartModel } from "./cart.model.js";
+
 RoleModel.hasMany(AccountModel, {
   foreignKey: "MaQuyen",
   sourceKey: "MaPhanQuyen",
@@ -80,6 +82,29 @@ AttributeValueModel.belongsToMany(VariantModel, {
   otherKey: "MaBienThe",
 });
 
+CustomerModel.hasOne(CartModel, {
+  foreignKey: "MaKhachHang",
+});
+
+CartModel.belongsTo(CustomerModel, {
+  foreignKey: "MaKhachHang",
+});
+
+CartModel.hasMany(CartInfoModel, {
+  foreignKey: "MaGioHang",
+});
+
+CartInfoModel.belongsTo(CartModel, {
+  foreignKey: "MaGioHang",
+});
+
+CartInfoModel.belongsTo(VariantModel, {
+  foreignKey: "MaBienThe",
+});
+
+VariantModel.hasMany(CartInfoModel, {
+  foreignKey: "MaBienThe",
+});
 export {
   sequelize,
   AccountModel,
@@ -93,4 +118,6 @@ export {
   AttributeModel,
   AttributeValueModel,
   VariantAttributeModel,
+  CartModel,
+  CartInfoModel,
 };

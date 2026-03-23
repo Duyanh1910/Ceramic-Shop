@@ -8,6 +8,8 @@ import staffRoutes from "../routes/staff.route.js";
 import categoryRoutes from "./category.route.js";
 import attributeRoutes from "./attribute.route.js";
 import productRoutes from "./product.route.js";
+import cartRoutes from "./cart.route.js";
+
 import jwtMiddleware from "../middlewares/jwt.middlewares.js";
 import checkRole from "../middlewares/authorize.middlewares.js";
 
@@ -40,7 +42,10 @@ router.use(
 );
 
 router.use("/categories", categoryRoutes);
+
 router.use("/attributes", attributeRoutes);
+
+router.use("/cart", jwtMiddleware, cartRoutes);
 
 router.use("/products", productRoutes);
 
