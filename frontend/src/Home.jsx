@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { Dropdown, Avatar, Space, Layout, Menu, Input, Select, Row, Col, Pagination, Spin, Badge, message, AutoComplete, Popover, Button } from 'antd';
 import { LogoutOutlined, SettingOutlined, SearchOutlined, ShoppingCartOutlined, DeleteOutlined, ReloadOutlined, AppstoreOutlined, EyeOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import styles from './Home.module.css';
 import ChatBot from './ChatBot';
@@ -12,6 +12,7 @@ const { Option } = Select;
 
 function Home() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -91,6 +92,16 @@ function Home() {
     setUserInfo({ username: '', avatar: '' });
     message.success("Đã đăng xuất");
   };
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const keyword = searchParams.get('search');
+    
+    if (keyword) {
+      setSearchKw(keyword);
+      setAppliedSearchKw(keyword); 
+    }
+  }, [location.search]);
 
   const userMenu = [
     { 
@@ -232,6 +243,8 @@ function Home() {
     setAppliedSearchKw(searchKw); 
     setCurrentPage(1);
     setSearchOptions([]); 
+    // Xóa param trên URL đi sau khi search bằng tay để URL gọn gàng
+    navigate('/');
     if (inputRef.current) inputRef.current.blur(); 
   };
 
@@ -245,10 +258,12 @@ function Home() {
 
   const handleResetFilters = () => {
     setSortField(''); setSortOrder(''); setSearchKw(''); setAppliedSearchKw(''); setSelectedCategory('all'); setSearchOptions([]); setCurrentPage(1);
+    navigate('/'); // Reset lại URL
   };
 
   const handleMenuClick = (e) => {
     setSortField(''); setSortOrder(''); setSearchKw(''); setAppliedSearchKw(''); setSearchOptions([]); setSelectedCategory(e.key); setCurrentPage(1);
+    navigate('/'); // Reset lại URL
   };
 
   useEffect(() => {
@@ -470,8 +485,6 @@ function Home() {
                             <div className={styles.productPrice}>{formatPrice(p.GiaThapNhat)}</div>
 
                               <div className={styles.cardButtons}>
-                                
-
                                 <button 
                                   className={styles.btnBuy} 
                                   disabled={isDiscontinued || isSoldOut}

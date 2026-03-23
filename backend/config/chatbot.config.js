@@ -1,6 +1,6 @@
 import mysql from "mysql2/promise";
 export const CHATBOT_LINKS = {
-  domainWeb: "http://127.0.0.1:5500/product.html",
+  domainWeb: "http://localhost:5173",
   zaloLink: "https://zalo.me/0329835725",
   emailLink: "mailto:theceramicshop24@gmail.com",
   phoneLink: "tel:0329835725",
