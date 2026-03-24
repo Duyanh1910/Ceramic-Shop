@@ -59,8 +59,8 @@ INSERT INTO ChiTietGioHang (MaChiTietGH, MaGioHang, MaBienThe, SoLuong) VALUES
 (6, 6, 19, 5), (7, 7, 21, 6), (8, 8, 31, 1), (9, 9, 37, 10), (10, 10, 41, 1);
 
 INSERT INTO DonHang (MaDonHang, MaKhachHang, NgayDat, TongTienHang, TongPhiVanChuyen, TongGiamGia, TongThanhToan, DiaChiGiaoHang, TenNguoiNhan, SDT, TrangThaiDonHang, TrangThaiThanhToan, MaPhuongThuc) VALUES
-(1, 1, '2026-03-01', 500000, 30000, 0, 530000, '789 Ngõ Đất Nung, Đà Nẵng', 'Lê Khách Mua', '0987654321', 2, 1, 1),
-(2, 2, '2026-03-02', 1200000, 30000, 50000, 1180000, '12 Lê Lợi, TP.HCM', 'Nguyễn Văn An', '0987654002', 2, 1, 2),
+(1, 1, '2026-03-01', 500000, 30000, 0, 530000, '789 Ngõ Đất Nung, Đà Nẵng', 'Lê Khách Mua', '0987654321', 3, 1, 1),
+(2, 2, '2026-03-02', 1200000, 30000, 50000, 1180000, '12 Lê Lợi, TP.HCM', 'Nguyễn Văn An', '0987654002', 3, 1, 2),
 (3, 3, '2026-03-03', 800000, 50000, 0, 850000, '34 Quang Trung, Hà Nội', 'Trần Thị Bình', '0987654003', 2, 1, 3),
 (4, 4, '2026-03-04', 3500000, 70000, 100000, 3470000, '56 Nguyễn Văn Linh, Đà Nẵng', 'Lê Văn Cường', '0987654004', 2, 1, 4),
 (5, 5, '2026-03-05', 450000, 30000, 0, 480000, '78 Trần Hưng Đạo, Cần Thơ', 'Phạm Thị Dung', '0987654005', 1, 1, 1),
@@ -68,7 +68,7 @@ INSERT INTO DonHang (MaDonHang, MaKhachHang, NgayDat, TongTienHang, TongPhiVanCh
 (7, 7, '2026-03-12', 2100000, 50000, 100000, 2050000, '11 Đống Đa, Hà Nội', 'Vũ Thị Giang', '0987654007', 0, 0, 2),
 (8, 8, '2026-03-15', 600000, 30000, 0, 630000, '22 Ngô Quyền, Hải Phòng', 'Đặng Văn Hải', '0987654008', 0, 0, 3),
 (9, 9, '2026-03-16', 1500000, 60000, 50000, 1510000, '33 Tôn Đức Thắng, TP.HCM', 'Bùi Thị Hạnh', '0987654009', 0, 0, 4),
-(10, 10, '2026-03-17', 5000000, 200000, 200000, 5000000, '44 Kim Mã, Hà Nội', 'Đỗ Văn Hùng', '0987654010', 0, 0, 2);
+(10, 10, '2026-03-17', 5000000, 200000, 200000, 5000000, '44 Kim Mã, Hà Nội', 'Đỗ Văn Hùng', '0987654010', 4, 0, 2);
 
 INSERT INTO ChiTietDonHang (MaCTDH, MaDonHang, MaBienThe, SoLuong, GiaBan, ThanhTien) VALUES
 (1, 1, 1, 1, 500000, 500000), (2, 2, 4, 2, 600000, 1200000),

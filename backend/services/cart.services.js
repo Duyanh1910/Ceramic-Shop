@@ -87,7 +87,7 @@ export const addCartItemsService = async (idAccount, idVariant, quantity) => {
         },
       ],
     });
-    if (!variant) {
+    if (!variant || variant.TrangThai === 0) {
       throw new ErrorHandler(
         "Sản phẩm này không tồn tại hoặc đã ngừng kinh doanh!",
         404,
@@ -149,7 +149,7 @@ export const updateCartItemsService = async (
     const variant = await VariantModel.findByPk(idVariant, {
       attributes: ["MaSanPham", "TenBienThe", "Gia", "SoLuong", "TrangThai"],
     });
-    if (!variant) {
+    if (!variant || variant.TrangThai === 0) {
       throw new ErrorHandler(
         "Sản phẩm này không tồn tại hoặc đã ngừng kinh doanh!",
         404,
@@ -252,6 +252,9 @@ export const deleteCartService = async (idAccount) => {
         MaKhachHang: customer.MaKhachHang,
       },
     });
+    if (!cart) {
+      return { items: [], totalPrice: 0 };
+    }
     await CartInfoModel.destroy({
       where: {
         MaGioHang: cart.MaGioHang,
