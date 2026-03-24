@@ -85,7 +85,7 @@ export const deleteCartItemsController = async (req, res, next) => {
         new ErrorHandler("Mã biến thể sản phẩm phải là số dương!", 400),
       );
     }
-    const cart = await de(id, MaBienThe);
+    const cart = await deleteCartItemsService(id, MaBienThe);
     if (!cart) {
       return next(new ErrorHandler("Giỏ hàng đang trống!", 404));
     }
