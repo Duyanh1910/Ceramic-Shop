@@ -1,6 +1,5 @@
 import { APP_PORT, cookie, dbConfig } from "./config/app_config.js";
 import { connectDB } from "./config/database.js";
-import { connectRedis } from "./config/redis.config.js";
 import transporter from "./config/mail.config.js";
 import errorMiddleware from "./middlewares/error.middlewares.js";
 import express from "express";
@@ -40,7 +39,6 @@ async function startServer() {
   try {
     await connectDB();
     await transporter.verify();
-    await connectRedis();
     app.listen(APP_PORT, () => {
       console.log(`🚀 Server chạy tại http://localhost:${APP_PORT}`);
     });
