@@ -18,10 +18,10 @@ export const sendVerifyEmailController = async (req, res, next) => {
     await redisClient.del(`otp_attempts:${email}`);
     const otp = await sendEmailVerifyService(email);
     await redisClient.set(`otp_cooldown:${email}`, "1", {
-      EX: 60,
+      ex: 60,
     });
     await redisClient.set(`otp_verify:${email}`, otp, {
-      EX: 300,
+      ex: 300,
     });
     return res.status(200).json({
       success: true,
@@ -70,11 +70,11 @@ export const VerifyEmailController = async (req, res, next) => {
         }),
       );
     }
-    await redisClient.del([
+    await redisClient.del(
       `otp_verify:${email}`,
       `otp_cooldown:${email}`,
       `otp_attempts:${email}`,
-    ]);
+    );
     return res.status(200).json({
       success: true,
       message: "Xác thực OTP thành công",

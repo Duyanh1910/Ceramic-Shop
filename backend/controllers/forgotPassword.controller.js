@@ -26,8 +26,8 @@ export const forgotPasswordController = async (req, res, next) => {
     await redisClient.del(`otp_attempts:${email}`);
     const otp = await sendEmailVerifyService(email, "forgot_password");
 
-    await redisClient.set(`otp_cooldown:${email}`, "1", { EX: 60 });
-    await redisClient.set(`otp_verify:${email}`, otp, { EX: 300 });
+    await redisClient.set(`otp_cooldown:${email}`, "1", { ex: 60 });
+    await redisClient.set(`otp_verify:${email}`, otp, { ex: 300 });
 
     return res
       .status(200)
@@ -75,15 +75,15 @@ export const verifyOTPResetPasswordController = async (req, res, next) => {
         }),
       );
     }
-    await redisClient.del([
+    await redisClient.del(
       `otp_verify:${email}`,
       `otp_cooldown:${email}`,
       `otp_attempts:${email}`,
-    ]);
+    );
 
     const resetToken = crypto.randomBytes(32).toString("hex");
     await redisClient.set(`reset_token:${email}`, resetToken, {
-      EX: 600,
+      ex: 600,
     });
 
     return res.status(200).json({

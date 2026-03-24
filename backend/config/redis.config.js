@@ -1,24 +1,8 @@
-import { createClient } from "redis";
+import { Redis } from "@upstash/redis";
 
-const REDIS_URL = process.env.REDIS_URL;
-
-const redisClient = createClient({
-  url: REDIS_URL,
+const redisClient = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN,
 });
-
-redisClient.on("error", (err) => {
-  console.error("❌ Redis Client Error:", err);
-});
-
-export const connectRedis = async () => {
-  try {
-    if (!redisClient.isOpen) {
-      await redisClient.connect();
-      console.log("✅ Đã kết nối tới Memurai thành công!");
-    }
-  } catch (err) {
-    console.error("❌ Không thể kết nối Redis:", err);
-  }
-};
 
 export default redisClient;
