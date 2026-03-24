@@ -1,6 +1,5 @@
 import { cookie, dbConfig } from "./config/app_config.js";
 import { connectDB } from "./config/database.js";
-import transporter from "./config/mail.config.js";
 import errorMiddleware from "./middlewares/error.middlewares.js";
 import express from "express";
 import helmet from "helmet";

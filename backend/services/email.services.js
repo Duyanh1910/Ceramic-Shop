@@ -6,7 +6,8 @@ export const sendEmailVerifyService = async (email, type = "verify") => {
   try {
     const raw = crypto.randomInt(0, 1000000);
     const otp = raw.toString().padStart(6, "0");
-
+    console.log(process.env.BREVO_USER);
+    console.log(process.env.BREVO_PASS);
     let mailSubject = "";
     let title = "";
     let description = "";
@@ -27,7 +28,7 @@ export const sendEmailVerifyService = async (email, type = "verify") => {
     }
 
     const info = await transporter.sendMail({
-      from: `"The Ceramic Shop" <${process.env.EMAIL_USERNAME}>`,
+      from: `"The Ceramic Shop" <a5e216001@smtp-brevo.com>`,
       to: email,
       subject: mailSubject,
       html: `
@@ -74,9 +75,11 @@ export const sendEmailVerifyService = async (email, type = "verify") => {
 </div>
 `,
     });
+    console.log("Email sent:", info.messageId);
+
     return otp;
   } catch (err) {
-    console.error(err);
+    console.error("Send mail error:", err);
     throw new ErrorHandler("Lỗi server! Không thể gửi mail!", 500);
   }
 };

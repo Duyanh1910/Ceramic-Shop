@@ -170,11 +170,14 @@ export const updateCartItemsService = async (
       },
     });
     if (existItem) {
-      if (quantity > variant.SoLuong) {
+      if (quantity === 0) {
+        await existItem.destroy();
+      } else if (quantity > variant.SoLuong) {
         throw new ErrorHandler("Sản phẩm vượt quá số lượng trong kho!", 400);
+      } else {
+        existItem.SoLuong = quantity;
+        await existItem.save();
       }
-      existItem.SoLuong = quantity;
-      await existItem.save();
     } else {
       throw new ErrorHandler(
         "Không tìm thấy sản phẩm này trong giỏ hàng của bạn!",

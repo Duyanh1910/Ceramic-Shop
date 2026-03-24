@@ -1,17 +1,14 @@
 import nodemailer from "nodemailer";
-import dns from "dns";
-dns.setDefaultResultOrder("ipv4first");
 
-const user = process.env.EMAIL_USERNAME;
-const password = process.env.EMAIL_PASSWORD;
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
+  host: "smtp-relay.brevo.com",
+  port: 587,
+  secure: false,
   auth: {
-    user: user,
-    pass: password,
+    user: "a5e216001@smtp-brevo.com",
+    pass: "d2SUXC6qMTNFQfZm",
   },
 });
+
 
 export default transporter;
