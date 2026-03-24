@@ -8,6 +8,12 @@ const sequelize = new Sequelize(
     host: dbConfig.host,
     port: dbConfig.port,
     dialect: "mysql",
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: true,
+      },
+    },
     logging: false,
     pool: {
       min: dbConfig.pool.min,
@@ -15,7 +21,7 @@ const sequelize = new Sequelize(
       acquire: dbConfig.pool.acquire,
       idle: dbConfig.pool.idle,
     },
-  }
+  },
 );
 export const connectDB = async () => {
   sequelize

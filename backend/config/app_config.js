@@ -6,8 +6,10 @@ const DB_HOST = process.env.DB_HOST;
 const DB_USER = process.env.DB_USER;
 const DB_PASSWORD = process.env.DB_PASSWORD;
 const DB_DATABASE = process.env.DB_DATABASE;
+const DB_CONN = process.env.DB_CONN;
 
 const dbConfig = {
+  conn: DB_CONN,
   host: DB_HOST,
   port: Number(DB_PORT),
   user: DB_USER,
