@@ -1,4 +1,4 @@
-import { APP_PORT, cookie, dbConfig } from "./config/app_config.js";
+import { cookie, dbConfig } from "./config/app_config.js";
 import { connectDB } from "./config/database.js";
 import transporter from "./config/mail.config.js";
 import errorMiddleware from "./middlewares/error.middlewares.js";
@@ -39,8 +39,9 @@ async function startServer() {
   try {
     await connectDB();
     await transporter.verify();
-    app.listen(APP_PORT, () => {
-      console.log(`🚀 Server chạy tại http://localhost:${APP_PORT}`);
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+      console.log(`🚀 Server chạy tại port ${PORT}`);
     });
   } catch (err) {
     console.log(err);
