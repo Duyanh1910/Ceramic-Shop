@@ -38,7 +38,6 @@ app.use(errorMiddleware);
 async function startServer() {
   try {
     await connectDB();
-    await transporter.verify();
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {
       console.log(`🚀 Server chạy tại port ${PORT}`);
