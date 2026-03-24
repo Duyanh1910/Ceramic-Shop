@@ -3,25 +3,38 @@ df-messenger {
     --df-messenger-button-titlebar-font-color: #FFFFFF;
     --df-messenger-chat-background-color: #FFFFFF;
     --df-messenger-font-color: #333333;
-    --df-messenger-user-message: #C06E52;
-    --df-messenger-message-user-font-color: #FFFFFF;
-    --df-messenger-bot-message: #F4EAE6;
-    --df-messenger-message-bot-font-color: #333333;
-    --df-messenger-send-icon: #538df8;
-    position: relative;
+    --df-messenger-send-icon: #5492f6;
+    position: fixed !important;
+    bottom: 80px !important;
+    right: 20px !important;
     z-index: 9999999 !important;
 }
 
-.chibi-character {
+.bot-wrapper {
     position: fixed;
-    bottom: -200px; 
-    right: -120px; 
-    width: 600px; 
-    height: 600px;
-    cursor: pointer;
+    bottom: 80px;
+    right: 0;
     z-index: 999990;
-    transition: right 0.4s ease-in-out, transform 0.2s;
-    background-color: transparent; 
+    pointer-events: none; 
+    transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1); 
+    transform: translateX(0); 
+    pointer-events: none;
+}
+
+.bot-wrapper.chat-open {
+    transform: translateX(-400px);
+}
+
+.chibi-character {
+    position: absolute;
+    bottom: -225px; 
+    right: -125px; 
+    width: 350px;
+    height: 350px;
+    cursor: pointer;
+    pointer-events: auto; 
+    background-color: transparent !important; 
+    pointer-events: auto;
 }
 
 .chibi-character:hover {
@@ -33,26 +46,70 @@ df-messenger {
 }
 
 .change-anim-btn {
-    position: fixed;
-    bottom: 250px;
-    right: 80px;
-    background-color: #5262c0;
+    position: absolute;
+    bottom: -30px; 
+    right: 100px; 
+    
+    background-color: #5492f6; 
     color: white;
     border: none;
     border-radius: 50%;
-    width: 45px;
-    height: 45px;
-    font-size: 20px;
+    width: 38px;
+    height: 38px;
+    font-size: 18px;
     cursor: pointer;
-    z-index: 999995;
+    pointer-events: auto; 
     box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-    transition: right 0.4s ease-in-out, transform 0.2s, background-color 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: transform 0.2s, background-color 0.2s;
+    z-index: 999999;
+    margin-bottom: 0px; 
+    margin-left: 0px;
+    pointer-events: auto;
 }
 
 .change-anim-btn:hover {
     transform: scale(1.1);
-    background-color: #ffffff;
+    background-color: #3b7ce3;
+}
+
+.chat-bubble-hint {
+    position: absolute;
+    bottom: 60px; 
+    right: 30px; 
+    background: linear-gradient(135deg, #ffe6f0, #ffcce0); 
+    color: #333;
+    padding: 12px 20px;
+    border-radius: 16px;
+    font-weight: 600;
+    font-size: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    pointer-events: none; 
+    animation: bounceBubble 2s infinite; 
+    width: max-content;
+    max-width: 250px;
+    line-height: 1.4;
+}
+
+.chat-bubble-hint::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    right: 40px; 
+    border-width: 10px 10px 0;
+    border-style: solid;
+    border-color: #ffcce0 transparent transparent transparent;
+}
+
+@keyframes bounceBubble {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+@media (max-width: 768px) {
+    .bot-wrapper.chat-open {
+        display: none;
+    }
 }
