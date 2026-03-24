@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Form, Input, Button, message, Divider, Empty, Row, Col, Popconfirm } from 'antd';
+import { Layout, Form, Input, Button, message, Divider, Empty, Row, Col, Popconfirm, Checkbox } from 'antd';
 import { DeleteOutlined, ArrowLeftOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -13,14 +13,41 @@ function Cart() {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-
+  const [selectedItems, setSelectedItems] = useState([]);
+  
   const [cart, setCart] = useState(() => {
     const savedCart = localStorage.getItem('ceramic_cart');
     return savedCart ? JSON.parse(savedCart) : [];
   });
+
   useEffect(() => {
-    localStorage.setItem('ceramic_cart', JSON.stringify(cart));
-  }, [cart]);
+    if (!isLoggedIn) {
+      localStorage.setItem('ceramic_cart', JSON.stringify(cart));
+    }
+  }, [cart, isLoggedIn]);
+
+  const fetchCartFromDB = async (token) => {
+    try {
+      const res = await axios.get('http://localhost:3000/api/v1/cart', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.data.cart && res.data.cart.items) {
+        const dbCart = res.data.cart.items.map(item => ({
+          id: item.BienTheSanPham.MaSanPham,
+          variantId: item.MaBienThe,
+          name: `${item.BienTheSanPham.SanPham.TenSanPham} - ${item.BienTheSanPham.TenBienThe}`,
+          price: Number(item.BienTheSanPham.Gia),
+          quantity: item.SoLuong,
+          maxStock: item.BienTheSanPham.SoLuong,
+          image: item.BienTheSanPham.HinhAnhBienThes?.[0]?.DuongDan || item.BienTheSanPham.SanPham?.Thumbnail || ''
+        }));
+        setCart(dbCart);
+      } else {
+        setCart([]);
+      }
+    } catch (error) {
+    }
+  };
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -36,6 +63,7 @@ function Cart() {
           SDT: profileData?.SDT || '',
           DiaChi: profileData?.DiaChi || profileData?.Diachi || '',
         });
+        fetchCartFromDB(token);
       }).catch(() => {
         setIsLoggedIn(false);
       });
@@ -46,12 +74,61 @@ function Cart() {
 
   const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price || 0);
 
-  const handleRemoveItem = (id, variantId) => {
-    setCart(prev => prev.filter(item => !(item.id === id && item.variantId === variantId)));
-    message.success("Đã xóa sản phẩm khỏi giỏ hàng");
+  const getItemKey = (item) => `${item.id}-${item.variantId}`;
+
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedItems(cart.map(getItemKey));
+    } else {
+      setSelectedItems([]);
+    }
   };
 
-  const updateQty = (id, variantId, change) => {
+  const handleSelectItem = (key, checked) => {
+    if (checked) {
+      setSelectedItems(prev => [...prev, key]);
+    } else {
+      setSelectedItems(prev => prev.filter(k => k !== key));
+    }
+  };
+
+  const handleRemoveItem = async (id, variantId) => {
+    setCart(prev => prev.filter(item => !(item.id === id && item.variantId === variantId)));
+    setSelectedItems(prev => prev.filter(k => k !== `${id}-${variantId}`));
+    if (isLoggedIn) {
+      try {
+        const token = localStorage.getItem('token');
+        await axios.delete(`http://localhost:3000/api/v1/cart/items/${variantId || id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      } catch (error) {
+      }
+    }
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selectedItems.length === 0) {
+      return message.warning("Vui lòng chọn ít nhất 1 sản phẩm để xóa!");
+    }
+    const itemsToDelete = cart.filter(item => selectedItems.includes(getItemKey(item)));
+    
+    setCart(prev => prev.filter(item => !selectedItems.includes(getItemKey(item))));
+    setSelectedItems([]);
+
+    if (isLoggedIn) {
+      try {
+        const token = localStorage.getItem('token');
+        await Promise.all(itemsToDelete.map(item => 
+          axios.delete(`http://localhost:3000/api/v1/cart/items/${item.variantId || item.id}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+        ));
+      } catch (error) {
+      }
+    }
+  };
+
+  const updateQty = async (id, variantId, change) => {
     const itemToUpdate = cart.find(item => item.id === id && item.variantId === variantId);
     if (!itemToUpdate) return;
     
@@ -62,9 +139,20 @@ function Cart() {
         message.info(`Sản phẩm này chỉ còn ${itemToUpdate.maxStock} cái`);
     }
     setCart(prev => prev.map(item => (item.id === id && item.variantId === variantId) ? { ...item, quantity: newQty } : item));
+
+    if (isLoggedIn) {
+      try {
+        const token = localStorage.getItem('token');
+        await axios.patch(`http://localhost:3000/api/v1/cart/items/${variantId || id}`, 
+          { SoLuong: newQty },
+          { headers: { Authorization: `Bearer ${token}` }}
+        );
+      } catch (error) {
+      }
+    }
   };
 
-  const handleQtyChange = (id, variantId, value) => {
+  const handleQtyChange = async (id, variantId, value) => {
     const num = parseInt(value, 10);
     if (!isNaN(num) && num >= 1) {
         const itemToUpdate = cart.find(item => item.id === id && item.variantId === variantId);
@@ -73,23 +161,35 @@ function Cart() {
             finalQty = itemToUpdate.maxStock;
         }
         setCart(prev => prev.map(item => (item.id === id && item.variantId === variantId) ? { ...item, quantity: finalQty } : item));
+        
+        if (isLoggedIn) {
+          try {
+            const token = localStorage.getItem('token');
+            await axios.patch(`http://localhost:3000/api/v1/cart/items/${variantId || id}`, 
+              { SoLuong: finalQty },
+              { headers: { Authorization: `Bearer ${token}` }}
+            );
+          } catch (error) {
+          }
+        }
     }
   };
 
   const handleQtyBlur = (id, variantId, value) => {
     const num = parseInt(value, 10);
     if (isNaN(num) || num < 1) {
-      setCart(prev => prev.map(item => (item.id === id && item.variantId === variantId) ? { ...item, quantity: 1 } : item));
+      handleQtyChange(id, variantId, 1);
     }
   };
 
-  const totalCartPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const shippingFee = cart.length > 0 ? 30000 : 0; 
-  const finalTotal = totalCartPrice + shippingFee;
+  const selectedCartItems = cart.filter(item => selectedItems.includes(getItemKey(item)));
+  const totalCartPrice = selectedCartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const shippingFee = selectedCartItems.length > 0 ? 30000 : 0; 
+  const finalTotal = selectedCartItems.length > 0 ? totalCartPrice + shippingFee : 0;
 
   const handleCheckout = async (values) => {
-    if (cart.length === 0) {
-      return message.warning("Giỏ hàng của bạn đang trống!");
+    if (selectedCartItems.length === 0) {
+      return message.warning("Vui lòng chọn ít nhất một sản phẩm để thanh toán!");
     }
 
     if (!isLoggedIn) {
@@ -108,7 +208,7 @@ function Cart() {
         DiaChiGiaoHang: values.DiaChi,
         GhiChu: values.GhiChu || '',
         TongThanhToan: finalTotal,
-        items: cart.map(item => ({
+        items: selectedCartItems.map(item => ({
           MaSanPham: item.id,
           MaBienThe: item.variantId || null,
           SoLuong: item.quantity,
@@ -120,10 +220,16 @@ function Cart() {
         headers: { Authorization: `Bearer ${token}` }
       });
 
+      await Promise.all(selectedCartItems.map(item => 
+        axios.delete(`http://localhost:3000/api/v1/cart/items/${item.variantId || item.id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+      ));
+
       message.success('Đặt hàng thành công!');
       
-      setCart([]); 
-      localStorage.removeItem('ceramic_cart');
+      setCart(prev => prev.filter(item => !selectedItems.includes(getItemKey(item))));
+      setSelectedItems([]); 
       navigate('/'); 
     } catch (error) {
       const errorMsg = error.response?.data?.message || 'Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại!';
@@ -140,7 +246,7 @@ function Cart() {
       </Helmet>
 
       <Header className={styles.topHeader}>
-        <div className={styles.logo} onClick={() => navigate('/')}>CERAMIC-SHOP</div>
+        <div className={styles.logo} onClick={() => navigate('/landing')}>CERAMIC-SHOP</div>
         <Button type="link" icon={<ArrowLeftOutlined />} onClick={() => navigate('/')} className={styles.btnBack}>
           Tiếp tục mua sắm
         </Button>
@@ -162,7 +268,26 @@ function Cart() {
                   </div>
                 ) : (
                   <div className={styles.cartItemsWrapper}>
+                    <div className={styles.selectAllRow}>
+                      <Checkbox 
+                        checked={selectedItems.length === cart.length && cart.length > 0} 
+                        onChange={handleSelectAll}
+                      >
+                        <span style={{ fontWeight: 600 }}>Chọn tất cả ({cart.length})</span>
+                      </Checkbox>
+                      <Button 
+                        type="text" 
+                        danger 
+                        icon={<DeleteOutlined />} 
+                        onClick={handleDeleteSelected} 
+                        disabled={selectedItems.length === 0}
+                      >
+                        Xóa mục đã chọn
+                      </Button>
+                    </div>
+                    
                     <div className={styles.cartHeaderRow}>
+                      <div className={styles.colCheckbox}></div>
                       <div className={styles.colProduct}>Sản phẩm</div>
                       <div className={styles.colPrice}>Đơn giá</div>
                       <div className={styles.colQty}>Số lượng</div>
@@ -170,42 +295,51 @@ function Cart() {
                       <div className={styles.colAction}></div>
                     </div>
                     
-                    {cart.map((item, index) => (
-                      <div key={`${item.id}-${item.variantId || index}`} className={styles.cartItemRow}>
-                        <div className={styles.colProduct}>
-                          <img src={item.image} alt={item.name} className={styles.itemImg} />
-                          <span className={styles.itemName}>{item.name}</span>
-                        </div>
-                        <div className={styles.colPrice}>{formatPrice(item.price)}</div>
-                        <div className={styles.colQty}>
-                          <div className={styles.qtyControls}>
-                            <button className={styles.qtyBtn} onClick={() => updateQty(item.id, item.variantId, -1)}>-</button>
-                            <input 
-                              type="number" 
-                              className={styles.qtyInput} 
-                              value={item.quantity} 
-                              onChange={(e) => handleQtyChange(item.id, item.variantId, e.target.value)} 
-                              onBlur={(e) => handleQtyBlur(item.id, item.variantId, e.target.value)}
+                    {cart.map((item, index) => {
+                      const itemKey = getItemKey(item);
+                      return (
+                        <div key={`${itemKey}-${index}`} className={styles.cartItemRow}>
+                          <div className={styles.colCheckbox}>
+                            <Checkbox 
+                              checked={selectedItems.includes(itemKey)} 
+                              onChange={(e) => handleSelectItem(itemKey, e.target.checked)} 
                             />
-                            <button className={styles.qtyBtn} onClick={() => updateQty(item.id, item.variantId, 1)}>+</button>
+                          </div>
+                          <div className={styles.colProduct}>
+                            <img src={item.image} alt={item.name} className={styles.itemImg} />
+                            <span className={styles.itemName}>{item.name}</span>
+                          </div>
+                          <div className={styles.colPrice}>{formatPrice(item.price)}</div>
+                          <div className={styles.colQty}>
+                            <div className={styles.qtyControls}>
+                              <button className={styles.qtyBtn} onClick={() => updateQty(item.id, item.variantId, -1)}>-</button>
+                              <input 
+                                type="number" 
+                                className={styles.qtyInput} 
+                                value={item.quantity} 
+                                onChange={(e) => handleQtyChange(item.id, item.variantId, e.target.value)} 
+                                onBlur={(e) => handleQtyBlur(item.id, item.variantId, e.target.value)}
+                              />
+                              <button className={styles.qtyBtn} onClick={() => updateQty(item.id, item.variantId, 1)}>+</button>
+                            </div>
+                          </div>
+                          <div className={styles.colTotal}>
+                            {formatPrice(item.price * item.quantity)}
+                          </div>
+                          <div className={styles.colAction}>
+                            <Popconfirm
+                              title="Xóa sản phẩm?"
+                              description="Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?"
+                              onConfirm={() => handleRemoveItem(item.id, item.variantId)}
+                              okText="Xóa"
+                              cancelText="Hủy"
+                            >
+                              <Button type="text" danger icon={<DeleteOutlined />} />
+                            </Popconfirm>
                           </div>
                         </div>
-                        <div className={styles.colTotal} style={{color: '#d0021b', fontWeight: 600}}>
-                          {formatPrice(item.price * item.quantity)}
-                        </div>
-                        <div className={styles.colAction}>
-                          <Popconfirm
-                            title="Xóa sản phẩm?"
-                            description="Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?"
-                            onConfirm={() => handleRemoveItem(item.id, item.variantId)}
-                            okText="Xóa"
-                            cancelText="Hủy"
-                          >
-                            <Button type="text" danger icon={<DeleteOutlined />} />
-                          </Popconfirm>
-                        </div>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 )}
               </div>
@@ -214,6 +348,9 @@ function Cart() {
             <Col xs={24} lg={8}>
               <div className={styles.checkoutSection}>
                 <h3 className={styles.summaryTitle}>Tóm tắt đơn hàng</h3>
+                <div style={{ marginBottom: '15px', fontStyle: 'italic', color: '#888', fontSize: '13px' }}>
+                  (Đã chọn {selectedItems.length} sản phẩm)
+                </div>
                 <div className={styles.summaryRow}>
                   <span>Tạm tính:</span>
                   <span>{formatPrice(totalCartPrice)}</span>
@@ -264,7 +401,7 @@ function Cart() {
                       htmlType="submit" 
                       className={styles.btnSubmitOrder} 
                       loading={loading}
-                      disabled={cart.length === 0}
+                      disabled={selectedCartItems.length === 0}
                       block
                     >
                       TIẾN HÀNH ĐẶT HÀNG

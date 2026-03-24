@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { Dropdown, Avatar, Space, Layout, Menu, Input, Select, Row, Col, Pagination, Spin, Badge, message, AutoComplete, Popover, Button } from 'antd';
+import { Dropdown, Avatar, Space, Layout, Menu, Input, Select, Row, Col, Pagination, Spin, Badge, message, AutoComplete, Popover, Button, Radio } from 'antd';
 import { LogoutOutlined, SettingOutlined, SearchOutlined, ShoppingCartOutlined, DeleteOutlined, ReloadOutlined, AppstoreOutlined, EyeOutlined } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -28,6 +28,46 @@ function Home() {
   const inputRef = useRef(null);
   const [userInfo, setUserInfo] = useState({ username: '', avatar: '' });
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  
+  const [cart, setCart] = useState(() => {
+    const savedCart = localStorage.getItem('ceramic_cart');
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
+
+  const [openPopoverId, setOpenPopoverId] = useState(null);
+  const [currentProduct, setCurrentProduct] = useState(null);
+  const [variants, setVariants] = useState([]);
+  const [selectedVariantId, setSelectedVariantId] = useState(null);
+  const [pendingAction, setPendingAction] = useState('cart');
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      localStorage.setItem('ceramic_cart', JSON.stringify(cart));
+    }
+  }, [cart, isLoggedIn]);
+
+  const fetchCartFromDB = async (token) => {
+    try {
+      const res = await axios.get('http://localhost:3000/api/v1/cart', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.data.cart && res.data.cart.items) {
+        const dbCart = res.data.cart.items.map(item => ({
+          id: item.BienTheSanPham.MaSanPham,
+          variantId: item.MaBienThe,
+          name: `${item.BienTheSanPham.SanPham.TenSanPham} - ${item.BienTheSanPham.TenBienThe}`,
+          price: Number(item.BienTheSanPham.Gia),
+          quantity: item.SoLuong,
+          maxStock: item.BienTheSanPham.SoLuong,
+          image: item.BienTheSanPham.HinhAnhBienThes?.[0]?.DuongDan || item.BienTheSanPham.SanPham?.Thumbnail || ''
+        }));
+        setCart(dbCart);
+      } else {
+        setCart([]);
+      }
+    } catch (error) {
+    }
+  };
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -61,6 +101,7 @@ function Home() {
               const fetchedName = profileData?.TenKhachHang || profileData?.TenNhanVien || userData?.username || 'Thành viên';
 
               setUserInfo({ username: fetchedName, avatar: fetchedAvatar });
+              fetchCartFromDB(token);
             }).catch(() => {
               setIsLoggedIn(false);
             });
@@ -73,15 +114,6 @@ function Home() {
     }
   }, [navigate]);
 
-  const [cart, setCart] = useState(() => {
-    const savedCart = localStorage.getItem('ceramic_cart');
-    return savedCart ? JSON.parse(savedCart) : [];
-  });
-
-  useEffect(() => {
-    localStorage.setItem('ceramic_cart', JSON.stringify(cart));
-  }, [cart]);
-
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('username');
@@ -90,6 +122,8 @@ function Home() {
     localStorage.removeItem('avatar');
     setIsLoggedIn(false);
     setUserInfo({ username: '', avatar: '' });
+    const savedCart = localStorage.getItem('ceramic_cart');
+    setCart(savedCart ? JSON.parse(savedCart) : []);
     message.success("Đã đăng xuất");
   };
 
@@ -116,55 +150,169 @@ function Home() {
 
   const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price || 0);
 
-  const handleAddToCart = (e, product) => {
-    e.stopPropagation(); 
-    setCart(prevCart => {
-      const existingItem = prevCart.find(item => item.id === product.MaSanPham);
-      if (existingItem) {
-        return prevCart.map(item => 
-          item.id === product.MaSanPham ? { ...item, quantity: item.quantity + 1 } : item
-        );
+  const processAddToCart = async (product, variant, action) => {
+    const targetVariantId = variant.MaBienThe;
+    const price = Number(variant.Gia || product.GiaThapNhat);
+    let image = product.Thumbnail || 'https://via.placeholder.com/100';
+    if (variant.HinhAnhBienThes?.length > 0) image = variant.HinhAnhBienThes[0].DuongDan;
+    else if (variant.HinhAnhBienThe?.DuongDan) image = variant.HinhAnhBienThe.DuongDan;
+
+    let fullName = product.TenSanPham;
+    if (variant.TenBienThe && variant.TenBienThe.toLowerCase() !== 'mặc định') {
+      fullName = `${product.TenSanPham} - ${variant.TenBienThe}`;
+    }
+
+    if (isLoggedIn) {
+      try {
+        const token = localStorage.getItem('token');
+        await axios.post('http://localhost:3000/api/v1/cart/items', {
+          MaBienThe: targetVariantId,
+          SoLuong: 1
+        }, { headers: { Authorization: `Bearer ${token}` } });
+        message.success('Đã thêm sản phẩm vào giỏ hàng!');
+        fetchCartFromDB(token);
+        if (action === 'buy') navigate('/cart');
+      } catch (error) {
+        message.error(error.response?.data?.message || 'Lỗi thêm sản phẩm!');
       }
-      return [...prevCart, { 
-        id: product.MaSanPham, 
-        name: product.TenSanPham, 
-        price: product.GiaThapNhat, 
-        image: product.Thumbnail || 'https://via.placeholder.com/100',
-        quantity: 1 
-      }];
-    });
-    message.success('Đã thêm sản phẩm vào giỏ hàng!');
-  };
-
-  const handleBuyNow = (e, product) => {
-    e.stopPropagation();
-    handleAddToCart(e, product);
-    navigate('/cart');
-  };
-
-  const handleRemoveFromCart = (id) => setCart(prevCart => prevCart.filter(item => item.id !== id));
-
-  const handleQtyChange = (id, value) => {
-    if (value === '') return; 
-    const num = parseInt(value, 10);
-    if (isNaN(num) || num < 1) return;
-    setCart(prev => prev.map(item => item.id === id ? { ...item, quantity: num } : item));
-  };
-
-  const handleQtyBlur = (id, value) => {
-    const num = parseInt(value, 10);
-    if (isNaN(num) || num < 1) {
-      setCart(prev => prev.map(item => item.id === id ? { ...item, quantity: 1 } : item));
+    } else {
+      setCart(prevCart => {
+        const existingItem = prevCart.find(item => item.id === product.MaSanPham && item.variantId === targetVariantId);
+        if (existingItem) {
+          return prevCart.map(item => 
+            (item.id === product.MaSanPham && item.variantId === targetVariantId) 
+              ? { ...item, quantity: item.quantity + 1 } : item
+          );
+        }
+        return [...prevCart, { 
+          id: product.MaSanPham, 
+          variantId: targetVariantId,
+          name: fullName, 
+          price: price, 
+          image: image,
+          quantity: 1,
+          maxStock: variant.SoLuong
+        }];
+      });
+      message.success('Đã thêm sản phẩm vào giỏ hàng!');
+      if (action === 'buy') navigate('/cart');
     }
   };
 
-  const increaseQty = (id) => setCart(prev => prev.map(item => item.id === id ? { ...item, quantity: item.quantity + 1 } : item));
-  const decreaseQty = (id) => {
-    setCart(prev => {
-      const existing = prev.find(i => i.id === id);
-      if (existing && existing.quantity > 1) return prev.map(i => i.id === id ? { ...i, quantity: i.quantity - 1 } : i);
-      return prev.filter(i => i.id !== id); 
-    });
+  const handleProductAction = async (e, product, action) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const targetPopoverId = `${product.MaSanPham}-${action}`;
+    if (openPopoverId === targetPopoverId) {
+      setOpenPopoverId(null);
+      return;
+    }
+    setOpenPopoverId(null);
+
+    try {
+      const res = await axios.get(`http://localhost:3000/api/v1/products/${product.MaSanPham}`);
+      const prodData = res.data.result || res.data.data || res.data;
+      
+      let availableVariants = [];
+      if (Array.isArray(prodData.BienTheSanPhams)) availableVariants = prodData.BienTheSanPhams;
+      else if (Array.isArray(prodData.BienTheSanPham)) availableVariants = prodData.BienTheSanPham;
+      else if (Array.isArray(prodData.variants)) availableVariants = prodData.variants;
+
+      availableVariants = availableVariants.filter(v => v.TrangThai !== 0);
+
+      if (availableVariants.length === 1) {
+        processAddToCart(product, availableVariants[0], action);
+      } else if (availableVariants.length > 1) {
+        setVariants(availableVariants);
+        setCurrentProduct(product);
+        setPendingAction(action);
+        
+        const firstInStock = availableVariants.find(v => v.SoLuong > 0);
+        setSelectedVariantId(firstInStock ? firstInStock.MaBienThe : availableVariants[0].MaBienThe);
+        setOpenPopoverId(targetPopoverId);
+      } else {
+        navigate(`/product/${product.MaSanPham}`);
+      }
+    } catch (err) {
+      navigate(`/product/${product.MaSanPham}`);
+    }
+  };
+
+  const handleRemoveFromCart = async (id, variantId) => {
+    setCart(prevCart => prevCart.filter(item => !(item.id === id && item.variantId === variantId)));
+    if (isLoggedIn) {
+      try {
+        const token = localStorage.getItem('token');
+        await axios.delete(`http://localhost:3000/api/v1/cart/items/${variantId || id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      } catch (error) {
+      }
+    }
+  };
+
+  const updateQty = async (id, variantId, change) => {
+    const itemToUpdate = cart.find(item => item.id === id && item.variantId === variantId);
+    if (!itemToUpdate) return;
+    
+    let newQty = itemToUpdate.quantity + change;
+    
+    if (newQty < 1) {
+       if (change === -1 && itemToUpdate.quantity === 1) {
+          handleRemoveFromCart(id, variantId);
+          return;
+       }
+       newQty = 1;
+    }
+
+    if (itemToUpdate.maxStock && newQty > itemToUpdate.maxStock) {
+        newQty = itemToUpdate.maxStock;
+        message.info(`Sản phẩm này chỉ còn ${itemToUpdate.maxStock} cái`);
+    }
+
+    setCart(prev => prev.map(item => (item.id === id && item.variantId === variantId) ? { ...item, quantity: newQty } : item));
+
+    if (isLoggedIn) {
+      try {
+        const token = localStorage.getItem('token');
+        await axios.patch(`http://localhost:3000/api/v1/cart/items/${variantId || id}`, 
+          { SoLuong: newQty },
+          { headers: { Authorization: `Bearer ${token}` }}
+        );
+      } catch (error) {
+      }
+    }
+  };
+
+  const handleQtyChange = async (id, variantId, value) => {
+    const num = parseInt(value, 10);
+    if (!isNaN(num) && num >= 1) {
+        const itemToUpdate = cart.find(item => item.id === id && item.variantId === variantId);
+        let finalQty = num;
+        if (itemToUpdate?.maxStock && num > itemToUpdate.maxStock) {
+            finalQty = itemToUpdate.maxStock;
+        }
+        setCart(prev => prev.map(item => (item.id === id && item.variantId === variantId) ? { ...item, quantity: finalQty } : item));
+        
+        if (isLoggedIn) {
+          try {
+            const token = localStorage.getItem('token');
+            await axios.patch(`http://localhost:3000/api/v1/cart/items/${variantId || id}`, 
+              { SoLuong: finalQty },
+              { headers: { Authorization: `Bearer ${token}` }}
+            );
+          } catch (error) {
+          }
+        }
+    }
+  };
+
+  const handleQtyBlur = (id, variantId, value) => {
+    const num = parseInt(value, 10);
+    if (isNaN(num) || num < 1) {
+      handleQtyChange(id, variantId, 1);
+    }
   };
 
   const totalCartPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -177,8 +325,8 @@ function Home() {
         <div className={styles.emptyCart}>Giỏ hàng đang trống</div>
       ) : (
         <div className={styles.miniCartList}>
-          {cart.map(item => (
-            <div key={item.id} className={styles.cartListItemCustom}>
+          {cart.map((item, index) => (
+            <div key={`${item.id}-${item.variantId || index}`} className={styles.cartListItemCustom}>
               <div className={styles.cartItemAvatar}>
                 <Avatar src={item.image} shape="square" className={styles.cartAvatar}/>
               </div>
@@ -187,20 +335,20 @@ function Home() {
                 <div className={styles.miniCartQtyWrap}>
                   <span className={styles.miniCartPrice}>{formatPrice(item.price)}</span>
                   <div className={styles.qtyControls}>
-                    <button className={styles.qtyBtn} onClick={() => decreaseQty(item.id)}>-</button>
+                    <button className={styles.qtyBtn} onClick={() => updateQty(item.id, item.variantId, -1)}>-</button>
                     <input 
                       type="number" min="1"
                       className={styles.qtyInput} 
                       value={item.quantity} 
-                      onChange={(e) => handleQtyChange(item.id, e.target.value)} 
-                      onBlur={(e) => handleQtyBlur(item.id, e.target.value)}
+                      onChange={(e) => handleQtyChange(item.id, item.variantId, e.target.value)} 
+                      onBlur={(e) => handleQtyBlur(item.id, item.variantId, e.target.value)}
                     />
-                    <button className={styles.qtyBtn} onClick={() => increaseQty(item.id)}>+</button>
+                    <button className={styles.qtyBtn} onClick={() => updateQty(item.id, item.variantId, 1)}>+</button>
                   </div>
                 </div>
               </div>
               <div className={styles.cartItemAction}>
-                <DeleteOutlined className={styles.cartDeleteIcon} onClick={() => handleRemoveFromCart(item.id)} />
+                <DeleteOutlined className={styles.cartDeleteIcon} onClick={() => handleRemoveFromCart(item.id, item.variantId)} />
               </div>
             </div>
           ))}
@@ -215,12 +363,66 @@ function Home() {
     </div>
   );
 
+  const renderVariantPopoverContent = () => (
+    <div 
+      className={styles.popoverVariantWrap}
+      onClick={(e) => {
+        e.stopPropagation();
+      }}
+    >
+      <div className={styles.popoverVariantTitle}>
+        Chọn phân loại:
+      </div>
+      <Radio.Group onChange={(e) => setSelectedVariantId(e.target.value)} value={selectedVariantId} style={{ width: '100%' }}>
+        <Space direction="vertical" style={{ width: '100%' }}>
+          {variants.map(v => (
+            <Radio 
+              key={v.MaBienThe} 
+              value={v.MaBienThe} 
+              disabled={v.SoLuong <= 0} 
+              className={styles.popoverVariantRadio}
+            >
+              <div className={styles.radioContentRow} style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
+                <span className={styles.radioVariantName}>{v.TenBienThe}</span> 
+                <span className={styles.popoverVariantPrice}>
+                  {formatPrice(v.Gia || currentProduct?.GiaThapNhat)}
+                </span> 
+                {v.SoLuong <= 0 && <span className={styles.popoverVariantStock}>(Hết hàng)</span>}
+              </div>
+            </Radio>
+          ))}
+        </Space>
+      </Radio.Group>
+      <div className={styles.popoverVariantActions}>
+        <Button size="small" onClick={(e) => { 
+          e.stopPropagation(); 
+          setOpenPopoverId(null); 
+        }} style={{ borderRadius: '4px' }}>
+          Hủy
+        </Button>
+        <Button size="small" type="primary" disabled={!selectedVariantId} onClick={(e) => {
+          e.stopPropagation();
+          const variant = variants.find(v => v.MaBienThe === selectedVariantId);
+          if (variant) {
+            processAddToCart(currentProduct, variant, pendingAction);
+            setOpenPopoverId(null);
+          }
+        }} style={{ background: '#1b437c', borderRadius: '4px' }}>
+          {pendingAction === 'buy' ? "Mua ngay" : "Thêm vào giỏ"}
+        </Button>
+      </div>
+    </div>
+  );
+
   const handleSearchInput = async (value) => {
     setSearchKw(value);
     if (!value) { setSearchOptions([]); return; }
     try {
       const res = await axios.get(`http://localhost:3000/api/v1/products?search=${value}&searchField=TenSanPham&limit=5`);
-      const data = res.data.data || res.data.result?.data || [];
+      let data = res.data.data || res.data.result?.data || [];
+      
+      data = data.filter(item => item.TenSanPham.toLowerCase().includes(value.toLowerCase()));
+
       const options = data.map(item => ({
         value: item.TenSanPham, 
         label: (
@@ -243,8 +445,7 @@ function Home() {
     setAppliedSearchKw(searchKw); 
     setCurrentPage(1);
     setSearchOptions([]); 
-    // Xóa param trên URL đi sau khi search bằng tay để URL gọn gàng
-    navigate('/');
+    navigate(location.pathname);
     if (inputRef.current) inputRef.current.blur(); 
   };
 
@@ -258,12 +459,12 @@ function Home() {
 
   const handleResetFilters = () => {
     setSortField(''); setSortOrder(''); setSearchKw(''); setAppliedSearchKw(''); setSelectedCategory('all'); setSearchOptions([]); setCurrentPage(1);
-    navigate('/'); // Reset lại URL
+    navigate(location.pathname); 
   };
 
   const handleMenuClick = (e) => {
     setSortField(''); setSortOrder(''); setSearchKw(''); setAppliedSearchKw(''); setSearchOptions([]); setSelectedCategory(e.key); setCurrentPage(1);
-    navigate('/'); // Reset lại URL
+    navigate(location.pathname); 
   };
 
   useEffect(() => {
@@ -314,11 +515,17 @@ function Home() {
 
         const res = await axios.get('http://localhost:3000/api/v1/products', { params });
         const data = res.data;
-        setProducts(data.data || data.result?.data || []);
+        let fetchedList = data.data || data.result?.data || [];
+
+        if (appliedSearchKw) {
+          const kw = appliedSearchKw.toLowerCase();
+          fetchedList = fetchedList.filter(p => p.TenSanPham.toLowerCase().includes(kw));
+        }
+
+        setProducts(fetchedList);
         setTotalPages(data.totalPages || data.result?.totalPages || 1);
         setCurrentPage(data.page || data.result?.page || 1);
       } catch (error) {
-        message.error('Lỗi khi tải sản phẩm!');
       } finally {
         setLoading(false);
       }
@@ -333,7 +540,7 @@ function Home() {
       </Helmet>
 
       <Header className={styles.topHeader}>
-        <div className={styles.logo} onClick={() => navigate('/')}>CERAMIC-SHOP</div>
+        <div className={styles.logo} onClick={() => navigate('/landing')}>CERAMIC-SHOP</div>
         
         <div className={styles.headerSearch}>
           <div className={styles.searchWrapper}>
@@ -464,54 +671,75 @@ function Home() {
                           color={isDiscontinued ? 'red' : 'gray'} 
                           style={{ display: (isSoldOut || isDiscontinued) ? 'block' : 'none' }}
                         >
-                          <div 
-                            className={`${styles.customCard} ${isDiscontinued ? styles.disabledCard : ''}`} 
-                            onClick={() => {
-                              if (!isDiscontinued) navigate(`/product/${p.MaSanPham}`);
-                              else message.warning("Sản phẩm đã ngừng kinh doanh.");
-                            }}
-                          >
-                            <div className={styles.cardImgWrapper}>
-                              <img alt={p.TenSanPham} src={imgUrl} />
-                              
-                              <span className={styles.viewCount} title="Lượt xem">
-                                <EyeOutlined /> {p.LuotXem || 0}
-                              </span>
+                          <div className={`${styles.customCard} ${isDiscontinued ? styles.disabledCard : ''}`}>
+                            <div 
+                              style={{ width: '100%', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: isDiscontinued ? 'not-allowed' : 'pointer' }}
+                              onClick={() => {
+                                if (!isDiscontinued) navigate(`/product/${p.MaSanPham}`);
+                              }}
+                            >
+                              <div className={styles.cardImgWrapper}>
+                                <img alt={p.TenSanPham} src={imgUrl} />
+                                
+                                <span className={styles.viewCount} title="Lượt xem">
+                                  <EyeOutlined /> {p.LuotXem || 0}
+                                </span>
+                              </div>
+
+                              <div className={styles.catTag}>{p.DanhMuc?.TenDanhMuc || 'Chưa phân loại'}</div>
+
+                              <h3 className={styles.productName} title={p.TenSanPham}>{p.TenSanPham}</h3>
+                              <div className={styles.productPrice}>{formatPrice(p.GiaThapNhat)}</div>
                             </div>
 
-                            <div className={styles.catTag}>{p.DanhMuc?.TenDanhMuc || 'Chưa phân loại'}</div>
-
-                            <h3 className={styles.productName} title={p.TenSanPham}>{p.TenSanPham}</h3>
-                            <div className={styles.productPrice}>{formatPrice(p.GiaThapNhat)}</div>
-
-                              <div className={styles.cardButtons}>
+                            <div className={styles.cardButtons}>
+                              <Popover
+                                overlayClassName={styles.variantPopover}
+                                content={currentProduct?.MaSanPham === p.MaSanPham && pendingAction === 'buy' ? renderVariantPopoverContent() : null}
+                                open={openPopoverId === `${p.MaSanPham}-buy`}
+                                onOpenChange={(visible) => { if (!visible) setOpenPopoverId(null); }}
+                                placement="top"
+                                trigger="click"
+                                destroyTooltipOnHide
+                              >
                                 <button 
                                   className={styles.btnBuy} 
                                   disabled={isDiscontinued || isSoldOut}
-                                  onClick={(e) => handleBuyNow(e, p)}
+                                  onClick={(e) => handleProductAction(e, p, 'buy')}
                                 >
                                   MUA NGAY
                                 </button>
+                              </Popover>
 
+                              <Popover
+                                overlayClassName={styles.variantPopover}
+                                content={currentProduct?.MaSanPham === p.MaSanPham && pendingAction === 'cart' ? renderVariantPopoverContent() : null}
+                                open={openPopoverId === `${p.MaSanPham}-cart`}
+                                onOpenChange={(visible) => { if (!visible) setOpenPopoverId(null); }}
+                                placement="top"
+                                trigger="click"
+                                destroyTooltipOnHide
+                              >
                                 <button 
                                   className={styles.btnAddToCartIcon} 
                                   disabled={isDiscontinued || isSoldOut}
-                                  onClick={(e) => handleAddToCart(e, p)}
+                                  onClick={(e) => handleProductAction(e, p, 'cart')}
                                   title="Thêm vào giỏ hàng"
                                 >
                                   <ShoppingCartOutlined /> <span style={{fontSize: '12px', marginLeft: '2px', fontWeight: 'bold'}}>+</span>
                                 </button>
-                                
-                                <button 
-                                  className={styles.btnDetail} 
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    navigate(`/product/${p.MaSanPham}`);
-                                  }}
-                                >
-                                  CHI TIẾT
-                                </button>
-                              </div>
+                              </Popover>
+                              
+                              <button 
+                                className={styles.btnDetail} 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(`/product/${p.MaSanPham}`);
+                                }}
+                              >
+                                CHI TIẾT
+                              </button>
+                            </div>
                           </div>
                         </Badge.Ribbon>
                       </Col>
