@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Form, Input, Button, message, Divider, Empty, Row, Col, Popconfirm, Checkbox } from 'antd';
+import { Layout, Form, Input, Button, message, Divider, Empty, Row, Col, Popconfirm, Checkbox, Spin } from 'antd';
 import { DeleteOutlined, ArrowLeftOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -15,6 +15,8 @@ function Cart() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [selectedItems, setSelectedItems] = useState([]);
   
+  const [isFetchingCart, setIsFetchingCart] = useState(!!localStorage.getItem('token'));
+
   const [cart, setCart] = useState(() => {
     const savedCart = localStorage.getItem('ceramic_cart');
     return savedCart ? JSON.parse(savedCart) : [];
@@ -46,6 +48,9 @@ function Cart() {
         setCart([]);
       }
     } catch (error) {
+      console.error(error);
+    } finally {
+      setIsFetchingCart(false); 
     }
   };
 
@@ -66,9 +71,11 @@ function Cart() {
         fetchCartFromDB(token);
       }).catch(() => {
         setIsLoggedIn(false);
+        setIsFetchingCart(false); 
       });
     } else {
       setIsLoggedIn(false);
+      setIsFetchingCart(false); 
     }
   }, [form]);
 
@@ -256,161 +263,185 @@ function Cart() {
         <div className={styles.container}>
           <h2 className={styles.pageTitle}><ShoppingCartOutlined /> Giỏ Hàng Của Bạn</h2>
           
-          <Row gutter={[30, 30]}>
-            <Col xs={24} lg={16}>
-              <div className={styles.cartListSection}>
-                {cart.length === 0 ? (
-                  <div className={styles.emptyState}>
-                    <Empty description="Không có sản phẩm nào trong giỏ hàng" />
-                    <Button type="primary" className={styles.btnGoShop} onClick={() => navigate('/')}>
-                      Mua sắm ngay
-                    </Button>
-                  </div>
-                ) : (
-                  <div className={styles.cartItemsWrapper}>
-                    <div className={styles.selectAllRow}>
-                      <Checkbox 
-                        checked={selectedItems.length === cart.length && cart.length > 0} 
-                        onChange={handleSelectAll}
-                      >
-                        <span style={{ fontWeight: 600 }}>Chọn tất cả ({cart.length})</span>
-                      </Checkbox>
-                      <Button 
-                        type="text" 
-                        danger 
-                        icon={<DeleteOutlined />} 
-                        onClick={handleDeleteSelected} 
-                        disabled={selectedItems.length === 0}
-                      >
-                        Xóa mục đã chọn
+          {isFetchingCart ? (
+            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '40vh' }}>
+              <Spin size="large" />
+              <div style={{ marginTop: '16px', color: '#1b437c', fontWeight: 500 }}>Đang đồng bộ dữ liệu giỏ hàng...</div>
+            </div>
+          ) : (
+            <Row gutter={[30, 30]}>
+              <Col xs={24} lg={16}>
+                <div className={styles.cartListSection}>
+                  {cart.length === 0 ? (
+                    <div className={styles.emptyState}>
+                      <Empty description="Không có sản phẩm nào trong giỏ hàng" />
+                      <Button type="primary" className={styles.btnGoShop} onClick={() => navigate('/')}>
+                        Mua sắm ngay
                       </Button>
                     </div>
-                    
-                    <div className={styles.cartHeaderRow}>
-                      <div className={styles.colCheckbox}></div>
-                      <div className={styles.colProduct}>Sản phẩm</div>
-                      <div className={styles.colPrice}>Đơn giá</div>
-                      <div className={styles.colQty}>Số lượng</div>
-                      <div className={styles.colTotal}>Thành tiền</div>
-                      <div className={styles.colAction}></div>
-                    </div>
-                    
-                    {cart.map((item, index) => {
-                      const itemKey = getItemKey(item);
-                      return (
-                        <div key={`${itemKey}-${index}`} className={styles.cartItemRow}>
-                          <div className={styles.colCheckbox}>
-                            <Checkbox 
-                              checked={selectedItems.includes(itemKey)} 
-                              onChange={(e) => handleSelectItem(itemKey, e.target.checked)} 
-                            />
-                          </div>
-                          <div className={styles.colProduct}>
-                            <img src={item.image} alt={item.name} className={styles.itemImg} />
-                            <span className={styles.itemName}>{item.name}</span>
-                          </div>
-                          <div className={styles.colPrice}>{formatPrice(item.price)}</div>
-                          <div className={styles.colQty}>
-                            <div className={styles.qtyControls}>
-                              <button className={styles.qtyBtn} onClick={() => updateQty(item.id, item.variantId, -1)}>-</button>
-                              <input 
-                                type="number" 
-                                className={styles.qtyInput} 
-                                value={item.quantity} 
-                                onChange={(e) => handleQtyChange(item.id, item.variantId, e.target.value)} 
-                                onBlur={(e) => handleQtyBlur(item.id, item.variantId, e.target.value)}
+                  ) : (
+                    <div className={styles.cartItemsWrapper}>
+                      <div className={styles.selectAllRow}>
+                        <Checkbox 
+                          checked={selectedItems.length === cart.length && cart.length > 0} 
+                          onChange={handleSelectAll}
+                        >
+                          <span style={{ fontWeight: 600 }}>Chọn tất cả ({cart.length})</span>
+                        </Checkbox>
+                        <Button 
+                          type="text" 
+                          danger 
+                          icon={<DeleteOutlined />} 
+                          onClick={handleDeleteSelected} 
+                          disabled={selectedItems.length === 0}
+                        >
+                          Xóa mục đã chọn
+                        </Button>
+                      </div>
+                      
+                      <div className={styles.cartHeaderRow}>
+                        <div className={styles.colCheckbox}></div>
+                        <div className={styles.colProduct}>Sản phẩm</div>
+                        <div className={styles.colPrice}>Đơn giá</div>
+                        <div className={styles.colQty}>Số lượng</div>
+                        <div className={styles.colTotal}>Thành tiền</div>
+                        <div className={styles.colAction}></div>
+                      </div>
+                      
+                      {cart.map((item, index) => {
+                        const itemKey = getItemKey(item);
+                        return (
+                          <div key={`${itemKey}-${index}`} className={styles.cartItemRow}>
+                            <div className={styles.colCheckbox}>
+                              <Checkbox 
+                                checked={selectedItems.includes(itemKey)} 
+                                onChange={(e) => handleSelectItem(itemKey, e.target.checked)} 
                               />
-                              <button className={styles.qtyBtn} onClick={() => updateQty(item.id, item.variantId, 1)}>+</button>
+                            </div>
+                            <div className={styles.colProduct}>
+                              <img 
+                                src={item.image} 
+                                alt={item.name} 
+                                className={styles.itemImg} 
+                                onClick={() => navigate(`/product/${item.id}`)}
+                                style={{ cursor: 'pointer' }}
+                                title="Xem chi tiết sản phẩm"
+                              />
+                              
+                              <span 
+                                className={styles.itemName}
+                                onClick={() => navigate(`/product/${item.id}`)}
+                                style={{ cursor: 'pointer', transition: 'color 0.2s' }}
+                                onMouseEnter={(e) => e.target.style.color = '#1b437c'}
+                                onMouseLeave={(e) => e.target.style.color = ''}
+                                title="Xem chi tiết sản phẩm"
+                              >
+                                {item.name}
+                              </span>
+                            </div>
+                            <div className={styles.colPrice}>{formatPrice(item.price)}</div>
+                            <div className={styles.colQty}>
+                              <div className={styles.qtyControls}>
+                                <button className={styles.qtyBtn} onClick={() => updateQty(item.id, item.variantId, -1)}>-</button>
+                                <input 
+                                  type="number" 
+                                  className={styles.qtyInput} 
+                                  value={item.quantity} 
+                                  onChange={(e) => handleQtyChange(item.id, item.variantId, e.target.value)} 
+                                  onBlur={(e) => handleQtyBlur(item.id, item.variantId, e.target.value)}
+                                />
+                                <button className={styles.qtyBtn} onClick={() => updateQty(item.id, item.variantId, 1)}>+</button>
+                              </div>
+                            </div>
+                            <div className={styles.colTotal}>
+                              {formatPrice(item.price * item.quantity)}
+                            </div>
+                            <div className={styles.colAction}>
+                              <Popconfirm
+                                title="Xóa sản phẩm?"
+                                description="Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?"
+                                onConfirm={() => handleRemoveItem(item.id, item.variantId)}
+                                okText="Xóa"
+                                cancelText="Hủy"
+                              >
+                                <Button type="text" danger icon={<DeleteOutlined />} />
+                              </Popconfirm>
                             </div>
                           </div>
-                          <div className={styles.colTotal}>
-                            {formatPrice(item.price * item.quantity)}
-                          </div>
-                          <div className={styles.colAction}>
-                            <Popconfirm
-                              title="Xóa sản phẩm?"
-                              description="Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?"
-                              onConfirm={() => handleRemoveItem(item.id, item.variantId)}
-                              okText="Xóa"
-                              cancelText="Hủy"
-                            >
-                              <Button type="text" danger icon={<DeleteOutlined />} />
-                            </Popconfirm>
-                          </div>
-                        </div>
-                      )
-                    })}
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+              </Col>
+
+              <Col xs={24} lg={8}>
+                <div className={styles.checkoutSection}>
+                  <h3 className={styles.summaryTitle}>Tóm tắt đơn hàng</h3>
+                  <div style={{ marginBottom: '15px', fontStyle: 'italic', color: '#888', fontSize: '13px' }}>
+                    (Đã chọn {selectedItems.length} sản phẩm)
                   </div>
-                )}
-              </div>
-            </Col>
+                  <div className={styles.summaryRow}>
+                    <span>Tạm tính:</span>
+                    <span>{formatPrice(totalCartPrice)}</span>
+                  </div>
+                  <div className={styles.summaryRow}>
+                    <span>Phí giao hàng:</span>
+                    <span>{formatPrice(shippingFee)}</span>
+                  </div>
+                  <Divider style={{ margin: '15px 0' }} />
+                  <div className={styles.summaryRow} style={{ fontSize: '18px', fontWeight: 700, color: '#d0021b' }}>
+                    <span>Tổng cộng:</span>
+                    <span>{formatPrice(finalTotal)}</span>
+                  </div>
 
-            <Col xs={24} lg={8}>
-              <div className={styles.checkoutSection}>
-                <h3 className={styles.summaryTitle}>Tóm tắt đơn hàng</h3>
-                <div style={{ marginBottom: '15px', fontStyle: 'italic', color: '#888', fontSize: '13px' }}>
-                  (Đã chọn {selectedItems.length} sản phẩm)
+                  <div className={styles.formSection}>
+                    <h4 className={styles.formTitle}>Thông tin giao hàng</h4>
+                    <Form form={form} layout="vertical" onFinish={handleCheckout}>
+                      <Form.Item 
+                        label="Họ và tên người nhận" 
+                        name="FullName"
+                        rules={[{ required: true, message: 'Vui lòng nhập tên người nhận!' }]}
+                      >
+                        <Input className={styles.customInput} placeholder="Nhập họ tên đầy đủ" />
+                      </Form.Item>
+
+                      <Form.Item 
+                        label="Số điện thoại" 
+                        name="SDT"
+                        rules={[{ required: true, message: 'Vui lòng nhập số điện thoại!' }]}
+                      >
+                        <Input className={styles.customInput} placeholder="Nhập số điện thoại liên hệ" />
+                      </Form.Item>
+
+                      <Form.Item 
+                        label="Địa chỉ nhận hàng" 
+                        name="DiaChi"
+                        rules={[{ required: true, message: 'Vui lòng nhập địa chỉ giao hàng!' }]}
+                      >
+                        <Input.TextArea rows={3} className={styles.customInput} placeholder="Nhập số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố" />
+                      </Form.Item>
+
+                      <Form.Item label="Ghi chú đơn hàng" name="GhiChu">
+                        <Input.TextArea rows={2} className={styles.customInput} placeholder="Lưu ý cho người giao hàng (nếu có)" />
+                      </Form.Item>
+
+                      <Button 
+                        type="primary" 
+                        htmlType="submit" 
+                        className={styles.btnSubmitOrder} 
+                        loading={loading}
+                        disabled={selectedCartItems.length === 0}
+                        block
+                      >
+                        TIẾN HÀNH ĐẶT HÀNG
+                      </Button>
+                    </Form>
+                  </div>
                 </div>
-                <div className={styles.summaryRow}>
-                  <span>Tạm tính:</span>
-                  <span>{formatPrice(totalCartPrice)}</span>
-                </div>
-                <div className={styles.summaryRow}>
-                  <span>Phí giao hàng:</span>
-                  <span>{formatPrice(shippingFee)}</span>
-                </div>
-                <Divider style={{ margin: '15px 0' }} />
-                <div className={styles.summaryRow} style={{ fontSize: '18px', fontWeight: 700, color: '#d0021b' }}>
-                  <span>Tổng cộng:</span>
-                  <span>{formatPrice(finalTotal)}</span>
-                </div>
-
-                <div className={styles.formSection}>
-                  <h4 className={styles.formTitle}>Thông tin giao hàng</h4>
-                  <Form form={form} layout="vertical" onFinish={handleCheckout}>
-                    <Form.Item 
-                      label="Họ và tên người nhận" 
-                      name="FullName"
-                      rules={[{ required: true, message: 'Vui lòng nhập tên người nhận!' }]}
-                    >
-                      <Input className={styles.customInput} placeholder="Nhập họ tên đầy đủ" />
-                    </Form.Item>
-
-                    <Form.Item 
-                      label="Số điện thoại" 
-                      name="SDT"
-                      rules={[{ required: true, message: 'Vui lòng nhập số điện thoại!' }]}
-                    >
-                      <Input className={styles.customInput} placeholder="Nhập số điện thoại liên hệ" />
-                    </Form.Item>
-
-                    <Form.Item 
-                      label="Địa chỉ nhận hàng" 
-                      name="DiaChi"
-                      rules={[{ required: true, message: 'Vui lòng nhập địa chỉ giao hàng!' }]}
-                    >
-                      <Input.TextArea rows={3} className={styles.customInput} placeholder="Nhập số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố" />
-                    </Form.Item>
-
-                    <Form.Item label="Ghi chú đơn hàng" name="GhiChu">
-                      <Input.TextArea rows={2} className={styles.customInput} placeholder="Lưu ý cho người giao hàng (nếu có)" />
-                    </Form.Item>
-
-                    <Button 
-                      type="primary" 
-                      htmlType="submit" 
-                      className={styles.btnSubmitOrder} 
-                      loading={loading}
-                      disabled={selectedCartItems.length === 0}
-                      block
-                    >
-                      TIẾN HÀNH ĐẶT HÀNG
-                    </Button>
-                  </Form>
-                </div>
-              </div>
-            </Col>
-          </Row>
+              </Col>
+            </Row>
+          )}
         </div>
       </Content>
     </Layout>
