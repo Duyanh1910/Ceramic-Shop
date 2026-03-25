@@ -20,7 +20,7 @@ function Register() {
   const handleRegister = async (values) => {
     setLoading(true);
     try {
-      await axios.post('http://localhost:3000/api/v1/auth/register', {
+      await axios.post('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/register', {
         username: values.username,
         email: values.email,
         password: values.password,

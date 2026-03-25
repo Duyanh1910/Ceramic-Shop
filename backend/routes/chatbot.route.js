@@ -1,17 +1,17 @@
 import express from "express";
-import { pool } from "../config/chatbot.config.js";
+import { pool, CHATBOT_LINKS } from "../config/chatbot.config.js";
 
 const router = express.Router();
 
 router.post("/webhook", async (req, res) => {
   const intentName = req.body.queryResult.intent.displayName;
   const parameters = req.body.queryResult.parameters;
-  const domainWeb = "http://localhost5173/product";
-
-  const zaloLink = "https://zalo.me/0329835725";
-  const emailLink = "mailto:theceramicshop24@gmail.com";
-  const phoneLink = "tel:0329835725";
-  const fbLink = "https://www.facebook.com/tran.duy.anh.714185";
+  
+  const domainWeb = CHATBOT_LINKS.domainWeb;
+  const zaloLink = CHATBOT_LINKS.zaloLink;
+  const emailLink = CHATBOT_LINKS.emailLink;
+  const phoneLink = CHATBOT_LINKS.phoneLink;
+  const fbLink = CHATBOT_LINKS.fbLink;
 
   if (intentName === "Hoi_Gia_San_Pham") {
     const rawTenSP = parameters.Ten_San_Pham || null;
@@ -1216,6 +1216,70 @@ router.post("/webhook", async (req, res) => {
                   icon: { type: "local_fire_department", color: "#FF5722" },
                   text: "Khám phá các mẫu Bán Chạy",
                   link: domainWeb,
+                },
+              ],
+            ],
+          },
+        },
+      ],
+    });
+  } else if (intentName === "Thong_Tin_Lien_He_Shop") {
+    const mapLink = CHATBOT_LINKS.mapLink;
+
+    return res.json({
+      fulfillmentMessages: [
+        {
+          text: {
+            text: [
+              "Dạ, chào mừng bạn đến với CeramicShop. Dưới đây là thông tin chi tiết để bạn dễ dàng ghé thăm và liên hệ với tụi mình nhé:",
+            ],
+          },
+        },
+        {
+          payload: {
+            richContent: [
+              [
+                {
+                  type: "description",
+                  title: "🏡 CeramicShop - Gốm Sứ Cao Cấp",
+                  text: [
+                    "📍 Địa chỉ: Làng nghề Bát Tràng, Gia Lâm, Hà Nội",
+                    "⏰ Giờ mở cửa: 08:00 - 22:00 (Từ Thứ 2 - Thứ 7)",
+                    "📞 Hotline: 0329.835.725",
+                    "✉️ Email: theceramicshop24@gmail.com",
+                    "🅿️ Chỗ để xe: Có bãi đậu xe ô tô rộng rãi, nhân viên hỗ trợ bê đồ gốm ra tận xe an toàn.",
+                    "💳 Thanh toán: Tiền mặt, Chuyển khoản (QR Code), Quẹt thẻ và VNPay.",
+                  ],
+                },
+                {
+                  type: "button",
+                  icon: { type: "map", color: "#EA4335" },
+                  text: "Xem đường đi trên Bản đồ",
+                  link: mapLink,
+                },
+                {
+                  type: "button",
+                  icon: { type: "facebook", color: "#0866FF" },
+                  text: "Ghé thăm Fanpage của Shop",
+                  link: fbLink,
+                },
+                {
+                  type: "button",
+                  icon: { type: "chat", color: "#0068FF" },
+                  text: "Chat Zalo với nhân viên",
+                  link: zaloLink,
+                },
+                {
+                  type: "button",
+                  icon: { type: "phone", color: "#34A853" },
+                  text: "Gọi Hotline ngay",
+                  link: phoneLink,
+                },
+                {
+                  type: "button",
+                  icon: { type: "mail", color: "#EA4335" },
+                  text: "Gửi Email cho Shop",
+                  link: emailLink,
                 },
               ],
             ],

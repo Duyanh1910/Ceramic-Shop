@@ -1,10 +1,12 @@
 import mysql from "mysql2/promise";
+
 export const CHATBOT_LINKS = {
-  domainWeb: "http://localhost:5173",
+  domainWeb: "http://localhost:5173/product",
   zaloLink: "https://zalo.me/0329835725",
   emailLink: "mailto:theceramicshop24@gmail.com",
   phoneLink: "tel:0329835725",
-  mesLink: "https://m.me/tran.duy.anh.714185",
+  fbLink: "https://www.facebook.com/tran.duy.anh.714185", 
+  mapLink: "https://maps.app.goo.gl/23r4X895EBR44h2XA", 
 };
 
 export const pool = mysql.createPool({

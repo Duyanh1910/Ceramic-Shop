@@ -24,7 +24,7 @@ function Profile() {
   const fetchUserProfile = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:3000/api/v1/auth/me', {
+      const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/me', {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -85,7 +85,7 @@ function Profile() {
         Avatar: values.Avatar || avatarUrl,
       };
 
-      const res = await axios.patch('http://localhost:3000/api/v1/customers/me', payload, {
+      const res = await axios.patch('https://ceramic-shop-u8ak.onrender.com/api/v1/customers/me', payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
 

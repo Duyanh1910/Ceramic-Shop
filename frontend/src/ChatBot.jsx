@@ -17,7 +17,8 @@ function ChatBot() {
   const [currentAnimIndex, setCurrentAnimIndex] = useState(0);
   const [isBubbleHidden, setIsBubbleHidden] = useState(false); 
   const [isChatOpen, setIsChatOpen] = useState(false);
-
+  const welcomeTriggered = useRef(false);
+    
   useEffect(() => {
     if (!document.getElementById('model-viewer-script')) {
         const modelViewerScript = document.createElement('script');
@@ -71,19 +72,29 @@ function ChatBot() {
             }
         }
     }, 500);
+    
+    const observer = new MutationObserver(() => {
+    const df = document.querySelector('df-messenger');
+    if (df) {
+        const isExpanded = df.hasAttribute('expand') && df.getAttribute('expand') !== 'false';
+        setIsChatOpen(isExpanded);
 
-    const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-            if (mutation.attributeName === 'expand') {
-                const dfMessenger = document.querySelector('df-messenger');
-                const isExpanded = dfMessenger.hasAttribute('expand') && dfMessenger.getAttribute('expand') !== 'false';
-                setIsChatOpen(isExpanded);
-                if (isExpanded) {
-                    setIsBubbleHidden(true);
-                }
+        if (isExpanded && !welcomeTriggered.current) {
+        console.log("Đang kích hoạt lời chào...");
+        
+        setTimeout(() => {
+            if (typeof df.sendRequest === 'function') {
+            df.sendRequest([{ event: { name: 'WEB_CHAT_OPENED' } }]);
+            } else if (typeof df.renderCustomText === 'function') {
+            df.renderCustomText('Chào bạn! CeramicShop có thể giúp gì cho bạn ạ? ✨');
             }
-        });
-    });
+            
+            welcomeTriggered.current = true;
+            setIsBubbleHidden(true);
+        }, 200); 
+        }
+    }
+});
 
     const setupBot = () => {
         const dfMessenger = document.querySelector('df-messenger');
@@ -175,7 +186,6 @@ function ChatBot() {
           ></model-viewer>
       </div>
       <df-messenger
-        intent="WELCOME"
         chat-title="CeramicShop Chatbot"
         agent-id="6add2f93-9961-40d6-9b52-f4af5862c6a1"
         language-code="vi"
