@@ -27,6 +27,9 @@ function Home() {
   const inputRef = useRef(null);
   const [userInfo, setUserInfo] = useState({ username: '', avatar: '' });
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // THÊM STATE KIỂM TRA ĐANG LOAD GIỎ HÀNG
+  const [isFetchingCart, setIsFetchingCart] = useState(!!localStorage.getItem('token'));
   
   const [cart, setCart] = useState(() => {
     const savedCart = localStorage.getItem('ceramic_cart');
@@ -65,6 +68,8 @@ function Home() {
         setCart([]);
       }
     } catch (error) {
+    } finally {
+      setIsFetchingCart(false);
     }
   };
 
@@ -85,6 +90,7 @@ function Home() {
             
             if (payload.exp && payload.exp < currentTime) {
                 handleLogout();
+                setIsFetchingCart(false);
                 return;
             }
             
@@ -103,13 +109,18 @@ function Home() {
               fetchCartFromDB(token);
             }).catch(() => {
               setIsLoggedIn(false);
+              setIsFetchingCart(false);
             });
+        } else {
+            setIsFetchingCart(false);
         }
       } catch (error) {
         setIsLoggedIn(false);
+        setIsFetchingCart(false);
       }
     } else {
       setIsLoggedIn(false);
+      setIsFetchingCart(false);
     }
   }, [navigate]);
 
@@ -314,51 +325,78 @@ function Home() {
     }
   };
 
-  const totalCartPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const totalCartItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+  // TÍNH TOÁN: Ẩn kết quả (trả về 0) nếu đang trong quá trình load
+  const totalCartPrice = isFetchingCart ? 0 : cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const totalCartItems = isFetchingCart ? 0 : cart.reduce((sum, item) => sum + item.quantity, 0);
 
   const miniCartContent = (
     <div className={styles.miniCartContainer}>
       <div className={styles.miniCartHeader}>Sản phẩm đã thêm</div>
-      {cart.length === 0 ? (
+      
+      {/* KIỂM TRA ĐIỀU KIỆN ĐANG LOAD */}
+      {isFetchingCart ? (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '30px 0' }}>
+          <Spin size="small" />
+          <span style={{ marginLeft: '10px', color: '#1b437c' }}>Đang đồng bộ dữ liệu...</span>
+        </div>
+      ) : cart.length === 0 ? (
         <div className={styles.emptyCart}>Giỏ hàng đang trống</div>
       ) : (
-        <div className={styles.miniCartList}>
-          {cart.map((item, index) => (
-            <div key={`${item.id}-${item.variantId || index}`} className={styles.cartListItemCustom}>
-              <div className={styles.cartItemAvatar}>
-                <Avatar src={item.image} shape="square" className={styles.cartAvatar}/>
-              </div>
-              <div className={styles.cartItemInfo}>
-                <span className={styles.miniCartName} title={item.name}>{item.name}</span>
-                <div className={styles.miniCartQtyWrap}>
-                  <span className={styles.miniCartPrice}>{formatPrice(item.price)}</span>
-                  <div className={styles.qtyControls}>
-                    <button className={styles.qtyBtn} onClick={() => updateQty(item.id, item.variantId, -1)}>-</button>
-                    <input 
-                      type="number" min="1"
-                      className={styles.qtyInput} 
-                      value={item.quantity} 
-                      onChange={(e) => handleQtyChange(item.id, item.variantId, e.target.value)} 
-                      onBlur={(e) => handleQtyBlur(item.id, item.variantId, e.target.value)}
-                    />
-                    <button className={styles.qtyBtn} onClick={() => updateQty(item.id, item.variantId, 1)}>+</button>
+        <>
+          <div className={styles.miniCartList}>
+            {cart.map((item, index) => (
+              <div key={`${item.id}-${item.variantId || index}`} className={styles.cartListItemCustom}>
+                
+                <div 
+                  className={styles.cartItemAvatar}
+                  onClick={() => navigate(`/product/${item.id}`)}
+                  style={{ cursor: 'pointer' }}
+                  title="Xem chi tiết sản phẩm"
+                >
+                  <Avatar src={item.image} shape="square" className={styles.cartAvatar}/>
+                </div>
+
+                <div className={styles.cartItemInfo}>
+                  <span 
+                    className={styles.miniCartName} 
+                    title={item.name}
+                    onClick={() => navigate(`/product/${item.id}`)}
+                    style={{ cursor: 'pointer', transition: 'color 0.2s' }}
+                    onMouseEnter={(e) => e.target.style.color = '#1b437c'}
+                    onMouseLeave={(e) => e.target.style.color = '#333'}
+                  >
+                    {item.name}
+                  </span>
+                  
+                  <div className={styles.miniCartQtyWrap}>
+                    <span className={styles.miniCartPrice}>{formatPrice(item.price)}</span>
+                    <div className={styles.qtyControls}>
+                      <button className={styles.qtyBtn} onClick={() => updateQty(item.id, item.variantId, -1)}>-</button>
+                      <input 
+                        type="number" min="1"
+                        className={styles.qtyInput} 
+                        value={item.quantity} 
+                        onChange={(e) => handleQtyChange(item.id, item.variantId, e.target.value)} 
+                        onBlur={(e) => handleQtyBlur(item.id, item.variantId, e.target.value)}
+                      />
+                      <button className={styles.qtyBtn} onClick={() => updateQty(item.id, item.variantId, 1)}>+</button>
+                    </div>
                   </div>
                 </div>
+                <div className={styles.cartItemAction}>
+                  <DeleteOutlined className={styles.cartDeleteIcon} onClick={() => handleRemoveFromCart(item.id, item.variantId)} />
+                </div>
               </div>
-              <div className={styles.cartItemAction}>
-                <DeleteOutlined className={styles.cartDeleteIcon} onClick={() => handleRemoveFromCart(item.id, item.variantId)} />
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+          <div className={styles.miniCartFooter}>
+            <div className={styles.miniCartTotal}>Tổng: <span>{formatPrice(totalCartPrice)}</span></div>
+            <Button type="primary" className={styles.btnCheckoutCart} onClick={() => navigate('/cart')}>
+              XEM GIỎ HÀNG
+            </Button>
+          </div>
+        </>
       )}
-      <div className={styles.miniCartFooter}>
-        <div className={styles.miniCartTotal}>Tổng: <span>{formatPrice(totalCartPrice)}</span></div>
-        <Button type="primary" className={styles.btnCheckoutCart} onClick={() => navigate('/cart')}>
-          XEM GIỎ HÀNG
-        </Button>
-      </div>
     </div>
   );
 
@@ -482,12 +520,13 @@ function Home() {
     setSearchKw(value);
     if (!value) { setSearchOptions([]); return; }
     try {
-      const res = await axios.get(`https://ceramic-shop-u8ak.onrender.com/api/v1/products?search=${value}&searchField=TenSanPham&limit=5`);
+      const res = await axios.get(`https://ceramic-shop-u8ak.onrender.com/api/v1/products?limit=1000`);
       let data = res.data.data || res.data.result?.data || [];
       
-      data = data.filter(item => item.TenSanPham.toLowerCase().includes(value.toLowerCase()));
+      const searchLower = value.toLowerCase();
+      data = data.filter(item => item.TenSanPham.toLowerCase().includes(searchLower));
 
-      const options = data.map(item => ({
+      const options = data.slice(0, 10).map(item => ({
         value: item.TenSanPham, 
         label: (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }} onClick={(e) => { e.stopPropagation(); navigate(`/product/${item.MaSanPham}`); }}>
@@ -506,6 +545,10 @@ function Home() {
   };
 
   const executeSearch = () => {
+    setSortField(''); 
+    setSortOrder(''); 
+    setSelectedCategory('all');
+
     setAppliedSearchKw(searchKw); 
     setCurrentPage(1);
     setSearchOptions([]); 
@@ -574,25 +617,31 @@ function Home() {
         const params = { page: currentPage, limit: 12 };
         if (sortField) params.sort = sortField;
         if (sortOrder) params.order = sortOrder;
-        if (appliedSearchKw) { params.search = appliedSearchKw; params.searchField = 'TenSanPham'; }
         if (selectedCategory && selectedCategory !== 'all') { params.category = selectedCategory; }
+        if (appliedSearchKw) {
+          delete params.search;
+          delete params.searchField;
+          params.limit = 1000; 
+          params.page = 1; 
+        }
 
         const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/products', { params });
         const data = res.data;
         let fetchedList = data.data || data.result?.data || [];
-
         if (appliedSearchKw) {
           const kw = appliedSearchKw.toLowerCase();
           fetchedList = fetchedList.filter(p => p.TenSanPham.toLowerCase().includes(kw));
+          setTotalPages(Math.ceil(fetchedList.length / 12) || 1);
+          const startIndex = (currentPage - 1) * 12;
+          fetchedList = fetchedList.slice(startIndex, startIndex + 12);
+        } else {
+          setTotalPages(data.totalPages || data.result?.totalPages || 1);
         }
 
         setProducts(fetchedList);
-        setTotalPages(data.totalPages || data.result?.totalPages || 1);
-        setCurrentPage(data.page || data.result?.page || 1);
       } catch (error) {
-      } finally {
-        setLoading(false);
-      }
+        console.error("Lỗi tải sản phẩm:", error);
+      } finally { setLoading(false); }
     };
     fetchProducts();
   }, [currentPage, selectedCategory, sortField, sortOrder, appliedSearchKw]); 
@@ -611,8 +660,15 @@ function Home() {
             <AutoComplete
               className={styles.searchAutoComplete}
               options={searchKw ? searchOptions : []}
-              onSelect={(value) => { 
-                setSearchKw(value); setAppliedSearchKw(value); setCurrentPage(1); setSearchOptions([]); 
+              onSelect={(val) => { 
+                setSortField(''); 
+                setSortOrder(''); 
+                setSelectedCategory('all');
+                
+                setSearchKw(val); 
+                setAppliedSearchKw(val); 
+                setCurrentPage(1); 
+                setSearchOptions([]); 
               }}
               onSearch={handleSearchInput}
               value={searchKw}
@@ -758,13 +814,13 @@ function Home() {
 
                             <div className={styles.cardButtons}>
                               <Popover
-                                overlayInnerStyle={{ padding: '16px', borderRadius: '12px', minWidth: '280px', boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15)', border: '1px solid #f0f0f0' }}
+                                styles={{ body: { padding: '16px', borderRadius: '12px', minWidth: '280px', boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15)', border: '1px solid #f0f0f0' } }}
                                 content={currentProduct?.MaSanPham === p.MaSanPham && pendingAction === 'buy' ? renderVariantPopoverContent() : null}
                                 open={openPopoverId === `${p.MaSanPham}-buy`}
                                 onOpenChange={(visible) => { if (!visible) setOpenPopoverId(null); }}
                                 placement="top"
                                 trigger="click"
-                                destroyTooltipOnHide
+                                destroyOnHidden
                               >
                                 <button 
                                   className={styles.btnBuy} 
@@ -776,13 +832,13 @@ function Home() {
                               </Popover>
 
                               <Popover
-                                overlayInnerStyle={{ padding: '16px', borderRadius: '12px', minWidth: '280px', boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15)', border: '1px solid #f0f0f0' }}
+                                styles={{ body: { padding: '16px', borderRadius: '12px', minWidth: '280px', boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15)', border: '1px solid #f0f0f0' } }}
                                 content={currentProduct?.MaSanPham === p.MaSanPham && pendingAction === 'cart' ? renderVariantPopoverContent() : null}
                                 open={openPopoverId === `${p.MaSanPham}-cart`}
                                 onOpenChange={(visible) => { if (!visible) setOpenPopoverId(null); }}
                                 placement="top"
                                 trigger="click"
-                                destroyTooltipOnHide
+                                destroyOnHidden
                               >
                                 <button 
                                   className={styles.btnAddToCartIcon} 
