@@ -18,7 +18,7 @@ const VariantModel = sequelize.define(
       allowNull: false,
     },
     Gia: {
-      type: DataTypes.DECIMAL(10, 2),
+      type: DataTypes.DECIMAL(15, 2),
       allowNull: false,
     },
     SoLuong: {
@@ -32,6 +32,10 @@ const VariantModel = sequelize.define(
     MoTa: {
       type: DataTypes.STRING(255),
       allowNull: true,
+    },
+    KhoiLuong: {
+      type: DataTypes.DECIMAL(10, 2),
+      defaultValue: 0.0,
     },
   },
   {

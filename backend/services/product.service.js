@@ -111,6 +111,7 @@ export const getAllProductsService = async (
       "ThuongHieu",
       "LuotXem",
       "MoTa",
+      "TrangThai",
     ],
 
     include: [
@@ -181,7 +182,7 @@ export const getProductService = async (id) => {
     by: 1,
   });
   const product = await ProductModel.findByPk(id, {
-    attributes: ["MaSanPham", "TenSanPham", "MoTa", "Thumbnail"],
+    attributes: ["MaSanPham", "TenSanPham", "MoTa", "Thumbnail", "TrangThai"],
 
     include: [
       {
@@ -191,7 +192,14 @@ export const getProductService = async (id) => {
 
       {
         model: VariantModel,
-        attributes: ["MaBienThe", "TenBienThe", "Gia", "SoLuong"],
+        attributes: [
+          "MaBienThe",
+          "TenBienThe",
+          "Gia",
+          "SoLuong",
+          "KhoiLuong",
+          "TrangThai",
+        ],
 
         include: [
           {
