@@ -251,3 +251,20 @@ Chúc các chị em nội trợ có những trải nghiệm tuyệt vời và nh
 - <b>Lưu ý:</b> Tuyệt đối không đặt Lục bình trong phòng bếp hoặc gần nhà vệ sinh, những nơi ẩm thấp sẽ làm uế tạp nguồn năng lượng của vật phẩm.</p>
 <p>Tại CeramicShop, các dòng Lục bình Tùng Hạc được chế tác thủ công bởi các nghệ nhân Bát Tràng, nung khử ở nhiệt độ cao mang lại nước men lam sâu thẳm, hoa văn đắp nổi sống động như thật. Đây chắc chắn là món quà biếu tân gia, mừng thọ ý nghĩa và đẳng cấp nhất!</p>',
 'https://res.cloudinary.com/dcmwz0uis/image/upload/v1773818677/tung_b6ptoj.jpg', '2026-03-10 10:20:00');
+
+-- 1. Cập nhật thông tin và giá cho mã loại phí 8
+UPDATE LoaiPhiVanChuyen 
+SET TenLoaiPhi = 'Hàng cồng kềnh', 
+    MoTa = 'Phí cho hàng gốm sứ nhỏ' 
+WHERE MaLoaiPhi = 8;
+
+UPDATE PhiVanChuyen 
+SET GiaTri = 20000 
+WHERE MaLoaiPhi = 8;
+
+-- 2. Thêm mới mã loại phí 11 cho hàng siêu cồng kềnh
+INSERT INTO LoaiPhiVanChuyen (MaLoaiPhi, TenLoaiPhi, MoTa) 
+VALUES (11, 'Hàng siêu cồng kềnh', 'Phí cho hàng gốm sứ lớn (lục bình, tượng, bình hoa)');
+
+INSERT INTO PhiVanChuyen (MaPhi, MaLoaiPhi, GiaTri) 
+VALUES (11, 11, 100000);

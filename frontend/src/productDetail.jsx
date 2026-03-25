@@ -5,7 +5,7 @@ import { Layout, Input, Dropdown, Avatar, Space, Badge, Popover, Button, Spin, R
 import { SearchOutlined, ShoppingCartOutlined, SettingOutlined, LogoutOutlined, ArrowLeftOutlined, DeleteOutlined } from '@ant-design/icons';
 import { Helmet } from 'react-helmet-async';
 import styles from './ProductDetail.module.css';
-import ChatBot from './ChatBot'; // ĐÃ THÊM CHATBOT
+import ChatBot from './ChatBot';
 
 const { Header, Content } = Layout;
 
@@ -27,9 +27,9 @@ function ProductDetail() {
   const [showLens, setShowLens] = useState(false);
   const [zoomScale, setZoomScale] = useState(2);
 
-  // ĐÃ SỬA: Đổi status thành avatar để đồng bộ với Home.jsx
   const [userInfo, setUserInfo] = useState({ username: '', avatar: '' });
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isFetchingCart, setIsFetchingCart] = useState(!!localStorage.getItem('token'));
   
   const [cart, setCart] = useState(() => {
     const savedCart = localStorage.getItem('ceramic_cart');
@@ -37,14 +37,42 @@ function ProductDetail() {
   });
 
   useEffect(() => {
-    localStorage.setItem('ceramic_cart', JSON.stringify(cart));
-  }, [cart]);
+    if (!isLoggedIn) {
+      localStorage.setItem('ceramic_cart', JSON.stringify(cart));
+    }
+  }, [cart, isLoggedIn]);
+
+  // LẤY GIỎ HÀNG TỪ DATABASE
+  const fetchCartFromDB = async (token) => {
+    try {
+      const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/cart', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.data.cart && res.data.cart.items) {
+        const dbCart = res.data.cart.items.map(item => ({
+          id: item.BienTheSanPham.MaSanPham,
+          variantId: item.MaBienThe,
+          name: `${item.BienTheSanPham.SanPham.TenSanPham} - ${item.BienTheSanPham.TenBienThe}`,
+          price: Number(item.BienTheSanPham.Gia),
+          quantity: item.SoLuong,
+          maxStock: item.BienTheSanPham.SoLuong,
+          image: item.BienTheSanPham.HinhAnhBienThes?.[0]?.DuongDan || item.BienTheSanPham.SanPham?.Thumbnail || ''
+        }));
+        setCart(dbCart);
+      } else {
+        setCart([]);
+      }
+    } catch (error) {
+    } finally {
+      setIsFetchingCart(false);
+    }
+  };
 
   const [searchKw, setSearchKw] = useState('');
   const [searchOptions, setSearchOptions] = useState([]);
   const inputRef = useRef(null);
 
-  // ĐÃ SỬA: Logic kiểm tra đăng nhập và lấy Avatar chuẩn như Home.jsx
+  // KIỂM TRA ĐĂNG NHẬP VÀ ĐỒNG BỘ
   useEffect(() => {
     const token = localStorage.getItem('token');
 
@@ -62,6 +90,7 @@ function ProductDetail() {
             
             if (payload.exp && payload.exp < currentTime) {
                 handleLogout();
+                setIsFetchingCart(false);
                 return;
             }
             
@@ -77,15 +106,19 @@ function ProductDetail() {
               const fetchedName = profileData?.TenKhachHang || profileData?.TenNhanVien || userData?.username || 'Thành viên';
 
               setUserInfo({ username: fetchedName, avatar: fetchedAvatar });
+              fetchCartFromDB(token);
             }).catch(() => {
               setIsLoggedIn(false);
+              setIsFetchingCart(false);
             });
         }
       } catch (error) {
         setIsLoggedIn(false);
+        setIsFetchingCart(false);
       }
     } else {
       setIsLoggedIn(false);
+      setIsFetchingCart(false);
     }
   }, [navigate]);
 
@@ -209,7 +242,7 @@ function ProductDetail() {
     }
   };
 
-  const updateQty = (change) => {
+  const updateQtyLocal = (change) => {
     if (product?.TrangThai === 0) return;
     if (product?.BienTheSanPhams?.length > 0 && !selectedVariant) return message.warning("Vui lòng chọn phân loại!");
     let maxStock = selectedVariant ? selectedVariant.SoLuong : product.TongSoLuong;
@@ -219,116 +252,209 @@ function ProductDetail() {
     setCurrentQty(newQty);
   };
 
-  const handleAddToCart = () => {
-    if (product?.TrangThai === 0) return;
-    if (product?.BienTheSanPhams?.length > 0 && !selectedVariant) return message.warning("Bạn chưa chọn phân loại hàng.");
+  // ĐÃ SỬA: Đồng bộ hóa giỏ hàng khi ấn "Thêm vào giỏ"
+  const handleAddToCart = async () => {
+    if (product?.TrangThai === 0) return false;
+    if (product?.BienTheSanPhams?.length > 0 && !selectedVariant) {
+      message.warning("Bạn chưa chọn phân loại hàng.");
+      return false;
+    }
     
-    setCart(prevCart => {
-      const existingItem = prevCart.find(item => item.id === product.MaSanPham && item.variantId === selectedVariant?.MaBienThe);
-      if (existingItem) {
-        return prevCart.map(item => 
-          (item.id === product.MaSanPham && item.variantId === selectedVariant?.MaBienThe) 
-          ? { ...item, quantity: item.quantity + currentQty } : item
-        );
+    const targetVariantId = selectedVariant?.MaBienThe || null;
+
+    if (isLoggedIn) {
+      try {
+        const token = localStorage.getItem('token');
+        await axios.post('https://ceramic-shop-u8ak.onrender.com/api/v1/cart/items', {
+          MaBienThe: targetVariantId,
+          SoLuong: currentQty
+        }, { headers: { Authorization: `Bearer ${token}` } });
+        
+        message.success(`Đã thêm ${currentQty} sản phẩm vào giỏ hàng!`);
+        await fetchCartFromDB(token); // Fetch lại data thật từ DB
+        return true;
+      } catch (error) {
+        message.error(error.response?.data?.message || 'Lỗi thêm sản phẩm!');
+        return false;
       }
-      return [...prevCart, { 
-        id: product.MaSanPham, 
-        variantId: selectedVariant?.MaBienThe,
-        name: selectedVariant ? `${product.TenSanPham} - ${selectedVariant.TenBienThe}` : product.TenSanPham, 
-        price: selectedVariant ? selectedVariant.Gia : product.GiaThapNhat, 
-        image: mainImage,
-        quantity: currentQty 
-      }];
-    });
-    message.success(`Đã thêm ${currentQty} sản phẩm vào giỏ hàng!`);
+    } else {
+      let image = mainImage;
+      let fullName = product.TenSanPham;
+      if (selectedVariant && selectedVariant.TenBienThe.toLowerCase() !== 'mặc định') {
+        fullName = `${product.TenSanPham} - ${selectedVariant.TenBienThe}`;
+      }
+
+      setCart(prevCart => {
+        const existingItem = prevCart.find(item => item.id === product.MaSanPham && item.variantId === targetVariantId);
+        if (existingItem) {
+          return prevCart.map(item => 
+            (item.id === product.MaSanPham && item.variantId === targetVariantId) 
+            ? { ...item, quantity: item.quantity + currentQty } : item
+          );
+        }
+        return [...prevCart, { 
+          id: product.MaSanPham, 
+          variantId: targetVariantId,
+          name: fullName, 
+          price: selectedVariant ? selectedVariant.Gia : product.GiaThapNhat, 
+          image: image,
+          quantity: currentQty,
+          maxStock: selectedVariant ? selectedVariant.SoLuong : product.TongSoLuong
+        }];
+      });
+      message.success(`Đã thêm ${currentQty} sản phẩm vào giỏ hàng!`);
+      return true;
+    }
   };
 
-  const handleBuyNow = () => {
-    if (product?.TrangThai === 0) return;
-    if (product?.BienTheSanPhams?.length > 0 && !selectedVariant) return message.warning("Bạn chưa chọn phân loại hàng.");
-    handleAddToCart();
-    navigate('/cart');
+  const handleBuyNow = async () => {
+    const success = await handleAddToCart();
+    if (success) navigate('/cart');
   };
 
-  const handleRemoveFromCart = (id, variantId) => {
+  // ĐÃ SỬA: Đồng bộ thao tác trong Mini-cart y như Home.jsx
+  const updateCartItemQty = async (id, variantId, change) => {
+    const itemToUpdate = cart.find(item => item.id === id && item.variantId === variantId);
+    if (!itemToUpdate) return;
+    
+    let newQty = itemToUpdate.quantity + change;
+    if (newQty < 1) {
+       if (change === -1 && itemToUpdate.quantity === 1) {
+          handleRemoveFromCart(id, variantId);
+          return;
+       }
+       newQty = 1;
+    }
+
+    if (itemToUpdate.maxStock && newQty > itemToUpdate.maxStock) {
+        newQty = itemToUpdate.maxStock;
+        message.info(`Sản phẩm này chỉ còn ${itemToUpdate.maxStock} cái`);
+    }
+
+    setCart(prev => prev.map(item => (item.id === id && item.variantId === variantId) ? { ...item, quantity: newQty } : item));
+
+    if (isLoggedIn) {
+      try {
+        const token = localStorage.getItem('token');
+        await axios.patch(`https://ceramic-shop-u8ak.onrender.com/api/v1/cart/items/${variantId || id}`, 
+          { SoLuong: newQty },
+          { headers: { Authorization: `Bearer ${token}` }}
+        );
+      } catch (error) {}
+    }
+  };
+
+  const handleRemoveFromCart = async (id, variantId) => {
     setCart(prevCart => prevCart.filter(item => !(item.id === id && item.variantId === variantId)));
+    if (isLoggedIn) {
+      try {
+        const token = localStorage.getItem('token');
+        await axios.delete(`https://ceramic-shop-u8ak.onrender.com/api/v1/cart/items/${variantId || id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      } catch (error) {}
+    }
   };
 
-  const handleQtyChange = (id, variantId, value) => {
-    if (value === '') return; 
+  const handleQtyChange = async (id, variantId, value) => {
     const num = parseInt(value, 10);
-    if (isNaN(num) || num < 1) return;
-    setCart(prev => prev.map(item => (item.id === id && item.variantId === variantId) ? { ...item, quantity: num } : item));
+    if (!isNaN(num) && num >= 1) {
+        const itemToUpdate = cart.find(item => item.id === id && item.variantId === variantId);
+        let finalQty = num;
+        if (itemToUpdate?.maxStock && num > itemToUpdate.maxStock) {
+            finalQty = itemToUpdate.maxStock;
+        }
+        setCart(prev => prev.map(item => (item.id === id && item.variantId === variantId) ? { ...item, quantity: finalQty } : item));
+        
+        if (isLoggedIn) {
+          try {
+            const token = localStorage.getItem('token');
+            await axios.patch(`https://ceramic-shop-u8ak.onrender.com/api/v1/cart/items/${variantId || id}`, 
+              { SoLuong: finalQty },
+              { headers: { Authorization: `Bearer ${token}` }}
+            );
+          } catch (error) {}
+        }
+    }
   };
 
   const handleQtyBlur = (id, variantId, value) => {
     const num = parseInt(value, 10);
     if (isNaN(num) || num < 1) {
-      setCart(prev => prev.map(item => (item.id === id && item.variantId === variantId) ? { ...item, quantity: 1 } : item));
+      handleQtyChange(id, variantId, 1);
     }
   };
 
-  const increaseQty = (id, variantId) => {
-    setCart(prev => prev.map(item => (item.id === id && item.variantId === variantId) ? { ...item, quantity: item.quantity + 1 } : item));
-  };
+  const totalCartPrice = isFetchingCart ? 0 : cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const totalCartItems = isFetchingCart ? 0 : cart.reduce((sum, item) => sum + item.quantity, 0);
 
-  const decreaseQty = (id, variantId) => {
-    setCart(prev => {
-      const existing = prev.find(i => i.id === id && i.variantId === variantId);
-      if (existing && existing.quantity > 1) return prev.map(i => (i.id === id && i.variantId === variantId) ? { ...i, quantity: i.quantity - 1 } : i);
-      return prev.filter(i => !(i.id === id && i.variantId === variantId)); 
-    });
-  };
-
-  const totalCartPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const totalCartItems = cart.reduce((sum, item) => sum + item.quantity, 0);
   const miniCartContent = (
     <div className={styles.miniCartContainer}>
       <div className={styles.miniCartHeader}>Sản phẩm đã thêm</div>
-      {cart.length === 0 ? (
+      
+      {isFetchingCart ? (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '30px 0' }}>
+          <Spin size="small" />
+          <span style={{ marginLeft: '10px', color: '#1b437c' }}>Đang đồng bộ dữ liệu...</span>
+        </div>
+      ) : cart.length === 0 ? (
         <div className={styles.emptyCart}>Giỏ hàng đang trống</div>
       ) : (
-        <div className={styles.miniCartList}>
-          {cart.map((item, index) => (
-            <div key={`${item.id}-${item.variantId || index}`} className={styles.cartListItemCustom}>
-              <div className={styles.cartItemAvatar}>
-                <Avatar src={item.image} shape="square" className={styles.cartAvatar}/>
-              </div>
-              <div className={styles.cartItemInfo}>
-                <span className={styles.miniCartName} title={item.name}>{item.name}</span>
-                <div className={styles.miniCartQtyWrap}>
-                  <span className={styles.miniCartPrice}>{formatPrice(item.price)}</span>
-                  <div className={styles.qtyControls}>
-                    <button className={styles.qtyBtn} onClick={() => decreaseQty(item.id, item.variantId)}>-</button>
-                    <input 
-                      type="number" 
-                      min="1"
-                      className={styles.qtyInput} 
-                      value={item.quantity} 
-                      onChange={(e) => handleQtyChange(item.id, item.variantId, e.target.value)} 
-                      onBlur={(e) => handleQtyBlur(item.id, item.variantId, e.target.value)}
-                    />
-                    <button className={styles.qtyBtn} onClick={() => increaseQty(item.id, item.variantId)}>+</button>
+        <>
+          <div className={styles.miniCartList}>
+            {cart.map((item, index) => (
+              <div key={`${item.id}-${item.variantId || index}`} className={styles.cartListItemCustom}>
+                <div 
+                  className={styles.cartItemAvatar}
+                  onClick={() => navigate(`/product/${item.id}`)}
+                  style={{ cursor: 'pointer' }}
+                  title="Xem chi tiết sản phẩm"
+                >
+                  <Avatar src={item.image} shape="square" className={styles.cartAvatar}/>
+                </div>
+                <div className={styles.cartItemInfo}>
+                  <span 
+                    className={styles.miniCartName} 
+                    title={item.name}
+                    onClick={() => navigate(`/product/${item.id}`)}
+                    style={{ cursor: 'pointer', transition: 'color 0.2s' }}
+                    onMouseEnter={(e) => e.target.style.color = '#1b437c'}
+                    onMouseLeave={(e) => e.target.style.color = '#333'}
+                  >
+                    {item.name}
+                  </span>
+                  <div className={styles.miniCartQtyWrap}>
+                    <span className={styles.miniCartPrice}>{formatPrice(item.price)}</span>
+                    <div className={styles.qtyControls}>
+                      <button className={styles.qtyBtn} onClick={() => updateCartItemQty(item.id, item.variantId, -1)}>-</button>
+                      <input 
+                        type="number" min="1"
+                        className={styles.qtyInput} 
+                        value={item.quantity} 
+                        onChange={(e) => handleQtyChange(item.id, item.variantId, e.target.value)} 
+                        onBlur={(e) => handleQtyBlur(item.id, item.variantId, e.target.value)}
+                      />
+                      <button className={styles.qtyBtn} onClick={() => updateCartItemQty(item.id, item.variantId, 1)}>+</button>
+                    </div>
                   </div>
                 </div>
+                <div className={styles.cartItemAction}>
+                  <DeleteOutlined className={styles.cartDeleteIcon} onClick={() => handleRemoveFromCart(item.id, item.variantId)} />
+                </div>
               </div>
-              <div className={styles.cartItemAction}>
-                <DeleteOutlined className={styles.cartDeleteIcon} onClick={() => handleRemoveFromCart(item.id, item.variantId)} />
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+          <div className={styles.miniCartFooter}>
+            <div className={styles.miniCartTotal}>Tổng: <span>{formatPrice(totalCartPrice)}</span></div>
+            <Button type="primary" className={styles.btnCheckoutCart} onClick={() => navigate('/cart')}>
+              XEM GIỎ HÀNG
+            </Button>
+          </div>
+        </>
       )}
-      <div className={styles.miniCartFooter}>
-        <div className={styles.miniCartTotal}>Tổng: <span>{formatPrice(totalCartPrice)}</span></div>
-        <Button type="primary" className={styles.btnCheckoutCart} onClick={() => navigate('/cart')}>
-          XEM GIỎ HÀNG
-        </Button>
-      </div>
     </div>
   );
 
-  // ĐÃ SỬA: Cập nhật Dropdown Menu giống Home.jsx
   const userMenu = [
     { 
       key: '1', 
@@ -344,9 +470,13 @@ function ProductDetail() {
     setSearchKw(value);
     if (!value) { setSearchOptions([]); return; }
     try {
-      const res = await axios.get(`https://ceramic-shop-u8ak.onrender.com/api/v1/products?search=${value}&searchField=TenSanPham&limit=5`);
-      const data = res.data.data || res.data.result?.data || [];
-      const options = data.map(item => ({
+      const searchLower = value.toLowerCase();
+      const res = await axios.get(`https://ceramic-shop-u8ak.onrender.com/api/v1/products?limit=1000`);
+      let data = res.data.data || res.data.result?.data || [];
+      
+      data = data.filter(item => item.TenSanPham.toLowerCase().includes(searchLower));
+      
+      const options = data.slice(0, 10).map(item => ({
         value: item.TenSanPham,
         label: (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }} onClick={() => navigate(`/product/${item.MaSanPham}`)}>
@@ -395,8 +525,7 @@ function ProductDetail() {
           {isLoggedIn ? (
             <Dropdown menu={{ items: userMenu }} placement="bottomRight" arrow zIndex={9999}>
               <Space className={styles.userProfile}>
-                {/* ĐÃ SỬA: Truyền ảnh Avatar thực tế thay vì ảnh cứng */}
-                <Avatar src={userInfo.avatar} />
+                <Avatar src={userInfo.avatar || null} />
                 <div className={styles.userInfoBox}><span className={styles.userName}>{userInfo.username}</span></div>
               </Space>
             </Dropdown>
@@ -476,9 +605,9 @@ function ProductDetail() {
               <div className={styles.flexRow}>
                 <div className={styles.label}>Số lượng</div>
                 <div className={styles.qtyBox}>
-                    <button className={styles.qtyBtn} onClick={() => updateQty(-1)} disabled={isDiscontinued}>-</button>
+                    <button className={styles.qtyBtn} onClick={() => updateQtyLocal(-1)} disabled={isDiscontinued}>-</button>
                     <input type="text" className={styles.qtyInput} value={currentQty} readOnly disabled={isDiscontinued}/>
-                    <button className={styles.qtyBtn} onClick={() => updateQty(1)} disabled={isDiscontinued}>+</button>
+                    <button className={styles.qtyBtn} onClick={() => updateQtyLocal(1)} disabled={isDiscontinued}>+</button>
                 </div>
                 <div className={styles.stockText}>
                     {product.BienTheSanPhams?.length > 0 && !selectedVariant ? 'Vui lòng chọn phân loại' : `Kho: ${selectedVariant ? selectedVariant.SoLuong : product.TongSoLuong}`}
@@ -494,7 +623,7 @@ function ProductDetail() {
 
           <div className={styles.sectionBox}>
             <h3 className={styles.sectionTitle}>Mô Tả Sản Phẩm</h3>
-            <div className={styles.descContent}>{product.MoTa || 'Chưa có thông tin mô tả chi tiết.'}</div>
+            <div className={styles.descContent} dangerouslySetInnerHTML={{ __html: product.MoTa || 'Chưa có thông tin mô tả chi tiết.' }}></div>
           </div>
 
           <div className={styles.sectionBox} style={{ marginTop: 30 }}>
@@ -503,7 +632,10 @@ function ProductDetail() {
               <Row gutter={[24, 24]}> 
                 {relatedProducts.map(p => (
                     <Col xs={24} sm={12} md={8} lg={6} key={p.MaSanPham}>
-                      <div className={styles.customCard} onClick={() => navigate(`/product/${p.MaSanPham}`)}>
+                      <div className={styles.customCard} onClick={() => {
+                          navigate(`/product/${p.MaSanPham}`);
+                          window.scrollTo(0, 0);
+                        }}>
                         <div className={styles.cardImgWrapper}><img alt={p.TenSanPham} src={p.Thumbnail || 'https://via.placeholder.com/300'} /></div>
                         <div className={styles.catTag}>{p.DanhMuc?.TenDanhMuc}</div>
                         <h3 className={styles.productName}>{p.TenSanPham}</h3>

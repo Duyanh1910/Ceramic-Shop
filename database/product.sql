@@ -1377,3 +1377,56 @@ INSERT INTO ChiTietBienThe VALUES
 INSERT INTO hinhanhbienthe(MaBienThe, DuongDan) VALUES
 (107,'https://res.cloudinary.com/dcmwz0uis/image/upload/v1773823508/df2a9909-ae76-4afc-aefb-234a24770e1f_vellon.webp'),
 (107,'https://res.cloudinary.com/dcmwz0uis/image/upload/v1773823508/14f53a9f-2cd4-4881-9045-e96ccafe5bf0_tzc5zy.webp');
+
+-- 1. Thêm cột KhoiLuong (kg) vào bảng BienTheSanPham
+ALTER TABLE BienTheSanPham
+ADD COLUMN KhoiLuong DECIMAL(10,2) DEFAULT 0.00 COMMENT 'Khối lượng tính bằng kg';
+
+-- 2. Cập nhật khối lượng cho các Bộ đồ ăn
+UPDATE BienTheSanPham SET KhoiLuong = 2.50 WHERE MaBienThe IN (1, 2, 3, 7, 8, 11, 12); -- Bộ 9 món
+UPDATE BienTheSanPham SET KhoiLuong = 1.50 WHERE MaBienThe IN (4, 5, 6, 9, 10); -- Bộ 6 món
+UPDATE BienTheSanPham SET KhoiLuong = 3.50 WHERE MaBienThe IN (15, 16, 17, 18); -- Bộ 13 món
+
+-- 3. Cập nhật khối lượng cho Bát, Đĩa, Chén, Tô lẻ
+UPDATE BienTheSanPham SET KhoiLuong = 0.20 WHERE MaBienThe IN (19, 20); -- Bát cơm
+UPDATE BienTheSanPham SET KhoiLuong = 0.30 WHERE MaBienThe IN (21, 23, 27, 28); -- Đĩa tròn 18cm
+UPDATE BienTheSanPham SET KhoiLuong = 0.40 WHERE MaBienThe IN (22, 24); -- Đĩa tròn 20cm
+UPDATE BienTheSanPham SET KhoiLuong = 0.50 WHERE MaBienThe IN (25); -- Tô lớn 18cm
+UPDATE BienTheSanPham SET KhoiLuong = 0.60 WHERE MaBienThe IN (26); -- Tô lớn 20cm
+UPDATE BienTheSanPham SET KhoiLuong = 0.10 WHERE MaBienThe IN (29, 30); -- Chén chấm
+
+-- 4. Cập nhật khối lượng cho Nồi sứ Vesta
+UPDATE BienTheSanPham SET KhoiLuong = 1.20 WHERE MaBienThe IN (31, 34); -- Nồi 1L
+UPDATE BienTheSanPham SET KhoiLuong = 1.80 WHERE MaBienThe IN (32, 35); -- Nồi 2L
+UPDATE BienTheSanPham SET KhoiLuong = 2.50 WHERE MaBienThe IN (33, 36); -- Nồi 3L
+
+-- 5. Cập nhật khối lượng cho Đũa, Muỗng, Gác đũa
+UPDATE BienTheSanPham SET KhoiLuong = 0.10 WHERE MaBienThe IN (37, 38); -- Đũa sứ
+UPDATE BienTheSanPham SET KhoiLuong = 0.05 WHERE MaBienThe IN (39, 40, 41, 42, 43, 44); -- Gác đũa & Muỗng
+
+-- 6. Cập nhật khối lượng cho Bộ ấm trà
+UPDATE BienTheSanPham SET KhoiLuong = 1.20 WHERE MaBienThe IN (45, 46, 47, 57, 58); -- Trà 0.8L
+UPDATE BienTheSanPham SET KhoiLuong = 1.50 WHERE MaBienThe IN (48, 49, 50, 59, 60, 61, 62, 51, 52, 55); -- Trà 1.1L & dòng cao cấp 0.8L
+UPDATE BienTheSanPham SET KhoiLuong = 1.80 WHERE MaBienThe IN (53, 54, 56, 63); -- Dòng cao cấp 1.1L
+
+-- 7. Cập nhật khối lượng cho Khay mứt, Bát hương, Mâm bồng
+UPDATE BienTheSanPham SET KhoiLuong = 1.80 WHERE MaBienThe IN (64, 65, 66, 67, 68); -- Khay mứt 5 ngăn
+UPDATE BienTheSanPham SET KhoiLuong = 1.50 WHERE MaBienThe IN (69, 70, 71, 72, 73); -- Bát hương
+UPDATE BienTheSanPham SET KhoiLuong = 0.80 WHERE MaBienThe IN (74, 76, 78); -- Mâm bồng 18cm
+UPDATE BienTheSanPham SET KhoiLuong = 1.00 WHERE MaBienThe IN (75, 77, 79); -- Mâm bồng 20cm
+
+-- 8. Cập nhật khối lượng cho Lục bình (Khối lượng lớn)
+UPDATE BienTheSanPham SET KhoiLuong = 30.00 WHERE MaBienThe IN (80, 83, 86, 89, 92); -- Lục bình 130cm
+UPDATE BienTheSanPham SET KhoiLuong = 35.00 WHERE MaBienThe IN (81, 84, 87, 90, 93); -- Lục bình 140cm
+UPDATE BienTheSanPham SET KhoiLuong = 40.00 WHERE MaBienThe IN (82, 85, 88, 91, 94); -- Lục bình 150cm
+
+-- 9. Cập nhật khối lượng cho Tượng phong thủy & Bình hoa trang trí
+UPDATE BienTheSanPham SET KhoiLuong = 5.00 WHERE MaBienThe IN (95); -- Tượng Cặp Kỳ Lân
+UPDATE BienTheSanPham SET KhoiLuong = 1.00 WHERE MaBienThe IN (96, 100, 103, 106); -- Chuột, Cô gái gốm, Gà Đại Các, Bình hoa 20cm
+UPDATE BienTheSanPham SET KhoiLuong = 0.80 WHERE MaBienThe IN (97, 105); -- Tượng Rắn, Bình hoa 18cm
+UPDATE BienTheSanPham SET KhoiLuong = 3.00 WHERE MaBienThe IN (98); -- Tượng Bảo Mã
+UPDATE BienTheSanPham SET KhoiLuong = 2.00 WHERE MaBienThe IN (99); -- Rồng Long Phù
+UPDATE BienTheSanPham SET KhoiLuong = 0.50 WHERE MaBienThe IN (101); -- Tượng chim gốm
+UPDATE BienTheSanPham SET KhoiLuong = 1.20 WHERE MaBienThe IN (102); -- Tượng voi gốm decor
+UPDATE BienTheSanPham SET KhoiLuong = 2.50 WHERE MaBienThe IN (104); -- Bình hoa Đại Các 41cm
+UPDATE BienTheSanPham SET KhoiLuong = 1.50 WHERE MaBienThe IN (107); -- Bình hoa sen nền Vàng
