@@ -25,6 +25,10 @@ import OrderModel from "./order/order.model.js";
 import OrderPromotionModel from "./order/order_promotion.model.js";
 import OrderShippingModel from "./order/order_shipping.model.js";
 
+import PaymentMethodModel from "./payment_method.model.js";
+
+import InventoryHistoryModel from "./inventory_history.model.js";
+
 RoleModel.hasMany(AccountModel, {
   foreignKey: "MaQuyen",
   sourceKey: "MaPhanQuyen",
@@ -171,6 +175,23 @@ VariantModel.hasMany(OrderDetailModel, { foreignKey: "MaBienThe" });
 OrderDetailModel.belongsTo(VariantModel, {
   foreignKey: "MaBienThe",
 });
+
+PaymentMethodModel.hasMany(OrderModel, {
+  foreignKey: "MaPhuongThuc",
+});
+
+OrderModel.belongsTo(PaymentMethodModel, {
+  foreignKey: "MaPhuongThuc",
+});
+
+VariantModel.hasMany(InventoryHistoryModel, {
+  foreignKey: "MaBienThe",
+});
+
+InventoryHistoryModel.belongsTo(VariantModel, {
+  foreignKey: "MaBienThe",
+});
+
 export {
   sequelize,
   AccountModel,
@@ -194,4 +215,6 @@ export {
   PromotionTypeModel,
   ShippingModel,
   ShippingTypeModel,
+  PaymentMethodModel,
+  InventoryHistoryModel,
 };

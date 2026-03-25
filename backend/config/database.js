@@ -1,5 +1,6 @@
 import { Sequelize } from "sequelize";
 import { dbConfig } from "./app_config.js";
+import fs from "fs";
 const sequelize = new Sequelize(
   dbConfig.database,
   dbConfig.user,
@@ -11,7 +12,7 @@ const sequelize = new Sequelize(
     dialectOptions: {
       ssl: {
         require: true,
-        rejectUnauthorized: true,
+        ca: fs.readFileSync(new URL("../isrgrootx1.pem", import.meta.url)),
       },
     },
     logging: false,
