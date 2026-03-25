@@ -5,7 +5,6 @@ import { LogoutOutlined, SettingOutlined, SearchOutlined, ShoppingCartOutlined, 
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import styles from './Home.module.css';
-import ChatBot from './ChatBot';
 
 const { Header, Sider, Content } = Layout;
 const { Option } = Select;
@@ -48,7 +47,7 @@ function Home() {
 
   const fetchCartFromDB = async (token) => {
     try {
-      const res = await axios.get('http://localhost:3000/api/v1/cart', {
+      const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/cart', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.data.cart && res.data.cart.items) {
@@ -91,7 +90,7 @@ function Home() {
             
             setIsLoggedIn(true);
 
-            axios.get('http://localhost:3000/api/v1/auth/me', {
+            axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/me', {
               headers: { Authorization: `Bearer ${token}` }
             }).then(res => {
               const userData = res.data.user || res.data.result;
@@ -165,7 +164,7 @@ function Home() {
     if (isLoggedIn) {
       try {
         const token = localStorage.getItem('token');
-        await axios.post('http://localhost:3000/api/v1/cart/items', {
+        await axios.post('https://ceramic-shop-u8ak.onrender.com/api/v1/cart/items', {
           MaBienThe: targetVariantId,
           SoLuong: 1
         }, { headers: { Authorization: `Bearer ${token}` } });
@@ -211,7 +210,7 @@ function Home() {
     setOpenPopoverId(null);
 
     try {
-      const res = await axios.get(`http://localhost:3000/api/v1/products/${product.MaSanPham}`);
+      const res = await axios.get(`https://ceramic-shop-u8ak.onrender.com/api/v1/products/${product.MaSanPham}`);
       const prodData = res.data.result || res.data.data || res.data;
       
       let availableVariants = [];
@@ -244,7 +243,7 @@ function Home() {
     if (isLoggedIn) {
       try {
         const token = localStorage.getItem('token');
-        await axios.delete(`http://localhost:3000/api/v1/cart/items/${variantId || id}`, {
+        await axios.delete(`https://ceramic-shop-u8ak.onrender.com/api/v1/cart/items/${variantId || id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
       } catch (error) {
@@ -276,7 +275,7 @@ function Home() {
     if (isLoggedIn) {
       try {
         const token = localStorage.getItem('token');
-        await axios.patch(`http://localhost:3000/api/v1/cart/items/${variantId || id}`, 
+        await axios.patch(`https://ceramic-shop-u8ak.onrender.com/api/v1/cart/items/${variantId || id}`, 
           { SoLuong: newQty },
           { headers: { Authorization: `Bearer ${token}` }}
         );
@@ -298,7 +297,7 @@ function Home() {
         if (isLoggedIn) {
           try {
             const token = localStorage.getItem('token');
-            await axios.patch(`http://localhost:3000/api/v1/cart/items/${variantId || id}`, 
+            await axios.patch(`https://ceramic-shop-u8ak.onrender.com/api/v1/cart/items/${variantId || id}`, 
               { SoLuong: finalQty },
               { headers: { Authorization: `Bearer ${token}` }}
             );
@@ -365,49 +364,114 @@ function Home() {
 
   const renderVariantPopoverContent = () => (
     <div 
-      className={styles.popoverVariantWrap}
+      style={{ minWidth: '280px', fontFamily: "'Arsenal', sans-serif", cursor: 'default' }}
       onClick={(e) => {
         e.stopPropagation();
       }}
     >
-      <div className={styles.popoverVariantTitle}>
+      <style>
+        {`
+          .custom-variant-radio {
+            display: flex !important; 
+            width: 100%; 
+            align-items: center; 
+            padding: 10px 12px; 
+            margin: 0; 
+            border-radius: 6px; 
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+          }
+          .custom-variant-radio > span:last-child {
+            flex: 1;
+            width: 100%;
+            display: flex;
+          }
+          .custom-variant-radio:hover:not(.ant-radio-wrapper-disabled) {
+            background-color: #f0f5ff;
+          }
+          .custom-variant-radio.selected {
+            background-color: #f0f5ff;
+            border-color: #91caff;
+          }
+          .custom-popover-btn-cancel {
+            border-radius: 4px !important;
+            transition: all 0.3s !important;
+            border: 1px solid #d9d9d9 !important;
+            color: #333 !important;
+            background: #fff !important;
+          }
+          .custom-popover-btn-cancel:hover {
+            color: #e74c3c !important;
+            border-color: #e74c3c !important;
+            background: #fff !important;
+          }
+          .custom-popover-btn-submit {
+            background-color: #1b437c !important;
+            border-color: #1b437c !important;
+            border-radius: 4px !important;
+            color: white !important;
+            transition: all 0.3s !important;
+          }
+          .custom-popover-btn-submit:hover:not(:disabled) {
+            background-color: #13325c !important;
+            border-color: #13325c !important;
+            transform: translateY(-1px);
+          }
+        `}
+      </style>
+      
+      <div style={{ fontWeight: 700, color: '#1b437c', marginBottom: '12px', borderBottom: '1px dashed #e2e8f0', paddingBottom: '8px', fontSize: '15px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
         Chọn phân loại:
       </div>
       <Radio.Group onChange={(e) => setSelectedVariantId(e.target.value)} value={selectedVariantId} style={{ width: '100%' }}>
         <Space direction="vertical" style={{ width: '100%' }}>
-          {variants.map(v => (
-            <Radio 
-              key={v.MaBienThe} 
-              value={v.MaBienThe} 
-              disabled={v.SoLuong <= 0} 
-              className={styles.popoverVariantRadio}
-            >
-              <div className={styles.radioContentRow} style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
-                <span className={styles.radioVariantName}>{v.TenBienThe}</span> 
-                <span className={styles.popoverVariantPrice}>
-                  {formatPrice(v.Gia || currentProduct?.GiaThapNhat)}
-                </span> 
-                {v.SoLuong <= 0 && <span className={styles.popoverVariantStock}>(Hết hàng)</span>}
-              </div>
-            </Radio>
-          ))}
+          {variants.map(v => {
+            const isSelected = selectedVariantId === v.MaBienThe;
+            return (
+              <Radio 
+                key={v.MaBienThe} 
+                value={v.MaBienThe} 
+                disabled={v.SoLuong <= 0} 
+                className={`custom-variant-radio ${isSelected ? 'selected' : ''}`}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', flex: 1 }}>
+                  <span style={{ fontSize: '14px', color: '#333', textAlign: 'left' }}>{v.TenBienThe}</span> 
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                    <span style={{ color: '#d0021b', fontWeight: 700, marginLeft: '8px' }}>
+                      {formatPrice(v.Gia || currentProduct?.GiaThapNhat)}
+                    </span> 
+                    {v.SoLuong <= 0 && <span style={{ color: '#888', marginLeft: '4px', fontSize: '12px', fontStyle: 'italic' }}>(Hết)</span>}
+                  </div>
+                </div>
+              </Radio>
+            );
+          })}
         </Space>
       </Radio.Group>
-      <div className={styles.popoverVariantActions}>
-        <Button size="small" onClick={(e) => { 
-          e.stopPropagation(); 
-          setOpenPopoverId(null); 
-        }} style={{ borderRadius: '4px' }}>
+      <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'flex-end', gap: '10px', paddingTop: '12px', borderTop: '1px solid #f0f0f0' }}>
+        <Button 
+          size="small" 
+          className="custom-popover-btn-cancel"
+          onClick={(e) => { 
+            e.stopPropagation(); 
+            setOpenPopoverId(null); 
+          }}
+        >
           Hủy
         </Button>
-        <Button size="small" type="primary" disabled={!selectedVariantId} onClick={(e) => {
-          e.stopPropagation();
-          const variant = variants.find(v => v.MaBienThe === selectedVariantId);
-          if (variant) {
-            processAddToCart(currentProduct, variant, pendingAction);
-            setOpenPopoverId(null);
-          }
-        }} style={{ background: '#1b437c', borderRadius: '4px' }}>
+        <Button 
+          size="small" 
+          className="custom-popover-btn-submit"
+          disabled={!selectedVariantId} 
+          onClick={(e) => {
+            e.stopPropagation();
+            const variant = variants.find(v => v.MaBienThe === selectedVariantId);
+            if (variant) {
+              processAddToCart(currentProduct, variant, pendingAction);
+              setOpenPopoverId(null);
+            }
+          }}
+        >
           {pendingAction === 'buy' ? "Mua ngay" : "Thêm vào giỏ"}
         </Button>
       </div>
@@ -418,7 +482,7 @@ function Home() {
     setSearchKw(value);
     if (!value) { setSearchOptions([]); return; }
     try {
-      const res = await axios.get(`http://localhost:3000/api/v1/products?search=${value}&searchField=TenSanPham&limit=5`);
+      const res = await axios.get(`https://ceramic-shop-u8ak.onrender.com/api/v1/products?search=${value}&searchField=TenSanPham&limit=5`);
       let data = res.data.data || res.data.result?.data || [];
       
       data = data.filter(item => item.TenSanPham.toLowerCase().includes(value.toLowerCase()));
@@ -470,7 +534,7 @@ function Home() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await axios.get('http://localhost:3000/api/v1/categories');
+        const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/categories');
         const catData = res.data.result || [];
         
         const menuItems = [ { key: 'all', icon: <AppstoreOutlined />, label: 'Tất cả sản phẩm', className: styles.allProductsMenu } ];
@@ -513,7 +577,7 @@ function Home() {
         if (appliedSearchKw) { params.search = appliedSearchKw; params.searchField = 'TenSanPham'; }
         if (selectedCategory && selectedCategory !== 'all') { params.category = selectedCategory; }
 
-        const res = await axios.get('http://localhost:3000/api/v1/products', { params });
+        const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/products', { params });
         const data = res.data;
         let fetchedList = data.data || data.result?.data || [];
 
@@ -585,7 +649,7 @@ function Home() {
           {isLoggedIn ? (
             <Dropdown menu={{ items: userMenu }} placement="bottomRight" arrow>
               <Space className={styles.userProfile}>
-                <Avatar src={userInfo.avatar} />
+                <Avatar src={userInfo.avatar || null} />
                 <div className={styles.userInfoBox}>
                   <span className={styles.userName}>{userInfo.username}</span>
                 </div>
@@ -694,7 +758,7 @@ function Home() {
 
                             <div className={styles.cardButtons}>
                               <Popover
-                                overlayClassName={styles.variantPopover}
+                                overlayInnerStyle={{ padding: '16px', borderRadius: '12px', minWidth: '280px', boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15)', border: '1px solid #f0f0f0' }}
                                 content={currentProduct?.MaSanPham === p.MaSanPham && pendingAction === 'buy' ? renderVariantPopoverContent() : null}
                                 open={openPopoverId === `${p.MaSanPham}-buy`}
                                 onOpenChange={(visible) => { if (!visible) setOpenPopoverId(null); }}
@@ -712,7 +776,7 @@ function Home() {
                               </Popover>
 
                               <Popover
-                                overlayClassName={styles.variantPopover}
+                                overlayInnerStyle={{ padding: '16px', borderRadius: '12px', minWidth: '280px', boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15)', border: '1px solid #f0f0f0' }}
                                 content={currentProduct?.MaSanPham === p.MaSanPham && pendingAction === 'cart' ? renderVariantPopoverContent() : null}
                                 open={openPopoverId === `${p.MaSanPham}-cart`}
                                 onOpenChange={(visible) => { if (!visible) setOpenPopoverId(null); }}
@@ -757,7 +821,6 @@ function Home() {
           )}
         </Content>
       </Layout>
-      <ChatBot />
     </Layout>
   );
 }

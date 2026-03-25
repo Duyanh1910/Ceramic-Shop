@@ -67,7 +67,7 @@ function ProductDetail() {
             
             setIsLoggedIn(true);
 
-            axios.get('http://localhost:3000/api/v1/auth/me', {
+            axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/me', {
               headers: { Authorization: `Bearer ${token}` }
             }).then(res => {
               const userData = res.data.user || res.data.result;
@@ -93,7 +93,7 @@ function ProductDetail() {
     const fetchProductDetail = async () => {
       setLoading(true);
       try {
-        const res = await axios.get(`http://localhost:3000/api/v1/products/${id}`);
+        const res = await axios.get(`https://ceramic-shop-u8ak.onrender.com/api/v1/products/${id}`);
         const data = res.data.result || res.data.data || res.data;
         setProduct(data);
         
@@ -115,7 +115,7 @@ function ProductDetail() {
 
         const categoryObj = data.DanhMuc || data.DanhMucSanPham;
         if(categoryObj && categoryObj.MaDanhMuc) {
-            const relRes = await axios.get(`http://localhost:3000/api/v1/products?category=${categoryObj.MaDanhMuc}&limit=5`);
+            const relRes = await axios.get(`https://ceramic-shop-u8ak.onrender.com/api/v1/products?category=${categoryObj.MaDanhMuc}&limit=5`);
             let relData = relRes.data.data || (relRes.data.result && relRes.data.result.data) || [];
             relData = relData.filter(p => p.MaSanPham !== data.MaSanPham).slice(0, 4);
             setRelatedProducts(relData);
@@ -344,7 +344,7 @@ function ProductDetail() {
     setSearchKw(value);
     if (!value) { setSearchOptions([]); return; }
     try {
-      const res = await axios.get(`http://localhost:3000/api/v1/products?search=${value}&searchField=TenSanPham&limit=5`);
+      const res = await axios.get(`https://ceramic-shop-u8ak.onrender.com/api/v1/products?search=${value}&searchField=TenSanPham&limit=5`);
       const data = res.data.data || res.data.result?.data || [];
       const options = data.map(item => ({
         value: item.TenSanPham,
@@ -516,10 +516,6 @@ function ProductDetail() {
           </div>
         </Content>
       </Layout>
-      
-      {/* ĐÃ THÊM: Chatbot ở trang chi tiết sản phẩm */}
-      <ChatBot />
-      
     </Layout>
   );
 }

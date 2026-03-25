@@ -18,27 +18,26 @@ df-messenger {
     pointer-events: none; 
     transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1); 
     transform: translateX(0); 
-    pointer-events: none;
 }
 
 .bot-wrapper.chat-open {
-    transform: translateX(-400px);
+    transform: translateX(-350px);
 }
 
 .chibi-character {
     position: absolute;
-    bottom: -225px; 
-    right: -125px; 
-    width: 350px;
-    height: 350px;
+    bottom: -200px; 
+    right: -70px; 
+    width: 300px;
+    height: 300px;
     cursor: pointer;
     pointer-events: auto; 
     background-color: transparent !important; 
-    pointer-events: auto;
+    transition: transform 0.3s ease;
 }
 
 .chibi-character:hover {
-    transform: scale(1.05);
+    transform: scale(1.5);
 }
 
 .chibi-character::part(default-progress-bar) {
@@ -47,9 +46,8 @@ df-messenger {
 
 .change-anim-btn {
     position: absolute;
-    bottom: -30px; 
-    right: 100px; 
-    
+    bottom: -25px; 
+    right: 125px; 
     background-color: #5492f6; 
     color: white;
     border: none;
@@ -65,9 +63,6 @@ df-messenger {
     justify-content: center;
     transition: transform 0.2s, background-color 0.2s;
     z-index: 999999;
-    margin-bottom: 0px; 
-    margin-left: 0px;
-    pointer-events: auto;
 }
 
 .change-anim-btn:hover {
@@ -77,8 +72,8 @@ df-messenger {
 
 .chat-bubble-hint {
     position: absolute;
-    bottom: 60px; 
-    right: 30px; 
+    bottom: 35px; 
+    right: 70px; 
     background: linear-gradient(135deg, #ffe6f0, #ffcce0); 
     color: #333;
     padding: 12px 20px;
@@ -97,7 +92,7 @@ df-messenger {
     content: '';
     position: absolute;
     bottom: -10px;
-    right: 40px; 
+    right: 25px; 
     border-width: 10px 10px 0;
     border-style: solid;
     border-color: #ffcce0 transparent transparent transparent;

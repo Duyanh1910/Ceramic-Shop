@@ -28,7 +28,7 @@ function Cart() {
 
   const fetchCartFromDB = async (token) => {
     try {
-      const res = await axios.get('http://localhost:3000/api/v1/cart', {
+      const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/cart', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.data.cart && res.data.cart.items) {
@@ -52,7 +52,7 @@ function Cart() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      axios.get('http://localhost:3000/api/v1/auth/me', {
+      axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/me', {
         headers: { Authorization: `Bearer ${token}` }
       }).then(res => {
         const userData = res.data.user || res.data.result;
@@ -98,7 +98,7 @@ function Cart() {
     if (isLoggedIn) {
       try {
         const token = localStorage.getItem('token');
-        await axios.delete(`http://localhost:3000/api/v1/cart/items/${variantId || id}`, {
+        await axios.delete(`https://ceramic-shop-u8ak.onrender.com/api/v1/cart/items/${variantId || id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
       } catch (error) {
@@ -119,7 +119,7 @@ function Cart() {
       try {
         const token = localStorage.getItem('token');
         await Promise.all(itemsToDelete.map(item => 
-          axios.delete(`http://localhost:3000/api/v1/cart/items/${item.variantId || item.id}`, {
+          axios.delete(`https://ceramic-shop-u8ak.onrender.com/api/v1/cart/items/${item.variantId || item.id}`, {
             headers: { Authorization: `Bearer ${token}` }
           })
         ));
@@ -143,7 +143,7 @@ function Cart() {
     if (isLoggedIn) {
       try {
         const token = localStorage.getItem('token');
-        await axios.patch(`http://localhost:3000/api/v1/cart/items/${variantId || id}`, 
+        await axios.patch(`https://ceramic-shop-u8ak.onrender.com/api/v1/cart/items/${variantId || id}`, 
           { SoLuong: newQty },
           { headers: { Authorization: `Bearer ${token}` }}
         );
@@ -165,7 +165,7 @@ function Cart() {
         if (isLoggedIn) {
           try {
             const token = localStorage.getItem('token');
-            await axios.patch(`http://localhost:3000/api/v1/cart/items/${variantId || id}`, 
+            await axios.patch(`https://ceramic-shop-u8ak.onrender.com/api/v1/cart/items/${variantId || id}`, 
               { SoLuong: finalQty },
               { headers: { Authorization: `Bearer ${token}` }}
             );
@@ -216,12 +216,12 @@ function Cart() {
         }))
       };
 
-      await axios.post('http://localhost:3000/api/v1/orders', payload, {
+      await axios.post('https://ceramic-shop-u8ak.onrender.com/api/v1/orders', payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
       await Promise.all(selectedCartItems.map(item => 
-        axios.delete(`http://localhost:3000/api/v1/cart/items/${item.variantId || item.id}`, {
+        axios.delete(`https://ceramic-shop-u8ak.onrender.com/api/v1/cart/items/${item.variantId || item.id}`, {
           headers: { Authorization: `Bearer ${token}` }
         })
       ));

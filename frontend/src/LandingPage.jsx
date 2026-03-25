@@ -40,7 +40,7 @@ function LandingPage() {
     const fetchProducts = async () => {
         setLoading(true);
         try {
-            const response = await axios.get('http://localhost:3000/api/v1/products?page=1&limit=8');
+            const response = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/products?page=1&limit=8');
             if (response.data && response.data.result) {
                 setProducts(response.data.result.data);
             }

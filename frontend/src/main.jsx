@@ -9,6 +9,7 @@ import ProductDetail from './productDetail.jsx'
 import LandingPage from './LandingPage.jsx'
 import Profile from './Profile.jsx'
 import Cart from './Cart.jsx'
+import ChatBot from './ChatBot';
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('token');
   if (!token) {
@@ -61,6 +62,7 @@ createRoot(document.getElementById('root')).render(
           } />
           
         </Routes>
+        <ChatBot />
       </BrowserRouter>
     </HelmetProvider>
   </StrictMode>,
