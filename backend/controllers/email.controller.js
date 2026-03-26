@@ -24,6 +24,7 @@ export const sendVerifyEmailController = async (req, res, next) => {
     await redisClient.set(`otp_verify:${normalizedEmail}`, otp, {
       ex: 300,
     });
+    console.log(otp);
     return res.status(200).json({
       success: true,
       message: "OTP đã được gửi tới email",
@@ -61,7 +62,8 @@ export const VerifyEmailController = async (req, res, next) => {
         new ErrorHandler("Mã OTP này đã hết hạn hoặc không hợp lệ!", 400),
       );
     }
-    if (savedOTP !== formatOtp) {
+    console.log(`savedOtp: ${savedOTP}`);
+    if (String(savedOTP) !== String(formatOtp)) {
       const newAtmp = await redisClient.incr(`otp_attempts:${normalizedEmail}`);
       if (newAtmp === 1) {
         await redisClient.expire(`otp_attempts:${normalizedEmail}`, 300);
