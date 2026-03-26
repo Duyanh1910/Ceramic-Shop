@@ -428,7 +428,7 @@ function Cart() {
 
                       <Button 
                         type="primary" 
-                        htmlType="submit" 
+                        //htmlType="submit" 
                         className={styles.btnSubmitOrder} 
                         loading={loading}
                         disabled={selectedCartItems.length === 0}

@@ -42,7 +42,6 @@ function ProductDetail() {
     }
   }, [cart, isLoggedIn]);
 
-  // LẤY GIỎ HÀNG TỪ DATABASE
   const fetchCartFromDB = async (token) => {
     try {
       const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/cart', {
@@ -72,7 +71,6 @@ function ProductDetail() {
   const [searchOptions, setSearchOptions] = useState([]);
   const inputRef = useRef(null);
 
-  // KIỂM TRA ĐĂNG NHẬP VÀ ĐỒNG BỘ
   useEffect(() => {
     const token = localStorage.getItem('token');
 
@@ -252,7 +250,6 @@ function ProductDetail() {
     setCurrentQty(newQty);
   };
 
-  // ĐÃ SỬA: Đồng bộ hóa giỏ hàng khi ấn "Thêm vào giỏ"
   const handleAddToCart = async () => {
     if (product?.TrangThai === 0) return false;
     if (product?.BienTheSanPhams?.length > 0 && !selectedVariant) {
@@ -312,7 +309,6 @@ function ProductDetail() {
     if (success) navigate('/cart');
   };
 
-  // ĐÃ SỬA: Đồng bộ thao tác trong Mini-cart y như Home.jsx
   const updateCartItemQty = async (id, variantId, change) => {
     const itemToUpdate = cart.find(item => item.id === id && item.variantId === variantId);
     if (!itemToUpdate) return;
@@ -504,7 +500,7 @@ function ProductDetail() {
 
   return (
     <Layout className={styles.homeWrapper}>
-      <Helmet><title>{product.TenSanPham} | The Ceramic Shop</title></Helmet>
+      <Helmet><title>{product.TenSanPham}</title></Helmet>
       
       <Header className={styles.topHeader}>
         <div className={styles.logo} onClick={() => navigate('/')} style={{cursor: 'pointer'}}>CERAMIC-SHOP</div>

@@ -743,8 +743,11 @@
 }
 
 .btnDetail:hover:not(:disabled) {
-  background: #f4f7fb;
+  background: linear-gradient(rgba(56, 88, 153, 0.421),rgba(82, 128, 221, 0.44),rgba(0, 126, 245, 0.741));
   transform: translateY(-2px);
+  color:white;
+  border: none;
+  border-radius: 8px;
 }
 
 

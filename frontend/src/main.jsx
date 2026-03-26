@@ -57,7 +57,7 @@ createRoot(document.getElementById('root')).render(
           } />
           
           <Route path="/cart" element={<Cart />} />
-          <Route path="/product/:id" element={<ProductDetail />} />
+          <Route path="/product/:id" element={<PublicRoute><ProductDetail /></PublicRoute>} />
           <Route path="/landing" element={<LandingPage />} />
           
           <Route path="/profile" element={

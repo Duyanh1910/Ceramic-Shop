@@ -28,7 +28,6 @@ function Home() {
   const [userInfo, setUserInfo] = useState({ username: '', avatar: '' });
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // THÊM STATE KIỂM TRA ĐANG LOAD GIỎ HÀNG
   const [isFetchingCart, setIsFetchingCart] = useState(!!localStorage.getItem('token'));
   
   const [cart, setCart] = useState(() => {
@@ -325,7 +324,6 @@ function Home() {
     }
   };
 
-  // TÍNH TOÁN: Ẩn kết quả (trả về 0) nếu đang trong quá trình load
   const totalCartPrice = isFetchingCart ? 0 : cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const totalCartItems = isFetchingCart ? 0 : cart.reduce((sum, item) => sum + item.quantity, 0);
 
