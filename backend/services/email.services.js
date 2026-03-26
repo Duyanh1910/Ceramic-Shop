@@ -1,13 +1,12 @@
 import ErrorHandler from "../utils/error_handler.js";
-import transporter from "../config/mail.config.js";
 import crypto from "crypto";
+import axios from "axios";
 
 export const sendEmailVerifyService = async (email, type = "verify") => {
   try {
     const raw = crypto.randomInt(0, 1000000);
     const otp = raw.toString().padStart(6, "0");
-    console.log(process.env.BREVO_USER);
-    console.log(process.env.BREVO_PASS);
+
     let mailSubject = "";
     let title = "";
     let description = "";
@@ -15,71 +14,97 @@ export const sendEmailVerifyService = async (email, type = "verify") => {
 
     if (type === "forgot_password") {
       mailSubject = "[The Ceramic Shop] Mã OTP Khôi phục mật khẩu";
-      title = "Khôi phục mật khẩu của bạn";
-      description =
-        "Chúng tôi nhận được yêu cầu khôi phục mật khẩu cho tài khoản của bạn.";
-      warning =
-        "CẢNH BÁO: Nếu bạn không yêu cầu đổi mật khẩu, tài khoản của bạn có thể đang gặp rủi ro. Vui lòng bỏ qua email này và không chia sẻ mã OTP cho bất kỳ ai.";
+      title = "Khôi phục mật khẩu";
+      description = "Bạn đã yêu cầu khôi phục mật khẩu.";
+      warning = "Nếu không phải bạn, hãy bỏ qua email này.";
     } else {
-      mailSubject = "[The Ceramic Shop] Mã xác thực OTP của bạn";
-      title = "Xác thực danh tính của bạn";
-      description = "Bạn vừa yêu cầu mã xác thực cho tài khoản của mình.";
-      warning = "Nếu bạn không yêu cầu mã này, vui lòng bỏ qua email này.";
+      mailSubject = "[The Ceramic Shop] Mã OTP xác thực";
+      title = "Xác thực tài khoản";
+      description = "Bạn vừa yêu cầu mã OTP.";
+      warning = "Nếu không phải bạn, hãy bỏ qua.";
     }
 
-    const info = await transporter.sendMail({
-      from: `"The Ceramic Shop" <a5e216001@smtp-brevo.com>`,
-      to: email,
-      subject: mailSubject,
-      html: `
-<div style="font-family: Arial, sans-serif; background:#f5f5f5; padding:40px 0;">
-  <div style="max-width:600px; margin:auto; background:#ffffff; border-radius:8px; overflow:hidden; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
-    
-    <div style="background:#1f4e79; color:#fff; padding:20px; text-align:center;">
-      <h2 style="margin:0;">The Ceramic Shop</h2>
-      <p style="margin:5px 0 0; font-size:14px;">${title}</p>
-    </div>
+    const htmlContent = `
+<div style="margin:0;padding:0;background:#f4f6f8;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f8;padding:20px 0;">
+    <tr>
+      <td align="center">
+        
+        <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:10px;overflow:hidden;font-family:Arial,sans-serif;">
+          
+          <tr>
+            <td style="background:#1f4e79;color:#ffffff;text-align:center;padding:20px;">
+              <h2 style="margin:0;">The Ceramic Shop</h2>
+              <p style="margin:5px 0 0;font-size:14px;">${title}</p>
+            </td>
+          </tr>
 
-    <div style="padding:30px; text-align:center;">
-      <h3>Xin chào!</h3>
-      <p>${description}</p>
-      <p>Vui lòng sử dụng mã OTP dưới đây:</p>
+          <tr>
+            <td style="padding:30px;text-align:center;color:#333;">
+              <h3 style="margin-top:0;">Xin chào 👋</h3>
+              <p>${description}</p>
+              <p>Vui lòng sử dụng mã OTP dưới đây:</p>
 
-      <div style="
-        font-size:32px;
-        font-weight:bold;
-        letter-spacing:6px;
-        background:#f0f7ff;
-        padding:15px 25px;
-        display:inline-block;
-        border-radius:6px;
-        margin:20px 0;
-        color:#1f4e79;
-      ">
-        ${otp}
-      </div>
+              <div style="
+                font-size:34px;
+                font-weight:bold;
+                letter-spacing:8px;
+                background:#eef5ff;
+                padding:15px 30px;
+                display:inline-block;
+                border-radius:8px;
+                margin:20px 0;
+                color:#1f4e79;
+              ">
+                ${otp}
+              </div>
 
-      <p>Mã OTP này sẽ hết hạn sau <b>5 phút</b>.</p>
-      <p style="color:#d9534f; font-size:13px; font-weight:bold; margin-top:20px;">
-        ${warning}
-      </p>
-    </div>
+              <p>Mã OTP sẽ hết hạn sau <b>5 phút</b>.</p>
 
-    <div style="background:#f5f5f5; padding:15px; text-align:center; font-size:12px; color:#777;">
-      © ${new Date().getFullYear()} The Ceramic Shop  
-      <br/>
-      Email tự động - vui lòng không trả lời
-    </div>
+              <p style="color:#888;font-size:13px;margin-top:20px;">
+                ${warning}
+              </p>
+            </td>
+          </tr>
 
-  </div>
+          <tr>
+            <td style="background:#f0f0f0;text-align:center;padding:15px;font-size:12px;color:#777;">
+              © ${new Date().getFullYear()} The Ceramic Shop<br/>
+              Đây là email tự động, vui lòng không trả lời.
+            </td>
+          </tr>
+
+        </table>
+
+      </td>
+    </tr>
+  </table>
 </div>
-`,
-    });
-    console.log("Email sent:", info.messageId);
+`;
 
+    const res = await axios.post(
+      "https://api.brevo.com/v3/smtp/email",
+      {
+        sender: {
+          name: "The Ceramic Shop",
+          email: "phap96130@st.vimaru.edu.vn",
+        },
+        to: [{ email }],
+        subject: mailSubject,
+        htmlContent: htmlContent,
+      },
+      {
+        headers: {
+          "api-key": process.env.BREVO_API_KEY,
+          "Content-Type": "application/json",
+        },
+      },
+    );
+
+    console.log("Email sent:", res.data);
     return otp;
   } catch (err) {
-    console.error("Send mail error:", err);
-    throw new ErrorHandler("Lỗi server! Không thể gửi mail!", 500);
+    console.error("Send mail error:", err.response?.data || err);
+    throw new ErrorHandler("Không gửi được email!", 500);
   }
 };

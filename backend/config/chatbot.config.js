@@ -19,5 +19,6 @@ export const pool = mysql.createPool({
   queueLimit: 0,
   ssl: {
     rejectUnauthorized: true,
+    ca: fs.readFileSync(new URL("../isrgrootx1.pem", import.meta.url)),
   },
 });
