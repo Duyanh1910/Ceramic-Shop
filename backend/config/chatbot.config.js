@@ -6,7 +6,7 @@ export const CHATBOT_LINKS = {
   emailLink: "mailto:theceramicshop24@gmail.com",
   phoneLink: "tel:0329835725",
   fbLink: "https://www.facebook.com/tran.duy.anh.714185",
-  mapLink: "https://maps.app.goo.gl/23r4X895EBR44h2XA",
+  mapLink: "https://maps.app.goo.gl/8c8LEJdqTbSH4w7N8",
 };
 
 export const pool = mysql.createPool({

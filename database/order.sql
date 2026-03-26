@@ -268,3 +268,7 @@ VALUES (11, 'Hàng siêu cồng kềnh', 'Phí cho hàng gốm sứ lớn (lục
 
 INSERT INTO PhiVanChuyen (MaPhi, MaLoaiPhi, GiaTri) 
 VALUES (11, 11, 100000);
+
+UPDATE LoaiPhiVanChuyen
+SET MoTa = 'Giao trong 2H nội thành HP'
+WHERE MaLoaiPhi = 6;

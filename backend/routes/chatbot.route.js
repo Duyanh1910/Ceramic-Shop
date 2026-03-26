@@ -1209,13 +1209,16 @@ router.post("/webhook", async (req, res) => {
                   type: "button",
                   icon: { type: "storefront", color: "#34A853" },
                   text: "Đi tới Gian hàng (Xem tất cả)",
-                  link: domainWeb,
+                  link: `${domainWeb}/san-pham`, 
                 },
                 {
                   type: "button",
                   icon: { type: "local_fire_department", color: "#FF5722" },
-                  text: "Khám phá các mẫu Bán Chạy",
-                  link: domainWeb,
+                  text: "Xem ngay tại đây các mẫu Bán Chạy",
+                  event: {
+                    name: "San_Pham_Pho_Bien", 
+                    languageCode: "vi"
+                  }
                 },
               ],
             ],
@@ -1243,7 +1246,7 @@ router.post("/webhook", async (req, res) => {
                   type: "description",
                   title: "🏡 CeramicShop - Gốm Sứ Cao Cấp",
                   text: [
-                    "📍 Địa chỉ: Làng nghề Bát Tràng, Gia Lâm, Hà Nội",
+                    "📍 Địa chỉ: 484 Lạch Tray, Lê Chân, Hải Phòng",
                     "⏰ Giờ mở cửa: 08:00 - 22:00 (Từ Thứ 2 - Thứ 7)",
                     "📞 Hotline: 0329.835.725",
                     "✉️ Email: theceramicshop24@gmail.com",
