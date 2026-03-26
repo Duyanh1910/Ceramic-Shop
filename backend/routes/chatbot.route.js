@@ -1209,7 +1209,7 @@ router.post("/webhook", async (req, res) => {
                   type: "button",
                   icon: { type: "storefront", color: "#34A853" },
                   text: "Đi tới Gian hàng (Xem tất cả)",
-                  link: `${domainWeb}/san-pham`, 
+                  link: `${domainWeb}`, 
                 },
                 {
                   type: "button",
@@ -1217,7 +1217,8 @@ router.post("/webhook", async (req, res) => {
                   text: "Xem ngay tại đây các mẫu Bán Chạy",
                   event: {
                     name: "San_Pham_Pho_Bien", 
-                    languageCode: "vi"
+                    languageCode: "vi",
+                    parameters: {}
                   }
                 },
               ],
