@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Layout, Form, Input, Button, Avatar, message, Upload, Divider } from 'antd';
-import { UserOutlined, ArrowLeftOutlined, UploadOutlined, ProfileOutlined, ShoppingOutlined } from '@ant-design/icons';
+import { UserOutlined, ArrowLeftOutlined, UploadOutlined, ProfileOutlined, ShoppingOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
 import styles from './Profile.module.css';
-
 const { Header, Content, Sider } = Layout;
 
 function Profile() {
@@ -132,6 +131,9 @@ function Profile() {
               </div>
               <ul className={styles.sidebarMenu}>
                 <li className={styles.active}><ProfileOutlined /> Thông tin tài khoản</li>
+                <li onClick={() => navigate('/change-password')}>
+                  <LockOutlined /> Đổi mật khẩu
+                </li>
                 <li><ShoppingOutlined /> Đơn hàng của tôi</li>
               </ul>
             </Sider>

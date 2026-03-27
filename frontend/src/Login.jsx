@@ -96,7 +96,11 @@ function App() {
                 placeholder="Nhập mật khẩu" 
               />
             </Form.Item>
-
+            <div style={{ textAlign: 'right', marginBottom: 16 }}>
+              <Link onClick={() => navigate('/forgot-password')} style={{ color: '#1b437c' }}>
+                Quên mật khẩu?
+              </Link>
+            </div>
             <div style={{ marginBottom: '25px', textAlign: 'right' }}>
               <Text style={{color: '#666'}}>Chưa có tài khoản? </Text>
               <Link onClick={() => navigate('/register')} style={{fontWeight: 600, color: '#50a1fe'}}>Đăng ký ngay</Link>
