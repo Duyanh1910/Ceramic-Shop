@@ -66,7 +66,7 @@ export const verifyOTPResetPasswordController = async (req, res, next) => {
         new ErrorHandler("Mã OTP này đã hết hạn hoặc không hợp lệ!", 400),
       );
     }
-    if (savedOTP !== formatOtp) {
+    if (String(savedOTP) !== formatOtp) {
       const newAtmp = await redisClient.incr(`otp_attempts:${normalizedEmail}`);
       if (newAtmp === 1) {
         await redisClient.expire(`otp_attempts:${normalizedEmail}`, 300);

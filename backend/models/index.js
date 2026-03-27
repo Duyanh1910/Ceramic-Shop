@@ -16,6 +16,7 @@ import { CartInfoModel, CartModel } from "./cart.model.js";
 
 import PromotionTypeModel from "./promotion/promotion_type.model.js";
 import PromotionModel from "./promotion/promotion.model.js";
+import PromotionWalletModel from "./promotion/promotion_wallet.model.js";
 
 import ShippingModel from "./shipping/shipping.model.js";
 import ShippingTypeModel from "./shipping/shipping_type.model.js";
@@ -28,6 +29,8 @@ import OrderShippingModel from "./order/order_shipping.model.js";
 import PaymentMethodModel from "./payment_method.model.js";
 
 import InventoryHistoryModel from "./inventory_history.model.js";
+
+import SystemModel from "./system_model.model.js";
 
 RoleModel.hasMany(AccountModel, {
   foreignKey: "MaQuyen",
@@ -192,6 +195,49 @@ InventoryHistoryModel.belongsTo(VariantModel, {
   foreignKey: "MaBienThe",
 });
 
+CategoryModel.hasMany(PromotionModel, {
+  foreignKey: "MaDanhMuc",
+});
+
+PromotionModel.belongsTo(CategoryModel, {
+  foreignKey: "MaDanhMuc",
+});
+
+CustomerModel.belongsToMany(PromotionModel, {
+  through: PromotionWalletModel,
+  foreignKey: "MaKhachHang",
+  otherKey: "MaKhuyenMai",
+});
+
+PromotionModel.belongsToMany(CustomerModel, {
+  through: PromotionWalletModel,
+  foreignKey: "MaKhuyenMai",
+  otherKey: "MaKhachHang",
+});
+
+CustomerModel.hasMany(PromotionWalletModel, {
+  foreignKey: "MaKhachHang",
+});
+
+PromotionWalletModel.belongsTo(CustomerModel, {
+  foreignKey: "MaKhachHang",
+});
+
+PromotionModel.hasMany(PromotionWalletModel, {
+  foreignKey: "MaKhuyenMai",
+});
+
+PromotionWalletModel.belongsTo(PromotionModel, {
+  foreignKey: "MaKhuyenMai",
+});
+
+OrderModel.hasMany(InventoryHistoryModel, {
+  foreignKey: "MaThamChieu",
+  constraints: false,
+  scope: {
+    LoaiThamChieu: "DonHang",
+  },
+});
 export {
   sequelize,
   AccountModel,
@@ -217,4 +263,6 @@ export {
   ShippingTypeModel,
   PaymentMethodModel,
   InventoryHistoryModel,
+  PromotionWalletModel,
+  SystemModel,
 };

@@ -37,6 +37,22 @@ const PromotionModel = sequelize.define(
       type: DataTypes.TINYINT,
       defaultValue: 1,
     },
+    MaCode: {
+      type: DataTypes.STRING,
+      unique: true,
+    },
+    SoLuong: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+    },
+    LoaiVoucher: {
+      type: DataTypes.TINYINT,
+      defaultValue: 1,
+    },
+    MaDanhMuc: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
   },
   {
     tableName: "KhuyenMai",

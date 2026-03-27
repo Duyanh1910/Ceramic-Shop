@@ -187,6 +187,8 @@ CREATE TABLE DonHang (
     FOREIGN KEY (MaKhachHang) REFERENCES KhachHang(MaKhachHang),
     FOREIGN KEY (MaPhuongThuc) REFERENCES PhuongThucThanhToan(MaPhuongThuc)
 );
+ALTER TABLE DonHang
+ADD MaHienThi VARCHAR(30) UNIQUE;
 
 CREATE TABLE PhieuNhap (
     MaPhieuNhap INT AUTO_INCREMENT PRIMARY KEY,
@@ -352,3 +354,82 @@ CREATE INDEX idx_import_employee ON PhieuNhap (MaNhanVien);
 
 CREATE INDEX idx_import_detail_import ON ChiTietPhieuNhap (MaPhieuNhap);
 CREATE INDEX idx_import_detail_variant ON ChiTietPhieuNhap (MaBienThe);
+
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- =========================================================================
+-- 1. TẠO BẢNG CẤU HÌNH HỆ THỐNG ĐỂ ADMIN QUẢN LÝ
+-- =========================================================================
+DROP TABLE IF EXISTS CauHinhHeThong;
+CREATE TABLE CauHinhHeThong (
+    MaCauHinh VARCHAR(50) PRIMARY KEY COMMENT 'Khóa cấu hình (Key)',
+    GiaTri DECIMAL(15,2) NOT NULL COMMENT 'Giá trị cấu hình (Value)',
+    MoTa VARCHAR(255) COMMENT 'Mô tả cho Admin'
+);
+
+INSERT INTO CauHinhHeThong (MaCauHinh, GiaTri, MoTa) VALUES
+('MUC_KG_TIEU_CHUAN', 2.00, 'Mức kg miễn phí vượt trọng lượng'),
+('PHI_VUOT_KG_NOI_THANH', 5000, 'Phí cộng thêm mỗi kg vượt mức nội thành'),
+('PHI_VUOT_KG_LIEN_TINH', 10000, 'Phí cộng thêm mỗi kg vượt mức liên tỉnh'),
+('PHI_VUOT_KG_HOA_TOC', 10000, 'Phí cộng thêm mỗi kg hỏa tốc (vượt 3kg)'),
+('PHU_PHI_CONG_KENH', 20000, 'Phụ phí đóng thùng xốp/sản phẩm (Gốm 1-20kg)'),
+('PHU_PHI_SIEU_CONG_KENH', 100000, 'Phụ phí đóng kiện gỗ/sản phẩm (Gốm > 20kg)'),
+('PHI_THUE_XE_BAN_TAI', 150000, 'Phụ phí thuê xe bán tải cho đơn Hỏa tốc quá nặng');
+
+
+-- =========================================================================
+-- 2. CẬP NHẬT BẢNG KHUYẾN MÃI VÀ DỮ LIỆU
+-- =========================================================================
+-- Cập nhật cấu trúc bảng KhuyenMai
+ALTER TABLE KhuyenMai
+ADD COLUMN MaCode VARCHAR(50) UNIQUE COMMENT 'Mã nhập voucher',
+ADD COLUMN SoLuong INT DEFAULT 0 COMMENT 'Giới hạn số lượng mã',
+ADD COLUMN LoaiVoucher TINYINT DEFAULT 1 COMMENT '1: Khuyến mãi đơn hàng, 2: Khuyến mãi phí ship',
+ADD COLUMN MaDanhMuc INT NULL COMMENT 'NULL = Toàn shop, Có ID = Chỉ áp dụng danh mục đó';
+
+ALTER TABLE KhuyenMai
+ADD CONSTRAINT FK_KhuyenMai_DanhMuc FOREIGN KEY (MaDanhMuc) REFERENCES DanhMucSanPham(MaDanhMuc);
+
+-- CẬP NHẬT DỮ LIỆU CŨ (3 mã khuyến mãi đã có trong file order.sql của bạn)
+UPDATE KhuyenMai SET MaCode = 'SALE10', SoLuong = 100, LoaiVoucher = 1, MaDanhMuc = NULL WHERE MaKhuyenMai = 1;
+UPDATE KhuyenMai SET MaCode = 'TRIAN50K', SoLuong = 200, LoaiVoucher = 1, MaDanhMuc = NULL WHERE MaKhuyenMai = 2;
+UPDATE KhuyenMai SET MaCode = 'FREESHIP', SoLuong = 500, LoaiVoucher = 2, MaDanhMuc = NULL WHERE MaKhuyenMai = 3;
+
+-- THÊM MỘT SỐ MÃ KHUYẾN MÃI MỚI ĐỂ TEST LOGIC THEO DANH MỤC
+INSERT INTO KhuyenMai (MaKhuyenMai, MaLoaiKM, TenKhuyenMai, GiaTri, GiaTriToiThieu, GiamToiDa, NgayBatDau, NgayKetThuc, TrangThai, MaCode, SoLuong, LoaiVoucher, MaDanhMuc) VALUES
+(4, 1, 'Giảm 15% Đồ phòng bếp', 15, 300000, 100000, '2026-03-01', '2026-12-31', 1, 'BEP15', 50, 1, 1),
+(5, 2, 'Giảm 100K Đồ phong thủy', 100000, 2000000, 100000, '2026-03-01', '2026-12-31', 1, 'PHONGTHUY100', 30, 1, 4),
+(6, 3, 'Freeship Extra', 50000, 2000000, 50000, '2026-03-01', '2026-12-31', 1, 'FSEXT50', 100, 2, NULL);
+
+
+-- =========================================================================
+-- 3. TẠO BẢNG VÍ VOUCHER & THÊM DỮ LIỆU TEST CHO KHÁCH HÀNG
+-- =========================================================================
+DROP TABLE IF EXISTS ViKhuyenMai;
+CREATE TABLE ViKhuyenMai (
+    MaVi INT AUTO_INCREMENT PRIMARY KEY,
+    MaKhachHang INT NOT NULL,
+    MaKhuyenMai INT NOT NULL,
+    NgayLuu DATETIME DEFAULT CURRENT_TIMESTAMP,
+    TrangThaiSuDung TINYINT DEFAULT 0 COMMENT '0: Chưa dùng, 1: Đã dùng, 2: Hết hạn',
+    FOREIGN KEY (MaKhachHang) REFERENCES KhachHang(MaKhachHang),
+    FOREIGN KEY (MaKhuyenMai) REFERENCES KhuyenMai(MaKhuyenMai),
+    UNIQUE(MaKhachHang, MaKhuyenMai)
+);
+
+-- Thêm sẵn mã vào ví để lúc bạn code Node.js có sẵn dữ liệu query ra
+-- Khách hàng ID = 1 (Lê Khách Mua) có mã giảm toàn shop và Freeship
+INSERT INTO ViKhuyenMai (MaKhachHang, MaKhuyenMai, TrangThaiSuDung) VALUES
+(1, 1, 0),
+(1, 3, 0);
+
+-- Khách hàng ID = 2 (Nguyễn Văn An) có mã Đồ phòng bếp và Freeship Extra
+INSERT INTO ViKhuyenMai (MaKhachHang, MaKhuyenMai, TrangThaiSuDung) VALUES
+(2, 4, 0),
+(2, 6, 0);
+
+-- Khách hàng ID = 3 (Trần Thị Bình) có mã Đồ phong thủy
+INSERT INTO ViKhuyenMai (MaKhachHang, MaKhuyenMai, TrangThaiSuDung) VALUES
+(3, 5, 0);
+
+SET FOREIGN_KEY_CHECKS = 1;
