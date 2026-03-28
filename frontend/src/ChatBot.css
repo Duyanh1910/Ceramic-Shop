@@ -74,13 +74,14 @@ df-messenger {
     position: absolute;
     bottom: 35px; 
     right: 70px; 
-    background: linear-gradient(135deg, #ffe6f0, #ffcce0); 
+    background: linear-gradient(135deg, #ffffff, #fafafa); 
+    border: 1px solid #e0e0e0;
     color: #333;
     padding: 12px 20px;
     border-radius: 16px;
     font-weight: 600;
     font-size: 15px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
     pointer-events: none; 
     animation: bounceBubble 2s infinite; 
     width: max-content;
@@ -95,7 +96,7 @@ df-messenger {
     right: 25px; 
     border-width: 10px 10px 0;
     border-style: solid;
-    border-color: #ffcce0 transparent transparent transparent;
+    border-color: #fafafa transparent transparent transparent; 
 }
 
 @keyframes bounceBubble {
@@ -107,4 +108,11 @@ df-messenger {
     .bot-wrapper.chat-open {
         display: none;
     }
+}
+
+df-messenger:not(.df-ready) {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    position: fixed !important;
+    bottom: -9999px !important; 
 }

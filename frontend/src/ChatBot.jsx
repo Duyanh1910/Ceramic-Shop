@@ -17,7 +17,6 @@ function ChatBot() {
   const [currentAnimIndex, setCurrentAnimIndex] = useState(0);
   const [isBubbleHidden, setIsBubbleHidden] = useState(false); 
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const welcomeTriggered = useRef(false);
     
   useEffect(() => {
     if (!document.getElementById('model-viewer-script')) {
@@ -35,24 +34,53 @@ function ChatBot() {
         document.body.appendChild(dfScript);
     }
 
+    const dietBongBong = () => {
+        const dfMessenger = document.querySelector('df-messenger');
+        if (dfMessenger && dfMessenger.shadowRoot) {
+            let style = dfMessenger.shadowRoot.querySelector('#nuke-bubble-style');
+            if (!style) {
+                style = document.createElement('style');
+                style.id = 'nuke-bubble-style';
+                style.innerHTML = `
+                    df-messenger-chat-bubble,
+                    #widgetIcon,
+                    button[id="widgetIcon"] {
+                        display: none !important;
+                        visibility: hidden !important;
+                        opacity: 0 !important;
+                        pointer-events: none !important;
+                        width: 0 !important;
+                        height: 0 !important;
+                        position: absolute !important;
+                        z-index: -9999 !important;
+                    }
+                `;
+                dfMessenger.shadowRoot.appendChild(style);
+            }
+            const garbageElements = dfMessenger.shadowRoot.querySelectorAll('df-messenger-chat-bubble, #widgetIcon');
+            garbageElements.forEach(el => {
+                el.style.cssText = 'display: none !important; opacity: 0 !important; position: absolute !important; z-index: -9999 !important; pointer-events: none !important;';
+            });
+        }
+    };
+
+    const setupBot = () => {
+        dietBongBong();
+        setTimeout(() => {
+            const dfMessenger = document.querySelector('df-messenger');
+            if (dfMessenger) {
+                dfMessenger.classList.add('df-ready');
+            }
+        }, 100);
+    };
+
+    window.addEventListener('dfMessengerLoaded', setupBot);
+    
+    const nukeInterval = setInterval(dietBongBong, 50);
+
     const initInterval = setInterval(() => {
         const df = document.querySelector('df-messenger');
         if (df && df.shadowRoot) {
-            if (!df.shadowRoot.querySelector('#custom-hide-style')) {
-                const style = document.createElement('style');
-                style.id = 'custom-hide-style';
-                style.innerHTML = `
-                    #widgetIcon { display: none !important; }
-                    df-messenger-chat-bubble { display: none !important; }
-                    df-messenger-chat {
-                        position: absolute !important;
-                        bottom: 0 !important;
-                        right: 0 !important;
-                    }
-                `;
-                df.shadowRoot.appendChild(style);
-            }
-
             const chatWindow = df.shadowRoot.querySelector('df-messenger-chat');
             if (chatWindow && chatWindow.shadowRoot) {
                 const userInput = chatWindow.shadowRoot.querySelector('df-messenger-user-input');
@@ -74,37 +102,29 @@ function ChatBot() {
     }, 500);
     
     const observer = new MutationObserver(() => {
-    const df = document.querySelector('df-messenger');
-    if (df) {
-        const isExpanded = df.hasAttribute('expand') && df.getAttribute('expand') !== 'false';
-        setIsChatOpen(isExpanded);
+        const df = document.querySelector('df-messenger');
+        if (df) {
+            const isExpanded = df.hasAttribute('expand') && df.getAttribute('expand') !== 'false';
+            setIsChatOpen(isExpanded);
 
-        if (isExpanded && !welcomeTriggered.current) {
-        console.log("Đang kích hoạt lời chào...");
-        
-        setTimeout(() => {
-            if (typeof df.sendRequest === 'function') {
-            df.sendRequest([{ event: { name: 'WEB_CHAT_OPENED' } }]);
-            } else if (typeof df.renderCustomText === 'function') {
-            df.renderCustomText('Chào bạn! CeramicShop có thể giúp gì cho bạn ạ? ✨');
+            if (isExpanded) {
+                setIsBubbleHidden(true);
             }
-            
-            welcomeTriggered.current = true;
-            setIsBubbleHidden(true);
-        }, 200); 
         }
-    }
-});
+    });
 
-    const setupBot = () => {
-        const dfMessenger = document.querySelector('df-messenger');
-        if (dfMessenger) observer.observe(dfMessenger, { attributes: true });
-    };
-
-    window.addEventListener('dfMessengerLoaded', setupBot);
+    const observerInterval = setInterval(() => {
+        const df = document.querySelector('df-messenger');
+        if (df) {
+            observer.observe(df, { attributes: true });
+            clearInterval(observerInterval);
+        }
+    }, 500);
 
     return () => {
+        clearInterval(nukeInterval);
         clearInterval(initInterval);
+        clearInterval(observerInterval);
         observer.disconnect();
         window.removeEventListener('dfMessengerLoaded', setupBot);
     };
@@ -133,26 +153,13 @@ function ChatBot() {
             chibiRef.current.src = '/smile.glb'; 
             chibiRef.current.animationName = 'Laugh01'; 
         }
-        if (dfMessenger.shadowRoot && dfMessenger.shadowRoot.querySelector('#widgetIcon')) {
-            dfMessenger.shadowRoot.querySelector('#widgetIcon').click();
-        } else {
-            dfMessenger.setAttribute('expand', 'true');
-        }
+        dfMessenger.setAttribute('expand', 'true');
     } else {
-        if (dfMessenger.shadowRoot) {
-            const chatWindow = dfMessenger.shadowRoot.querySelector('df-messenger-chat');
-            if (chatWindow && chatWindow.shadowRoot) {
-                const titleBar = chatWindow.shadowRoot.querySelector('df-messenger-titlebar');
-                if (titleBar && titleBar.shadowRoot) {
-                    const closeBtn = titleBar.shadowRoot.querySelector('button');
-                    if (closeBtn) {
-                        closeBtn.click();
-                        return;
-                    }
-                }
-            }
-        }
         dfMessenger.setAttribute('expand', 'false');
+        if (chibiRef.current) {
+            chibiRef.current.src = animationConfigs[0].file; 
+            chibiRef.current.animationName = animationConfigs[0].name; 
+        }
     }
   };
 
@@ -164,7 +171,7 @@ function ChatBot() {
               Chào bạn, mình là trợ lý ảo của CeramicShop. Mình có thể giúp gì ạ?
             </div>
           )}
-          <button id="change-anim-btn" className="change-anim-btn" title="Đổi hành động" onClick={handleChangeAnimation}>
+          <button id="change-anim-btn" className="change-anim-btn" onClick={handleChangeAnimation}>
             ✨
           </button>
           <model-viewer 
@@ -186,6 +193,8 @@ function ChatBot() {
           ></model-viewer>
       </div>
       <df-messenger
+        intent="WELCOME"
+        wait-open="true"
         chat-title="CeramicShop Chatbot"
         agent-id="6add2f93-9961-40d6-9b52-f4af5862c6a1"
         language-code="vi"
