@@ -31,7 +31,12 @@ app.use(
 );
 app.use(cookieParser());
 app.use(passport.initialize());
-app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:5173", process.env.FRONTEND_URL],
+    credentials: true,
+  }),
+);
 
 app.use("/api/v1", router);
 
