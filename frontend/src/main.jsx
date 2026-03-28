@@ -10,7 +10,8 @@ import LandingPage from './LandingPage.jsx'
 import Profile from './Profile.jsx'
 import Cart from './Cart.jsx'
 import ChatBot from './ChatBot';
-
+import ChangePassword from './ChangePassword.jsx'
+import ForgotPassword from './ForgotPassword.jsx'
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('token');
   if (!token) {
@@ -65,6 +66,10 @@ createRoot(document.getElementById('root')).render(
               <Profile />
             </ProtectedRoute>
           } />
+          <Route path="/change-password" element={
+            <ProtectedRoute><ChangePassword /></ProtectedRoute>
+          } />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
         </Routes>
         <ConditionalChatBot />
 
