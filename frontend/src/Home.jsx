@@ -143,6 +143,8 @@ function Home() {
     if (keyword) {
       setSearchKw(keyword);
       setAppliedSearchKw(keyword); 
+      setSelectedCategory('all');
+      setCurrentPage(1);
     }
   }, [location.search]);
 
@@ -331,7 +333,6 @@ function Home() {
     <div className={styles.miniCartContainer}>
       <div className={styles.miniCartHeader}>Sản phẩm đã thêm</div>
       
-      {/* KIỂM TRA ĐIỀU KIỆN ĐANG LOAD */}
       {isFetchingCart ? (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '30px 0' }}>
           <Spin size="small" />
@@ -522,7 +523,12 @@ function Home() {
       let data = res.data.data || res.data.result?.data || [];
       
       const searchLower = value.toLowerCase();
-      data = data.filter(item => item.TenSanPham.toLowerCase().includes(searchLower));
+      
+      data = data.filter(item => {
+        const matchName = item.TenSanPham?.toLowerCase().includes(searchLower);
+        const matchCat = item.DanhMuc?.TenDanhMuc?.toLowerCase().includes(searchLower);
+        return matchName || matchCat;
+      });
 
       const options = data.slice(0, 10).map(item => ({
         value: item.TenSanPham, 
@@ -615,7 +621,11 @@ function Home() {
         const params = { page: currentPage, limit: 12 };
         if (sortField) params.sort = sortField;
         if (sortOrder) params.order = sortOrder;
-        if (selectedCategory && selectedCategory !== 'all') { params.category = selectedCategory; }
+        
+        if (selectedCategory && selectedCategory !== 'all' && !appliedSearchKw) { 
+          params.category = selectedCategory; 
+        }
+        
         if (appliedSearchKw) {
           delete params.search;
           delete params.searchField;
@@ -626,9 +636,16 @@ function Home() {
         const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/products', { params });
         const data = res.data;
         let fetchedList = data.data || data.result?.data || [];
+        
         if (appliedSearchKw) {
           const kw = appliedSearchKw.toLowerCase();
-          fetchedList = fetchedList.filter(p => p.TenSanPham.toLowerCase().includes(kw));
+          
+          fetchedList = fetchedList.filter(p => {
+            const matchName = p.TenSanPham?.toLowerCase().includes(kw);
+            const matchCat = p.DanhMuc?.TenDanhMuc?.toLowerCase().includes(kw);
+            return matchName || matchCat;
+          });
+
           setTotalPages(Math.ceil(fetchedList.length / 12) || 1);
           const startIndex = (currentPage - 1) * 12;
           fetchedList = fetchedList.slice(startIndex, startIndex + 12);

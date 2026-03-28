@@ -33,7 +33,7 @@ const ConditionalChatBot = () => {
   const location = useLocation();
   
   const allowedPaths = ['/', '/profile'];
-  const isAllowed = allowedPaths.includes(location.pathname);
+  const isAllowed = allowedPaths.includes(location.pathname) || location.pathname.startsWith('/product/');
 
   return (
     <div style={{ display: isAllowed ? 'block' : 'none' }}>
@@ -63,7 +63,7 @@ createRoot(document.getElementById('root')).render(
           } />
           
           <Route path="/cart" element={<Cart />} />
-          <Route path="/product/:id" element={<PublicRoute><ProductDetail /></PublicRoute>} />
+          <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/landing" element={<LandingPage />} />
           
           <Route path="/profile" element={

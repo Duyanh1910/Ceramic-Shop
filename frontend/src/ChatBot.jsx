@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './ChatBot.css'; 
 
 const animationConfigs = [
@@ -13,6 +14,7 @@ const animationConfigs = [
 ];
 
 function ChatBot() {
+  const navigate = useNavigate();
   const chibiRef = useRef(null);
   const [currentAnimIndex, setCurrentAnimIndex] = useState(0);
   const [isBubbleHidden, setIsBubbleHidden] = useState(false); 
@@ -43,7 +45,6 @@ function ChatBot() {
         document.body.appendChild(dfScript);
     }
 
-    // Tối ưu 1: Dùng tag <style> là đủ, loại bỏ vòng lặp gán cssText trực tiếp thừa thãi
     const nukeInterval = setInterval(() => {
         const dfMessenger = document.querySelector('df-messenger');
         if (dfMessenger?.shadowRoot) {
@@ -71,7 +72,6 @@ function ChatBot() {
         }
     }, 50);
 
-    // Tối ưu 2: Dùng Optional Chaining (?.) để code ngắn gọn, không cần if lồng nhau
     const initInterval = setInterval(() => {
         const userInput = document.querySelector('df-messenger')
             ?.shadowRoot?.querySelector('df-messenger-chat')
@@ -88,7 +88,6 @@ function ChatBot() {
         }
     }, 500);
     
-    // Tối ưu 3: Chỉ theo dõi đúng thuộc tính "expand", tiết kiệm hiệu suất trình duyệt
     const observer = new MutationObserver(() => {
         const df = document.querySelector('df-messenger');
         if (df) {
@@ -113,6 +112,43 @@ function ChatBot() {
         observer.disconnect();
     };
   }, []);
+
+  useEffect(() => {
+    const handleGlobalClick = (e) => {
+        const path = e.composedPath();
+        const anchor = path.find(el => el.tagName === 'A');
+        const isInsideBot = path.some(el => el?.tagName === 'DF-MESSENGER');
+
+        if (isInsideBot && anchor && anchor.href) {
+            try {
+                const urlObj = new URL(anchor.href);
+                
+                if (urlObj.origin === window.location.origin) {
+                    e.preventDefault();  
+                    
+                    navigate(urlObj.pathname + urlObj.search);
+                    
+                    const dfMessenger = document.querySelector('df-messenger');
+                    if (dfMessenger) {
+                        dfMessenger.setAttribute('expand', 'false');
+                    }
+                    if (chibiRef.current) {
+                        chibiRef.current.src = animationConfigs[0].file; 
+                        chibiRef.current.animationName = animationConfigs[0].name; 
+                    }
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        }
+    };
+
+    document.addEventListener('click', handleGlobalClick, true);
+
+    return () => {
+        document.removeEventListener('click', handleGlobalClick, true);
+    };
+  }, [navigate]);
 
   const handleChangeAnimation = (e) => {
     e.preventDefault();
