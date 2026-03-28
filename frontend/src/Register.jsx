@@ -1,147 +1,291 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { Button, Input, Form, message, Typography } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import styles from './Register.module.css';
 import { Helmet } from 'react-helmet-async';
-import { 
-  UserOutlined, 
-  MailOutlined, 
-  LockOutlined,
-  ArrowLeftOutlined
-} from '@ant-design/icons';
+import { UserOutlined, MailOutlined, LockOutlined, ArrowLeftOutlined, SafetyOutlined } from '@ant-design/icons';
 
 const { Text, Link } = Typography;
+const API_BASE = 'https://ceramic-shop-u8ak.onrender.com/api/v1';
+const OTP_LENGTH = 6;
+const COOLDOWN_SEC = 60;
 
 function Register() {
+  const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({});
+  const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(''));
+  const [cooldown, setCooldown] = useState(0);
+  const [remainingAttempts, setRemainingAttempts] = useState(5);
+  const [form] = Form.useForm();
+  const inputRefs = useRef([]);
+  const timerRef = useRef(null);
   const navigate = useNavigate();
 
-  const handleRegister = async (values) => {
+  useEffect(() => () => clearInterval(timerRef.current), []);
+
+  const startCooldown = () => {
+    setCooldown(COOLDOWN_SEC);
+    timerRef.current = setInterval(() => {
+      setCooldown((c) => {
+        if (c <= 1) { clearInterval(timerRef.current); return 0; }
+        return c - 1;
+      });
+    }, 1000);
+  };
+
+  const handleSendOTP = async (values) => {
     setLoading(true);
     try {
-      await axios.post('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/register', {
-        username: values.username,
-        email: values.email,
-        password: values.password,
-        address: values.address
-      });
-
-      message.success('Đăng ký thành công! Vui lòng đăng nhập.');
-      navigate('/login'); 
-      
-    } catch (error) {
-      const errorMsg = error.response?.data?.message || 'Đăng ký thất bại!';
-      message.error(errorMsg);
+      await axios.post(`${API_BASE}/auth/sendVerifyEmail`, { email: values.email });
+      setFormData(values);
+      setStep(2);
+      startCooldown();
+      message.success('OTP đã được gửi đến email của bạn!');
+    } catch (err) {
+      message.error(err.response?.data?.message || 'Không thể gửi OTP!');
     } finally {
       setLoading(false);
     }
   };
 
+  const handleOtpInput = (val, idx) => {
+    if (!/^\d*$/.test(val)) return;
+    const next = [...otp];
+    next[idx] = val.slice(-1);
+    setOtp(next);
+    if (val && idx < OTP_LENGTH - 1) inputRefs.current[idx + 1]?.focus();
+  };
+
+  const handleOtpKeyDown = (e, idx) => {
+    if (e.key === 'Backspace' && !otp[idx] && idx > 0) inputRefs.current[idx - 1]?.focus();
+    if (e.key === 'ArrowLeft' && idx > 0) inputRefs.current[idx - 1]?.focus();
+    if (e.key === 'ArrowRight' && idx < OTP_LENGTH - 1) inputRefs.current[idx + 1]?.focus();
+  };
+
+  const handleOtpPaste = (e) => {
+    const text = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, OTP_LENGTH);
+    if (!text) return;
+    const next = [...otp];
+    [...text].forEach((c, i) => { next[i] = c; });
+    setOtp(next);
+    inputRefs.current[Math.min(text.length, OTP_LENGTH - 1)]?.focus();
+    e.preventDefault();
+  };
+
+  const handleVerifyOTP = async () => {
+    const code = otp.join('');
+    if (code.length < OTP_LENGTH) { message.warning('Vui lòng nhập đủ 6 chữ số!'); return; }
+    setLoading(true);
+    try {
+      await axios.post(`${API_BASE}/auth/VerifyEmail`, { email: formData.email, otp: code });
+      await handleRegister();
+    } catch (err) {
+      const data = err.response?.data;
+      if (data?.remainingAttempts !== undefined) setRemainingAttempts(data.remainingAttempts);
+      message.error(data?.message || 'OTP không hợp lệ!');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRegister = async () => {
+    try {
+      await axios.post(`${API_BASE}/auth/register`, {
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+        address: formData.address,
+      });
+      setStep(3);
+    } catch (err) {
+      message.error(err.response?.data?.message || 'Đăng ký thất bại!');
+    }
+  };
+
+  const handleResendOTP = async () => {
+    if (cooldown > 0) return;
+    setLoading(true);
+    try {
+      await axios.post(`${API_BASE}/auth/sendVerifyEmail`, { email: formData.email });
+      setOtp(Array(OTP_LENGTH).fill(''));
+      setRemainingAttempts(5);
+      startCooldown();
+      message.success('OTP mới đã được gửi!');
+    } catch (err) {
+      message.error(err.response?.data?.message || 'Không thể gửi lại OTP!');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const stepLabels = ['Thông tin', 'Xác minh email', 'Hoàn tất'];
+
   return (
     <div className={styles.registerContainer}>
+      <Helmet><title>Đăng ký | Ceramic Shop</title></Helmet>
       <div className={styles.combinedCard}>
-        
-        <div className={`${styles.cornerPattern} ${styles.topLeft}`}></div>
-        <div className={`${styles.cornerPattern} ${styles.topRight}`}></div>
-        <div className={`${styles.cornerPattern} ${styles.bottomLeft}`}></div>
-        <div className={`${styles.cornerPattern} ${styles.bottomRight}`}></div>
+        <div className={`${styles.cornerPattern} ${styles.topLeft}`} />
+        <div className={`${styles.cornerPattern} ${styles.topRight}`} />
+        <div className={`${styles.cornerPattern} ${styles.bottomLeft}`} />
+        <div className={`${styles.cornerPattern} ${styles.bottomRight}`} />
 
-        <div className={styles.cardImage}></div>
+        <div className={styles.cardImage} />
 
         <div className={styles.cardForm}>
-          <Helmet>
-            <title>Đăng ký</title>
-          </Helmet>
-
-          <div style={{ marginBottom: '10px', textAlign: 'left' }}>
-            <Button type="link" icon={<ArrowLeftOutlined />} onClick={() => navigate('/')} style={{ color: '#1b437c', fontWeight: 600, paddingLeft: 0 }}>
+          <div style={{ marginBottom: 10 }}>
+            <Button type="link" icon={<ArrowLeftOutlined />} onClick={() => navigate('/')}
+              style={{ color: '#1b437c', fontWeight: 600, paddingLeft: 0 }}>
               Quay về trang chủ
             </Button>
           </div>
 
-          <h2 style={{ textAlign: 'center', marginBottom: '20px', color: '#1b437c', fontFamily: "'Arsenal', serif", fontWeight: 700, fontSize: '28px' }}>
-            ĐĂNG KÝ
-          </h2>
-          
-          <Form layout="vertical" onFinish={handleRegister}>
-            
-            <Form.Item 
-              label={<span style={{fontWeight: 500}}>Tên đăng nhập</span>} 
-              name="username" 
-              rules={[{ required: true, message: 'Vui lòng nhập tên đăng nhập!' }]}
-              style={{ marginBottom: '15px' }}
-            >
-              <Input 
-                prefix={<UserOutlined style={{ color: '#bfbfbf' }} />} 
-                className={styles.customInput} 
-                placeholder="Nhập tên đăng nhập" 
-              />
-            </Form.Item>
-
-            <Form.Item 
-              label={<span style={{fontWeight: 500}}>Email</span>} 
-              name="email" 
-              rules={[
-                { required: true, message: 'Vui lòng nhập email!' },
-                { type: 'email', message: 'Email không đúng định dạng!' }
-              ]}
-              style={{ marginBottom: '15px' }}
-            >
-              <Input 
-                prefix={<MailOutlined style={{ color: '#bfbfbf' }} />} 
-                className={styles.customInput} 
-                placeholder="Nhập địa chỉ email" 
-              />
-            </Form.Item>
-
-            <Form.Item 
-              label={<span style={{fontWeight: 500}}>Mật khẩu</span>} 
-              name="password" 
-              rules={[{ required: true, message: 'Vui lòng nhập mật khẩu!' }]}
-              style={{ marginBottom: '15px' }}
-            >
-              <Input.Password 
-                prefix={<LockOutlined style={{ color: '#bfbfbf' }} />} 
-                className={styles.customInput} 
-                placeholder="Nhập mật khẩu" 
-              />
-            </Form.Item>
-
-            <Form.Item 
-              label={<span style={{fontWeight: 500}}>Xác nhận mật khẩu</span>} 
-              name="confirmPassword" 
-              dependencies={['password']}
-              rules={[
-                { required: true, message: 'Vui lòng xác nhận mật khẩu!' },
-                ({ getFieldValue }) => ({
-                  validator(_, value) {
-                    if (!value || getFieldValue('password') === value) {
-                      return Promise.resolve();
-                    }
-                    return Promise.reject(new Error('Mật khẩu xác nhận không khớp!'));
-                  },
-                }),
-              ]}
-              style={{ marginBottom: '15px' }}
-            >
-              <Input.Password 
-                prefix={<LockOutlined style={{ color: '#bfbfbf' }} />} 
-                className={styles.customInput} 
-                placeholder="Nhập lại mật khẩu" 
-              />
-            </Form.Item>
-
-            <div style={{ marginBottom: '20px', textAlign: 'right' }}>
-              <Text style={{color: '#666'}}>Đã có tài khoản? </Text>
-              <Link onClick={() => navigate('/login')} style={{fontWeight: 600, color: '#50a1fe'}}>Đăng nhập ngay</Link>
+          {step <= 2 && (
+            <div className={styles.stepTracker}>
+              {stepLabels.map((label, i) => (
+                <div key={i} className={styles.stepItem}>
+                  <div className={`${styles.stepDot} ${step > i + 1 ? styles.done : step === i + 1 ? styles.active : ''}`}>
+                    {step > i + 1 ? '✓' : i + 1}
+                  </div>
+                  <span className={`${styles.stepLabel} ${step === i + 1 ? styles.activeLabel : ''}`}>{label}</span>
+                  {i < stepLabels.length - 1 && (
+                    <div className={`${styles.stepLine} ${step > i + 1 ? styles.doneLine : ''}`} />
+                  )}
+                </div>
+              ))}
             </div>
+          )}
 
-            <Button className={styles.customButton} type="primary" htmlType="submit" block loading={loading}>
-              Tạo Tài Khoản
-            </Button>
-          </Form>
+          {step === 1 && (
+            <div className={styles.stepContent}>
+              <h2 className={styles.formTitle}>ĐĂNG KÝ</h2>
+              <Form form={form} layout="vertical" onFinish={handleSendOTP}>
+                <Form.Item label={<span style={{ fontWeight: 500 }}>Tên đăng nhập</span>} name="username"
+                  rules={[{ required: true, message: 'Vui lòng nhập tên đăng nhập!' }]}
+                  style={{ marginBottom: 14 }}>
+                  <Input prefix={<UserOutlined style={{ color: '#bfbfbf' }} />}
+                    className={styles.customInput} placeholder="Nhập tên đăng nhập" />
+                </Form.Item>
 
+                <Form.Item label={<span style={{ fontWeight: 500 }}>Email</span>} name="email"
+                  rules={[
+                    { required: true, message: 'Vui lòng nhập email!' },
+                    { type: 'email', message: 'Email không đúng định dạng!' },
+                  ]}
+                  style={{ marginBottom: 14 }}>
+                  <Input prefix={<MailOutlined style={{ color: '#bfbfbf' }} />}
+                    className={styles.customInput} placeholder="Nhập địa chỉ email" />
+                </Form.Item>
+
+                <Form.Item label={<span style={{ fontWeight: 500 }}>Mật khẩu</span>} name="password"
+                  rules={[
+                    { required: true, message: 'Vui lòng nhập mật khẩu!' },
+                    { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự!' },
+                  ]}
+                  style={{ marginBottom: 14 }}>
+                  <Input.Password prefix={<LockOutlined style={{ color: '#bfbfbf' }} />}
+                    className={styles.customInput} placeholder="Tối thiểu 6 ký tự" />
+                </Form.Item>
+
+                <Form.Item label={<span style={{ fontWeight: 500 }}>Xác nhận mật khẩu</span>} name="confirmPassword"
+                  dependencies={['password']}
+                  rules={[
+                    { required: true, message: 'Vui lòng xác nhận mật khẩu!' },
+                    ({ getFieldValue }) => ({
+                      validator(_, value) {
+                        if (!value || getFieldValue('password') === value) return Promise.resolve();
+                        return Promise.reject(new Error('Mật khẩu xác nhận không khớp!'));
+                      },
+                    }),
+                  ]}
+                  style={{ marginBottom: 14 }}>
+                  <Input.Password prefix={<LockOutlined style={{ color: '#bfbfbf' }} />}
+                    className={styles.customInput} placeholder="Nhập lại mật khẩu" />
+                </Form.Item>
+
+                <div style={{ marginBottom: 20, textAlign: 'right' }}>
+                  <Text style={{ color: '#666' }}>Đã có tài khoản? </Text>
+                  <Link onClick={() => navigate('/login')} style={{ fontWeight: 600, color: '#50a1fe' }}>
+                    Đăng nhập ngay
+                  </Link>
+                </div>
+
+                <Button className={styles.customButton} type="primary" htmlType="submit" block loading={loading}>
+                  Tiếp tục
+                </Button>
+              </Form>
+            </div>
+          )}
+
+          {step === 2 && (
+            <div className={styles.stepContent}>
+              <div className={styles.otpHeader}>
+                <div className={styles.otpIconWrap}>
+                  <SafetyOutlined className={styles.otpIcon} />
+                </div>
+                <h2 className={styles.formTitle} style={{ marginBottom: 6 }}>XÁC MINH EMAIL</h2>
+                <p className={styles.otpSub}>
+                  Mã OTP đã được gửi đến<br />
+                  <strong>{formData.email}</strong>
+                </p>
+              </div>
+
+              <div className={styles.otpRow} onPaste={handleOtpPaste}>
+                {otp.map((digit, idx) => (
+                  <input key={idx} ref={(el) => (inputRefs.current[idx] = el)}
+                    type="text" inputMode="numeric" maxLength={1} value={digit}
+                    onChange={(e) => handleOtpInput(e.target.value, idx)}
+                    onKeyDown={(e) => handleOtpKeyDown(e, idx)}
+                    className={`${styles.otpCell} ${digit ? styles.otpFilled : ''}`} />
+                ))}
+              </div>
+
+              {remainingAttempts < 5 && (
+                <p className={styles.attemptsWarn}>⚠️ Còn {remainingAttempts} lần thử</p>
+              )}
+
+              <Button type="primary" block loading={loading} onClick={handleVerifyOTP}
+                className={styles.customButton} style={{ marginTop: 8 }}>
+                XÁC NHẬN & ĐĂNG KÝ
+              </Button>
+
+              <div className={styles.resendRow}>
+                <span className={styles.resendText}>Không nhận được mã? </span>
+                <button className={`${styles.resendBtn} ${cooldown > 0 ? styles.resendDisabled : ''}`}
+                  onClick={handleResendOTP} disabled={cooldown > 0 || loading}>
+                  {cooldown > 0 ? `Gửi lại (${cooldown}s)` : 'Gửi lại OTP'}
+                </button>
+              </div>
+
+              <button className={styles.backStep} onClick={() => setStep(1)}>
+                ← Sửa thông tin
+              </button>
+            </div>
+          )}
+
+          {step === 3 && (
+            <div className={styles.successState}>
+              <div className={styles.successCheckWrap}>
+                <svg viewBox="0 0 52 52" className={styles.successCheck}>
+                  <circle cx="26" cy="26" r="25" fill="none" stroke="#52c41a" strokeWidth="2" />
+                  <path fill="none" stroke="#52c41a" strokeWidth="3" strokeLinecap="round"
+                    strokeLinejoin="round" d="M14 27l8 8 16-16" />
+                </svg>
+              </div>
+              <h2 className={styles.successTitle}>Đăng ký thành công!</h2>
+              <p className={styles.successSub}>
+                Tài khoản <strong>{formData.username}</strong> đã được tạo.<br />
+                Hãy đăng nhập để tiếp tục mua sắm.
+              </p>
+              <Button type="primary" block className={styles.customButton} onClick={() => navigate('/login')}>
+                ĐI ĐẾN ĐĂNG NHẬP
+              </Button>
+              <button className={styles.backStep} style={{ marginTop: 14 }} onClick={() => navigate('/')}>
+                Về trang chủ
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

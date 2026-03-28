@@ -1,12 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { Helmet } from 'react-helmet-async';
+import { AutoComplete, Input } from 'antd'; // Đã thêm AutoComplete và Input từ antd
 import { 
     ShoppingCartOutlined, 
     SearchOutlined, 
     UserOutlined, 
     EnvironmentOutlined,
-    PhoneOutlined
+    PhoneOutlined,
+    RightOutlined,
+    CheckCircleOutlined,
+    SafetyOutlined,
+    TrophyOutlined,
+    CustomerServiceOutlined
 } from '@ant-design/icons';
 import styles from './LandingPage.module.css';
 
@@ -16,6 +23,11 @@ function LandingPage() {
     const [loading, setLoading] = useState(false);
     const [cartCount, setCartCount] = useState(0);
     const [isSticky, setIsSticky] = useState(false);
+    
+    // THÊM STATE CHO TÌM KIẾM
+    const [searchKw, setSearchKw] = useState('');
+    const [searchOptions, setSearchOptions] = useState([]);
+    const inputRef = useRef(null);
 
     useEffect(() => {
         const savedCart = localStorage.getItem('ceramic_cart');
@@ -63,6 +75,49 @@ function LandingPage() {
 
     const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
+    // XỬ LÝ GỌI GỢI Ý TÌM KIẾM (GIỐNG TRANG HOME)
+    const handleSearchInput = async (value) => {
+        setSearchKw(value);
+        if (!value) { setSearchOptions([]); return; }
+        try {
+            const res = await axios.get(`https://ceramic-shop-u8ak.onrender.com/api/v1/products?limit=1000`);
+            let data = res.data.data || res.data.result?.data || [];
+            
+            const searchLower = value.toLowerCase();
+            data = data.filter(item => 
+                item.TenSanPham?.toLowerCase().includes(searchLower) ||
+                item.ThuongHieu?.toLowerCase().includes(searchLower) ||
+                item.DanhMuc?.TenDanhMuc?.toLowerCase().includes(searchLower)
+            );
+
+            const options = data.slice(0, 10).map(item => ({
+                value: item.TenSanPham, 
+                label: (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }} onClick={(e) => { e.stopPropagation(); navigate(`/product/${item.MaSanPham}`); }}>
+                        <img src={item.Thumbnail || 'https://via.placeholder.com/40'} alt={item.TenSanPham} style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 4 }} />
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                            <span style={{ fontWeight: 500, color: '#1b437c' }}>{item.TenSanPham}</span>
+                            <span style={{ fontSize: 12, color: '#e74c3c', fontWeight: 'bold' }}>{formatPrice(item.GiaThapNhat)}</span>
+                        </div>
+                    </div>
+                ),
+            }));
+            setSearchOptions(options);
+        } catch (error) {
+            setSearchOptions([]);
+        }
+    };
+
+    // THỰC THI CHUYỂN TRANG KHI BẤM TÌM KIẾM
+    const executeSearch = (val) => {
+        const keyword = val || searchKw;
+        if (keyword.trim()) {
+            // Chuyển hướng sang trang Home với tham số ?search=...
+            // Lưu ý: Đổi '/' thành '/home' nếu route trang chủ của bạn là /home
+            navigate(`/?search=${encodeURIComponent(keyword)}`); 
+        }
+    };
+
     const categories = [
         { name: "Đồ phòng bếp", img: "https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=300&h=300&fit=crop" },
         { name: "Đồ phòng khách", img: "https://images.unsplash.com/photo-1578898887140-5e580e0c0362?w=300&h=300&fit=crop" },
@@ -71,8 +126,36 @@ function LandingPage() {
         { name: "Đồ trang trí", img: "https://res.cloudinary.com/dcmwz0uis/image/upload/v1773369371/luc_binh_cong_dao_1_tq0p51.jpg" }
     ];
 
+    const newsArticles = [
+        {
+            id: 1,
+            title: "Ra mắt bộ sưu tập Gốm Sứ Xuân 2026",
+            excerpt: "Khám phá những thiết kế độc đáo lấy cảm hứng từ hoa đào, mai vàng và các biểu tượng may mắn của năm mới.",
+            image: "https://images.unsplash.com/photo-1578500494198-246f612d3b3d?w=400&h=250&fit=crop",
+            date: "15/01/2026"
+        },
+        {
+            id: 2,
+            title: "Bí quyết chọn bộ ấm trà phù hợp",
+            excerpt: "Hướng dẫn chi tiết cách lựa chọn ấm trà tử sa, sứ cao cấp phù hợp với từng loại trà và phong cách thưởng thức.",
+            image: "https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?w=400&h=250&fit=crop",
+            date: "10/01/2026"
+        },
+        {
+            id: 3,
+            title: "Nghệ thuật Bát Tràng - Di sản nghìn năm",
+            excerpt: "Tìm hiểu về lịch sử và quy trình làm gốm truyền thống tại làng nghề Bát Tràng nổi tiếng.",
+            image: "https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=400&h=250&fit=crop",
+            date: "05/01/2026"
+        }
+    ];
+
     return (
         <div className={styles.wrapper}>
+            <Helmet>
+                <title>CeramicShop - Tinh Hoa Gốm Sứ Việt</title>
+                <meta name="description" content="Nơi tinh hoa gốm sứ giao thoa cùng phong cách sống hiện đại" />
+            </Helmet>
             
             <div className={styles.topbar}>
                 <div className={styles.container}>
@@ -87,13 +170,43 @@ function LandingPage() {
             <header className={styles.mainHeader}>
                 <div className={styles.container}>
                     <div className={styles.headerFlex}>
-                        {/* Box Tìm kiếm */}
+                        
+                        {/* ĐÃ THAY THẾ KHỐI TÌM KIẾM BẰNG AUTOCOMPLETE CỦA ANTD */}
                         <div className={styles.searchBox}>
-                            <SearchOutlined className={styles.iconSearch} />
-                            <input type="text" placeholder="Tìm kiếm sản phẩm..." className={styles.searchInput} />
+                            <AutoComplete
+                                className={styles.searchAutoComplete}
+                                options={searchKw ? searchOptions : []}
+                                onSelect={(val) => { 
+                                    setSearchKw(val); 
+                                    executeSearch(val);
+                                }}
+                                onSearch={handleSearchInput}
+                                value={searchKw}
+                                notFoundContent={null}
+                                defaultActiveFirstOption={false} 
+                                filterOption={false}
+                                backfill={false}
+                                style={{ width: '100%' }}
+                            >
+                                <Input 
+                                    ref={inputRef}
+                                    placeholder="Tìm kiếm sản phẩm..." 
+                                    className={styles.searchInput}
+                                    onChange={(e) => setSearchKw(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            executeSearch(searchKw); 
+                                        }
+                                    }}
+                                    prefix={<SearchOutlined className={styles.iconSearch} onClick={() => executeSearch(searchKw)} />}
+                                    bordered={false}
+                                />
+                            </AutoComplete>
                         </div>
 
-                        <div className={styles.logoBox} onClick={() => navigate('/')}>
+                        <div className={styles.logoBox} onClick={() => navigate('/landing')}>
                             <h1 className={styles.logoText}>CERAMIC-SHOP</h1>
                             <span className={styles.logoSub}>TINH HOA GỐM SỨ VIỆT</span>
                         </div>
@@ -129,6 +242,90 @@ function LandingPage() {
                     alt="Banner Gốm Sứ" 
                     className={styles.bannerImg}
                 />
+                <div className={styles.bannerOverlay}>
+                    <div className={styles.bannerContent}>
+                        <h2 className={styles.bannerTitle}>TINH HOA GỐM SỨ VIỆT</h2>
+                        <p className={styles.bannerSubtitle}>Nơi Nghệ Thuật Giao Thoa Cùng Phong Cách Sống Hiện Đại</p>
+                        <button className={styles.btnBanner} onClick={() => navigate('/')}>KHÁM PHÁ NGAY</button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="about" className={styles.aboutSection}>
+                <div className={styles.container}>
+                    <div className={styles.sectionHeading}>
+                        <h2>VỀ CERAMICSHOP</h2>
+                        <p className={styles.sectionSubtitle}>Nơi Tinh Hoa Gốm Sứ Giao Thoa Cùng Phong Cách Sống Hiện Đại</p>
+                    </div>
+
+                    <div className={styles.aboutContent}>
+                        <div className={styles.aboutText}>
+                            <p className={styles.aboutIntro}>
+                                CeramicShop tự hào là thương hiệu mang đến những sản phẩm gốm sứ chất lượng cao, 
+                                là sự kết tinh hoàn mỹ giữa tinh hoa nghệ thuật thủ công truyền thống và nhịp sống văn minh, hiện đại. 
+                                Chúng tôi tin rằng, mỗi sản phẩm gốm sứ không chỉ đơn thuần là vật dụng phục vụ sinh hoạt hàng ngày, 
+                                mà còn là những kiệt tác chứa đựng linh hồn của đất, nước, lửa và tâm huyết của những nghệ nhân tài hoa.
+                            </p>
+                            <p>
+                                CeramicShop ra đời với mong muốn tôn vinh sự sáng tạo và đưa bản sắc văn hóa dân tộc Việt Nam 
+                                đến gần hơn với không gian sống của mỗi gia đình.
+                            </p>
+                        </div>
+                        <div className={styles.aboutImage}>
+                            <img src="https://images.unsplash.com/photo-1578500494198-246f612d3b3d?w=600&h=400&fit=crop" alt="Gốm sứ thủ công" />
+                        </div>
+                    </div>
+
+                    <div className={styles.visionMission}>
+                        <div className={styles.vmCard}>
+                            <div className={styles.vmIcon}>
+                                <TrophyOutlined />
+                            </div>
+                            <h3>TẦM NHÌN</h3>
+                            <p>Xây dựng CeramicShop trở thành địa chỉ mua sắm gốm sứ trực tuyến thân thiện và đáng tin cậy, 
+                            kết hợp hài hòa giữa nét đẹp truyền thống và công nghệ hiện đại.</p>
+                        </div>
+                        <div className={styles.vmCard}>
+                            <div className={styles.vmIcon}>
+                                <SafetyOutlined />
+                            </div>
+                            <h3>SỨ MỆNH</h3>
+                            <p>Kiến tạo sự ấm cúng và an yên cho mọi gia đình thông qua những sản phẩm gốm sứ chất lượng, 
+                            không ngừng cải thiện dịch vụ và tôn vinh nét đẹp văn hóa Việt.</p>
+                        </div>
+                        <div className={styles.vmCard}>
+                            <div className={styles.vmIcon}>
+                                <CustomerServiceOutlined />
+                            </div>
+                            <h3>GIÁ TRỊ KHÁCH HÀNG</h3>
+                            <p>Sản phẩm mang giá trị văn hóa và nghệ thuật sâu sắc. Mối quan hệ bền vững với sự uy tín, 
+                            minh bạch. Thương hiệu chuyên nghiệp, tận tâm trong từng chi tiết.</p>
+                        </div>
+                    </div>
+
+                    <div className={styles.features}>
+                        <div className={styles.featureItem}>
+                            <CheckCircleOutlined className={styles.featureIcon} />
+                            <h4>Chất Lượng Cao Cấp</h4>
+                            <p>Men sứ cao cấp, độ bền bỉ và an toàn tuyệt đối cho sức khỏe</p>
+                        </div>
+                        <div className={styles.featureItem}>
+                            <CheckCircleOutlined className={styles.featureIcon} />
+                            <h4>Đa Dạng Sản Phẩm</h4>
+                            <p>Từ sứ gia dụng, bộ trà cụ đến vật phẩm phong thủy và đồ thờ</p>
+                        </div>
+                        <div className={styles.featureItem}>
+                            <CheckCircleOutlined className={styles.featureIcon} />
+                            <h4>Công Nghệ Hiện Đại</h4>
+                            <p>Trợ lý ảo tận tâm và giải pháp thanh toán an toàn</p>
+                        </div>
+                        <div className={styles.featureItem}>
+                            <CheckCircleOutlined className={styles.featureIcon} />
+                            <h4>Giao Hàng Toàn Quốc</h4>
+                            <p>Đóng gói chuyên nghiệp, bảo hành và đổi trả dễ dàng</p>
+                        </div>
+                    </div>
+                </div>
             </section>
 
             <section id="categories" className={styles.categorySection}>
@@ -164,11 +361,9 @@ function LandingPage() {
                                 <div key={p.MaSanPham} className={styles.productCard} onClick={() => navigate(`/product/${p.MaSanPham}`)}>
                                     <div className={styles.productImgWrap}>
                                         <img src={p.Thumbnail} alt={p.TenSanPham} />
-                                        
-                                        {/* Overlay Nút Mua hiển thị khi Hover giống các web E-com lớn */}
                                         <div className={styles.productOverlay}>
-                                            <button className={styles.btnAddToCart} onClick={(e) => { e.stopPropagation(); navigate('/login'); }}>
-                                                TÙY CHỌN
+                                            <button className={styles.btnAddToCart} onClick={(e) => { e.stopPropagation(); navigate(`/product/${p.MaSanPham}`); }}>
+                                                XEM CHI TIẾT
                                             </button>
                                         </div>
                                     </div>
@@ -187,27 +382,68 @@ function LandingPage() {
                 </div>
             </section>
 
-            {/* 7. FOOTER */}
+            <section id="news" className={styles.newsSection}>
+                <div className={styles.container}>
+                    <div className={styles.sectionHeading}>
+                        <h2>TIN TỨC & SỰ KIỆN</h2>
+                        <p className={styles.sectionSubtitle}>Cập nhật xu hướng và kiến thức về gốm sứ</p>
+                    </div>
+
+                    <div className={styles.newsGrid}>
+                        {newsArticles.map((article) => (
+                            <div key={article.id} className={styles.newsCard}>
+                                <div className={styles.newsImgWrap}>
+                                    <img src={article.image} alt={article.title} />
+                                    <div className={styles.newsDate}>{article.date}</div>
+                                </div>
+                                <div className={styles.newsContent}>
+                                    <h3 className={styles.newsTitle}>{article.title}</h3>
+                                    <p className={styles.newsExcerpt}>{article.excerpt}</p>
+                                    <a href="#" className={styles.newsReadMore}>
+                                        Đọc thêm <RightOutlined />
+                                    </a>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
             <footer id="contact" className={styles.footer}>
                 <div className={styles.container}>
                     <div className={styles.footerGrid}>
                         <div className={styles.footerCol}>
                             <h3>HỖ TRỢ KHÁCH HÀNG</h3>
                             <ul>
-                                <li><a href="#">Hướng dẫn mua hàng</a></li>
-                                <li><a href="#">Chính sách thanh toán</a></li>
-                                <li><a href="#">Chính sách giao hàng</a></li>
-                                <li><a href="#">Chính sách đổi trả</a></li>
+                                <li><a href="#guide">Hướng dẫn mua hàng</a></li>
+                                <li><a href="#payment">Chính sách thanh toán</a></li>
+                                <li><a href="#shipping">Chính sách giao hàng</a></li>
+                                <li><a href="#return">Chính sách đổi trả</a></li>
+                                <li><a href="#warranty">Chính sách bảo hành</a></li>
                             </ul>
                         </div>
+                        
+                        <div className={styles.footerCol}>
+                            <h3>PHƯƠNG THỨC THANH TOÁN</h3>
+                            <ul>
+                                <li>💵 Thanh toán COD (Tiền mặt)</li>
+                                <li>🏦 VNPay (Quét mã QR)</li>
+                                <li>📱 Ví điện tử (MoMo / ZaloPay)</li>
+                                <li>🔗 Tiền điện tử (MetaMask)</li>
+                                <li>💳 Chuyển khoản ngân hàng</li>
+                            </ul>
+                        </div>
+
                         <div className={styles.footerCol}>
                             <h3>THÔNG TIN LIÊN HỆ</h3>
                             <ul>
-                                <li>Địa chỉ: Làng nghề Bát Tràng, Gia Lâm, Hà Nội</li>
-                                <li>Hotline: 1900 2268</li>
-                                <li>Email: cskh@ceramicshop.vn</li>
+                                <li>📍 Địa chỉ: Làng nghề Bát Tràng, Gia Lâm, Hà Nội</li>
+                                <li>📞 Hotline: 1900 2268</li>
+                                <li>✉️ Email: cskh@ceramicshop.vn</li>
+                                <li>🕐 Giờ làm việc: 8:00 - 22:00 (Thứ 2 - CN)</li>
                             </ul>
                         </div>
+
                         <div className={styles.footerCol}>
                             <h3>ĐĂNG KÝ NHẬN TIN</h3>
                             <p className={styles.footerText}>Nhận thông tin về sản phẩm mới và các chương trình khuyến mãi.</p>
@@ -219,7 +455,7 @@ function LandingPage() {
                     </div>
                 </div>
                 <div className={styles.copyright}>
-                    <p>© 2026 Bản quyền thuộc về Ceramic Shop. Bảo lưu mọi quyền.</p>
+                    <p>© 2026 Bản quyền thuộc về CeramicShop. Bảo lưu mọi quyền.</p>
                 </div>
             </footer>
 
