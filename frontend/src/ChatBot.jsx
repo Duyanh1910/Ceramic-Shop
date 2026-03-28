@@ -17,6 +17,15 @@ function ChatBot() {
   const [currentAnimIndex, setCurrentAnimIndex] = useState(0);
   const [isBubbleHidden, setIsBubbleHidden] = useState(false); 
   const [isChatOpen, setIsChatOpen] = useState(false);
+  
+  const [sessionId] = useState(() => {
+      let sid = sessionStorage.getItem('ceramic_df_session');
+      if (!sid) {
+          sid = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+          sessionStorage.setItem('ceramic_df_session', sid);
+      }
+      return sid;
+  });
     
   useEffect(() => {
     if (!document.getElementById('model-viewer-script')) {
@@ -34,17 +43,15 @@ function ChatBot() {
         document.body.appendChild(dfScript);
     }
 
-    const dietBongBong = () => {
+    // Tối ưu 1: Dùng tag <style> là đủ, loại bỏ vòng lặp gán cssText trực tiếp thừa thãi
+    const nukeInterval = setInterval(() => {
         const dfMessenger = document.querySelector('df-messenger');
-        if (dfMessenger && dfMessenger.shadowRoot) {
-            let style = dfMessenger.shadowRoot.querySelector('#nuke-bubble-style');
-            if (!style) {
-                style = document.createElement('style');
+        if (dfMessenger?.shadowRoot) {
+            if (!dfMessenger.shadowRoot.querySelector('#nuke-bubble-style')) {
+                const style = document.createElement('style');
                 style.id = 'nuke-bubble-style';
                 style.innerHTML = `
-                    df-messenger-chat-bubble,
-                    #widgetIcon,
-                    button[id="widgetIcon"] {
+                    df-messenger-chat-bubble, #widgetIcon, button[id="widgetIcon"] {
                         display: none !important;
                         visibility: hidden !important;
                         opacity: 0 !important;
@@ -57,66 +64,44 @@ function ChatBot() {
                 `;
                 dfMessenger.shadowRoot.appendChild(style);
             }
-            const garbageElements = dfMessenger.shadowRoot.querySelectorAll('df-messenger-chat-bubble, #widgetIcon');
-            garbageElements.forEach(el => {
-                el.style.cssText = 'display: none !important; opacity: 0 !important; position: absolute !important; z-index: -9999 !important; pointer-events: none !important;';
-            });
-        }
-    };
 
-    const setupBot = () => {
-        dietBongBong();
-        setTimeout(() => {
-            const dfMessenger = document.querySelector('df-messenger');
-            if (dfMessenger) {
+            if (!dfMessenger.classList.contains('df-ready')) {
                 dfMessenger.classList.add('df-ready');
             }
-        }, 100);
-    };
+        }
+    }, 50);
 
-    window.addEventListener('dfMessengerLoaded', setupBot);
-    
-    const nukeInterval = setInterval(dietBongBong, 50);
-
+    // Tối ưu 2: Dùng Optional Chaining (?.) để code ngắn gọn, không cần if lồng nhau
     const initInterval = setInterval(() => {
-        const df = document.querySelector('df-messenger');
-        if (df && df.shadowRoot) {
-            const chatWindow = df.shadowRoot.querySelector('df-messenger-chat');
-            if (chatWindow && chatWindow.shadowRoot) {
-                const userInput = chatWindow.shadowRoot.querySelector('df-messenger-user-input');
-                if (userInput && userInput.shadowRoot && !userInput.hasAttribute('fixed-input')) {
-                    const inputStyle = document.createElement('style');
-                    inputStyle.innerHTML = `
-                        input[type="text"] {
-                            height: 48px !important;
-                            font-size: 15px !important;
-                            padding: 10px 15px !important;
-                        }
-                    `;
-                    userInput.shadowRoot.appendChild(inputStyle);
-                    userInput.setAttribute('fixed-input', 'true');
-                    clearInterval(initInterval);
-                }
-            }
+        const userInput = document.querySelector('df-messenger')
+            ?.shadowRoot?.querySelector('df-messenger-chat')
+            ?.shadowRoot?.querySelector('df-messenger-user-input');
+            
+        if (userInput && !userInput.hasAttribute('fixed-input')) {
+            const inputStyle = document.createElement('style');
+            inputStyle.innerHTML = `
+                input[type="text"] { height: 48px !important; font-size: 15px !important; padding: 10px 15px !important; }
+            `;
+            userInput.shadowRoot.appendChild(inputStyle);
+            userInput.setAttribute('fixed-input', 'true');
+            clearInterval(initInterval);
         }
     }, 500);
     
+    // Tối ưu 3: Chỉ theo dõi đúng thuộc tính "expand", tiết kiệm hiệu suất trình duyệt
     const observer = new MutationObserver(() => {
         const df = document.querySelector('df-messenger');
         if (df) {
-            const isExpanded = df.hasAttribute('expand') && df.getAttribute('expand') !== 'false';
+            const isExpanded = df.getAttribute('expand') === 'true';
             setIsChatOpen(isExpanded);
-
-            if (isExpanded) {
-                setIsBubbleHidden(true);
-            }
+            if (isExpanded) setIsBubbleHidden(true);
         }
     });
 
     const observerInterval = setInterval(() => {
         const df = document.querySelector('df-messenger');
         if (df) {
-            observer.observe(df, { attributes: true });
+            observer.observe(df, { attributes: true, attributeFilter: ['expand'] });
             clearInterval(observerInterval);
         }
     }, 500);
@@ -126,7 +111,6 @@ function ChatBot() {
         clearInterval(initInterval);
         clearInterval(observerInterval);
         observer.disconnect();
-        window.removeEventListener('dfMessengerLoaded', setupBot);
     };
   }, []);
 
@@ -146,7 +130,8 @@ function ChatBot() {
     e.stopPropagation();
     const dfMessenger = document.querySelector('df-messenger');
     if (!dfMessenger) return;
-    const isExpanded = dfMessenger.hasAttribute('expand') && dfMessenger.getAttribute('expand') !== 'false';
+    
+    const isExpanded = dfMessenger.getAttribute('expand') === 'true';
 
     if (!isExpanded) {
         if (chibiRef.current) {
@@ -155,11 +140,11 @@ function ChatBot() {
         }
         dfMessenger.setAttribute('expand', 'true');
     } else {
-        dfMessenger.setAttribute('expand', 'false');
         if (chibiRef.current) {
             chibiRef.current.src = animationConfigs[0].file; 
             chibiRef.current.animationName = animationConfigs[0].name; 
         }
+        dfMessenger.setAttribute('expand', 'false');
     }
   };
 
@@ -198,6 +183,7 @@ function ChatBot() {
         chat-title="CeramicShop Chatbot"
         agent-id="6add2f93-9961-40d6-9b52-f4af5862c6a1"
         language-code="vi"
+        session-id={sessionId}
       ></df-messenger>
     </>
   );

@@ -12,6 +12,7 @@ import Cart from './Cart.jsx'
 import ChatBot from './ChatBot';
 import ChangePassword from './ChangePassword.jsx'
 import ForgotPassword from './ForgotPassword.jsx'
+
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('token');
   if (!token) {
@@ -34,7 +35,11 @@ const ConditionalChatBot = () => {
   const allowedPaths = ['/', '/profile'];
   const isAllowed = allowedPaths.includes(location.pathname);
 
-  return isAllowed ? <ChatBot /> : null;
+  return (
+    <div style={{ display: isAllowed ? 'block' : 'none' }}>
+      <ChatBot />
+    </div>
+  );
 };
 
 createRoot(document.getElementById('root')).render(
@@ -71,6 +76,7 @@ createRoot(document.getElementById('root')).render(
           } />
           <Route path="/forgot-password" element={<ForgotPassword />} />
         </Routes>
+        
         <ConditionalChatBot />
 
       </BrowserRouter>
