@@ -437,10 +437,10 @@ function LandingPage() {
                         <div className={styles.footerCol}>
                             <h3>THÔNG TIN LIÊN HỆ</h3>
                             <ul>
-                                <li>📍 Địa chỉ: Làng nghề Bát Tràng, Gia Lâm, Hà Nội</li>
-                                <li>📞 Hotline: 1900 2268</li>
-                                <li>✉️ Email: cskh@ceramicshop.vn</li>
-                                <li>🕐 Giờ làm việc: 8:00 - 22:00 (Thứ 2 - CN)</li>
+                                <li>📍 Địa chỉ: 484 Lạch Tray, Lê Chân, Hải Phòng</li>
+                                <li>📞 Hotline: 0329.835.725</li>
+                                <li>✉️ Email: theceramicshop24@gmail.com</li>
+                                <li>🕐 Giờ làm việc: 8:00 - 22:00 (Thứ 2 - Thứ 7)</li>
                             </ul>
                         </div>
 
