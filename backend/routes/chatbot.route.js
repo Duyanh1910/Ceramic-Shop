@@ -6,7 +6,7 @@ const router = express.Router();
 router.post("/webhook", async (req, res) => {
   const intentName = req.body.queryResult.intent.displayName;
   const parameters = req.body.queryResult.parameters;
-  
+
   const domainWeb = CHATBOT_LINKS.domainWeb;
   const zaloLink = CHATBOT_LINKS.zaloLink;
   const emailLink = CHATBOT_LINKS.emailLink;
@@ -32,7 +32,7 @@ router.post("/webhook", async (req, res) => {
 
     try {
       let sqlQuery = `
-                SELECT bt.MaBienThe, bt.TenBienThe, bt.Gia, bt.SoLuong, MIN(ha.DuongDan) as DuongDan, sp.TenSanPham
+                SELECT sp.MaSanPham, bt.MaBienThe, bt.TenBienThe, bt.Gia, bt.SoLuong, MIN(ha.DuongDan) as DuongDan, sp.TenSanPham
                 FROM BienTheSanPham bt
                 JOIN SanPham sp ON bt.MaSanPham = sp.MaSanPham
                 LEFT JOIN HinhAnhBienThe ha ON bt.MaBienThe = ha.MaBienThe
@@ -51,7 +51,7 @@ router.post("/webhook", async (req, res) => {
         }
       });
 
-      sqlQuery += ` GROUP BY bt.MaBienThe, bt.TenBienThe, bt.Gia, bt.SoLuong, sp.TenSanPham`;
+      sqlQuery += ` GROUP BY sp.MaSanPham, bt.MaBienThe, bt.TenBienThe, bt.Gia, bt.SoLuong, sp.TenSanPham`;
 
       const [rows] = await pool.execute(sqlQuery, queryParams);
 
@@ -61,7 +61,7 @@ router.post("/webhook", async (req, res) => {
           style: "currency",
           currency: "VND",
         }).format(sp.Gia);
-        const linkSanPham = `${domainWeb}?name=${encodeURIComponent(sp.TenSanPham)}`;
+        const linkSanPham = `${domainWeb}/product/${sp.MaSanPham}`;
 
         let cauTraLoi = `Dạ, mẫu ${sp.TenBienThe} hiện đang có giá là ${giaFormat}. `;
         if (sp.SoLuong > 0) {
@@ -103,7 +103,7 @@ router.post("/webhook", async (req, res) => {
         });
       } else if (rows.length > 1) {
         let danhSachGia = [];
-        const linkSanPham = `${domainWeb}?name=${encodeURIComponent(rows[0].TenSanPham)}`;
+        const linkSanPham = `${domainWeb}/product/${rows[0].MaSanPham}`;
 
         rows.forEach((r) => {
           const giaFormat = new Intl.NumberFormat("vi-VN", {
@@ -227,7 +227,7 @@ router.post("/webhook", async (req, res) => {
             {
               text: {
                 text: [
-                  `Dạ, em gửi bạn thông tin tra cứu của đơn hàng #${maDonReal} ạ:`,
+                  `Dạ, em gửi bạn thông tự tra cứu của đơn hàng #${maDonReal} ạ:`,
                 ],
               },
             },
@@ -372,7 +372,7 @@ router.post("/webhook", async (req, res) => {
       }
 
       const sqlQuery = `
-                SELECT sp.TenSanPham, MIN(bt.Gia) as GiaTu, MIN(ha.DuongDan) as DuongDan
+                SELECT sp.MaSanPham, sp.TenSanPham, MIN(bt.Gia) as GiaTu, MIN(ha.DuongDan) as DuongDan
                 FROM SanPham sp
                 JOIN DanhMucSanPham dm ON sp.MaDanhMuc = dm.MaDanhMuc
                 LEFT JOIN DanhMucSanPham dm_parent ON dm.ParentID = dm_parent.MaDanhMuc
@@ -380,7 +380,7 @@ router.post("/webhook", async (req, res) => {
                 LEFT JOIN HinhAnhBienThe ha ON bt.MaBienThe = ha.MaBienThe
                 WHERE (dm.TenDanhMuc LIKE ? OR dm_parent.TenDanhMuc LIKE ? OR sp.TenSanPham LIKE ?) 
                   AND sp.TrangThai = 1 AND bt.TrangThai = 1
-                GROUP BY sp.MaSanPham
+                GROUP BY sp.MaSanPham, sp.TenSanPham
                 LIMIT 3
             `;
 
@@ -398,7 +398,7 @@ router.post("/webhook", async (req, res) => {
             style: "currency",
             currency: "VND",
           }).format(sp.GiaTu);
-          const linkSanPham = `${domainWeb}?name=${encodeURIComponent(sp.TenSanPham)}`;
+          const linkSanPham = `${domainWeb}/product/${sp.MaSanPham}`;
 
           listRichContent.push([
             {
@@ -421,6 +421,16 @@ router.post("/webhook", async (req, res) => {
             },
           ]);
         });
+
+        const linkSearch = `${domainWeb}?search=${encodeURIComponent(danhMuc.trim())}`;
+        listRichContent.push([
+          {
+            type: "button",
+            icon: { type: "search", color: "#34A853" },
+            text: `Xem tất cả ${danhMuc}`,
+            link: linkSearch,
+          },
+        ]);
 
         return res.json({
           fulfillmentMessages: [
@@ -457,7 +467,7 @@ router.post("/webhook", async (req, res) => {
 
     try {
       let sqlQuery = `
-                SELECT bt.TenBienThe, bt.SoLuong, sp.TenSanPham 
+                SELECT sp.MaSanPham, bt.TenBienThe, bt.SoLuong, sp.TenSanPham 
                 FROM BienTheSanPham bt
                 JOIN SanPham sp ON bt.MaSanPham = sp.MaSanPham
                 WHERE sp.TenSanPham LIKE ? AND bt.TrangThai = 1
@@ -479,7 +489,7 @@ router.post("/webhook", async (req, res) => {
 
       if (rows.length === 1) {
         const sp = rows[0];
-        const linkSanPham = `${domainWeb}?name=${encodeURIComponent(sp.TenSanPham)}`;
+        const linkSanPham = `${domainWeb}/product/${sp.MaSanPham}`;
 
         if (sp.SoLuong > 0) {
           return res.json({
@@ -519,7 +529,7 @@ router.post("/webhook", async (req, res) => {
         }
       } else if (rows.length > 1) {
         let danhSachTonKho = [];
-        const linkSanPham = `${domainWeb}?name=${encodeURIComponent(rows[0].TenSanPham)}`;
+        const linkSanPham = `${domainWeb}/product/${rows[0].MaSanPham}`;
 
         rows.forEach((r) => {
           let trangThai =
@@ -762,7 +772,7 @@ router.post("/webhook", async (req, res) => {
     if (!maDonHang) {
       return res.json({
         fulfillmentText:
-          "Dạ bạn cho mình xin mã đơn hàng (ví dụ: 1024) để hệ thống kiểm tra và hỗ trợ thay đổi thông tin nhé.",
+          "Dạ bạn cho mình xin mã đơn hàng (ví dụ: 1024) để hệ thống kiểm tra và hỗ trợ thay đổi thông vị nhé.",
       });
     }
 
@@ -1007,7 +1017,7 @@ router.post("/webhook", async (req, res) => {
 
     try {
       let sqlQuery = `
-                SELECT sp.TenSanPham, MIN(bt.Gia) as GiaTu, MIN(ha.DuongDan) as DuongDan
+                SELECT sp.MaSanPham, sp.TenSanPham, MIN(bt.Gia) as GiaTu, MIN(ha.DuongDan) as DuongDan
                 FROM SanPham sp
                 JOIN BienTheSanPham bt ON sp.MaSanPham = bt.MaSanPham
                 LEFT JOIN HinhAnhBienThe ha ON bt.MaBienThe = ha.MaBienThe
@@ -1057,7 +1067,7 @@ router.post("/webhook", async (req, res) => {
         }
       }
 
-      sqlQuery += ` GROUP BY sp.MaSanPham ORDER BY GiaTu DESC LIMIT 3`;
+      sqlQuery += ` GROUP BY sp.MaSanPham, sp.TenSanPham ORDER BY GiaTu DESC LIMIT 3`;
 
       const [rows] = await pool.execute(sqlQuery, queryParams);
 
@@ -1082,7 +1092,7 @@ router.post("/webhook", async (req, res) => {
             style: "currency",
             currency: "VND",
           }).format(sp.GiaTu);
-          const linkSanPham = `${domainWeb}?name=${encodeURIComponent(sp.TenSanPham)}`;
+          const linkSanPham = `${domainWeb}/product/${sp.MaSanPham}`;
 
           richContentData.push([
             {
@@ -1106,6 +1116,18 @@ router.post("/webhook", async (req, res) => {
           ]);
         });
 
+        if (searchKeyword) {
+          const searchLink = `${domainWeb}?search=${encodeURIComponent(searchKeyword.trim())}`;
+          richContentData.push([
+            {
+              type: "button",
+              icon: { type: "search", color: "#34A853" },
+              text: `Xem tất cả ${searchKeyword}`,
+              link: searchLink,
+            },
+          ]);
+        }
+
         return res.json({
           fulfillmentMessages: [
             { text: { text: [txtIntro] } },
@@ -1125,12 +1147,12 @@ router.post("/webhook", async (req, res) => {
   } else if (intentName === "San_Pham_Pho_Bien") {
     try {
       const sqlQuery = `
-                SELECT sp.TenSanPham, sp.LuotXem, MIN(bt.Gia) as GiaTu, MIN(ha.DuongDan) as DuongDan
+                SELECT sp.MaSanPham, sp.TenSanPham, sp.LuotXem, MIN(bt.Gia) as GiaTu, MIN(ha.DuongDan) as DuongDan
                 FROM SanPham sp
                 JOIN BienTheSanPham bt ON sp.MaSanPham = bt.MaSanPham
                 LEFT JOIN HinhAnhBienThe ha ON bt.MaBienThe = ha.MaBienThe
                 WHERE sp.TrangThai = 1 AND bt.TrangThai = 1
-                GROUP BY sp.MaSanPham
+                GROUP BY sp.MaSanPham, sp.TenSanPham, sp.LuotXem
                 ORDER BY sp.LuotXem DESC
                 LIMIT 3
             `;
@@ -1145,7 +1167,7 @@ router.post("/webhook", async (req, res) => {
             style: "currency",
             currency: "VND",
           }).format(sp.GiaTu);
-          const linkSanPham = `${domainWeb}?name=${encodeURIComponent(sp.TenSanPham)}`;
+          const linkSanPham = `${domainWeb}/product/${sp.MaSanPham}`;
 
           listRichContent.push([
             {
@@ -1209,17 +1231,17 @@ router.post("/webhook", async (req, res) => {
                   type: "button",
                   icon: { type: "storefront", color: "#34A853" },
                   text: "Đi tới Gian hàng (Xem tất cả)",
-                  link: `${domainWeb}`, 
+                  link: `${domainWeb}`,
                 },
                 {
                   type: "button",
                   icon: { type: "local_fire_department", color: "#FF5722" },
                   text: "Xem ngay tại đây các mẫu Bán Chạy",
                   event: {
-                    name: "San_Pham_Pho_Bien", 
+                    name: "San_Pham_Pho_Bien",
                     languageCode: "vi",
-                    parameters: {}
-                  }
+                    parameters: {},
+                  },
                 },
               ],
             ],
