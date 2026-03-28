@@ -86,8 +86,10 @@ export const sendEmailVerifyService = async (email, type = "verify") => {
       "https://api.brevo.com/v3/smtp/email",
       {
         sender: {
-          name: "The Ceramic Shop",
-          email: "phap96130@st.vimaru.edu.vn",
+          // name: "The Ceramic Shop",
+          // email: "phap96130@st.vimaru.edu.vn",
+          name: process.env.BREVO_SENDER_NAME || "The Ceramic Shop",
+          email: process.env.BREVO_SENDER_EMAIL
         },
         to: [{ email }],
         subject: mailSubject,

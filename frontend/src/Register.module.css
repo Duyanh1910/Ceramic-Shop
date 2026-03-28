@@ -3,18 +3,10 @@
 :global(body) {
   margin: 0 !important;
   padding: 0 !important;
-  background-color: #fdfdfd !important; 
+  background-color: #fdfdfd !important;
   font-family: 'Arsenal', sans-serif !important;
   color: #333;
   overflow-x: hidden;
-}
-
-.homeWrapper {
-  min-height: 100vh;
-  background-color: #fdfdfd;
-  background-size: cover;
-  background-attachment: fixed;
-  background-position: center;
 }
 
 .registerContainer {
@@ -23,7 +15,7 @@
   align-items: center;
   min-height: 100vh;
   width: 100vw;
-  background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('login.jpg');
+  background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('login.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -31,59 +23,133 @@
 
 .combinedCard {
   display: flex;
-  width: 850px; 
-  max-width: 95vw; 
-  min-height: 480px;
-  background-color: #ffffff;
+  width: 860px;
+  max-width: 95vw;
+  min-height: 540px;
+  background: #fff;
   border-radius: 16px;
-  border: none;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0,0,0,0.05);
-  overflow: hidden; 
-  position: relative; 
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+  overflow: hidden;
+  position: relative;
 }
+
 .cornerPattern {
   position: absolute;
-  width: 50px; 
-  height: 50px;
+  width: 50px; height: 50px;
   background-image: url('pattern.png');
   background-size: contain;
   background-repeat: no-repeat;
   z-index: 10;
   pointer-events: none;
 }
-
-.topLeft { top: 0; left: 0; transform: scaleY(-1); }
-.topRight { top: 0; right: 0; transform: scale(-1, -1); }
-.bottomLeft { bottom: 0; left: 0; }
-.bottomRight { bottom: 0; right: 0; transform: scaleX(-1); }
+.topLeft    { top:0; left:0; transform:scaleY(-1); }
+.topRight   { top:0; right:0; transform:scale(-1,-1); }
+.bottomLeft { bottom:0; left:0; }
+.bottomRight{ bottom:0; right:0; transform:scaleX(-1); }
 
 .cardImage {
-  flex: 1; 
+  flex: 1;
   background-image: url('sidelogin.png');
-  background-size: 281px auto; 
-  background-position: center center; 
+  background-size: 281px auto;
+  background-position: center;
   background-repeat: no-repeat;
-  background-color: rgba(255, 255, 255, 0.0);
 }
 
 .cardForm {
-  flex: 1; 
-  padding: 30px 50px;
+  flex: 1;
+  padding: 28px 50px 36px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   overflow-y: auto;
 }
+
+.stepTracker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.stepItem {
+  display: flex;
+  align-items: center;
+}
+
+.stepDot {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  background: #eaeaea;
+  color: #aaa;
+  flex-shrink: 0;
+  transition: all 0.3s;
+}
+
+.stepDot.active {
+  background: #1b437c;
+  color: #fff;
+  box-shadow: 0 3px 10px rgba(27,67,124,0.3);
+}
+
+.stepDot.done {
+  background: #52c41a;
+  color: #fff;
+}
+
+.stepLabel {
+  font-size: 11px;
+  color: #bbb;
+  margin: 0 6px;
+  white-space: nowrap;
+}
+
+.stepLabel.activeLabel {
+  color: #1b437c;
+  font-weight: 700;
+}
+
+.stepLine {
+  width: 28px; height: 2px;
+  background: #eaeaea;
+  transition: background 0.3s;
+}
+
+.stepLine.doneLine { background: #52c41a; }
+
+.stepContent {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateX(14px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.formTitle {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #1b437c;
+  font-family: 'Arsenal', serif;
+  font-weight: 700;
+  font-size: 26px;
+}
+
 .customInput {
   border-radius: 6px;
   padding: 10px 15px;
   border: 1px solid #ddd;
-  transition: all 0.3s ease;
+  transition: all 0.3s;
 }
 
-.customInput:focus, .customInput:hover {
+.customInput:focus,
+.customInput:hover {
   border-color: #1b437c;
-  box-shadow: 0 0 0 2px rgba(27, 67, 124, 0.1);
+  box-shadow: 0 0 0 2px rgba(27,67,124,0.1);
 }
 
 .customButton {
@@ -98,5 +164,171 @@
 .customButton:hover {
   background-color: #13325c !important;
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(27, 67, 124, 0.3);
+  box-shadow: 0 5px 15px rgba(27,67,124,0.3);
+}
+
+.otpHeader {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.otpIconWrap {
+  width: 56px; height: 56px;
+  background: linear-gradient(135deg, #c48c46, #e6aa6e);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px;
+  box-shadow: 0 6px 16px rgba(196,140,70,0.3);
+}
+
+.otpIcon { font-size: 24px; color: #fff; }
+
+.otpSub {
+  font-size: 14px;
+  color: #888;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.otpRow {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 8px 0 14px;
+}
+
+.otpCell {
+  width: 46px; height: 54px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  font-family: 'Arsenal', sans-serif;
+  color: #1b437c;
+  background: #fafafa;
+  outline: none;
+  transition: all 0.2s;
+  caret-color: #1b437c;
+}
+
+.otpCell:focus {
+  border-color: #1b437c;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(27,67,124,0.1);
+  transform: translateY(-2px);
+}
+
+.otpCell.otpFilled {
+  border-color: #1b437c;
+  background: #f0f5ff;
+}
+
+.attemptsWarn {
+  text-align: center;
+  color: #e74c3c;
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0 0 10px;
+}
+
+.resendRow {
+  text-align: center;
+  margin-top: 14px;
+  font-size: 14px;
+}
+
+.resendText { color: #888; }
+
+.resendBtn {
+  background: none;
+  border: none;
+  color: #1b437c;
+  font-weight: 700;
+  font-size: 14px;
+  font-family: 'Arsenal', sans-serif;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  transition: color 0.2s;
+}
+
+.resendBtn:hover:not(:disabled) { color: #c48c46; }
+
+.resendDisabled {
+  color: #aaa !important;
+  text-decoration: none;
+  cursor: default;
+}
+
+.backStep {
+  display: block;
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 13px;
+  font-family: 'Arsenal', sans-serif;
+  cursor: pointer;
+  padding: 0;
+  text-align: center;
+  width: 100%;
+  margin-top: 12px;
+  transition: color 0.2s;
+}
+
+.backStep:hover { color: #1b437c; }
+
+.successState {
+  text-align: center;
+  padding: 10px 0;
+  animation: fadeIn 0.4s ease;
+}
+
+.successCheckWrap {
+  margin: 0 auto 20px;
+  width: 72px; height: 72px;
+}
+
+.successCheck {
+  width: 72px; height: 72px;
+  animation: drawCheck 0.6s ease forwards;
+}
+
+.successCheck circle {
+  stroke-dasharray: 166;
+  stroke-dashoffset: 166;
+  animation: strokeIn 0.5s ease forwards;
+}
+
+.successCheck path {
+  stroke-dasharray: 50;
+  stroke-dashoffset: 50;
+  animation: strokeIn 0.4s 0.3s ease forwards;
+}
+
+@keyframes strokeIn {
+  to { stroke-dashoffset: 0; }
+}
+
+.successTitle {
+  font-family: 'Arsenal', serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: #1b437c;
+  margin: 0 0 10px;
+}
+
+.successSub {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.7;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 640px) {
+  .cardImage { display: none; }
+  .cardForm { padding: 28px 20px; }
+  .otpCell { width: 38px; height: 46px; font-size: 18px; }
 }

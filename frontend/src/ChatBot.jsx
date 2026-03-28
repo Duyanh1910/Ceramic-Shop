@@ -17,7 +17,15 @@ function ChatBot() {
   const [currentAnimIndex, setCurrentAnimIndex] = useState(0);
   const [isBubbleHidden, setIsBubbleHidden] = useState(false); 
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const welcomeTriggered = useRef(false);
+  
+  const [sessionId] = useState(() => {
+      let sid = sessionStorage.getItem('ceramic_df_session');
+      if (!sid) {
+          sid = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+          sessionStorage.setItem('ceramic_df_session', sid);
+      }
+      return sid;
+  });
     
   useEffect(() => {
     if (!document.getElementById('model-viewer-script')) {
@@ -35,78 +43,74 @@ function ChatBot() {
         document.body.appendChild(dfScript);
     }
 
-    const initInterval = setInterval(() => {
-        const df = document.querySelector('df-messenger');
-        if (df && df.shadowRoot) {
-            if (!df.shadowRoot.querySelector('#custom-hide-style')) {
+    // Tối ưu 1: Dùng tag <style> là đủ, loại bỏ vòng lặp gán cssText trực tiếp thừa thãi
+    const nukeInterval = setInterval(() => {
+        const dfMessenger = document.querySelector('df-messenger');
+        if (dfMessenger?.shadowRoot) {
+            if (!dfMessenger.shadowRoot.querySelector('#nuke-bubble-style')) {
                 const style = document.createElement('style');
-                style.id = 'custom-hide-style';
+                style.id = 'nuke-bubble-style';
                 style.innerHTML = `
-                    #widgetIcon { display: none !important; }
-                    df-messenger-chat-bubble { display: none !important; }
-                    df-messenger-chat {
+                    df-messenger-chat-bubble, #widgetIcon, button[id="widgetIcon"] {
+                        display: none !important;
+                        visibility: hidden !important;
+                        opacity: 0 !important;
+                        pointer-events: none !important;
+                        width: 0 !important;
+                        height: 0 !important;
                         position: absolute !important;
-                        bottom: 0 !important;
-                        right: 0 !important;
+                        z-index: -9999 !important;
                     }
                 `;
-                df.shadowRoot.appendChild(style);
+                dfMessenger.shadowRoot.appendChild(style);
             }
 
-            const chatWindow = df.shadowRoot.querySelector('df-messenger-chat');
-            if (chatWindow && chatWindow.shadowRoot) {
-                const userInput = chatWindow.shadowRoot.querySelector('df-messenger-user-input');
-                if (userInput && userInput.shadowRoot && !userInput.hasAttribute('fixed-input')) {
-                    const inputStyle = document.createElement('style');
-                    inputStyle.innerHTML = `
-                        input[type="text"] {
-                            height: 48px !important;
-                            font-size: 15px !important;
-                            padding: 10px 15px !important;
-                        }
-                    `;
-                    userInput.shadowRoot.appendChild(inputStyle);
-                    userInput.setAttribute('fixed-input', 'true');
-                    clearInterval(initInterval);
-                }
+            if (!dfMessenger.classList.contains('df-ready')) {
+                dfMessenger.classList.add('df-ready');
             }
+        }
+    }, 50);
+
+    // Tối ưu 2: Dùng Optional Chaining (?.) để code ngắn gọn, không cần if lồng nhau
+    const initInterval = setInterval(() => {
+        const userInput = document.querySelector('df-messenger')
+            ?.shadowRoot?.querySelector('df-messenger-chat')
+            ?.shadowRoot?.querySelector('df-messenger-user-input');
+            
+        if (userInput && !userInput.hasAttribute('fixed-input')) {
+            const inputStyle = document.createElement('style');
+            inputStyle.innerHTML = `
+                input[type="text"] { height: 48px !important; font-size: 15px !important; padding: 10px 15px !important; }
+            `;
+            userInput.shadowRoot.appendChild(inputStyle);
+            userInput.setAttribute('fixed-input', 'true');
+            clearInterval(initInterval);
         }
     }, 500);
     
+    // Tối ưu 3: Chỉ theo dõi đúng thuộc tính "expand", tiết kiệm hiệu suất trình duyệt
     const observer = new MutationObserver(() => {
-    const df = document.querySelector('df-messenger');
-    if (df) {
-        const isExpanded = df.hasAttribute('expand') && df.getAttribute('expand') !== 'false';
-        setIsChatOpen(isExpanded);
-
-        if (isExpanded && !welcomeTriggered.current) {
-        console.log("Đang kích hoạt lời chào...");
-        
-        setTimeout(() => {
-            if (typeof df.sendRequest === 'function') {
-            df.sendRequest([{ event: { name: 'WEB_CHAT_OPENED' } }]);
-            } else if (typeof df.renderCustomText === 'function') {
-            df.renderCustomText('Chào bạn! CeramicShop có thể giúp gì cho bạn ạ? ✨');
-            }
-            
-            welcomeTriggered.current = true;
-            setIsBubbleHidden(true);
-        }, 200); 
+        const df = document.querySelector('df-messenger');
+        if (df) {
+            const isExpanded = df.getAttribute('expand') === 'true';
+            setIsChatOpen(isExpanded);
+            if (isExpanded) setIsBubbleHidden(true);
         }
-    }
-});
+    });
 
-    const setupBot = () => {
-        const dfMessenger = document.querySelector('df-messenger');
-        if (dfMessenger) observer.observe(dfMessenger, { attributes: true });
-    };
-
-    window.addEventListener('dfMessengerLoaded', setupBot);
+    const observerInterval = setInterval(() => {
+        const df = document.querySelector('df-messenger');
+        if (df) {
+            observer.observe(df, { attributes: true, attributeFilter: ['expand'] });
+            clearInterval(observerInterval);
+        }
+    }, 500);
 
     return () => {
+        clearInterval(nukeInterval);
         clearInterval(initInterval);
+        clearInterval(observerInterval);
         observer.disconnect();
-        window.removeEventListener('dfMessengerLoaded', setupBot);
     };
   }, []);
 
@@ -126,31 +130,19 @@ function ChatBot() {
     e.stopPropagation();
     const dfMessenger = document.querySelector('df-messenger');
     if (!dfMessenger) return;
-    const isExpanded = dfMessenger.hasAttribute('expand') && dfMessenger.getAttribute('expand') !== 'false';
+    
+    const isExpanded = dfMessenger.getAttribute('expand') === 'true';
 
     if (!isExpanded) {
         if (chibiRef.current) {
             chibiRef.current.src = '/smile.glb'; 
             chibiRef.current.animationName = 'Laugh01'; 
         }
-        if (dfMessenger.shadowRoot && dfMessenger.shadowRoot.querySelector('#widgetIcon')) {
-            dfMessenger.shadowRoot.querySelector('#widgetIcon').click();
-        } else {
-            dfMessenger.setAttribute('expand', 'true');
-        }
+        dfMessenger.setAttribute('expand', 'true');
     } else {
-        if (dfMessenger.shadowRoot) {
-            const chatWindow = dfMessenger.shadowRoot.querySelector('df-messenger-chat');
-            if (chatWindow && chatWindow.shadowRoot) {
-                const titleBar = chatWindow.shadowRoot.querySelector('df-messenger-titlebar');
-                if (titleBar && titleBar.shadowRoot) {
-                    const closeBtn = titleBar.shadowRoot.querySelector('button');
-                    if (closeBtn) {
-                        closeBtn.click();
-                        return;
-                    }
-                }
-            }
+        if (chibiRef.current) {
+            chibiRef.current.src = animationConfigs[0].file; 
+            chibiRef.current.animationName = animationConfigs[0].name; 
         }
         dfMessenger.setAttribute('expand', 'false');
     }
@@ -164,7 +156,7 @@ function ChatBot() {
               Chào bạn, mình là trợ lý ảo của CeramicShop. Mình có thể giúp gì ạ?
             </div>
           )}
-          <button id="change-anim-btn" className="change-anim-btn" title="Đổi hành động" onClick={handleChangeAnimation}>
+          <button id="change-anim-btn" className="change-anim-btn" onClick={handleChangeAnimation}>
             ✨
           </button>
           <model-viewer 
@@ -186,9 +178,12 @@ function ChatBot() {
           ></model-viewer>
       </div>
       <df-messenger
+        intent="WELCOME"
+        wait-open="true"
         chat-title="CeramicShop Chatbot"
         agent-id="6add2f93-9961-40d6-9b52-f4af5862c6a1"
         language-code="vi"
+        session-id={sessionId}
       ></df-messenger>
     </>
   );
