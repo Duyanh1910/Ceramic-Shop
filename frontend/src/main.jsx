@@ -12,20 +12,47 @@ import Cart from './Cart.jsx'
 import ChatBot from './ChatBot';
 import ChangePassword from './ChangePassword.jsx'
 import ForgotPassword from './ForgotPassword.jsx'
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+
 
 const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem('token');
-  if (!token) {
+  const [isAuth, setIsAuth] = useState(null);
+
+  useEffect(() => {
+    axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/me', {
+      withCredentials: true
+    })
+    .then(() => setIsAuth(true))
+    .catch(() => setIsAuth(false));
+  }, []);
+
+  if (isAuth === null) return <div>Loading...</div>;
+
+  if (!isAuth) {
     return <Navigate to="/login" replace />;
   }
+
   return children;
 };
 
-const PublicRoute = ({ children }) => { 
-  const token = localStorage.getItem('token');
-  if (token) {
-    return <Navigate to="/" replace />; 
+const PublicRoute = ({ children }) => {
+  const [isAuth, setIsAuth] = useState(null);
+
+  useEffect(() => {
+    axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/me', {
+      withCredentials: true
+    })
+    .then(() => setIsAuth(true))
+    .catch(() => setIsAuth(false));
+  }, []);
+
+  if (isAuth === null) return <div>Loading...</div>;
+
+  if (isAuth) {
+    return <Navigate to="/" replace />;
   }
+
   return children;
 };
 

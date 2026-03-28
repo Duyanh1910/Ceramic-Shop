@@ -18,13 +18,12 @@ function Profile() {
 
   useEffect(() => {
     fetchUserProfile();
-  }, []);
+  },[] ); 
 
   const fetchUserProfile = async () => {
     try {
-      const token = localStorage.getItem('token');
       const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/me', {
-        headers: { Authorization: `Bearer ${token}` }
+       withCredentials: true
       });
 
       const userData = res.data.user || res.data.result;
@@ -42,10 +41,17 @@ function Profile() {
         });
       }
     } catch (error) {
-      message.error("Không thể tải thông tin tài khoản");
+      console.error("Auth check failed:", error);
+      message.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
+      
+      localStorage.removeItem('username');
+      localStorage.removeItem('name');
+      localStorage.removeItem('role');
+      localStorage.removeItem('avatar');
+      
+      ///navigate('/login'); 
     }
   };
-
   const handleAvatarChange = async (info) => {
     const file = info.file;
     if (file.size > 1024 * 1024) {
@@ -67,6 +73,7 @@ function Profile() {
       form.setFieldsValue({ Avatar: secureUrl });
       message.success('Upload ảnh thành công!');
     } catch (error) {
+      console.error(error);
       message.error('Upload ảnh thất bại!');
     } finally {
       setLoading(false);
@@ -76,7 +83,6 @@ function Profile() {
   const handleUpdateProfile = async (values) => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
       const payload = {
         TenKhachHang: values.FullName,
         SDT: values.SDT,
@@ -85,7 +91,7 @@ function Profile() {
       };
 
       const res = await axios.patch('https://ceramic-shop-u8ak.onrender.com/api/v1/customers/me', payload, {
-        headers: { Authorization: `Bearer ${token}` }
+        withCredentials:true
       });
 
       message.success('Cập nhật hồ sơ thành công!');

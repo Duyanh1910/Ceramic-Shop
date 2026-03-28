@@ -17,11 +17,10 @@ function ChangePassword() {
   const handleChangePassword = async (values) => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
       await axios.post(
         `${API_BASE}/auth/change-password`,
         { oldPassword: values.oldPassword, newPassword: values.newPassword },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { withCredentials:true}
       );
       setSuccess(true);
     } catch (err) {

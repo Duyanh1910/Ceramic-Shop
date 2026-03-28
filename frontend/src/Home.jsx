@@ -47,10 +47,10 @@ function Home() {
     }
   }, [cart, isLoggedIn]);
 
-  const fetchCartFromDB = async (token) => {
+  const fetchCartFromDB = async () => {
     try {
       const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/cart', {
-        headers: { Authorization: `Bearer ${token}` }
+        withCredentials: true
       });
       if (res.data.cart && res.data.cart.items) {
         const dbCart = res.data.cart.items.map(item => ({
@@ -67,64 +67,13 @@ function Home() {
         setCart([]);
       }
     } catch (error) {
+      console.error(error);
     } finally {
       setIsFetchingCart(false);
     }
   };
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-
-    if (token) {
-      try {
-        const base64Url = token.split('.')[1];
-        if (base64Url) {
-            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-            }).join(''));
-
-            const payload = JSON.parse(jsonPayload);
-            const currentTime = Math.floor(Date.now() / 1000); 
-            
-            if (payload.exp && payload.exp < currentTime) {
-                handleLogout();
-                setIsFetchingCart(false);
-                return;
-            }
-            
-            setIsLoggedIn(true);
-
-            axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/me', {
-              headers: { Authorization: `Bearer ${token}` }
-            }).then(res => {
-              const userData = res.data.user || res.data.result;
-              const profileData = userData?.profile || userData;
-              
-              const fetchedAvatar = profileData?.Avatar || 'https://res.cloudinary.com/dcmwz0uis/image/upload/v1773107213/default_avatar_gojcul.png';
-              const fetchedName = profileData?.TenKhachHang || profileData?.TenNhanVien || userData?.username || 'Thành viên';
-
-              setUserInfo({ username: fetchedName, avatar: fetchedAvatar });
-              fetchCartFromDB(token);
-            }).catch(() => {
-              setIsLoggedIn(false);
-              setIsFetchingCart(false);
-            });
-        } else {
-            setIsFetchingCart(false);
-        }
-      } catch (error) {
-        setIsLoggedIn(false);
-        setIsFetchingCart(false);
-      }
-    } else {
-      setIsLoggedIn(false);
-      setIsFetchingCart(false);
-    }
-  }, [navigate]);
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
+  const handleLogoutLocal = () => {
     localStorage.removeItem('username');
     localStorage.removeItem('name');
     localStorage.removeItem('role');
@@ -133,6 +82,47 @@ function Home() {
     setUserInfo({ username: '', avatar: '' });
     const savedCart = localStorage.getItem('ceramic_cart');
     setCart(savedCart ? JSON.parse(savedCart) : []);
+  };
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/me', {
+          withCredentials: true 
+        });
+
+        setIsLoggedIn(true);
+        const userData = res.data.user || res.data.result;
+        const profileData = userData?.profile || userData;
+        
+        const fetchedAvatar = profileData?.Avatar || 'https://res.cloudinary.com/dcmwz0uis/image/upload/v1773107213/default_avatar_gojcul.png';
+        const fetchedName = profileData?.TenKhachHang || profileData?.TenNhanVien || userData?.username || 'Thành viên';
+
+        setUserInfo({ username: fetchedName, avatar: fetchedAvatar });
+        
+        fetchCartFromDB(); 
+
+      } catch (error) {
+        console.error(error);
+        handleLogoutLocal();
+      } finally {
+        setIsFetchingCart(false);
+      }
+    };
+
+    checkAuth();
+  }, [navigate]);
+
+const handleLogout = async () => {
+    try {
+      await axios.post('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/logout', {}, {
+        withCredentials: true 
+      });
+    } catch (err) {
+      console.error("Lỗi đăng xuất", err);
+    }
+    
+    handleLogoutLocal();
     message.success("Đã đăng xuất");
   };
 
@@ -175,13 +165,14 @@ function Home() {
 
     if (isLoggedIn) {
       try {
-        const token = localStorage.getItem('token');
         await axios.post('https://ceramic-shop-u8ak.onrender.com/api/v1/cart/items', {
           MaBienThe: targetVariantId,
           SoLuong: 1
-        }, { headers: { Authorization: `Bearer ${token}` } });
+        },{
+          withCredentials:true
+        } );
         message.success('Đã thêm sản phẩm vào giỏ hàng!');
-        fetchCartFromDB(token);
+        fetchCartFromDB();
         if (action === 'buy') navigate('/cart');
       } catch (error) {
         message.error(error.response?.data?.message || 'Lỗi thêm sản phẩm!');
@@ -246,6 +237,7 @@ function Home() {
         navigate(`/product/${product.MaSanPham}`);
       }
     } catch (err) {
+      console.error(err);
       navigate(`/product/${product.MaSanPham}`);
     }
   };
@@ -254,11 +246,11 @@ function Home() {
     setCart(prevCart => prevCart.filter(item => !(item.id === id && item.variantId === variantId)));
     if (isLoggedIn) {
       try {
-        const token = localStorage.getItem('token');
         await axios.delete(`https://ceramic-shop-u8ak.onrender.com/api/v1/cart/items/${variantId || id}`, {
-          headers: { Authorization: `Bearer ${token}` }
+          withCredentials: true
         });
       } catch (error) {
+        console.error(error);
       }
     }
   };
@@ -286,12 +278,12 @@ function Home() {
 
     if (isLoggedIn) {
       try {
-        const token = localStorage.getItem('token');
         await axios.patch(`https://ceramic-shop-u8ak.onrender.com/api/v1/cart/items/${variantId || id}`, 
           { SoLuong: newQty },
-          { headers: { Authorization: `Bearer ${token}` }}
+          { withCredentials: true}
         );
       } catch (error) {
+        console.error(error);
       }
     }
   };
@@ -308,12 +300,12 @@ function Home() {
         
         if (isLoggedIn) {
           try {
-            const token = localStorage.getItem('token');
             await axios.patch(`https://ceramic-shop-u8ak.onrender.com/api/v1/cart/items/${variantId || id}`, 
               { SoLuong: finalQty },
-              { headers: { Authorization: `Bearer ${token}` }}
+              { withCredentials: true }
             );
           } catch (error) {
+            console.error(error);
           }
         }
     }
@@ -544,6 +536,7 @@ function Home() {
       }));
       setSearchOptions(options);
     } catch (error) {
+      console.error(error);
       setSearchOptions([]);
     }
   };
@@ -609,7 +602,9 @@ function Home() {
         });
         
         setCategories(menuItems);
-      } catch (error) {}
+      } catch (error) {
+        console.error(error);
+      }
     };
     fetchCategories();
   }, []);

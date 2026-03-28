@@ -28,10 +28,10 @@ function Cart() {
     }
   }, [cart, isLoggedIn]);
 
-  const fetchCartFromDB = async (token) => {
+  const fetchCartFromDB = async () => {
     try {
       const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/cart', {
-        headers: { Authorization: `Bearer ${token}` }
+        withCredentials:true
       });
       if (res.data.cart && res.data.cart.items) {
         const dbCart = res.data.cart.items.map(item => ({
@@ -55,10 +55,8 @@ function Cart() {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
       axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/me', {
-        headers: { Authorization: `Bearer ${token}` }
+        withCredentials:true
       }).then(res => {
         const userData = res.data.user || res.data.result;
         const profileData = userData?.profile || userData;
@@ -68,15 +66,11 @@ function Cart() {
           SDT: profileData?.SDT || '',
           DiaChi: profileData?.DiaChi || profileData?.Diachi || '',
         });
-        fetchCartFromDB(token);
+        fetchCartFromDB();
       }).catch(() => {
         setIsLoggedIn(false);
         setIsFetchingCart(false); 
       });
-    } else {
-      setIsLoggedIn(false);
-      setIsFetchingCart(false); 
-    }
   }, [form]);
 
   const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price || 0);
@@ -104,11 +98,11 @@ function Cart() {
     setSelectedItems(prev => prev.filter(k => k !== `${id}-${variantId}`));
     if (isLoggedIn) {
       try {
-        const token = localStorage.getItem('token');
         await axios.delete(`https://ceramic-shop-u8ak.onrender.com/api/v1/cart/items/${variantId || id}`, {
-          headers: { Authorization: `Bearer ${token}` }
+          withCredentials:true
         });
       } catch (error) {
+        console.error(error);
       }
     }
   };
@@ -124,13 +118,13 @@ function Cart() {
 
     if (isLoggedIn) {
       try {
-        const token = localStorage.getItem('token');
         await Promise.all(itemsToDelete.map(item => 
           axios.delete(`https://ceramic-shop-u8ak.onrender.com/api/v1/cart/items/${item.variantId || item.id}`, {
-            headers: { Authorization: `Bearer ${token}` }
+            withCredentials:true
           })
         ));
       } catch (error) {
+        console.error(error);
       }
     }
   };
@@ -149,12 +143,12 @@ function Cart() {
 
     if (isLoggedIn) {
       try {
-        const token = localStorage.getItem('token');
         await axios.patch(`https://ceramic-shop-u8ak.onrender.com/api/v1/cart/items/${variantId || id}`, 
           { SoLuong: newQty },
-          { headers: { Authorization: `Bearer ${token}` }}
+          { withCredentials:true}
         );
       } catch (error) {
+        console.error(error);
       }
     }
   };
@@ -171,12 +165,12 @@ function Cart() {
         
         if (isLoggedIn) {
           try {
-            const token = localStorage.getItem('token');
             await axios.patch(`https://ceramic-shop-u8ak.onrender.com/api/v1/cart/items/${variantId || id}`, 
               { SoLuong: finalQty },
-              { headers: { Authorization: `Bearer ${token}` }}
+              { withCredentials:true}
             );
           } catch (error) {
+            console.error(error);
           }
         }
     }
@@ -207,7 +201,6 @@ function Cart() {
 
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
       
       const payload = {
         TenNguoiNhan: values.FullName,
@@ -224,12 +217,12 @@ function Cart() {
       };
 
       await axios.post('https://ceramic-shop-u8ak.onrender.com/api/v1/orders', payload, {
-        headers: { Authorization: `Bearer ${token}` }
+        withCredentials:true
       });
 
       await Promise.all(selectedCartItems.map(item => 
         axios.delete(`https://ceramic-shop-u8ak.onrender.com/api/v1/cart/items/${item.variantId || item.id}`, {
-          headers: { Authorization: `Bearer ${token}` }
+          withCredentials:true
         })
       ));
 
