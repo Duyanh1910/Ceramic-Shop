@@ -268,7 +268,7 @@ export const OAuthService = async (profile, provider, rememberMe) => {
       : "Customer";
 
     const isRemember = rememberMe === "true";
-    const expiresIn = isRemember ? EXPIRES_REMEMBER : EXPIRES_NORMAL;
+    const expiresIn = isRemember ? REMEMBER_ME_EXPIRES_IN : EXPIRES_IN;
 
     const token = jwt.sign(
       { id: account.MaTaiKhoan, role: roleName },
