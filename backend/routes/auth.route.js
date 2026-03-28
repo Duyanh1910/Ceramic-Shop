@@ -5,8 +5,10 @@ import {
   customerRegister,
   getMe,
   changePasswordController,
+  facebookCallbackController,
+  googleCallbackController,
 } from "../controllers/auth.controller.js";
-
+import passport from "../config/passport.js";
 import {
   sendVerifyEmailController,
   VerifyEmailController,
@@ -32,4 +34,55 @@ router.post("/verify-reset-otp", verifyOTPResetPasswordController);
 router.post("/reset-password", resetPasswordController);
 
 router.post("/change-password", jwtMiddleware, changePasswordController);
+
+router.get("/google", (req, res, next) => {
+  const rememberMe = req.query.rememberMe || "false";
+
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+    state: rememberMe,
+  })(req, res, next);
+});
+
+router.get(
+  "/google/callback",
+  passport.authenticate("google", {
+    session: false,
+    failureRedirect: "/api/auth/fail",
+  }),
+  googleCallbackController,
+);
+
+router.get("/facebook", (req, res, next) => {
+  const rememberMe = req.query.rememberMe || "false";
+  passport.authenticate("facebook", {
+    scope: ["email"],
+    state: rememberMe,
+  })(req, res, next);
+});
+
+router.get(
+  "/facebook/callback",
+  passport.authenticate("facebook", {
+    session: false,
+    failureRedirect: "/api/auth/fail",
+  }),
+  facebookCallbackController,
+);
+
+router.get("/fail", (req, res) => {
+  res.status(401).json({
+    success: false,
+    message: "Xác thực qua mạng xã hội thất bại!",
+  });
+});
 export default router;
+
+router.post("/logout", (req, res) => {
+  res.clearCookie("accessToken", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "none",
+  });
+  res.status(200).json({ success: true, message: "Đăng xuất thành công!" });
+});

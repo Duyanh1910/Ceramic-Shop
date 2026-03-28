@@ -32,6 +32,8 @@ import InventoryHistoryModel from "./inventory_history.model.js";
 
 import SystemModel from "./system_model.model.js";
 
+import AccountProviderModel from "./account_provider.model.js";
+
 RoleModel.hasMany(AccountModel, {
   foreignKey: "MaQuyen",
   sourceKey: "MaPhanQuyen",
@@ -238,6 +240,14 @@ OrderModel.hasMany(InventoryHistoryModel, {
     LoaiThamChieu: "DonHang",
   },
 });
+
+AccountModel.hasMany(AccountProviderModel, {
+  foreignKey: "MaTaiKhoan",
+});
+
+AccountProviderModel.belongsTo(AccountModel, {
+  foreignKey: "MaTaiKhoan",
+});
 export {
   sequelize,
   AccountModel,
@@ -265,4 +275,5 @@ export {
   InventoryHistoryModel,
   PromotionWalletModel,
   SystemModel,
+  AccountProviderModel,
 };

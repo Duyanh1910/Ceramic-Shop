@@ -48,9 +48,9 @@ CREATE TABLE LoaiPhiVanChuyen (
 
 CREATE TABLE TaiKhoan (
     MaTaiKhoan INT AUTO_INCREMENT PRIMARY KEY,
-    Username VARCHAR(100) NOT NULL UNIQUE,
-    Email VARCHAR(100) NOT NULL UNIQUE,
-    Password VARCHAR(255) NOT NULL,
+    Username VARCHAR(100) NULL UNIQUE,
+    Email VARCHAR(100) NULL UNIQUE,
+    Password VARCHAR(255) NULL,
     MaPhanQuyen INT,
     TrangThai TINYINT DEFAULT 1,
     FOREIGN KEY (MaPhanQuyen) REFERENCES PhanQuyen(MaPhanQuyen)
@@ -433,3 +433,14 @@ INSERT INTO ViKhuyenMai (MaKhachHang, MaKhuyenMai, TrangThaiSuDung) VALUES
 (3, 5, 0);
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+CREATE TABLE TaiKhoanProvider (
+MaProvider INT AUTO_INCREMENT PRIMARY KEY,
+MaTaiKhoan INT NOT NULL,
+Provider VARCHAR(50) NOT NULL, -- google, facebook
+ProviderID VARCHAR(255) NOT NULL,
+CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+UNIQUE (Provider, ProviderID),
+FOREIGN KEY (MaTaiKhoan) REFERENCES TaiKhoan(MaTaiKhoan)
+ ON DELETE CASCADE
+);

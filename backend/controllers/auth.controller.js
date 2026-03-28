@@ -4,6 +4,7 @@ import {
   customerRegisterService,
   getMeService,
   changePasswordService,
+  OAuthService,
 } from "../services/auth.services.js";
 import {
   checkValidate,
@@ -12,17 +13,29 @@ import {
   isValidPhoneNumber,
 } from "../utils/helpers.js";
 
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+
 export const login = async (req, res, next) => {
   try {
-    const { username, password } = req.body;
+    const { username, password, rememberMe } = req.body;
     if (!checkValidate(username, password)) {
       throw new ErrorHandler("Username và password không được để trống!", 400);
     }
     const result = await loginService(username, password);
+    const maxAge = result.expiresInDays * 24 * 60 * 60 * 1000;
+    res.cookie("accessToken", result.token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "none",
+      maxAge: maxAge,
+    });
     res.status(200).json({
       success: true,
       message: "Đăng nhập thành công!",
-      result,
+      user: {
+        username: result.username,
+        role: result.role,
+      },
     });
   } catch (err) {
     next(err);
@@ -92,22 +105,60 @@ export const changePasswordController = async (req, res, next) => {
   try {
     const { oldPassword, newPassword } = req.body;
     const id = Number(req.user.id);
-    if (!checkValidate(oldPassword, newPassword)) {
-      return next(new ErrorHandler("Vui lòng nhập đầy đủ thông tin!", 400));
+
+    if (!newPassword) {
+      return next(new ErrorHandler("Vui lòng nhập mật khẩu mới!", 400));
     }
-    if (oldPassword === newPassword) {
+    if (oldPassword && oldPassword === newPassword) {
       return next(new ErrorHandler("Mật khẩu cũ và mới phải khác nhau!", 400));
     }
     if (newPassword.length < 6) {
       return next(new ErrorHandler("Mật khẩu phải có ít nhất 6 ký tự!", 400));
     }
+
     await changePasswordService(id, oldPassword, newPassword);
+
     return res.status(200).json({
       success: true,
-      message: "Đổi mật khẩu thành công!",
+      message: "Cập nhật mật khẩu thành công!",
     });
   } catch (err) {
-    console.error(err);
     next(err);
+  }
+};
+
+export const googleCallbackController = async (req, res, next) => {
+  try {
+    const rememberMe = req.query.state;
+    const result = await OAuthService(req.user, "google", rememberMe);
+    const maxAge = result.expiresInDays * 24 * 60 * 60 * 1000;
+    res.cookie("accessToken", result.token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "none",
+      maxAge: maxAge,
+    });
+    res.redirect(`${FRONTEND_URL}`);
+  } catch (error) {
+    console.error(error);
+    res.redirect(`${FRONTEND_URL}/login?error=oauth_failed`);
+  }
+};
+
+export const facebookCallbackController = async (req, res, next) => {
+  try {
+    const rememberMe = req.query.state;
+    const result = await OAuthService(req.user, "facebook", rememberMe);
+    const maxAge = result.expiresInDays * 24 * 60 * 60 * 1000;
+    res.cookie("accessToken", result.token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "none",
+      maxAge: maxAge,
+    });
+    res.redirect(`${FRONTEND_URL}`);
+  } catch (error) {
+    console.error(error);
+    res.redirect(`${FRONTEND_URL}/login?error=oauth_failed`);
   }
 };

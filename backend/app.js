@@ -3,6 +3,7 @@ import { connectDB } from "./config/database.js";
 import errorMiddleware from "./middlewares/error.middlewares.js";
 import express from "express";
 import helmet from "helmet";
+import passport from "passport";
 import session from "express-session";
 import MySQLSession from "express-mysql-session";
 import cookieParser from "cookie-parser";
@@ -29,6 +30,7 @@ app.use(
   }),
 );
 app.use(cookieParser());
+app.use(passport.initialize());
 app.use(cors());
 
 app.use("/api/v1", router);
