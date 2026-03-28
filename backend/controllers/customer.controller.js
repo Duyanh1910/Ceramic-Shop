@@ -40,3 +40,4 @@ export const updateCustomerMe = async (req, res, next) => {
     next(err);
   }
 };
+

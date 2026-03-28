@@ -19,9 +19,7 @@ let tongKhoiLuong = 0;
     let phiCoBan = parseFloat(shippingMethod.GiaTri) || 0;
     let phiVuotTrongLuong = 0;
     let phuPhiDongGoi = 0;
-
     const mucKgChuan = sysConfig["MUC_KG_TIEU_CHUAN"] || 2;
-
     phuPhiDongGoi +=
       soLuongSieuCongKenh * (sysConfig["PHU_PHI_SIEU_CONG_KENH"] || 0);
     phuPhiDongGoi += soLuongCongKenh * (sysConfig["PHU_PHI_CONG_KENH"] || 0);

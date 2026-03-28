@@ -10,6 +10,8 @@ import attributeRoutes from "./attribute.route.js";
 import productRoutes from "./product.route.js";
 import cartRoutes from "./cart.route.js";
 import chatbotRoutes from "./chatbot.route.js";
+import voucherRoutes from "./voucher.route.js";
+import promotionRoutes from "./promotion.route.js";
 
 import jwtMiddleware from "../middlewares/jwt.middlewares.js";
 import checkRole from "../middlewares/authorize.middlewares.js";
@@ -51,5 +53,9 @@ router.use("/cart", jwtMiddleware, cartRoutes);
 router.use("/products", productRoutes);
 
 router.use("/chatbot", chatbotRoutes);
+
+router.use("/vouchers", voucherRoutes);
+
+router.use("/promotions", promotionRoutes);
 
 export default router;
