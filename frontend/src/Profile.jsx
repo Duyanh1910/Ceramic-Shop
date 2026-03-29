@@ -117,7 +117,7 @@ function Profile() {
       <Header className={styles.topHeader}>
         <div className={styles.logo} onClick={() => navigate('/')}>CERAMIC-SHOP</div>
         <div className={styles.headerActions}>
-          <Button type="link" icon={<ArrowLeftOutlined />} onClick={() => navigate('/')} className={styles.btnBack}>
+          <Button type="link" icon={<ArrowLeftOutlined />} onClick={() => navigate('/home')} className={styles.btnBack}>
             Quay về trang chủ
           </Button>
         </div>
