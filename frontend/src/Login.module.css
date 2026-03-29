@@ -1,275 +1,288 @@
-/* Login.module.css */
+@import url('https://fonts.googleapis.com/css2?family=Arsenal:wght@400;600;700&display=swap');
+
+:global(body) {
+  margin: 0 !important;
+  padding: 0 !important;
+  font-family: 'Arsenal', sans-serif !important;
+  background-color: #f4f7f9 !important;
+}
 
 .loginContainer {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Màu nền nhạt, tôn lên card đăng nhập */
-  background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%); 
+  background-color: #f4f7f9;
   padding: 20px;
-  font-family: 'Inter', 'Segoe UI', sans-serif;
-}
-
-.combinedCard {
-  display: flex;
-  width: 100%;
-  max-width: 1000px;
-  min-height: 600px;
-  background: #ffffff;
-  border-radius: 20px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+  position: relative;
   overflow: hidden;
 }
 
-/* --- CỘT TRÁI: HÌNH ẢNH --- */
-.cardImage {
-  flex: 1.2;
-  /* Lấy một ảnh gốm sứ nghệ thuật làm nền */
-  background: url('https://images.unsplash.com/photo-1610701596007-11502861dcfa?q=80&w=1000&auto=format&fit=crop') center/cover no-repeat;
-  position: relative;
-  display: none; /* Ẩn hình ảnh trên màn hình điện thoại */
-}
-
-@media (min-width: 768px) {
-  .cardImage {
-    display: block;
-  }
-}
-
-.imageOverlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 40px;
-  background: linear-gradient(to top, rgba(27, 67, 124, 0.9) 0%, rgba(27, 67, 124, 0) 100%);
-  color: white;
-}
-
-.imageOverlay h2 {
-  font-family: 'Arsenal', serif;
-  font-size: 36px;
-  font-weight: 700;
-  margin-bottom: 10px;
-  color: white;
-}
-
-.imageOverlay p {
-  font-size: 16px;
-  line-height: 1.5;
-  opacity: 0.9;
-}
-
-/* --- CỘT PHẢI: FORM --- */
-.cardForm {
-  flex: 1;
-  padding: 50px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  background: #ffffff;
-}
-
-.backButton {
-  color: #1b437c !important;
-  font-weight: 600 !important;
-  padding-left: 0 !important;
-  transition: all 0.3s ease;
-}
-
-.backButton:hover {
-  transform: translateX(-5px);
-}
-
-.formTitle {
-  color: #1b437c;
-  font-family: 'Arsenal', serif;
-  font-weight: 700;
-  font-size: 32px;
-  margin-bottom: 5px;
-}
-
-.formSubtitle {
-  color: #666;
-  font-size: 15px;
-  margin-bottom: 30px;
-}
-
-.inputLabel {
-  font-weight: 600;
-  color: #333;
-}
-
-.customInput {
-  border-radius: 8px;
-  padding: 10px 15px;
-}
-
-.customInput:hover, .customInput:focus {
-  border-color: #1b437c;
-  box-shadow: 0 0 0 2px rgba(27, 67, 124, 0.1);
-}
-
-.formOptions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 25px;
-}
-
-.forgotPassword {
-  color: #1b437c !important;
-  font-weight: 500;
-}
-
-.customButton {
-  background-color: #1b437c !important;
-  border-radius: 8px !important;
-  font-weight: 600 !important;
-  font-size: 16px !important;
-  height: 45px !important;
-  box-shadow: 0 4px 10px rgba(27, 67, 124, 0.2) !important;
-  transition: all 0.3s !important;
-}
-
-.customButton:hover {
-  background-color: #123260 !important;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(27, 67, 124, 0.3) !important;
-}
-
-/* --- NÚT OAUTH --- */
-.socialGroup {
-  display: flex;
-  gap: 15px;
-}
-
-.socialBtn {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #e0e0e0;
-  background: white;
-  color: #333;
-  font-weight: 600;
-  font-size: 14px;
-  text-decoration: none;
-  transition: all 0.3s ease;
-}
-
-.socialBtn:hover {
-  background: #f9f9f9;
-  border-color: #ccc;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-.socialIcon {
-  width: 22px;
-  height: 22px;
-}
-
-.registerPrompt {
-  margin-top: 30px;
-  text-align: center;
-}
-
-.registerLink {
-  font-weight: 600 !important;
-  color: #1b437c !important;
-}
-
-/* Cập nhật lại Container chính */
-.loginContainer {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #f4f7f9; /* Nền xám xanh cực nhạt */
-  padding: 20px;
-  font-family: 'Inter', 'Segoe UI', sans-serif;
-  
-  /* 2 dòng này cực kỳ quan trọng để chứa background */
-  position: relative; 
-  overflow: hidden; 
-}
-
-/* Đảm bảo Card nổi lên trên cùng và thêm hiệu ứng kính (Glassmorphism) */
-.combinedCard {
-  display: flex;
-  width: 100%;
-  max-width: 1000px;
-  min-height: 600px;
-  background: rgba(255, 255, 255, 0.85); /* Làm nền form hơi trong suốt một chút */
-  backdrop-filter: blur(20px); /* Hiệu ứng kính mờ (nếu nền lướt qua) */
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  border-radius: 20px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
-  position: relative;
-  z-index: 10; /* Giữ card luôn ở trên các khối màu */
-}
-
-/* =========================================
-   CÁC KHỐI MÀU NỀN TRANG TRÍ (BLOBS) 
-   ========================================= */
 .shape1 {
   position: absolute;
-  top: -150px;
-  left: -150px;
-  width: 550px;
-  height: 550px;
-  background: #1b437c; /* Men lam */
+  top: -150px; left: -150px;
+  width: 550px; height: 550px;
+  background: #1b437c;
   border-radius: 50%;
   filter: blur(150px);
-  opacity: 0.4;
+  opacity: 0.35;
   z-index: 1;
   animation: float1 12s ease-in-out infinite;
 }
 
 .shape2 {
   position: absolute;
-  bottom: -200px;
-  right: -100px;
-  width: 650px;
-  height: 650px;
-  background: #d48b6c; /* Đất nung / Terracotta */
+  bottom: -200px; right: -100px;
+  width: 650px; height: 650px;
+  background: #d48b6c;
   border-radius: 50%;
   filter: blur(150px);
-  opacity: 0.35;
+  opacity: 0.3;
   z-index: 1;
   animation: float2 15s ease-in-out infinite alternate;
 }
 
 .shape3 {
   position: absolute;
-  top: 15%;
-  right: 15%;
-  width: 350px;
-  height: 350px;
-  background: #50a1fe; /* Xanh nhấn */
+  top: 15%; right: 15%;
+  width: 350px; height: 350px;
+  background: #50a1fe;
   border-radius: 50%;
   filter: blur(130px);
-  opacity: 0.25;
+  opacity: 0.2;
   z-index: 1;
   animation: float1 10s ease-in-out infinite alternate-reverse;
 }
 
-/* Hiệu ứng trôi nổi chậm rãi, tạo cảm giác nghệ thuật */
 @keyframes float1 {
-  0% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(30px, 40px) scale(1.05); }
-  100% { transform: translate(0, 0) scale(1); }
+  0%   { transform: translate(0,0) scale(1); }
+  50%  { transform: translate(30px,40px) scale(1.05); }
+  100% { transform: translate(0,0) scale(1); }
 }
 
 @keyframes float2 {
-  0% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(-50px, -30px) scale(1.1); }
-  100% { transform: translate(0, 0) scale(1); }
+  0%   { transform: translate(0,0) scale(1); }
+  50%  { transform: translate(-50px,-30px) scale(1.1); }
+  100% { transform: translate(0,0) scale(1); }
+}
+
+.combinedCard {
+  display: flex;
+  width: 100%;
+  max-width: 1000px;
+  min-height: 600px;
+  background: rgba(255,255,255,0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.5);
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+  overflow: hidden;
+  position: relative;
+  z-index: 10;
+}
+
+.cardImage {
+  flex: 1.2;
+  background: url('https://images.unsplash.com/photo-1610701596007-11502861dcfa?q=80&w=1000&auto=format&fit=crop') center/cover no-repeat;
+  position: relative;
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .cardImage { display: block; }
+}
+
+.imageOverlay {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 40px;
+  background: linear-gradient(to top, rgba(27,67,124,0.9) 0%, rgba(27,67,124,0) 100%);
+  color: #fff;
+}
+
+.imageOverlay h2 {
+  font-family: 'Arsenal', serif;
+  font-size: 34px;
+  font-weight: 700;
+  margin: 0 0 10px;
+  color: #fff;
+}
+
+.imageOverlay p {
+  font-size: 15px;
+  line-height: 1.6;
+  opacity: 0.9;
+  margin: 0;
+}
+
+.cardForm {
+  flex: 1;
+  padding: 46px 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: #fff;
+}
+
+.backButton {
+  color: #1b437c !important;
+  font-weight: 600 !important;
+  padding-left: 0 !important;
+  transition: transform 0.3s;
+}
+.backButton:hover { transform: translateX(-4px); }
+
+.formTitle {
+  color: #1b437c;
+  font-family: 'Arsenal', serif;
+  font-weight: 700;
+  font-size: 30px;
+  margin: 0 0 4px;
+}
+
+.formSubtitle {
+  color: #888;
+  font-size: 14px;
+  margin: 0 0 28px;
+}
+
+.inputLabel { font-weight: 600; color: #333; }
+
+.customInput {
+  border-radius: 8px;
+  border: 1.5px solid #e0e0e0 !important;
+  transition: all 0.25s !important;
+}
+
+.customInput:hover,
+.customInput:focus-within {
+  border-color: #1b437c !important;
+  box-shadow: 0 0 0 2px rgba(27,67,124,0.1) !important;
+}
+
+.formOptions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.rememberNote {
+  font-size: 12px;
+  color: #aaa;
+}
+
+.forgotPassword {
+  color: #1b437c !important;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.customButton {
+  background-color: #1b437c !important;
+  border-color: #1b437c !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  font-size: 15px !important;
+  height: 46px !important;
+  box-shadow: 0 4px 10px rgba(27,67,124,0.2) !important;
+  transition: all 0.3s !important;
+}
+
+.customButton:hover {
+  background-color: #13325c !important;
+  border-color: #13325c !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(27,67,124,0.3) !important;
+}
+
+.registerPrompt {
+  text-align: center;
+  margin-top: 18px;
+  font-size: 14px;
+}
+
+.registerLink {
+  font-weight: 700 !important;
+  color: #1b437c !important;
+}
+
+.divider {
+  margin: 20px 0 16px !important;
+}
+
+.dividerText {
+  font-size: 13px;
+  color: #aaa;
+}
+
+.socialGroup {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  width: 100%;
+}
+
+.socialCircle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  height: 44px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  gap: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+/* Nút Google */
+.ggCircle {
+  background-color: #ffffff;
+  border-color: #e0e0e0;
+}
+
+.socialTextGg {
+  color: #333333;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.ggCircle:hover {
+  background-color: #f8f9fa;
+  border-color: #cccccc;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+}
+
+/* Nút Facebook */
+.fbCircle {
+  background-color: #1877f2;
+  border-color: #1877f2;
+}
+
+.socialTextFb {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.fbCircle:hover {
+  background-color: #166fe5;
+  border-color: #166fe5;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(24, 119, 242, 0.35);
+}
+
+@media (max-width: 640px) {
+  .cardForm { 
+    padding: 36px 24px; 
+  }
+  
+  .socialGroup {
+    flex-direction: column;
+    gap: 12px;
+  }
 }

@@ -76,7 +76,6 @@ router.get("/fail", (req, res) => {
     message: "Xác thực qua mạng xã hội thất bại!",
   });
 });
-export default router;
 
 router.post("/logout", (req, res) => {
   res.clearCookie("accessToken", {
@@ -86,3 +85,7 @@ router.post("/logout", (req, res) => {
   });
   res.status(200).json({ success: true, message: "Đăng xuất thành công!" });
 });
+
+export default router;
+
+
