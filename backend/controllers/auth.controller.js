@@ -138,7 +138,7 @@ export const googleCallbackController = async (req, res, next) => {
       sameSite: "none",
       maxAge: maxAge,
     });
-    res.redirect(`${FRONTEND_URL}`);
+    res.redirect("https://ceramic-shop-rho.vercel.app/login-success");
   } catch (error) {
     console.error(error);
     res.redirect(`${FRONTEND_URL}/login?error=oauth_failed`);
@@ -156,7 +156,7 @@ export const facebookCallbackController = async (req, res, next) => {
       sameSite: "none",
       maxAge: maxAge,
     });
-    res.redirect(`${FRONTEND_URL}`);
+    res.redirect("https://ceramic-shop-rho.vercel.app/login-success");
   } catch (error) {
     console.error(error);
     res.redirect(`${FRONTEND_URL}/login?error=oauth_failed`);
