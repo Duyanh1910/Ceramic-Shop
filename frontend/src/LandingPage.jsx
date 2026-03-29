@@ -215,9 +215,9 @@ function LandingPage() {
                             <div className={styles.iconItem} onClick={() => navigate('/login')}>
                                 <UserOutlined />
                             </div>
-                            <div className={styles.iconItem} onClick={() => navigate('/cart')}>
+                            <div className={styles.iconItem} onClick={() => navigate('/home')}>
                                 <ShoppingCartOutlined />
-                                {cartCount > 0 && <span className={styles.cartBadge}>{cartCount}</span>}
+                                {cartCount > 0 && <span><b> Mua ngay</b></span>}
                             </div>
                         </div>
                     </div>

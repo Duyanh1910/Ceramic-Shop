@@ -26,6 +26,7 @@ function Cart() {
   const [isFetchingCart, setIsFetchingCart] = useState(true);
 
   const [cart, setCart] = useState(() => {
+    if (localStorage.getItem('session_active')) return [];
     const savedCart = localStorage.getItem('ceramic_cart');
     return savedCart ? JSON.parse(savedCart) : [];
   });

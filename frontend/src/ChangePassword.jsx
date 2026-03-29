@@ -1,18 +1,46 @@
-import { useState } from 'react';
-import { Form, Input, Button, message, Steps } from 'antd';
+import { useState, useEffect } from 'react';
+import { Form, Input, Button, message, Steps, Spin } from 'antd';
 import { LockOutlined, CheckCircleFilled, ArrowLeftOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
 import styles from './ChangePassword.module.css';
+import SetPasswordModal from './SetPasswordModal.jsx';
 
 const API_BASE = 'https://ceramic-shop-u8ak.onrender.com/api/v1';
 
-function ChangePassword() {
+export default function ChangePassword() {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [checkingUser, setCheckingUser] = useState(true);
+  const [isOAuthUser, setIsOAuthUser] = useState(false);
+  const [oauthProvider, setOauthProvider] = useState('google');
+  const [showSetPassword, setShowSetPassword] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    checkUserType();
+  }, []);
+
+  const checkUserType = async () => {
+    setCheckingUser(true);
+    try {
+      const res = await axios.get(`${API_BASE}/auth/me`, {
+        withCredentials: true 
+      });
+      const hasPassword = res.data.user?.hasPassword ?? true;
+      if (!hasPassword) {
+        setIsOAuthUser(true);
+        setShowSetPassword(true);
+      }
+    } catch {
+      message.error("Vui lòng đăng nhập để đổi mật khẩu!");
+      navigate('/login');
+    } finally {
+      setCheckingUser(false);
+    }
+  };
 
   const handleChangePassword = async (values) => {
     setLoading(true);
@@ -20,16 +48,33 @@ function ChangePassword() {
       await axios.post(
         `${API_BASE}/auth/change-password`,
         { oldPassword: values.oldPassword, newPassword: values.newPassword },
-        { withCredentials:true}
+        { withCredentials: true }
       );
       setSuccess(true);
     } catch (err) {
-      const msg = err.response?.data?.message || 'Có lỗi xảy ra!';
-      message.error(msg);
+      message.error(err.response?.data?.message || 'Có lỗi xảy ra!');
     } finally {
       setLoading(false);
     }
   };
+
+  const handleSetPasswordClose = (didSet) => {
+    setShowSetPassword(false);
+    if (didSet) setSuccess(true);
+  };
+
+  if (checkingUser) {
+    return (
+      <div className={styles.pageWrapper}>
+        <header className={styles.topHeader}>
+          <div className={styles.logo} onClick={() => navigate('/')}>CERAMIC-SHOP</div>
+        </header>
+        <div className={styles.centerWrapper}>
+          <Spin size="large" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.pageWrapper}>
@@ -37,19 +82,14 @@ function ChangePassword() {
 
       <header className={styles.topHeader}>
         <div className={styles.logo} onClick={() => navigate('/')}>CERAMIC-SHOP</div>
-        <Button
-          type="link"
-          icon={<ArrowLeftOutlined />}
-          onClick={() => navigate('/profile')}
-          className={styles.btnBack}
-        >
+        <Button type="link" icon={<ArrowLeftOutlined />}
+          onClick={() => navigate('/profile')} className={styles.btnBack}>
           Quay lại hồ sơ
         </Button>
       </header>
 
       <div className={styles.centerWrapper}>
         <div className={styles.card}>
-
           <div className={`${styles.corner} ${styles.tl}`} />
           <div className={`${styles.corner} ${styles.tr}`} />
           <div className={`${styles.corner} ${styles.bl}`} />
@@ -70,25 +110,20 @@ function ChangePassword() {
                 size="small"
                 current={0}
                 items={[
-                  { title: 'Mật khẩu mới' },
                   { title: 'Xác minh' },
+                  { title: 'Mật khẩu mới' },
                   { title: 'Hoàn tất' },
                 ]}
               />
 
-              <Form
-                form={form}
-                layout="vertical"
-                onFinish={handleChangePassword}
-                className={styles.form}
-              >
+              <Form form={form} layout="vertical" onFinish={handleChangePassword} className={styles.form}>
                 <Form.Item
                   label="Mật khẩu hiện tại"
                   name="oldPassword"
                   rules={[{ required: true, message: 'Vui lòng nhập mật khẩu hiện tại!' }]}
                 >
                   <Input.Password
-                    prefix={<LockOutlined className={styles.inputIcon} />}
+                    prefix={<LockOutlined style={{ color: '#bbb' }} />}
                     className={styles.customInput}
                     placeholder="Nhập mật khẩu hiện tại"
                   />
@@ -112,7 +147,7 @@ function ChangePassword() {
                   ]}
                 >
                   <Input.Password
-                    prefix={<LockOutlined className={styles.inputIcon} />}
+                    prefix={<LockOutlined style={{ color: '#bbb' }} />}
                     className={styles.customInput}
                     placeholder="Tối thiểu 6 ký tự"
                   />
@@ -134,11 +169,12 @@ function ChangePassword() {
                   ]}
                 >
                   <Input.Password
-                    prefix={<LockOutlined className={styles.inputIcon} />}
+                    prefix={<LockOutlined style={{ color: '#bbb' }} />}
                     className={styles.customInput}
                     placeholder="Nhập lại mật khẩu mới"
                   />
                 </Form.Item>
+
                 <div className={styles.hintBox}>
                   <span className={styles.hintTitle}>Mật khẩu mạnh cần:</span>
                   <ul className={styles.hintList}>
@@ -148,13 +184,7 @@ function ChangePassword() {
                   </ul>
                 </div>
 
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  block
-                  loading={loading}
-                  className={styles.btnSubmit}
-                >
+                <Button type="primary" htmlType="submit" block loading={loading} className={styles.btnSubmit}>
                   CẬP NHẬT MẬT KHẨU
                 </Button>
               </Form>
@@ -162,9 +192,13 @@ function ChangePassword() {
           ) : (
             <div className={styles.successState}>
               <CheckCircleFilled className={styles.successIcon} />
-              <h2 className={styles.successTitle}>Đổi mật khẩu thành công!</h2>
+              <h2 className={styles.successTitle}>
+                {isOAuthUser ? 'Tạo mật khẩu thành công!' : 'Đổi mật khẩu thành công!'}
+              </h2>
               <p className={styles.successSub}>
-                Mật khẩu của bạn đã được cập nhật. Vui lòng sử dụng mật khẩu mới khi đăng nhập lần sau.
+                {isOAuthUser
+                  ? 'Bạn đã tạo mật khẩu cho tài khoản. Từ nay có thể đăng nhập bằng email và mật khẩu này.'
+                  : 'Mật khẩu đã được cập nhật. Vui lòng sử dụng mật khẩu mới khi đăng nhập lần sau.'}
               </p>
               <div className={styles.successActions}>
                 <Button className={styles.btnGoProfile} onClick={() => navigate('/profile')}>
@@ -176,11 +210,14 @@ function ChangePassword() {
               </div>
             </div>
           )}
-
         </div>
       </div>
+
+      <SetPasswordModal
+        open={showSetPassword}
+        onClose={handleSetPasswordClose}
+        provider={oauthProvider}
+      />
     </div>
   );
 }
-
-export default ChangePassword;

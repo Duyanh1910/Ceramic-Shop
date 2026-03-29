@@ -1,0 +1,195 @@
+@import url('https://fonts.googleapis.com/css2?family=Arsenal:wght@400;600;700&display=swap');
+
+:global(body) {
+  margin: 0 !important;
+  padding: 0 !important;
+  font-family: 'Arsenal', sans-serif !important;
+}
+
+.adminWrapper {
+  min-height: 100vh;
+}
+
+.sider {
+  background: #0f2744 !important;
+  box-shadow: 4px 0 12px rgba(0,0,0,0.15);
+  display: flex;
+  flex-direction: column;
+}
+
+.siderLogo {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  padding: 0 20px;
+  transition: background 0.2s;
+}
+.siderLogo:hover { background: rgba(255,255,255,0.05); }
+
+.logoIcon {
+  font-size: 22px;
+  color: #c48c46;
+}
+
+.logoText {
+  font-family: 'Arsenal', serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 2px;
+  white-space: nowrap;
+}
+
+.roleTag {
+  padding: 10px 16px 6px;
+  display: flex;
+  justify-content: center;
+}
+
+.roleAdmin, .roleStaff {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 12px;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+}
+
+.roleAdmin {
+  background: rgba(196,140,70,0.2);
+  color: #c48c46;
+  border: 1px solid rgba(196,140,70,0.4);
+}
+
+.roleStaff {
+  background: rgba(80,160,255,0.15);
+  color: #6db8ff;
+  border: 1px solid rgba(80,160,255,0.3);
+}
+
+.siderMenu {
+  background: transparent !important;
+  border: none !important;
+  padding: 8px 0;
+  flex: 1;
+}
+
+:global(.ant-menu-dark .ant-menu-item-selected) {
+  background: linear-gradient(90deg, rgba(196,140,70,0.25), rgba(196,140,70,0.1)) !important;
+  border-right: 3px solid #c48c46 !important;
+}
+
+:global(.ant-menu-dark .ant-menu-item:hover) {
+  background: rgba(255,255,255,0.06) !important;
+}
+
+:global(.ant-menu-dark .ant-menu-item) {
+  border-radius: 0 !important;
+  margin: 2px 0 !important;
+  font-family: 'Arsenal', sans-serif !important;
+  font-size: 14px !important;
+}
+
+.siderFooter {
+  border-top: 1px solid rgba(255,255,255,0.08);
+  padding: 14px 16px;
+}
+
+.siderUser {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatarSmall {
+  background: #c48c46 !important;
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.siderUsername {
+  font-size: 13px;
+  color: rgba(255,255,255,0.7);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.header {
+  background: #fff !important;
+  padding: 0 24px !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  height: 64px;
+  position: sticky;
+  top: 0;
+  z-index: 99;
+}
+
+.collapseBtn {
+  font-size: 18px !important;
+  color: #555 !important;
+  width: 40px;
+  height: 40px;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.iconBtn {
+  font-size: 18px !important;
+  color: #555 !important;
+  width: 40px;
+  height: 40px;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+.userInfo:hover { background: #f4f7fb; }
+
+.avatar {
+  background: #1b437c !important;
+  font-weight: 700;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.userMeta {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+}
+
+.userName {
+  font-size: 14px;
+  font-weight: 700;
+  color: #222;
+}
+
+.userRole {
+  font-size: 11px;
+  color: #888;
+}
+
+.content {
+  background: #f0f4f8;
+  padding: 24px;
+  min-height: calc(100vh - 64px);
+  overflow: auto;
+}

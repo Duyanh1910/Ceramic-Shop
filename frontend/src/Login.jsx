@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import styles from './Login.module.css';
 import { UserOutlined, LockOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { Helmet } from 'react-helmet-async';
+import { saveSession } from './useAuth.js';
 
 const { Text, Link } = Typography;
 
@@ -27,11 +28,18 @@ function Login() {
       
       const user = response.data.user || response.data.result || response.data;
       
-      localStorage.setItem('username', user.username || values.username);
-      if (user.role) localStorage.setItem('role', user.role);
+      const currentUsername = user.username || values.username;
+      const currentRole = user.role;
+
+      saveSession(currentUsername, currentRole, rememberMe);
 
       message.success('Đăng nhập thành công!');
-      navigate('/');
+
+      if (currentRole === 'Admin' || currentRole === 'Staff') {
+        navigate('/admin');
+      } else {
+        navigate('/home');
+      }      
     } catch (error) {
       const errorMsg = error.response?.data?.message || 'Có lỗi xảy ra kết nối đến máy chủ!';
       message.error(errorMsg);

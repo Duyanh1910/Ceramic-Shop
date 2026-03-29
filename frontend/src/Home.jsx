@@ -5,11 +5,13 @@ import { LogoutOutlined, SettingOutlined, SearchOutlined, ShoppingCartOutlined, 
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import styles from './Home.module.css';
-
+import { useAutoLogout, clearSession } from './useAuth.js';
 const { Header, Sider, Content } = Layout;
 const { Option } = Select;
 
 function Home() {
+  useAutoLogout();
+
   const navigate = useNavigate();
   const location = useLocation();
   const [categories, setCategories] = useState([]);
@@ -28,9 +30,10 @@ function Home() {
   const [userInfo, setUserInfo] = useState({ username: '', avatar: '' });
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const [isFetchingCart, setIsFetchingCart] = useState(!!localStorage.getItem('token'));
+  const [isFetchingCart, setIsFetchingCart] = useState(!!localStorage.getItem('session_active'));
   
   const [cart, setCart] = useState(() => {
+    if (localStorage.getItem('customer_session_active') === 'true') return [];
     const savedCart = localStorage.getItem('ceramic_cart');
     return savedCart ? JSON.parse(savedCart) : [];
   });
@@ -40,6 +43,8 @@ function Home() {
   const [variants, setVariants] = useState([]);
   const [selectedVariantId, setSelectedVariantId] = useState(null);
   const [pendingAction, setPendingAction] = useState('cart');
+
+  const [isAuthChecking, setIsAuthChecking] = useState(localStorage.getItem('customer_session_active') === 'true');
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -74,9 +79,8 @@ function Home() {
   };
 
   const handleLogoutLocal = () => {
-    localStorage.removeItem('username');
+    clearSession();
     localStorage.removeItem('name');
-    localStorage.removeItem('role');
     localStorage.removeItem('avatar');
     setIsLoggedIn(false);
     setUserInfo({ username: '', avatar: '' });
@@ -86,34 +90,42 @@ function Home() {
 
   useEffect(() => {
     const checkAuth = async () => {
-      try {
-        const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/me', {
-          withCredentials: true 
-        });
+    if (localStorage.getItem('customer_session_active') !== 'true') {
+      setIsLoggedIn(false);
+      setIsAuthChecking(false);
+      setIsFetchingCart(false);
+      return;
+    }
 
+    try {
+      const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/me', { 
+        withCredentials: true 
+      });
+      const userData = res.data.user || res.data.result;
+      
+      if (userData.role === 'Admin' || userData.role === 'Staff') {
+        setIsLoggedIn(false);
+        const savedCart = localStorage.getItem('ceramic_cart');
+        setCart(savedCart ? JSON.parse(savedCart) : []);
+      } else {
         setIsLoggedIn(true);
-        const userData = res.data.user || res.data.result;
         const profileData = userData?.profile || userData;
-        
-        const fetchedAvatar = profileData?.Avatar || 'https://res.cloudinary.com/dcmwz0uis/image/upload/v1773107213/default_avatar_gojcul.png';
-        const fetchedName = profileData?.TenKhachHang || profileData?.TenNhanVien || userData?.username || 'Thành viên';
-
-        setUserInfo({ username: fetchedName, avatar: fetchedAvatar });
-        
-        fetchCartFromDB(); 
-
-      } catch (error) {
-        console.error(error);
-        handleLogoutLocal();
-      } finally {
-        setIsFetchingCart(false);
+        setUserInfo({
+          username: profileData?.TenKhachHang || userData?.username || 'Thành viên',
+          avatar: profileData?.Avatar || null
+        });
+        await fetchCartFromDB();
       }
-    };
+    } catch (error) {
+      handleLogoutLocal();
+    } finally {
+      setIsAuthChecking(false);
+    }
+  };
+  checkAuth();
+}, []);
 
-    checkAuth();
-  }, [navigate]);
-
-const handleLogout = async () => {
+  const handleLogout = async () => {
     try {
       await axios.post('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/logout', {}, {
         withCredentials: true 
@@ -707,7 +719,11 @@ const handleLogout = async () => {
 
         <div className={styles.headerActions}>
           <Popover content={miniCartContent} placement="bottomRight" trigger="hover" overlayClassName={styles.cartPopover}>
-            <Badge count={totalCartItems} style={{ backgroundColor: '#e74c3c' }} offset={[-5, 5]}>
+            <Badge 
+              count={cart.reduce((sum, item) => sum + item.quantity, 0)} 
+              style={{ backgroundColor: '#e74c3c' }} 
+              offset={[-5, 5]}
+            >
               <ShoppingCartOutlined className={styles.cartIcon} onClick={() => navigate('/cart')}/>
             </Badge>
           </Popover>

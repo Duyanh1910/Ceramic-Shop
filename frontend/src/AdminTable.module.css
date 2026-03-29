@@ -1,0 +1,186 @@
+@import url('https://fonts.googleapis.com/css2?family=Arsenal:wght@400;600;700&display=swap');
+
+.wrapper { padding: 0; }
+
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.pageTitle {
+  font-family: 'Arsenal', serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: #1b437c;
+  margin: 0 0 4px;
+}
+
+.pageSub {
+  font-size: 13px;
+  color: #888;
+  margin: 0;
+}
+
+.toolbar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 240px;
+  max-width: 400px;
+  border-radius: 8px !important;
+}
+
+.btnSearch {
+  border-radius: 8px !important;
+  border-color: #1b437c !important;
+  color: #1b437c !important;
+}
+.btnSearch:hover {
+  background: #1b437c !important;
+  color: #fff !important;
+}
+
+.btnAdd {
+  background: #1b437c !important;
+  border-color: #1b437c !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  height: 38px !important;
+}
+.btnAdd:hover {
+  background: #13325c !important;
+  border-color: #13325c !important;
+}
+
+.tableCard {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  border: 1px solid #f0f0f0;
+  overflow: hidden;
+}
+
+.table :global(.ant-table-thead > tr > th) {
+  background: #f7f9fc !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  color: #555 !important;
+  border-bottom: 1px solid #eee !important;
+}
+
+.table :global(.ant-table-tbody > tr:hover > td) {
+  background: #fafcff !important;
+}
+
+.table :global(.ant-pagination) {
+  padding: 16px 20px !important;
+}
+
+.userCell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.userAvatar {
+  background: #1b437c !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+  flex-shrink: 0;
+}
+
+.userName {
+  font-size: 14px;
+  font-weight: 600;
+  color: #222;
+}
+
+.userSub {
+  font-size: 12px;
+  color: #999;
+}
+
+.email {
+  font-size: 13px;
+  color: #555;
+}
+
+.address {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 13px;
+  color: #666;
+  max-width: 200px;
+}
+
+.productName {
+  font-size: 14px;
+  font-weight: 600;
+  color: #222;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.brand {
+  font-size: 12px;
+  color: #999;
+  margin-top: 2px;
+}
+
+.price {
+  color: #d0021b;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.editBtn { color: #1b437c !important; }
+
+.modalTitle {
+  font-family: 'Arsenal', serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1b437c;
+}
+
+.modalForm :global(.ant-form-item-label > label) {
+  font-weight: 600;
+  font-size: 13px;
+  color: #444;
+}
+
+.variantSection {
+  background: #f7f9fc;
+  border: 1px solid #e8eef8;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.variantTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1b437c;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 8px;
+  border-top: 1px solid #f0f0f0;
+  margin-top: 8px;
+}
