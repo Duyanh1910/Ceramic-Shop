@@ -36,6 +36,7 @@ const PublicRoute = ({ children }) => {
 };
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
+  const isCustomer = localStorage.getItem('customer_session_active') === 'true';
   const isAdmin = localStorage.getItem('admin_session_active') === 'true';
 
   let currentRole = null;
@@ -64,7 +65,6 @@ const ConditionalChatBot = () => {
   return isAllowed ? <ChatBot /> : null;
 };
 
-// RENDER APP CHÍNH
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <HelmetProvider>
