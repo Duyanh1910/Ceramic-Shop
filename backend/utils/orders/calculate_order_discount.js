@@ -48,8 +48,8 @@ export const calculateOrderDiscount = async (
   }
   const promotions = wallets.map((w) => w.KhuyenMai);
 
-  const orderVoucher = promotions.filter((p) => p.LoaiVoucher === 1);
-  const shipVoucher = promotions.filter((p) => p.LoaiVoucher === 2);
+  const orderVouchers = promotions.filter((p) => p.LoaiVoucher === 1);
+  const shipVouchers = promotions.filter((p) => p.LoaiVoucher === 2);
 
   if (orderVouchers.length > 1 || shipVouchers.length > 1) {
     throw new ErrorHandler(
