@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { Dropdown, Avatar, Space, Layout, Menu, Input, Select, Row, Col, Pagination, Spin, Badge, message, AutoComplete, Popover, Button, Radio } from 'antd';
-import { LogoutOutlined, SettingOutlined, SearchOutlined, ShoppingCartOutlined, DeleteOutlined, ReloadOutlined, AppstoreOutlined, EyeOutlined } from '@ant-design/icons';
+import { LogoutOutlined, SettingOutlined, SearchOutlined, ShoppingCartOutlined, DeleteOutlined, ReloadOutlined, AppstoreOutlined, EyeOutlined, UserOutlined } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import styles from './Home.module.css';
 import { useAutoLogout, clearSession } from './useAuth.js';
+
 const { Header, Sider, Content } = Layout;
 const { Option } = Select;
 
@@ -28,9 +29,10 @@ function Home() {
   
   const inputRef = useRef(null);
   const [userInfo, setUserInfo] = useState({ username: '', avatar: '' });
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const [isFetchingCart, setIsFetchingCart] = useState(!!localStorage.getItem('session_active'));
+  const [isLoggedIn, setIsLoggedIn] = useState(localStorage.getItem('customer_session_active') === 'true');
+  const [isAuthChecking, setIsAuthChecking] = useState(localStorage.getItem('customer_session_active') === 'true');
+  const [isFetchingCart, setIsFetchingCart] = useState(localStorage.getItem('customer_session_active') === 'true');
   
   const [cart, setCart] = useState(() => {
     if (localStorage.getItem('customer_session_active') === 'true') return [];
@@ -44,13 +46,11 @@ function Home() {
   const [selectedVariantId, setSelectedVariantId] = useState(null);
   const [pendingAction, setPendingAction] = useState('cart');
 
-  const [isAuthChecking, setIsAuthChecking] = useState(localStorage.getItem('customer_session_active') === 'true');
-
   useEffect(() => {
-    if (!isLoggedIn) {
+    if (!isLoggedIn && !isAuthChecking) {
       localStorage.setItem('ceramic_cart', JSON.stringify(cart));
     }
-  }, [cart, isLoggedIn]);
+  }, [cart, isLoggedIn, isAuthChecking]);
 
   const fetchCartFromDB = async () => {
     try {
@@ -79,9 +79,8 @@ function Home() {
   };
 
   const handleLogoutLocal = () => {
-    clearSession();
-    localStorage.removeItem('name');
-    localStorage.removeItem('avatar');
+    clearSession(false); 
+    localStorage.removeItem('customer_avatar');
     setIsLoggedIn(false);
     setUserInfo({ username: '', avatar: '' });
     const savedCart = localStorage.getItem('ceramic_cart');
@@ -90,40 +89,47 @@ function Home() {
 
   useEffect(() => {
     const checkAuth = async () => {
-    if (localStorage.getItem('customer_session_active') !== 'true') {
-      setIsLoggedIn(false);
-      setIsAuthChecking(false);
-      setIsFetchingCart(false);
-      return;
-    }
-
-    try {
-      const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/me', { 
-        withCredentials: true 
-      });
-      const userData = res.data.user || res.data.result;
-      
-      if (userData.role === 'Admin' || userData.role === 'Staff') {
+      if (localStorage.getItem('customer_session_active') !== 'true') {
         setIsLoggedIn(false);
-        const savedCart = localStorage.getItem('ceramic_cart');
-        setCart(savedCart ? JSON.parse(savedCart) : []);
-      } else {
-        setIsLoggedIn(true);
-        const profileData = userData?.profile || userData;
-        setUserInfo({
-          username: profileData?.TenKhachHang || userData?.username,
-          avatar: profileData?.Avatar || null
-        });
-        await fetchCartFromDB();
+        setIsAuthChecking(false);
+        setIsFetchingCart(false);
+        return;
       }
-    } catch (error) {
-      handleLogoutLocal();
-    } finally {
-      setIsAuthChecking(false);
-    }
-  };
-  checkAuth();
-}, []);
+
+      try {
+        const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/me', { 
+          withCredentials: true 
+        });
+        const userData = res.data.user || res.data.result;
+        
+        if (userData.role === 'Admin' || userData.role === 'Staff') {
+          setIsLoggedIn(false);
+          const savedCart = localStorage.getItem('ceramic_cart');
+          setCart(savedCart ? JSON.parse(savedCart) : []);
+        } else {
+          setIsLoggedIn(true);
+          const profileData = userData?.profile || userData;
+          const displayUsername = profileData?.TenKhachHang || userData?.username || 'Thành viên';
+          
+          let safeAvatar = profileData?.Avatar;
+          if (!safeAvatar || safeAvatar.includes('default_avatar_gojcul')) {
+            safeAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayUsername)}&background=random&color=fff`;
+          }
+
+          setUserInfo({
+            username: displayUsername,
+            avatar: safeAvatar
+          });
+          await fetchCartFromDB();
+        }
+      } catch (error) {
+        handleLogoutLocal();
+      } finally {
+        setIsAuthChecking(false);
+      }
+    };
+    checkAuth();
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -135,7 +141,7 @@ function Home() {
     }
     
     handleLogoutLocal();
-    message.success("Đã đăng xuất");
+    message.success("Đã đăng xuất tài khoản mua hàng");
   };
 
   useEffect(() => {
@@ -331,7 +337,6 @@ function Home() {
   };
 
   const totalCartPrice = isFetchingCart ? 0 : cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const totalCartItems = isFetchingCart ? 0 : cart.reduce((sum, item) => sum + item.quantity, 0);
 
   const miniCartContent = (
     <div className={styles.miniCartContainer}>
@@ -728,10 +733,14 @@ function Home() {
             </Badge>
           </Popover>
           
-          {isLoggedIn ? (
+          {isAuthChecking ? (
+             <Space size="middle" style={{ opacity: 0.5 }}>
+               <Avatar icon={<UserOutlined />} />
+             </Space>
+          ) : isLoggedIn ? (
             <Dropdown menu={{ items: userMenu }} placement="bottomRight" arrow>
-              <Space className={styles.userProfile}>
-                <Avatar src={userInfo.avatar || null} />
+              <Space className={styles.userProfile} style={{ cursor: 'pointer' }}>
+                <Avatar src={userInfo.avatar || null} icon={!userInfo.avatar && <UserOutlined />} />
                 <div className={styles.userInfoBox}>
                   <span className={styles.userName}>{userInfo.username}</span>
                 </div>
