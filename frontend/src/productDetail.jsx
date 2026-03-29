@@ -4,7 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Layout, Input, Dropdown, Avatar, Space, Badge, Popover, Button, Spin, Row, Col, message, AutoComplete } from 'antd';
 import { SearchOutlined, ShoppingCartOutlined, SettingOutlined, LogoutOutlined, ArrowLeftOutlined, DeleteOutlined } from '@ant-design/icons';
 import { Helmet } from 'react-helmet-async';
-import styles from './ProductDetail.module.css';
+import styles from './productDetail.module.css';
 import ChatBot from './ChatBot';
 
 const { Header, Content } = Layout;
