@@ -278,7 +278,7 @@ function Cart() {
             </Button>
           )}
           
-          <Button type="link" icon={<ArrowLeftOutlined />} onClick={() => navigate('/')} className={styles.btnBack}>
+          <Button type="link" icon={<ArrowLeftOutlined />} onClick={() => navigate('/home')} className={styles.btnBack}>
             Tiếp tục mua sắm
           </Button>
         </div>
