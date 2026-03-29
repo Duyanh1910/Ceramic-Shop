@@ -4,7 +4,10 @@ import { Button, Input, Form, message, Typography } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import styles from './Register.module.css';
 import { Helmet } from 'react-helmet-async';
-import { UserOutlined, MailOutlined, LockOutlined, ArrowLeftOutlined, SafetyOutlined } from '@ant-design/icons';
+import {
+  UserOutlined, MailOutlined, LockOutlined,
+  ArrowLeftOutlined, SafetyOutlined,
+} from '@ant-design/icons';
 
 const { Text, Link } = Typography;
 const API_BASE = 'https://ceramic-shop-u8ak.onrender.com/api/v1';
@@ -38,13 +41,17 @@ function Register() {
   const handleSendOTP = async (values) => {
     setLoading(true);
     try {
-      await axios.post(`${API_BASE}/auth/sendVerifyEmail`, { email: values.email });
+      await axios.post(`${API_BASE}/auth/sendVerifyEmail`, {
+        username: values.username,
+        email: values.email,
+      });
+
       setFormData(values);
       setStep(2);
       startCooldown();
       message.success('OTP đã được gửi đến email của bạn!');
     } catch (err) {
-      message.error(err.response?.data?.message || 'Không thể gửi OTP!');
+      message.error(err.response?.data?.message || 'Tên đăng nhập hoặc email đã được sử dụng!');
     } finally {
       setLoading(false);
     }
@@ -96,7 +103,6 @@ function Register() {
         username: formData.username,
         email: formData.email,
         password: formData.password,
-        address: formData.address,
       });
       setStep(3);
     } catch (err) {
@@ -161,34 +167,45 @@ function Register() {
             <div className={styles.stepContent}>
               <h2 className={styles.formTitle}>ĐĂNG KÝ</h2>
               <Form form={form} layout="vertical" onFinish={handleSendOTP}>
-                <Form.Item label={<span style={{ fontWeight: 500 }}>Tên đăng nhập</span>} name="username"
+                <Form.Item
+                  label={<span style={{ fontWeight: 500 }}>Tên đăng nhập</span>}
+                  name="username"
                   rules={[{ required: true, message: 'Vui lòng nhập tên đăng nhập!' }]}
-                  style={{ marginBottom: 14 }}>
+                  style={{ marginBottom: 14 }}
+                >
                   <Input prefix={<UserOutlined style={{ color: '#bfbfbf' }} />}
                     className={styles.customInput} placeholder="Nhập tên đăng nhập" />
                 </Form.Item>
 
-                <Form.Item label={<span style={{ fontWeight: 500 }}>Email</span>} name="email"
+                <Form.Item
+                  label={<span style={{ fontWeight: 500 }}>Email</span>}
+                  name="email"
                   rules={[
                     { required: true, message: 'Vui lòng nhập email!' },
                     { type: 'email', message: 'Email không đúng định dạng!' },
                   ]}
-                  style={{ marginBottom: 14 }}>
+                  style={{ marginBottom: 14 }}
+                >
                   <Input prefix={<MailOutlined style={{ color: '#bfbfbf' }} />}
                     className={styles.customInput} placeholder="Nhập địa chỉ email" />
                 </Form.Item>
 
-                <Form.Item label={<span style={{ fontWeight: 500 }}>Mật khẩu</span>} name="password"
+                <Form.Item
+                  label={<span style={{ fontWeight: 500 }}>Mật khẩu</span>}
+                  name="password"
                   rules={[
                     { required: true, message: 'Vui lòng nhập mật khẩu!' },
                     { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự!' },
                   ]}
-                  style={{ marginBottom: 14 }}>
+                  style={{ marginBottom: 14 }}
+                >
                   <Input.Password prefix={<LockOutlined style={{ color: '#bfbfbf' }} />}
                     className={styles.customInput} placeholder="Tối thiểu 6 ký tự" />
                 </Form.Item>
 
-                <Form.Item label={<span style={{ fontWeight: 500 }}>Xác nhận mật khẩu</span>} name="confirmPassword"
+                <Form.Item
+                  label={<span style={{ fontWeight: 500 }}>Xác nhận mật khẩu</span>}
+                  name="confirmPassword"
                   dependencies={['password']}
                   rules={[
                     { required: true, message: 'Vui lòng xác nhận mật khẩu!' },
@@ -199,7 +216,8 @@ function Register() {
                       },
                     }),
                   ]}
-                  style={{ marginBottom: 14 }}>
+                  style={{ marginBottom: 14 }}
+                >
                   <Input.Password prefix={<LockOutlined style={{ color: '#bfbfbf' }} />}
                     className={styles.customInput} placeholder="Nhập lại mật khẩu" />
                 </Form.Item>
@@ -211,7 +229,8 @@ function Register() {
                   </Link>
                 </div>
 
-                <Button className={styles.customButton} type="primary" htmlType="submit" block loading={loading}>
+                <Button className={styles.customButton} type="primary" htmlType="submit"
+                  block loading={loading}>
                   Tiếp tục
                 </Button>
               </Form>
@@ -252,7 +271,8 @@ function Register() {
 
               <div className={styles.resendRow}>
                 <span className={styles.resendText}>Không nhận được mã? </span>
-                <button className={`${styles.resendBtn} ${cooldown > 0 ? styles.resendDisabled : ''}`}
+                <button
+                  className={`${styles.resendBtn} ${cooldown > 0 ? styles.resendDisabled : ''}`}
                   onClick={handleResendOTP} disabled={cooldown > 0 || loading}>
                   {cooldown > 0 ? `Gửi lại (${cooldown}s)` : 'Gửi lại OTP'}
                 </button>
@@ -278,10 +298,12 @@ function Register() {
                 Tài khoản <strong>{formData.username}</strong> đã được tạo.<br />
                 Hãy đăng nhập để tiếp tục mua sắm.
               </p>
-              <Button type="primary" block className={styles.customButton} onClick={() => navigate('/login')}>
+              <Button type="primary" block className={styles.customButton}
+                onClick={() => navigate('/login')}>
                 ĐI ĐẾN ĐĂNG NHẬP
               </Button>
-              <button className={styles.backStep} style={{ marginTop: 14 }} onClick={() => navigate('/')}>
+              <button className={styles.backStep} style={{ marginTop: 14 }}
+                onClick={() => navigate('/')}>
                 Về trang chủ
               </button>
             </div>

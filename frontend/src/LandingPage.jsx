@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
-import { AutoComplete, Input } from 'antd'; // Đã thêm AutoComplete và Input từ antd
+import { AutoComplete, Input, Spin } from 'antd';
 import { 
     ShoppingCartOutlined, 
     SearchOutlined, 
@@ -16,6 +16,7 @@ import {
     CustomerServiceOutlined
 } from '@ant-design/icons';
 import styles from './LandingPage.module.css';
+import { saveSession } from './useAuth.js';
 
 function LandingPage() {
     const navigate = useNavigate();
@@ -24,10 +25,49 @@ function LandingPage() {
     const [cartCount, setCartCount] = useState(0);
     const [isSticky, setIsSticky] = useState(false);
     
-    // THÊM STATE CHO TÌM KIẾM
     const [searchKw, setSearchKw] = useState('');
     const [searchOptions, setSearchOptions] = useState([]);
     const inputRef = useRef(null);
+
+    const [isChecking, setIsChecking] = useState(true);
+
+    useEffect(() => {
+        const checkOAuth = async () => {
+            const isCustomer = localStorage.getItem('customer_session_active') === 'true';
+            const isAdmin = localStorage.getItem('admin_session_active') === 'true';
+            
+            if (isCustomer || isAdmin) {
+                setIsChecking(false);
+                return;
+            }
+
+            try {
+                const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/me', { 
+                    withCredentials: true 
+                });
+                const userData = res.data.user || res.data.result;
+                
+                if (userData) {
+                    const role = userData.role || 'Customer';
+                    const profileData = userData.profile || userData;
+                    const username = profileData.TenKhachHang || userData.username || 'Thành viên';
+                    
+                    saveSession(username, role, true);
+                    
+                    if (role === 'Admin' || role === 'Staff') {
+                        navigate('/admin');
+                    } else {
+                        navigate('/home');
+                    }
+                    return;
+                }
+            } catch (err) {
+            }
+            setIsChecking(false);
+        };
+        
+        checkOAuth();
+    }, [navigate]);
 
     useEffect(() => {
         const savedCart = localStorage.getItem('ceramic_cart');
@@ -45,6 +85,7 @@ function LandingPage() {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    // Load dữ liệu sản phẩm
     useEffect(() => {
         fetchProducts();
     }, []);
@@ -75,7 +116,6 @@ function LandingPage() {
 
     const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 
-    // XỬ LÝ GỌI GỢI Ý TÌM KIẾM (GIỐNG TRANG HOME)
     const handleSearchInput = async (value) => {
         setSearchKw(value);
         if (!value) { setSearchOptions([]); return; }
@@ -108,12 +148,9 @@ function LandingPage() {
         }
     };
 
-    // THỰC THI CHUYỂN TRANG KHI BẤM TÌM KIẾM
     const executeSearch = (val) => {
         const keyword = val || searchKw;
         if (keyword.trim()) {
-            // Chuyển hướng sang trang Home với tham số ?search=...
-            // Lưu ý: Đổi '/' thành '/home' nếu route trang chủ của bạn là /home
             navigate(`/?search=${encodeURIComponent(keyword)}`); 
         }
     };
@@ -150,6 +187,20 @@ function LandingPage() {
         }
     ];
 
+    if (isChecking) {
+        return (
+            <div style={{ 
+                height: '100vh', 
+                display: 'flex', 
+                justifyContent: 'center', 
+                alignItems: 'center',
+                background: '#fdfdfd' 
+            }}>
+                <Spin size="large" tip="Đang kết nối..." />
+            </div>
+        );
+    }
+
     return (
         <div className={styles.wrapper}>
             <Helmet>
@@ -171,7 +222,6 @@ function LandingPage() {
                 <div className={styles.container}>
                     <div className={styles.headerFlex}>
                         
-                        {/* ĐÃ THAY THẾ KHỐI TÌM KIẾM BẰNG AUTOCOMPLETE CỦA ANTD */}
                         <div className={styles.searchBox}>
                             <AutoComplete
                                 className={styles.searchAutoComplete}
@@ -215,9 +265,9 @@ function LandingPage() {
                             <div className={styles.iconItem} onClick={() => navigate('/login')}>
                                 <UserOutlined />
                             </div>
-                            <div className={styles.iconItem} onClick={() => navigate('/cart')}>
+                            <div className={styles.iconItem} onClick={() => navigate('/home')}>
                                 <ShoppingCartOutlined />
-                                {cartCount > 0 && <span className={styles.cartBadge}>{cartCount}</span>}
+                                <span><b> Mua ngay</b></span>
                             </div>
                         </div>
                     </div>

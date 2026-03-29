@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Form, Input, Button, message, Divider, Empty, Row, Col, Popconfirm, Checkbox, Spin } from 'antd';
-import { DeleteOutlined, ArrowLeftOutlined, ShoppingCartOutlined } from '@ant-design/icons';
+import { 
+  Layout, Form, Input, Button, message, Divider, Empty, Row, Col, 
+  Popconfirm, Checkbox, Spin, Select, Modal, Tag 
+} from 'antd';
+import { 
+  DeleteOutlined, ArrowLeftOutlined, ShoppingCartOutlined, 
+  UserOutlined, PhoneOutlined, ShoppingOutlined, LoginOutlined 
+} from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import axios from 'axios';
@@ -12,15 +18,20 @@ function Cart() {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [selectedItems, setSelectedItems] = useState([]);
+  const [loginModal, setLoginModal] = useState(false);
   
-  const [isFetchingCart, setIsFetchingCart] = useState(!!localStorage.getItem('token'));
+  const [isFetchingCart, setIsFetchingCart] = useState(true);
 
   const [cart, setCart] = useState(() => {
+    if (localStorage.getItem('session_active')) return [];
     const savedCart = localStorage.getItem('ceramic_cart');
     return savedCart ? JSON.parse(savedCart) : [];
   });
+
+  const totalCartQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -31,7 +42,7 @@ function Cart() {
   const fetchCartFromDB = async () => {
     try {
       const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/cart', {
-        withCredentials:true
+        withCredentials: true 
       });
       if (res.data.cart && res.data.cart.items) {
         const dbCart = res.data.cart.items.map(item => ({
@@ -55,22 +66,23 @@ function Cart() {
   };
 
   useEffect(() => {
-      axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/me', {
-        withCredentials:true
-      }).then(res => {
-        const userData = res.data.user || res.data.result;
-        const profileData = userData?.profile || userData;
-        setIsLoggedIn(true);
-        form.setFieldsValue({
-          FullName: profileData?.TenKhachHang || userData?.username,
-          SDT: profileData?.SDT || '',
-          DiaChi: profileData?.DiaChi || profileData?.Diachi || '',
-        });
-        fetchCartFromDB();
-      }).catch(() => {
-        setIsLoggedIn(false);
-        setIsFetchingCart(false); 
+    axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/me', {
+      withCredentials: true
+    }).then(res => {
+      const userData = res.data.user || res.data.result;
+      const profileData = userData?.profile || userData;
+      setIsLoggedIn(true);
+      form.setFieldsValue({
+        FullName: profileData?.TenKhachHang || userData?.username,
+        SDT: profileData?.SDT || '',
+        DiaChi: profileData?.DiaChi || profileData?.Diachi || '',
+        Email: userData?.email || userData?.Email || '',
       });
+      fetchCartFromDB();
+    }).catch(() => {
+      setIsLoggedIn(false);
+      setIsFetchingCart(false);
+    });
   }, [form]);
 
   const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price || 0);
@@ -99,11 +111,9 @@ function Cart() {
     if (isLoggedIn) {
       try {
         await axios.delete(`https://ceramic-shop-u8ak.onrender.com/api/v1/cart/items/${variantId || id}`, {
-          withCredentials:true
+          withCredentials: true
         });
-      } catch (error) {
-        console.error(error);
-      }
+      } catch (error) {}
     }
   };
 
@@ -120,12 +130,10 @@ function Cart() {
       try {
         await Promise.all(itemsToDelete.map(item => 
           axios.delete(`https://ceramic-shop-u8ak.onrender.com/api/v1/cart/items/${item.variantId || item.id}`, {
-            withCredentials:true
+            withCredentials: true
           })
         ));
-      } catch (error) {
-        console.error(error);
-      }
+      } catch (error) {}
     }
   };
 
@@ -145,11 +153,9 @@ function Cart() {
       try {
         await axios.patch(`https://ceramic-shop-u8ak.onrender.com/api/v1/cart/items/${variantId || id}`, 
           { SoLuong: newQty },
-          { withCredentials:true}
+          { withCredentials: true }
         );
-      } catch (error) {
-        console.error(error);
-      }
+      } catch (error) {}
     }
   };
 
@@ -167,11 +173,9 @@ function Cart() {
           try {
             await axios.patch(`https://ceramic-shop-u8ak.onrender.com/api/v1/cart/items/${variantId || id}`, 
               { SoLuong: finalQty },
-              { withCredentials:true}
+              { withCredentials: true }
             );
-          } catch (error) {
-            console.error(error);
-          }
+          } catch (error) {}
         }
     }
   };
@@ -185,6 +189,8 @@ function Cart() {
 
   const selectedCartItems = cart.filter(item => selectedItems.includes(getItemKey(item)));
   const totalCartPrice = selectedCartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const selectedCartQuantity = selectedCartItems.reduce((sum, item) => sum + item.quantity, 0); 
+  
   const shippingFee = selectedCartItems.length > 0 ? 30000 : 0; 
   const finalTotal = selectedCartItems.length > 0 ? totalCartPrice + shippingFee : 0;
 
@@ -193,49 +199,65 @@ function Cart() {
       return message.warning("Vui lòng chọn ít nhất một sản phẩm để thanh toán!");
     }
 
-    if (!isLoggedIn) {
-      message.info("Vui lòng đăng nhập để tiến hành đặt hàng!");
-      navigate('/login');
-      return;
-    }
-
-    setLoading(true);
+    setSubmitting(true);
     try {
-      
-      const payload = {
-        TenNguoiNhan: values.FullName,
-        SDTGiaoHang: values.SDT,
-        DiaChiGiaoHang: values.DiaChi,
-        GhiChu: values.GhiChu || '',
-        TongThanhToan: finalTotal,
-        items: selectedCartItems.map(item => ({
-          MaSanPham: item.id,
-          MaBienThe: item.variantId || null,
-          SoLuong: item.quantity,
-          DonGia: item.price
-        }))
-      };
+      if (isLoggedIn) {
+        const payload = {
+          TenNguoiNhan: values.FullName,
+          SDTGiaoHang: values.SDT,
+          DiaChiGiaoHang: values.DiaChi,
+          GhiChu: values.GhiChu || '',
+          MaPhuongThuc: Number(values.paymentMethod),
+          TongThanhToan: finalTotal,
+          items: selectedCartItems.map(item => ({
+            MaSanPham: item.id,
+            MaBienThe: item.variantId || null,
+            SoLuong: item.quantity,
+            DonGia: item.price
+          }))
+        };
 
-      await axios.post('https://ceramic-shop-u8ak.onrender.com/api/v1/orders', payload, {
-        withCredentials:true
-      });
+        await axios.post('https://ceramic-shop-u8ak.onrender.com/api/v1/orders', payload, {
+          withCredentials: true
+        });
 
-      await Promise.all(selectedCartItems.map(item => 
-        axios.delete(`https://ceramic-shop-u8ak.onrender.com/api/v1/cart/items/${item.variantId || item.id}`, {
-          withCredentials:true
-        })
-      ));
+        await Promise.all(selectedCartItems.map(item => 
+          axios.delete(`https://ceramic-shop-u8ak.onrender.com/api/v1/cart/items/${item.variantId || item.id}`, {
+            withCredentials: true
+          })
+        ));
+      } else {
+        const guestPayload = {
+          TenNguoiNhan: values.FullName,
+          SDT: values.SDT,
+          DiaChiGiaoHang: values.DiaChi,
+          GhiChu: values.GhiChu || '',
+          MaPhuongThuc: Number(values.paymentMethod),
+          GuestEmail: values.Email,
+          cartItems: selectedCartItems.map(item => ({
+            MaBienThe: item.variantId,
+            SoLuong: item.quantity,
+            GiaBan: item.price,
+            ThanhTien: item.price * item.quantity
+          }))
+        };
+        
+        await axios.post('https://ceramic-shop-u8ak.onrender.com/api/v1/orders/guest', guestPayload);
+        
+        const remainingItems = cart.filter(item => !selectedItems.includes(getItemKey(item)));
+        localStorage.setItem('ceramic_cart', JSON.stringify(remainingItems));
+      }
 
       message.success('Đặt hàng thành công!');
-      
       setCart(prev => prev.filter(item => !selectedItems.includes(getItemKey(item))));
       setSelectedItems([]); 
+      form.resetFields();
       navigate('/'); 
     } catch (error) {
       const errorMsg = error.response?.data?.message || 'Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại!';
       message.error(errorMsg);
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
@@ -247,14 +269,33 @@ function Cart() {
 
       <Header className={styles.topHeader}>
         <div className={styles.logo} onClick={() => navigate('/landing')}>CERAMIC-SHOP</div>
-        <Button type="link" icon={<ArrowLeftOutlined />} onClick={() => navigate('/')} className={styles.btnBack}>
-          Tiếp tục mua sắm
-        </Button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          
+          {/* NÚT ĐĂNG NHẬP TRÊN HEADER */}
+          {!isLoggedIn && !isFetchingCart && (
+            <Button type="link" icon={<LoginOutlined />} onClick={() => setLoginModal(true)} style={{ fontWeight: 600, color: '#1b437c' }}>
+              Đăng nhập
+            </Button>
+          )}
+          
+          <Button type="link" icon={<ArrowLeftOutlined />} onClick={() => navigate('/')} className={styles.btnBack}>
+            Tiếp tục mua sắm
+          </Button>
+        </div>
       </Header>
 
       <Content className={styles.mainContent}>
         <div className={styles.container}>
-          <h2 className={styles.pageTitle}><ShoppingCartOutlined /> Giỏ Hàng Của Bạn</h2>
+          {!isLoggedIn && !isFetchingCart && (
+            <div style={{ background: '#fffbe6', border: '1px solid #ffe58f', padding: '12px 20px', borderRadius: '8px', marginBottom: '20px', color: '#d48806', fontWeight: 500 }}>
+              🛒 Bạn đang mua sắm với tư cách khách. <span onClick={() => setLoginModal(true)} style={{ color: '#1b437c', textDecoration: 'underline', cursor: 'pointer' }}>Đăng nhập</span> để lưu giỏ hàng và theo dõi đơn hàng dễ dàng hơn.
+            </div>
+          )}
+
+          <div className={styles.pageTitle} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '24px', fontWeight: 700, color: '#1b437c', marginBottom: '30px' }}>
+            <ShoppingCartOutlined /> Giỏ Hàng Của Bạn
+            {totalCartQuantity > 0 && <Tag color="#1b437c" style={{ fontSize: '14px', padding: '2px 10px', borderRadius: '12px' }}>{totalCartQuantity} sản phẩm</Tag>}
+          </div>
           
           {isFetchingCart ? (
             <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '40vh' }}>
@@ -277,19 +318,21 @@ function Cart() {
                       <div className={styles.selectAllRow}>
                         <Checkbox 
                           checked={selectedItems.length === cart.length && cart.length > 0} 
+                          indeterminate={selectedItems.length > 0 && selectedItems.length < cart.length}
                           onChange={handleSelectAll}
                         >
-                          <span style={{ fontWeight: 600 }}>Chọn tất cả ({cart.length})</span>
+                          <span style={{ fontWeight: 600 }}>Chọn tất cả ({cart.length} loại)</span>
                         </Checkbox>
-                        <Button 
-                          type="text" 
-                          danger 
-                          icon={<DeleteOutlined />} 
-                          onClick={handleDeleteSelected} 
-                          disabled={selectedItems.length === 0}
-                        >
-                          Xóa mục đã chọn
-                        </Button>
+                        {selectedItems.length > 0 && (
+                          <Button 
+                            type="text" 
+                            danger 
+                            icon={<DeleteOutlined />} 
+                            onClick={handleDeleteSelected} 
+                          >
+                            Xóa mục đã chọn
+                          </Button>
+                        )}
                       </div>
                       
                       <div className={styles.cartHeaderRow}>
@@ -319,6 +362,7 @@ function Cart() {
                                 onClick={() => navigate(`/product/${item.id}`)}
                                 style={{ cursor: 'pointer' }}
                                 title="Xem chi tiết sản phẩm"
+                                onError={(e) => { e.target.src = 'https://via.placeholder.com/80'; }}
                               />
                               
                               <span 
@@ -370,9 +414,10 @@ function Cart() {
 
               <Col xs={24} lg={8}>
                 <div className={styles.checkoutSection}>
-                  <h3 className={styles.summaryTitle}>Tóm tắt đơn hàng</h3>
-                  <div style={{ marginBottom: '15px', fontStyle: 'italic', color: '#888', fontSize: '13px' }}>
-                    (Đã chọn {selectedItems.length} sản phẩm)
+                  <div style={{ fontSize: '18px', fontWeight: 700, color: '#1b437c', marginBottom: '20px', paddingBottom: '15px', borderBottom: '1px solid #f0f0f0' }}>Tóm tắt đơn hàng</div>
+                  <div className={styles.summaryRow}>
+                    <span>Sản phẩm đã chọn:</span>
+                    <span style={{ fontWeight: 600 }}>{selectedCartQuantity} món</span>
                   </div>
                   <div className={styles.summaryRow}>
                     <span>Tạm tính:</span>
@@ -383,36 +428,66 @@ function Cart() {
                     <span>{formatPrice(shippingFee)}</span>
                   </div>
                   <Divider style={{ margin: '15px 0' }} />
-                  <div className={styles.summaryRow} style={{ fontSize: '18px', fontWeight: 700, color: '#d0021b' }}>
+                  <div className={styles.summaryRow} style={{ fontSize: '20px', fontWeight: 700, color: '#d0021b' }}>
                     <span>Tổng cộng:</span>
                     <span>{formatPrice(finalTotal)}</span>
                   </div>
 
-                  <div className={styles.formSection}>
-                    <h4 className={styles.formTitle}>Thông tin giao hàng</h4>
-                    <Form form={form} layout="vertical" onFinish={handleCheckout}>
+                  <div className={styles.formSection} style={{ marginTop: '30px' }}>
+                    <div style={{ fontSize: '16px', fontWeight: 700, color: '#333', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <ShoppingOutlined /> Thông tin đặt hàng
+                    </div>
+                    <Form form={form} layout="vertical" onFinish={handleCheckout} scrollToFirstError>
+                      {!isLoggedIn && (
+                        <Form.Item 
+                          label="Email nhận thông báo" 
+                          name="Email"
+                          rules={[
+                            { required: true, message: 'Vui lòng nhập email!' },
+                            { type: 'email', message: 'Email không đúng định dạng!' }
+                          ]}
+                        >
+                          <Input className={styles.customInput} placeholder="example@email.com" />
+                        </Form.Item>
+                      )}
+
                       <Form.Item 
                         label="Họ và tên người nhận" 
                         name="FullName"
-                        rules={[{ required: true, message: 'Vui lòng nhập tên người nhận!' }]}
+                        rules={[{ required: true, message: 'Vui lòng nhập tên người nhận!' }, { min: 2, message: 'Tên quá ngắn!' }]}
                       >
-                        <Input className={styles.customInput} placeholder="Nhập họ tên đầy đủ" />
+                        <Input prefix={<UserOutlined style={{ color: '#bbb' }} />} className={styles.customInput} placeholder="Nhập họ tên đầy đủ" />
                       </Form.Item>
 
                       <Form.Item 
                         label="Số điện thoại" 
                         name="SDT"
-                        rules={[{ required: true, message: 'Vui lòng nhập số điện thoại!' }]}
+                        rules={[
+                          { required: true, message: 'Vui lòng nhập số điện thoại!' },
+                          { pattern: /^0\d{9}$/, message: 'Số điện thoại không hợp lệ (gồm 10 số, bắt đầu bằng 0)!' }
+                        ]}
                       >
-                        <Input className={styles.customInput} placeholder="Nhập số điện thoại liên hệ" />
+                        <Input prefix={<PhoneOutlined style={{ color: '#bbb' }} />} className={styles.customInput} placeholder="0987654321" maxLength={10} />
                       </Form.Item>
 
                       <Form.Item 
                         label="Địa chỉ nhận hàng" 
                         name="DiaChi"
-                        rules={[{ required: true, message: 'Vui lòng nhập địa chỉ giao hàng!' }]}
+                        rules={[{ required: true, message: 'Vui lòng nhập địa chỉ giao hàng!' }, { min: 10, message: 'Địa chỉ phải có ít nhất 10 ký tự!' }]}
                       >
                         <Input.TextArea rows={3} className={styles.customInput} placeholder="Nhập số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố" />
+                      </Form.Item>
+
+                      <Form.Item 
+                        name="paymentMethod"
+                        label="Phương thức thanh toán"
+                        rules={[{ required: true, message: 'Vui lòng chọn phương thức thanh toán!' }]}
+                      >
+                        <Select placeholder="Chọn phương thức" className={styles.customSelect} size="large">
+                          <Select.Option value="1">💵 Thanh toán khi nhận hàng (COD)</Select.Option>
+                          <Select.Option value="2">🏦 Chuyển khoản ngân hàng</Select.Option>
+                          <Select.Option value="3">💳 Ví điện tử (MoMo / ZaloPay)</Select.Option>
+                        </Select>
                       </Form.Item>
 
                       <Form.Item label="Ghi chú đơn hàng" name="GhiChu">
@@ -421,13 +496,13 @@ function Cart() {
 
                       <Button 
                         type="primary" 
-                        //htmlType="submit" 
+                        htmlType="submit" 
                         className={styles.btnSubmitOrder} 
-                        loading={loading}
+                        loading={submitting}
                         disabled={selectedCartItems.length === 0}
                         block
                       >
-                        TIẾN HÀNH ĐẶT HÀNG
+                        {selectedCartItems.length === 0 ? 'Chọn sản phẩm để đặt hàng' : `ĐẶT HÀNG • ${formatPrice(finalTotal)}`}
                       </Button>
                     </Form>
                   </div>
@@ -437,6 +512,34 @@ function Cart() {
           )}
         </div>
       </Content>
+
+      <Modal
+        open={loginModal}
+        onCancel={() => setLoginModal(false)}
+        footer={null}
+        centered
+        width={360}
+      >
+        <div style={{ textAlign: 'center', padding: '20px 10px' }}>
+          <div style={{ fontSize: '40px', marginBottom: '10px' }}>🔐</div>
+          <h3 style={{ fontSize: '20px', color: '#1b437c', fontWeight: 700, marginBottom: '10px' }}>Đăng nhập tài khoản</h3>
+          <p style={{ color: '#666', fontSize: '14px', marginBottom: '25px' }}>
+            Đăng nhập để lưu giỏ hàng, theo dõi đơn hàng và nhận ưu đãi dành riêng cho thành viên.
+          </p>
+          <Button type="primary" block style={{ height: '42px', borderRadius: '8px', fontWeight: 600, background: '#1b437c', marginBottom: '12px' }}
+            onClick={() => { setLoginModal(false); navigate('/login'); }}>
+            ĐĂNG NHẬP
+          </Button>
+          <Button block style={{ height: '42px', borderRadius: '8px', fontWeight: 600, color: '#1b437c', borderColor: '#1b437c', marginBottom: '15px' }}
+            onClick={() => { setLoginModal(false); navigate('/register'); }}>
+            Tạo tài khoản mới
+          </Button>
+          <div onClick={() => setLoginModal(false)} style={{ color: '#888', cursor: 'pointer', textDecoration: 'underline', fontSize: '13px' }}>
+            Tiếp tục mua sắm không cần đăng nhập →
+          </div>
+        </div>
+      </Modal>
+
     </Layout>
   );
 }

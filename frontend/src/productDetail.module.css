@@ -41,6 +41,21 @@
   color: #1b437c; 
   text-transform: uppercase;
   letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.logo::before {
+  content: "";
+  display: inline-block;
+  width: 40px; 
+  height: 40px;
+  background-image: url('logo.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
 }
 
 .headerSearch {
@@ -176,6 +191,10 @@
   font-size: 15px;
 }
 
+/* ==================================================== */
+/* =============== PHẦN MINICART ĐÃ SỬA =============== */
+/* ==================================================== */
+
 .cartPopover :global(.ant-popover-inner) {
   padding: 0;
   border-radius: 12px;
@@ -183,18 +202,18 @@
 }
 
 .miniCartContainer {
-  width: 350px; 
+  width: 320px;
+  padding: 5px;
   font-family: 'Arsenal', sans-serif;
 }
 
 .miniCartHeader {
-  background: #f8fafc;
-  color: #64748b;
-  padding: 10px 15px;
-  font-size: 13px;
-  font-weight: 600;
-  border-bottom: 1px solid #f1f5f9;
+  font-size: 14px;
+  color: #888;
   text-transform: uppercase;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
 }
 
 .miniCartList {
@@ -206,24 +225,13 @@
 .cartListItemCustom {
   display: flex;
   align-items: center;
-  padding: 15px 0;
-  border-bottom: 1px dashed #e2e8f0;
-  gap: 12px;
+  gap: 15px;
+  padding: 10px 0;
+  border-bottom: 1px dashed #f0f0f0;
 }
 
 .cartItemAvatar {
   flex-shrink: 0;
-}
-
-.cartItemInfo {
-  flex: 1;
-  min-width: 0; 
-}
-
-.cartItemAction {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
 }
 
 .cartAvatar {
@@ -231,6 +239,11 @@
   height: 55px !important;
   border-radius: 8px !important;
   border: 1px solid #f1f5f9;
+}
+
+.cartItemInfo {
+  flex: 1;
+  min-width: 0; 
 }
 
 .miniCartName {
@@ -242,6 +255,12 @@
   font-weight: 600;
   color: #333;
   margin-bottom: 4px;
+}
+
+.cartItemAction {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
 }
 
 .cartDeleteIcon {
@@ -265,11 +284,11 @@
 
 .miniCartPrice {
   color: #c48c46;
-  font-weight: bold;
+  font-weight: 700;
   font-size: 14px;
 }
 
-.qtyControls {
+.miniQtyControls {
   display: flex;
   align-items: center;
   gap: 2px;
@@ -278,7 +297,7 @@
   border-radius: 6px;
 }
 
-.qtyInput {
+.miniQtyInput {
   width: 35px;
   height: 24px;
   border: none;
@@ -289,7 +308,13 @@
   outline: none;
 }
 
-.qtyBtn {
+.miniQtyInput::-webkit-outer-spin-button,
+.miniQtyInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.miniQtyBtn {
   background: white;
   border: none;
   color: #1b437c;
@@ -303,7 +328,7 @@
   box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
-.qtyBtn:hover {
+.miniQtyBtn:hover {
   background: #1b437c;
   color: white;
 }
@@ -315,37 +340,39 @@
 }
 
 .miniCartFooter {
-  padding: 15px;
-  background: #f8fafc;
-  border-top: 1px solid #f1f5f9;
+  margin-top: 15px;
 }
 
 .miniCartTotal {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 12px;
-  color: #1b437c;
   font-size: 16px;
-  font-weight: bold;
+  font-weight: 700;
+  color: #1b437c;
+  margin-bottom: 15px;
 }
 
 .miniCartTotal span {
-  color: #c48c46;
+  color: #e74c3c;
   font-size: 16px;
 }
 
 .btnCheckoutCart {
   width: 100%;
-  background: #1b437c;
-  border-radius: 8px;
-  height: 38px;
-  font-weight: bold;
+  height: 40px;
+  background-color: #1b437c;
+  border: none;
+  font-weight: 600;
   letter-spacing: 1px;
 }
 
 .btnCheckoutCart:hover {
-  background: #14325e !important;
+  background-color: #13325c !important;
 }
+
+/* ==================================================== */
+/* ================== PHẦN CÒN LẠI ==================== */
+/* ==================================================== */
 
 .mainContainer {
   max-width: 1200px;
@@ -757,27 +784,4 @@
   font-size: 18px;
   font-weight: 700;
   margin-top: auto;
-}
-.logo {
-  flex: 1;
-  font-size: 26px;
-  font-weight: 700;
-  color: #1b437c;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  cursor: pointer;
-}
-
-.logo::before {
-  content: "";
-  display: inline-block;
-  width: 40px; 
-  height: 40px;
-  background-image: url('logo.png');
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
 }

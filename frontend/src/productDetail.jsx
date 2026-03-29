@@ -205,7 +205,16 @@ function ProductDetail() {
     navigate('/login');
     message.success("Đã đăng xuất");
   };
-
+  const userMenu = [
+    { 
+      key: '1', 
+      label: 'Sửa hồ sơ', 
+      icon: <SettingOutlined />,
+      onClick: () => navigate('/profile') 
+    },
+    { type: 'divider' },
+    { key: '2', danger: true, label: 'Đăng xuất', icon: <LogoutOutlined />, onClick: handleLogout },
+  ];
   const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price || 0);
 
   const getPriceDisplay = () => {
@@ -268,7 +277,7 @@ function ProductDetail() {
         }, { headers: { Authorization: `Bearer ${token}` } });
         
         message.success(`Đã thêm ${currentQty} sản phẩm vào giỏ hàng!`);
-        await fetchCartFromDB(token); // Fetch lại data thật từ DB
+        await fetchCartFromDB(token); 
         return true;
       } catch (error) {
         message.error(error.response?.data?.message || 'Lỗi thêm sản phẩm!');
@@ -421,16 +430,16 @@ function ProductDetail() {
                   </span>
                   <div className={styles.miniCartQtyWrap}>
                     <span className={styles.miniCartPrice}>{formatPrice(item.price)}</span>
-                    <div className={styles.qtyControls}>
-                      <button className={styles.qtyBtn} onClick={() => updateCartItemQty(item.id, item.variantId, -1)}>-</button>
+                    <div className={styles.miniQtyControls}>
+                      <button className={styles.miniQtyBtn} onClick={() => updateCartItemQty(item.id, item.variantId, -1)}>-</button>
                       <input 
                         type="number" min="1"
-                        className={styles.qtyInput} 
+                        className={styles.miniQtyInput} 
                         value={item.quantity} 
                         onChange={(e) => handleQtyChange(item.id, item.variantId, e.target.value)} 
                         onBlur={(e) => handleQtyBlur(item.id, item.variantId, e.target.value)}
                       />
-                      <button className={styles.qtyBtn} onClick={() => updateCartItemQty(item.id, item.variantId, 1)}>+</button>
+                      <button className={styles.miniQtyBtn} onClick={() => updateCartItemQty(item.id, item.variantId, 1)}>+</button>
                     </div>
                   </div>
                 </div>
@@ -450,17 +459,6 @@ function ProductDetail() {
       )}
     </div>
   );
-
-  const userMenu = [
-    { 
-      key: '1', 
-      label: 'Sửa hồ sơ', 
-      icon: <SettingOutlined />,
-      onClick: () => navigate('/profile') 
-    },
-    { type: 'divider' },
-    { key: '2', danger: true, label: 'Đăng xuất', icon: <LogoutOutlined />, onClick: handleLogout },
-  ];
 
   const handleSearchInput = async (value) => {
     setSearchKw(value);
