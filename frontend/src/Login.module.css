@@ -5,6 +5,7 @@
   padding: 0 !important;
   font-family: 'Arsenal', sans-serif !important;
   background-color: #f4f7f9 !important;
+  
 }
 
 .loginContainer {
@@ -16,6 +17,7 @@
   padding: 20px;
   position: relative;
   overflow: hidden;
+  box-sizing: border-box
 }
 
 .shape1 {
@@ -238,7 +240,6 @@
   cursor: pointer;
 }
 
-/* Nút Google */
 .ggCircle {
   background-color: #ffffff;
   border-color: #e0e0e0;
@@ -257,7 +258,6 @@
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
 }
 
-/* Nút Facebook */
 .fbCircle {
   background-color: #1877f2;
   border-color: #1877f2;
