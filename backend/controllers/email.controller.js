@@ -2,14 +2,34 @@ import redisClient from "../config/redis.config.js";
 import { sendEmailVerifyService } from "../services/email.services.js";
 import { isValidEmail } from "../utils/helpers.js";
 import ErrorHandler from "../utils/error_handler.js";
-
+import { AccountModel } from "../models/index.js";
+import { Op } from "sequelize";
 export const sendVerifyEmailController = async (req, res, next) => {
   try {
-    const { email } = req.body;
+    const { email, username } = req.body;
     if (!email || !isValidEmail(email)) {
       return next(new ErrorHandler("Email không hợp lệ", 400));
     }
+    if (!username) {
+      return next(new ErrorHandler("Username không được để trống", 400));
+    }
+
     const normalizedEmail = email.trim().toLowerCase();
+    const existingAccount = await AccountModel.findOne({
+      where: {
+        [Op.or]: [{ Username: username }, { Email: normalizedEmail }],
+      },
+    });
+
+    if (existingAccount) {
+      if (existingAccount.Username === username) {
+        return next(new ErrorHandler("Tài khoản này đã tồn tại!", 400));
+      }
+      if (existingAccount.Email === normalizedEmail) {
+        return next(new ErrorHandler("Đã tồn tại Email này!", 400));
+      }
+    }
+
     const cooldown = await redisClient.get(`otp_cooldown:${normalizedEmail}`);
     if (cooldown) {
       return next(
