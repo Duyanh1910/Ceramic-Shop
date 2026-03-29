@@ -33,7 +33,11 @@ app.use(cookieParser());
 app.use(passport.initialize());
 app.use(
   cors({
-    origin: ["http://localhost:5173", process.env.FRONTEND_URL],
+    origin: [
+      "http://localhost:5173",
+      process.env.FRONTEND_URL,
+      "https://ceramic-shop-rho.vercel.app",
+    ],
     credentials: true,
   }),
 );
