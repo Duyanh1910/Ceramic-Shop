@@ -7,7 +7,7 @@ import {
 
 export const createOrder = async (req, res, next) => {
   try {
-    const idAccount = req.user.MaTaiKhoan;
+    const idAccount = req.user.id;
     const { items, ...orderData } = req.body;
 
     const checkOut = await checkOutService(idAccount, orderData, items);
@@ -24,7 +24,7 @@ export const createOrder = async (req, res, next) => {
 
 export const getMyOrders = async (req, res, next) => {
   try {
-    const idAccount = req.user.MaTaiKhoan;
+    const idAccount = req.user.id;
     const orders = await getMyOrderService(idAccount);
 
     return res.status(200).json({
@@ -39,7 +39,7 @@ export const getMyOrders = async (req, res, next) => {
 
 export const getOrderInfo = async (req, res, next) => {
   try {
-    const idAccount = req.user.MaTaiKhoan;
+    const idAccount = req.user.id;
     const { orderCode } = req.params;
 
     const orderInfo = await getMyOrderInfoService(idAccount, orderCode);
@@ -56,7 +56,7 @@ export const getOrderInfo = async (req, res, next) => {
 
 export const cancelOrder = async (req, res, next) => {
   try {
-    const idAccount = req.user.MaTaiKhoan;
+    const idAccount = req.user.id;
     const { orderCode } = req.params;
     const { reason } = req.body;
 
