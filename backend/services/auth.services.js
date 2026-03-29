@@ -181,10 +181,9 @@ export const changePasswordService = async (id, oldPassword, newPassword) => {
     if (!isMatch) {
       throw new ErrorHandler("Mật khẩu không chính xác!", 401);
     }
-    const SALT_ROUNDS = Number(process.env.SALT_ROUNDS);
     const hashed_password = await bcrypt.hash(newPassword, SALT_ROUNDS);
     account.Password = hashed_password;
-    account.save();
+    await account.save();
   } catch (err) {
     if (err.statusCode) throw err;
     console.error(err);
@@ -219,6 +218,7 @@ export const OAuthService = async (profile, provider, rememberMe) => {
           ],
         },
       ],
+      transaction,
     });
     if (Linked) {
       account = Linked.TaiKhoan;
@@ -245,7 +245,7 @@ export const OAuthService = async (profile, provider, rememberMe) => {
         await CustomerModel.create(
           {
             MaTaiKhoan: account.MaTaiKhoan,
-            TenKhachHang: profile.displayName || uniqueUsername,
+            TenKhachHang: profile.displayName || username,
           },
           { transaction },
         );

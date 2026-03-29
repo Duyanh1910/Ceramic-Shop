@@ -37,6 +37,18 @@ const VariantModel = sequelize.define(
       type: DataTypes.DECIMAL(10, 2),
       defaultValue: 0.0,
     },
+    ChieuDai: {
+      type: DataTypes.DECIMAL(10, 2),
+      defaultValue: 0.0,
+    },
+    ChieuRong: {
+      type: DataTypes.DECIMAL(10, 2),
+      defaultValue: 0.0,
+    },
+    ChieuCao: {
+      type: DataTypes.DECIMAL(10, 2),
+      defaultValue: 0.0,
+    },
   },
   {
     tableName: "BienTheSanPham",

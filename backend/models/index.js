@@ -18,120 +18,106 @@ import PromotionTypeModel from "./promotion/promotion_type.model.js";
 import PromotionModel from "./promotion/promotion.model.js";
 import PromotionWalletModel from "./promotion/promotion_wallet.model.js";
 
-import ShippingModel from "./shipping/shipping.model.js";
-import ShippingTypeModel from "./shipping/shipping_type.model.js";
-
 import OrderDetailModel from "./order/order_detail.model.js";
 import OrderModel from "./order/order.model.js";
 import OrderPromotionModel from "./order/order_promotion.model.js";
-import OrderShippingModel from "./order/order_shipping.model.js";
 
 import PaymentMethodModel from "./payment_method.model.js";
-
 import InventoryHistoryModel from "./inventory_history.model.js";
-
 import SystemModel from "./system_model.model.js";
-
 import AccountProviderModel from "./account_provider.model.js";
 
+// --- QUAN HỆ TÀI KHOẢN & PHÂN QUYỀN ---
 RoleModel.hasMany(AccountModel, {
   foreignKey: "MaQuyen",
   sourceKey: "MaPhanQuyen",
 });
-
 AccountModel.belongsTo(RoleModel, {
   foreignKey: "MaQuyen",
   targetKey: "MaPhanQuyen",
 });
 
-AccountModel.hasOne(StaffModel, {
-  foreignKey: "MaTaiKhoan",
-});
-StaffModel.belongsTo(AccountModel, {
-  foreignKey: "MaTaiKhoan",
-});
+AccountModel.hasOne(StaffModel, { foreignKey: "MaTaiKhoan" });
+StaffModel.belongsTo(AccountModel, { foreignKey: "MaTaiKhoan" });
 
-AccountModel.hasOne(CustomerModel, {
-  foreignKey: "MaTaiKhoan",
-});
-CustomerModel.belongsTo(AccountModel, {
-  foreignKey: "MaTaiKhoan",
-});
+AccountModel.hasOne(CustomerModel, { foreignKey: "MaTaiKhoan" });
+CustomerModel.belongsTo(AccountModel, { foreignKey: "MaTaiKhoan" });
 
-CategoryModel.hasMany(ProductModel, {
-  foreignKey: "MaDanhMuc",
-});
+AccountModel.hasMany(AccountProviderModel, { foreignKey: "MaTaiKhoan" });
+AccountProviderModel.belongsTo(AccountModel, { foreignKey: "MaTaiKhoan" });
 
-ProductModel.belongsTo(CategoryModel, {
-  foreignKey: "MaDanhMuc",
-});
+// --- QUAN HỆ SẢN PHẨM & BIẾN THỂ ---
+CategoryModel.hasMany(ProductModel, { foreignKey: "MaDanhMuc" });
+ProductModel.belongsTo(CategoryModel, { foreignKey: "MaDanhMuc" });
 
-ProductModel.hasMany(VariantModel, {
-  foreignKey: "MaSanPham",
-});
+ProductModel.hasMany(VariantModel, { foreignKey: "MaSanPham" });
+VariantModel.belongsTo(ProductModel, { foreignKey: "MaSanPham" });
 
-VariantModel.belongsTo(ProductModel, {
-  foreignKey: "MaSanPham",
-});
+VariantModel.hasMany(VariantImageModel, { foreignKey: "MaBienThe" });
+VariantImageModel.belongsTo(VariantModel, { foreignKey: "MaBienThe" });
 
-VariantModel.hasMany(VariantImageModel, {
-  foreignKey: "MaBienThe",
-});
-
-VariantImageModel.belongsTo(VariantModel, {
-  foreignKey: "MaBienThe",
-});
-
-AttributeModel.hasMany(AttributeValueModel, {
-  foreignKey: "MaThuocTinh",
-});
-
-AttributeValueModel.belongsTo(AttributeModel, {
-  foreignKey: "MaThuocTinh",
-});
+AttributeModel.hasMany(AttributeValueModel, { foreignKey: "MaThuocTinh" });
+AttributeValueModel.belongsTo(AttributeModel, { foreignKey: "MaThuocTinh" });
 
 VariantModel.belongsToMany(AttributeValueModel, {
   through: VariantAttributeModel,
   foreignKey: "MaBienThe",
   otherKey: "MaGiaTri",
 });
-
 AttributeValueModel.belongsToMany(VariantModel, {
   through: VariantAttributeModel,
   foreignKey: "MaGiaTri",
   otherKey: "MaBienThe",
 });
 
-CustomerModel.hasOne(CartModel, {
-  foreignKey: "MaKhachHang",
-});
+// --- QUAN HỆ GIỎ HÀNG ---
+CustomerModel.hasOne(CartModel, { foreignKey: "MaKhachHang" });
+CartModel.belongsTo(CustomerModel, { foreignKey: "MaKhachHang" });
 
-CartModel.belongsTo(CustomerModel, {
-  foreignKey: "MaKhachHang",
-});
+CartModel.hasMany(CartInfoModel, { foreignKey: "MaGioHang" });
+CartInfoModel.belongsTo(CartModel, { foreignKey: "MaGioHang" });
 
-CartModel.hasMany(CartInfoModel, {
-  foreignKey: "MaGioHang",
-});
+CartInfoModel.belongsTo(VariantModel, { foreignKey: "MaBienThe" });
+VariantModel.hasMany(CartInfoModel, { foreignKey: "MaBienThe" });
 
-CartInfoModel.belongsTo(CartModel, {
-  foreignKey: "MaGioHang",
-});
-
-CartInfoModel.belongsTo(VariantModel, {
-  foreignKey: "MaBienThe",
-});
-
-VariantModel.hasMany(CartInfoModel, {
-  foreignKey: "MaBienThe",
-});
-
+// --- QUAN HỆ KHUYẾN MÃI & VÍ ---
 PromotionTypeModel.hasMany(PromotionModel, { foreignKey: "MaLoaiKM" });
 PromotionModel.belongsTo(PromotionTypeModel, { foreignKey: "MaLoaiKM" });
 
-ShippingTypeModel.hasMany(ShippingModel, { foreignKey: "MaLoaiPhi" });
-ShippingModel.belongsTo(ShippingTypeModel, { foreignKey: "MaLoaiPhi" });
+CategoryModel.hasMany(PromotionModel, { foreignKey: "MaDanhMuc" });
+PromotionModel.belongsTo(CategoryModel, { foreignKey: "MaDanhMuc" });
 
+CustomerModel.belongsToMany(PromotionModel, {
+  through: PromotionWalletModel,
+  foreignKey: "MaKhachHang",
+  otherKey: "MaKhuyenMai",
+});
+PromotionModel.belongsToMany(CustomerModel, {
+  through: PromotionWalletModel,
+  foreignKey: "MaKhuyenMai",
+  otherKey: "MaKhachHang",
+});
+
+CustomerModel.hasMany(PromotionWalletModel, { foreignKey: "MaKhachHang" });
+PromotionWalletModel.belongsTo(CustomerModel, { foreignKey: "MaKhachHang" });
+
+PromotionModel.hasMany(PromotionWalletModel, { foreignKey: "MaKhuyenMai" });
+PromotionWalletModel.belongsTo(PromotionModel, { foreignKey: "MaKhuyenMai" });
+
+// --- QUAN HỆ ĐƠN HÀNG ---
+CustomerModel.hasMany(OrderModel, { foreignKey: "MaKhachHang" });
+OrderModel.belongsTo(CustomerModel, { foreignKey: "MaKhachHang" });
+
+OrderModel.hasMany(OrderDetailModel, { foreignKey: "MaDonHang" });
+OrderDetailModel.belongsTo(OrderModel, { foreignKey: "MaDonHang" });
+
+VariantModel.hasMany(OrderDetailModel, { foreignKey: "MaBienThe" });
+OrderDetailModel.belongsTo(VariantModel, { foreignKey: "MaBienThe" });
+
+PaymentMethodModel.hasMany(OrderModel, { foreignKey: "MaPhuongThuc" });
+OrderModel.belongsTo(PaymentMethodModel, { foreignKey: "MaPhuongThuc" });
+
+// Đơn hàng - Khuyến mãi
 OrderModel.belongsToMany(PromotionModel, {
   through: OrderPromotionModel,
   foreignKey: "MaDonHang",
@@ -148,90 +134,9 @@ OrderPromotionModel.belongsTo(OrderModel, { foreignKey: "MaDonHang" });
 PromotionModel.hasMany(OrderPromotionModel, { foreignKey: "MaKhuyenMai" });
 OrderPromotionModel.belongsTo(PromotionModel, { foreignKey: "MaKhuyenMai" });
 
-OrderModel.belongsToMany(ShippingModel, {
-  through: OrderShippingModel,
-  foreignKey: "MaDonHang",
-  otherKey: "MaPhi",
-});
-ShippingModel.belongsToMany(OrderModel, {
-  through: OrderShippingModel,
-  foreignKey: "MaPhi",
-  otherKey: "MaDonHang",
-});
-
-OrderModel.hasMany(OrderShippingModel, {
-  foreignKey: "MaDonHang",
-});
-OrderShippingModel.belongsTo(OrderModel, { foreignKey: "MaDonHang" });
-ShippingModel.hasMany(OrderShippingModel, { foreignKey: "MaPhi" });
-OrderShippingModel.belongsTo(ShippingModel, {
-  foreignKey: "MaPhi",
-});
-
-CustomerModel.hasMany(OrderModel, { foreignKey: "MaKhachHang" });
-OrderModel.belongsTo(CustomerModel, { foreignKey: "MaKhachHang" });
-
-OrderModel.hasMany(OrderDetailModel, {
-  foreignKey: "MaDonHang",
-});
-OrderDetailModel.belongsTo(OrderModel, { foreignKey: "MaDonHang" });
-
-VariantModel.hasMany(OrderDetailModel, { foreignKey: "MaBienThe" });
-OrderDetailModel.belongsTo(VariantModel, {
-  foreignKey: "MaBienThe",
-});
-
-PaymentMethodModel.hasMany(OrderModel, {
-  foreignKey: "MaPhuongThuc",
-});
-
-OrderModel.belongsTo(PaymentMethodModel, {
-  foreignKey: "MaPhuongThuc",
-});
-
-VariantModel.hasMany(InventoryHistoryModel, {
-  foreignKey: "MaBienThe",
-});
-
-InventoryHistoryModel.belongsTo(VariantModel, {
-  foreignKey: "MaBienThe",
-});
-
-CategoryModel.hasMany(PromotionModel, {
-  foreignKey: "MaDanhMuc",
-});
-
-PromotionModel.belongsTo(CategoryModel, {
-  foreignKey: "MaDanhMuc",
-});
-
-CustomerModel.belongsToMany(PromotionModel, {
-  through: PromotionWalletModel,
-  foreignKey: "MaKhachHang",
-  otherKey: "MaKhuyenMai",
-});
-
-PromotionModel.belongsToMany(CustomerModel, {
-  through: PromotionWalletModel,
-  foreignKey: "MaKhuyenMai",
-  otherKey: "MaKhachHang",
-});
-
-CustomerModel.hasMany(PromotionWalletModel, {
-  foreignKey: "MaKhachHang",
-});
-
-PromotionWalletModel.belongsTo(CustomerModel, {
-  foreignKey: "MaKhachHang",
-});
-
-PromotionModel.hasMany(PromotionWalletModel, {
-  foreignKey: "MaKhuyenMai",
-});
-
-PromotionWalletModel.belongsTo(PromotionModel, {
-  foreignKey: "MaKhuyenMai",
-});
+// --- QUAN HỆ TỒN KHO ---
+VariantModel.hasMany(InventoryHistoryModel, { foreignKey: "MaBienThe" });
+InventoryHistoryModel.belongsTo(VariantModel, { foreignKey: "MaBienThe" });
 
 OrderModel.hasMany(InventoryHistoryModel, {
   foreignKey: "MaThamChieu",
@@ -241,13 +146,6 @@ OrderModel.hasMany(InventoryHistoryModel, {
   },
 });
 
-AccountModel.hasMany(AccountProviderModel, {
-  foreignKey: "MaTaiKhoan",
-});
-
-AccountProviderModel.belongsTo(AccountModel, {
-  foreignKey: "MaTaiKhoan",
-});
 export {
   sequelize,
   AccountModel,
@@ -266,11 +164,8 @@ export {
   OrderDetailModel,
   OrderModel,
   OrderPromotionModel,
-  OrderShippingModel,
   PromotionModel,
   PromotionTypeModel,
-  ShippingModel,
-  ShippingTypeModel,
   PaymentMethodModel,
   InventoryHistoryModel,
   PromotionWalletModel,

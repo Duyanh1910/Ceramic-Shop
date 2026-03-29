@@ -1,107 +1,126 @@
+import axios from "axios";
+import { VariantModel, SystemModel } from "../../models/index.js";
 import ErrorHandler from "../error_handler.js";
-import { SystemModel, sequelize, ShippingModel } from "../../models/index.js";
-import { MienBac, MienTrung, MienNam, NoiThanhHP } from "../VN_province.js";
 
-const calculateShippingFee = async (cartItems, MaPhi, DiaChiGiaoHang) => {
+const calculateShippingFee = async (items, address, MaPhi, totalProductFee) => {
   try {
-    let totalWeight = 0;
-    let hasBulkyItem = false;
-    let hasExtremeBulkyItem = false;
-    let countBulkyItem = false;
-    let countExtremeBulkyItem = false;
-    const feeList = new Set();
-    let basicFee = 0;
-    let overweightFee = 0;
-    let wrappingFee = 0;
-
-    if (MaPhi == 10) {
+    if (Number(MaPhi) === 3) {
       return {
-        totalShippingFee: 0,
-        details: [],
+        success: true,
+        data: {
+          baseCost: 0,
+          surcharge: 0,
+          total: 0,
+          ghnDetails: null,
+        },
       };
     }
 
-    const items = cartItems.map((item) => ({
-      KhoiLuong: item.BienTheSanPham.KhoiLuong,
-      SoLuong: item.SoLuong,
-    }));
-
-    const surcharge = await ShippingModel.findAll({ raw: true });
     const rows = await SystemModel.findAll();
-
-    const StandardWeight = Number(config.MUC_KG_TIEU_CHUAN.GiaTri) || 3.0;
-    const TruckFee = Number(config.PHI_THUE_XE_BAN_TAI) || 150000.0;
-    const ExpressOverFee = Number(config.PHI_VUOT_KG_HOA_TOC.GiaTri) || 10000.0;
-    const InterprovincialOverFee =
-      Number(config.PHI_VUOT_KG_LIEN_TINH.GiaTri) || 10000.0;
-    const InnerOverFee = Number(config.PHI_VUOT_KG_NOI_THANH.GiaTri) || 5000.0;
-    const BulkyFee = Number(config.PHU_PHI_CONG_KENH.GiaTri) || 20000.0;
-    const ExtremeBulkyFee =
-      Number(config.PHU_PHI_SIEU_CONG_KENH.GiaTri) || 100000.0;
-    const InternationalOverFee =
-      Number(config.PHI_VUOT_KG_QUOC_TE.GiaTri) || 200000.0;
-
     const config = rows.reduce((acc, row) => {
-      acc[row.MaCauHinh] = row;
+      acc[row.MaCauHinh] = Number(row.GiaTri);
       return acc;
     }, {});
+
+    let totalWeight = 0;
+    let totalSurcharge = 0;
+
     for (const item of items) {
-      const weight = Number(item.KhoiLuong) * Number(item.SoLuong);
-      totalWeight += weight;
-      if (item.KhoiLuong >= 20) {
-        countExtremeBulkyItem += item.SoLuong;
-      } else if (item.KhoiLuong >= 1) {
-        countBulkyItem += item.SoLuong;
-      }
-    }
-    totalWeight = Math.ceil(totalWeight * 2) / 2;
-    if (DiaChiGiaoHang.QuocGia === "Việt Nam") {
-      if (DiaChiGiaoHang.TinhThanh === "Hải Phòng") {
-        if (NoiThanhHP.includes(DiaChiGiaoHang.PhuongXa)) {
-          feeList.add(1); 
-        } else {
-          feeList.add(2); 
-        }
-        if (totalWeight > StandardWeight) {
-          overweightFee =
-            Math.ceil(totalWeight - StandardWeight) * InnerOverFee;
-        }
+      const variant = await VariantModel.findByPk(item.MaBienThe);
+      if (!variant) continue;
+
+      const weight = item.KhoiLuong || 0.5;
+      const quantity = item.soLuong;
+      totalWeight += weight * 1000 * quantity;
+
+      const length = Number(variant.ChieuDai || 0);
+      const width = Number(variant.ChieuRong || 0);
+      const height = Number(variant.ChieuCao || 0);
+
+      const maxLength = Math.max(length, width, height);
+      const volume = length * width * height;
+
+      let itemSurcharge = 0;
+      if (maxLength >= 100) {
+        itemSurcharge = config["PHU_PHI_DONG_THUNG_3"] || 500000.0;
+      } else if (maxLength >= 60) {
+        itemSurcharge = config["PHU_PHI_DONG_THUNG_2"] || 150000.0;
+      } else if (maxLength >= 40) {
+        itemSurcharge = config["PHU_PHI_DONG_THUNG_1"] || 50000.0;
       } else {
-        if (MienBac.includes(DiaChiGiaoHang.TinhThanh)) {
-          feeList.add(3);
-        } else if (MienTrung.includes(DiaChiGiaoHang.TinhThanh)) {
-          feeList.add(4);
+        if (volume >= 20000) {
+          itemSurcharge = config["PHU_PHI_BOC_XOP_3"] || 30000.0;
+        } else if (volume >= 5000) {
+          itemSurcharge = config["PHU_PHI_BOC_XOP_2"] || 15000.0;
         } else {
-          feeList.add(5);
-        }
-        if (totalWeight > StandardWeight) {
-          overweightFee =
-            Math.ceil(totalWeight - StandardWeight) * InterprovincialOverFee;
+          itemSurcharge = config["PHU_PHI_BOC_XOP_1"] || 5000.0;
         }
       }
-    } else {
-      if (hasExtremeBulkyItem) {
+      totalSurcharge += itemSurcharge * quantity;
+    }
+
+    const totalInsuranceValue =
+      totalProductFee > 5000000 ? 5000000 : totalProductFee;
+
+    let baseShippingCost = 0;
+    let ghnDetails = null;
+
+    if (Number(MaPhi) === 2) {
+      if (address.ToProvinceID !== 31) {
         throw new ErrorHandler(
-          "Rất tiếc, chúng tôi chưa hỗ trợ vận chuyển quốc tế cho hàng Siêu Cồng Kềnh (>=20kg/món)",
-          400,
+          "Giao hỏa tốc chỉ áp dụng trong khu vực nội thành!",
         );
       }
-      feeList.add(9);
-      if (totalWeight > 1) {
-        overweightFee =
-          Math.ceil((totalWeight - 1) / 0.5) * InternationalOverFee;
+
+      const baseExpressFee = 40000;
+      const freeWeightLimit = 3000;
+      let extraWeightFee = 0;
+
+      if (totalWeight > freeWeightLimit) {
+        const extraWeight = totalWeight - freeWeightLimit;
+        extraWeightFee = Math.ceil(extraWeight / 1000) * 10000;
       }
+
+      baseShippingCost = baseExpressFee + extraWeightFee;
+    } else if (Number(MaPhi) === 1) {
+      const ghnAPI = await axios.post(
+        "https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee",
+        {
+          service_type_id: 2,
+          from_district_id: 1587,
+          from_ward_code: "30308",
+          to_district_id: Number(address.ToDistrictID),
+          to_ward_code: String(address.ToWardID),
+          weight: Math.round(totalWeight) || 1000,
+          insurance_value: totalInsuranceValue,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Token: process.env.GHN_API_TOKEN,
+            ShopId: process.env.GHN_SHOP_ID,
+          },
+        },
+      );
+
+      baseShippingCost = ghnAPI.data.data.total;
+      ghnDetails = ghnAPI.data.data;
+    } else {
+      throw new ErrorHandler("Loại phí vận chuyển không hợp lệ");
     }
-
-    wrappingFee =
-      countExtremeBulkyItem * ExtremeBulkyFee + countBulkyItem * BulkyFee;
-
-    if(MaPhi ===6){
-
-    }
-  } catch (error) {
-    console.error("Lỗi tính phí ship:", error);
-    throw new ErrorHandler("Lỗi server! Không thể tính phí ship", 500);
+    return {
+      success: true,
+      data: {
+        baseCost: baseShippingCost,
+        surcharge: totalSurcharge,
+        total: baseShippingCost + totalSurcharge,
+        ghnDetails: ghnDetails,
+      },
+    };
+  } catch (err) {
+    console.error(err.response?.data || err.message);
+    if (err.statusCode) throw err;
+    throw new ErrorHandler("Lỗi server! Không thể tính phí vận chuyển");
   }
 };
 

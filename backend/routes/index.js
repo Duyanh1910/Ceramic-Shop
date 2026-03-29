@@ -12,6 +12,7 @@ import cartRoutes from "./cart.route.js";
 import chatbotRoutes from "./chatbot.route.js";
 import voucherRoutes from "./voucher.route.js";
 import promotionRoutes from "./promotion.route.js";
+import orderRoutes from "./order.route.js";
 
 import jwtMiddleware from "../middlewares/jwt.middlewares.js";
 import checkRole from "../middlewares/authorize.middlewares.js";
@@ -57,5 +58,7 @@ router.use("/chatbot", chatbotRoutes);
 router.use("/vouchers", voucherRoutes);
 
 router.use("/promotions", promotionRoutes);
+
+router.use("/orders", jwtMiddleware, orderRoutes);
 
 export default router;

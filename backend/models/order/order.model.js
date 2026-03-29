@@ -58,6 +58,11 @@ const OrderModel = sequelize.define(
     GhiChu: {
       type: DataTypes.STRING(255),
     },
+    MaHienThi: {
+      type: DataTypes.STRING(30),
+      unique: true,
+      allowNull: false,
+    },
   },
   {
     tableName: "DonHang",

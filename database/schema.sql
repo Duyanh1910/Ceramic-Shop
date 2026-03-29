@@ -203,18 +203,6 @@ CREATE TABLE PhieuNhap (
 );
 
 
-
-CREATE TABLE ChiTietDonHang (
-    MaCTDH INT AUTO_INCREMENT PRIMARY KEY,
-    MaDonHang INT NOT NULL,
-    MaBienThe INT NOT NULL,
-    SoLuong INT NOT NULL,
-    GiaBan DECIMAL(15,2) NOT NULL,
-    ThanhTien DECIMAL(15,2) NOT NULL,
-    FOREIGN KEY (MaDonHang) REFERENCES DonHang(MaDonHang),
-    FOREIGN KEY (MaBienThe) REFERENCES BienTheSanPham(MaBienThe)
-);
-
 CREATE TABLE ChiTietKhuyenMaiDonHang (
     MaDonHang INT,
     MaKhuyenMai INT,

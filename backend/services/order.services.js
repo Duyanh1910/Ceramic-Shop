@@ -4,18 +4,33 @@ import {
   CartModel,
   CartInfoModel,
   VariantModel,
+  ProductModel,
   OrderModel,
   OrderDetailModel,
   InventoryHistoryModel,
-  ShippingModel,
-  PromotionModel,
-  OrderShippingModel,
   OrderPromotionModel,
-  ProductModel,
+  PromotionModel,
+  PromotionWalletModel,
+  VariantImageModel,
 } from "../models/index.js";
 import ErrorHandler from "../utils/error_handler.js";
 import { Op } from "sequelize";
-import { MienBac, MienTrung, MienNam, NoiThanhHP } from "../utils/VN_province";
+
+import calculateShippingFee from "../utils/orders/calculate_shipping_fee.js";
+import calculateOrderDiscount from "../utils/orders/calculate_order_discount.js";
+export const ORDER_STATUS = {
+  PENDING: 0,
+  PREPARING: 1,
+  SHIPPING: 2,
+  COMPLETED: 3,
+  CANCELED: 4,
+};
+const generateOrderCode = () => {
+  const date = new Date();
+  const dateStr = `${date.getFullYear().toString().slice(-2)}${(date.getMonth() + 1).toString().padStart(2, "0")}${date.getDate().toString().padStart(2, "0")}`;
+  const randomStr = Math.random().toString(36).substring(2, 6).toUpperCase();
+  return `DH${dateStr}${randomStr}`;
+};
 
 export const checkOutService = async (idAccount, orderData, selectedItems) => {
   if (
@@ -25,7 +40,9 @@ export const checkOutService = async (idAccount, orderData, selectedItems) => {
   ) {
     throw new ErrorHandler("Vui lòng chọn ít nhất 1 sản phẩm!", 400);
   }
+
   const transaction = await sequelize.transaction();
+
   try {
     const {
       TenNguoiNhan,
@@ -33,35 +50,31 @@ export const checkOutService = async (idAccount, orderData, selectedItems) => {
       DiaChiGiaoHang,
       MaPhuongThuc,
       MaPhi,
+      addressObj,
       ListMaKhuyenMai,
       GhiChu,
     } = orderData;
+
     const customer = await CustomerModel.findOne({
-      where: {
-        MaTaiKhoan: idAccount,
-      },
+      where: { MaTaiKhoan: idAccount },
     });
-    if (!customer) {
+    if (!customer)
       throw new ErrorHandler("Không tìm thấy khách hàng này!", 404);
-    }
+
     const cart = await CartModel.findOne({
-      where: {
-        MaKhachHang: customer.MaKhachHang,
-      },
+      where: { MaKhachHang: customer.MaKhachHang },
       include: [
         {
           model: CartInfoModel,
-          where: {
-            MaBienThe: {
-              [Op.in]: selectedItems,
-            },
-          },
+          where: { MaBienThe: { [Op.in]: selectedItems } },
           include: [
             {
               model: VariantModel,
+              as: "BienTheSanPham",
               include: [
                 {
                   model: ProductModel,
+                  as: "SanPham",
                   attributes: ["MaDanhMuc"],
                 },
               ],
@@ -70,16 +83,333 @@ export const checkOutService = async (idAccount, orderData, selectedItems) => {
         },
       ],
     });
-    const cartItems = cart?.ChiTietGioHangs;
+
+    const cartItems = cart?.CartInfoModels || cart?.ChiTietGioHangs;
     if (!cartItems || cartItems.length !== selectedItems.length) {
-      throw new ErrorHandler("Sản phẩm không hợp lệ hoặc đã bị xóa!", 400);
+      throw new ErrorHandler(
+        "Sản phẩm không hợp lệ, không đủ số lượng hoặc đã bị xóa khỏi giỏ!",
+        400,
+      );
     }
-    let totalShippingPrice = 0;
-    const shippingDetails = [];
+
+    let totalProductPrice = 0;
+    const shippingItemsFormat = [];
+
+    for (const item of cartItems) {
+      const variant = item.BienTheSanPham;
+
+      if (variant.SoLuong < item.SoLuong) {
+        throw new ErrorHandler(
+          `Sản phẩm ${variant.TenBienThe} không đủ số lượng trong kho!`,
+          400,
+        );
+      }
+
+      totalProductPrice += Number(variant.Gia) * item.SoLuong;
+      shippingItemsFormat.push({
+        MaBienThe: variant.MaBienThe,
+        soLuong: item.SoLuong,
+        KhoiLuong: variant.KhoiLuong,
+      });
+    }
+
+    let totalShippingFee = 0;
+    let shippingDetails = null;
+
+    if (addressObj && MaPhi) {
+      const shipResult = await calculateShippingFee(
+        shippingItemsFormat,
+        addressObj,
+        MaPhi,
+        totalProductPrice,
+      );
+      totalShippingFee = shipResult.data.total;
+      shippingDetails = shipResult.data.ghnDetails;
+    }
+
+    const discountResult = await calculateOrderDiscount(
+      ListMaKhuyenMai,
+      customer.MaKhachHang,
+      totalProductPrice,
+      totalShippingFee,
+      cartItems,
+      MaPhi,
+    );
+    const totalPayment =
+      totalProductPrice + totalShippingFee - discountResult.totalDiscount;
+
+    const newOrder = await OrderModel.create(
+      {
+        MaKhachHang: customer.MaKhachHang,
+        MaHienThi: generateOrderCode(),
+        TongTienHang: totalProductPrice,
+        TongPhiVanChuyen: totalShippingFee,
+        TongGiamGia: discountResult.totalDiscount,
+        TongThanhToan: totalPayment > 0 ? totalPayment : 0,
+        DiaChiGiaoHang,
+        TenNguoiNhan,
+        SDT,
+        TrangThaiDonHang: ORDER_STATUS.PENDING,
+        TrangThaiThanhToan: 0,
+        MaPhuongThuc,
+        GhiChu,
+      },
+      { transaction },
+    );
+
+    const orderDetails = [];
+    const inventoryHistories = [];
+
+    for (const item of cartItems) {
+      const variant = item.BienTheSanPham;
+      const quantity = item.SoLuong;
+      const unitPrice = Number(variant.Gia);
+
+      orderDetails.push({
+        MaDonHang: newOrder.MaDonHang,
+        MaBienThe: variant.MaBienThe,
+        SoLuong: quantity,
+        GiaBan: unitPrice,
+        ThanhTien: unitPrice * quantity,
+      });
+
+      inventoryHistories.push({
+        MaBienThe: variant.MaBienThe,
+        LoaiGiaoDich: "Xuất Bán",
+        SoLuongThayDoi: -quantity,
+        TonKhoHienTai: variant.SoLuong - quantity,
+        LoaiThamChieu: "Đơn Hàng",
+        MaThamChieu: newOrder.MaDonHang,
+        GhiChu: `Khách hàng đặt mua đơn ${newOrder.MaHienThi}`,
+      });
+      await VariantModel.update(
+        { SoLuong: variant.SoLuong - quantity },
+        { where: { MaBienThe: variant.MaBienThe }, transaction },
+      );
+    }
+    await OrderDetailModel.bulkCreate(orderDetails, { transaction });
+    await InventoryHistoryModel.bulkCreate(inventoryHistories, { transaction });
+
+    if (discountResult.validPromotions.length > 0) {
+      const orderPromotions = [];
+
+      for (const p of discountResult.validPromotions) {
+        let discountApplied =
+          p.LoaiVoucher === 1
+            ? discountResult.orderDiscount
+            : discountResult.shippingDiscount;
+        orderPromotions.push({
+          MaDonHang: newOrder.MaDonHang,
+          MaKhuyenMai: p.MaKhuyenMai,
+          SoTienChietKhau: discountApplied,
+        });
+
+        await PromotionWalletModel.update(
+          { TrangThaiSuDung: 1 },
+          {
+            where: {
+              MaKhachHang: customer.MaKhachHang,
+              MaKhuyenMai: p.MaKhuyenMai,
+            },
+            transaction,
+          },
+        );
+
+        await PromotionModel.decrement("SoLuong", {
+          by: 1,
+          where: { MaKhuyenMai: p.MaKhuyenMai },
+          transaction,
+        });
+      }
+      await OrderPromotionModel.bulkCreate(orderPromotions, { transaction });
+    }
+
+    await CartInfoModel.destroy({
+      where: {
+        MaGioHang: cart.MaGioHang,
+        MaBienThe: { [Op.in]: selectedItems },
+      },
+      transaction,
+    });
+
+    await transaction.commit();
+
+    return {
+      success: true,
+      message: "Đặt hàng thành công!",
+      data: {
+        orderCode: newOrder.MaHienThi,
+        totalPayment,
+      },
+    };
+  } catch (err) {
+    await transaction.rollback();
+    console.error("Lỗi CheckOut:", err);
+    if (err.statusCode) throw err;
+    throw new ErrorHandler(
+      err.message || "Lỗi server! Không thể thêm mới đơn hàng!",
+      500,
+    );
+  }
+};
+
+export const getMyOrderService = async (idAccount) => {
+  const customer = await CustomerModel.findOne({
+    where: { MaTaiKhoan: idAccount },
+  });
+  if (!customer) throw new ErrorHandler("Không tìm thấy khách hàng này!", 404);
+
+  const order = await OrderModel.findAll({
+    order: [["NgayDat", "DESC"]],
+    where: {
+      MaKhachHang: customer.MaKhachHang,
+    },
+    include: [
+      {
+        model: OrderDetailModel,
+        include: [
+          {
+            model: VariantModel,
+            attributes: ["TenBienThe", "Gia"],
+            include: [
+              {
+                model: VariantImageModel,
+                attributes: ["DuongDan"],
+              },
+              {
+                model: ProductModel,
+                attributes: ["TenSanPham", "Thumbnail"],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  });
+  return order;
+};
+
+export const getMyOrderInfoService = async (idAccount, orderCode) => {
+  try {
+    const customer = await CustomerModel.findOne({
+      where: { MaTaiKhoan: idAccount },
+    });
+
+    const order = await OrderModel.findOne({
+      where: {
+        MaHienThi: orderCode,
+        MaKhachHang: customer.MaKhachHang,
+      },
+      include: [
+        {
+          model: OrderDetailModel,
+          include: [
+            { model: VariantModel, include: [{ model: ProductModel }] },
+          ],
+        },
+        {
+          model: PromotionModel,
+          through: { attributes: ["SoTienChietKhau"] },
+        },
+      ],
+    });
+
+    if (!order)
+      throw new ErrorHandler(
+        "Đơn hàng không tồn tại hoặc bạn không có quyền truy cập!",
+        404,
+      );
+
+    return order;
+  } catch (error) {
+    console.error(err);
+    if (err.statusCode) throw err;
+    throw new ErrorHandler(
+      "Lỗi server! Không thể xem thông tin đơn hàng!",
+      500,
+    );
+  }
+};
+
+export const cancelOrderService = async (idAccount, orderCode, reason) => {
+  const transaction = await sequelize.transaction();
+  try {
+    const customer = await CustomerModel.findOne({
+      where: { MaTaiKhoan: idAccount },
+    });
+    if (!customer) {
+      throw new ErrorHandler("Không tìm thấy khách hàng này!", 404);
+    }
+    const order = await OrderModel.findOne({
+      where: { MaHienThi: orderCode, MaKhachHang: customer.MaKhachHang },
+      include: [{ model: OrderDetailModel }, { model: OrderPromotionModel }],
+    });
+    if (!order) throw new ErrorHandler("Không tìm thấy đơn hàng!", 404);
+    if (order.TrangThaiDonHang !== ORDER_STATUS.PENDING) {
+      throw new ErrorHandler(
+        "Chỉ có thể hủy đơn hàng khi đang ở trạng thái Chờ xác nhận!",
+        400,
+      );
+    }
+
+    order.TrangThaiDonHang = ORDER_STATUS.CANCELED;
+    order.GhiChu = order.GhiChu
+      ? `${order.GhiChu} | Khách tự hủy: ${reason}`
+      : `Khách tự hủy: ${reason}`;
+    await order.save({ transaction });
+    const inventoryHistories = [];
+    for (const detail of order.ChiTietDonHangs) {
+      const variant = await VariantModel.findByPk(detail.MaBienThe);
+
+      if (variant) {
+        const newQuantity = variant.SoLuong + detail.SoLuong;
+
+        await VariantModel.update(
+          { SoLuong: newQuantity },
+          { where: { MaBienThe: variant.MaBienThe }, transaction },
+        );
+
+        inventoryHistories.push({
+          MaBienThe: variant.MaBienThe,
+          LoaiGiaoDich: "Hoàn trả hàng / Hủy đơn",
+          SoLuongThayDoi: detail.SoLuong,
+          TonKhoHienTai: newQuantity,
+          LoaiThamChieu: "Đơn Hàng",
+          MaThamChieu: order.MaDonHang,
+          GhiChu: `Hoàn tồn kho do khách hủy đơn ${order.MaHienThi}`,
+        });
+      }
+    }
+    if (inventoryHistories.length > 0) {
+      await InventoryHistoryModel.bulkCreate(inventoryHistories, {
+        transaction,
+      });
+    }
+    if (order.OrderPromotionModels && order.OrderPromotionModels.length > 0) {
+      for (const promo of order.OrderPromotionModels) {
+        await PromotionWalletModel.update(
+          { TrangThaiSuDung: 0 },
+          {
+            where: {
+              MaKhachHang: customer.MaKhachHang,
+              MaKhuyenMai: promo.MaKhuyenMai,
+            },
+            transaction,
+          },
+        );
+        await PromotionModel.increment("SoLuong", {
+          by: 1,
+          where: { MaKhuyenMai: promo.MaKhuyenMai },
+          transaction,
+        });
+      }
+    }
+    await transaction.commit();
+    return true;
   } catch (err) {
     await transaction.rollback();
     console.error(err);
     if (err.statusCode) throw err;
-    throw new ErrorHandler("Lỗi server! Không thể thêm mới đơn hàng!", 500);
+    throw new ErrorHandler("Lỗi server! Không thể hủy đơn hàng!", 500);
   }
 };
