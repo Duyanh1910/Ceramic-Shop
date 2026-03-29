@@ -21,7 +21,7 @@ export const login = async (req, res, next) => {
     if (!checkValidate(username, password)) {
       throw new ErrorHandler("Username và password không được để trống!", 400);
     }
-    const result = await loginService(username, password);
+    const result = await loginService(username, password, rememberMe);
     const maxAge = result.expiresInDays * 24 * 60 * 60 * 1000;
     res.cookie("accessToken", result.token, {
       httpOnly: true,
