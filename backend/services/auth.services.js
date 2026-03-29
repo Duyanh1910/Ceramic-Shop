@@ -200,6 +200,10 @@ export const OAuthService = async (profile, provider, rememberMe) => {
   if (!email) {
     throw new ErrorHandler("Không thế lấy email!", 400);
   }
+  const avatarUrl =
+    profile.photos && profile.photos.length > 0
+      ? profile.photos[0].value
+      : "https://res.cloudinary.com/dcmwz0uis/image/upload/v1774029061/Screenshot_2026-03-20_093855_h7t2yi.png";
   const transaction = await sequelize.transaction();
   try {
     let account;
@@ -246,6 +250,7 @@ export const OAuthService = async (profile, provider, rememberMe) => {
           {
             MaTaiKhoan: account.MaTaiKhoan,
             TenKhachHang: profile.displayName || username,
+            Avatar: avatarUrl,
           },
           { transaction },
         );
