@@ -111,7 +111,7 @@ function Home() {
         setIsLoggedIn(true);
         const profileData = userData?.profile || userData;
         setUserInfo({
-          username: profileData?.TenKhachHang || userData?.username || 'Thành viên',
+          username: profileData?.TenKhachHang || userData?.username,
           avatar: profileData?.Avatar || null
         });
         await fetchCartFromDB();
