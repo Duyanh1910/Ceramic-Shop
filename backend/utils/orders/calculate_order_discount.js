@@ -11,7 +11,7 @@ export const calculateOrderDiscount = async (
   listCode,
   idCustomer,
   totalProductPrice,
-  totalshippingFee,
+  shippingFee,
   cartItems,
   MaPhi,
 ) => {
