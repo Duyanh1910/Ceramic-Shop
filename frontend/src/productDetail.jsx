@@ -6,7 +6,7 @@ import { SearchOutlined, ShoppingCartOutlined, SettingOutlined, LogoutOutlined, 
 import { Helmet } from 'react-helmet-async';
 import styles from './productDetail.module.css';
 import { clearSession } from './useAuth.js';
-
+import Breadcrumb from './Breadcrumb.jsx';
 const { Header, Content } = Layout;
 
 function ProductDetail() {
@@ -555,6 +555,7 @@ function ProductDetail() {
 
       <Layout className={styles.mainContainer}>
         <Content className={styles.mainContent}>
+          <Breadcrumb customLabels={{ [id]: product?.TenSanPham }} />
           <div className={styles.btnBackWrap}>
              <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate('/home')} className={styles.btnBack}>Quay lại Cửa hàng</Button>
           </div>
