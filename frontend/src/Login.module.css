@@ -1,13 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Arsenal:wght@400;600;700&display=swap');
 
-:global(html), :global(body), :global(#root) {
+:global(body) {
   margin: 0 !important;
   padding: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  overflow: hidden !important; 
   font-family: 'Arsenal', sans-serif !important;
-  background-color: #f4f7f9 !important;
+  background-color: #fdfdfd !important;
 }
 
 .loginContainer {
@@ -20,6 +17,7 @@
   padding: 20px;
   position: relative;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 .shape1 {
