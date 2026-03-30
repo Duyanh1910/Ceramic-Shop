@@ -555,7 +555,7 @@ function ProductDetail() {
 
       <Layout className={styles.mainContainer}>
         <Content className={styles.mainContent}>
-          <Breadcrumb customLabels={{ [id]: product?.TenSanPham }} />
+          <Breadcrumb customLabels={{ [id]: home?.TenSanPham }} />
           <div className={styles.btnBackWrap}>
              <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate('/home')} className={styles.btnBack}>Quay lại Cửa hàng</Button>
           </div>
