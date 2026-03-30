@@ -1,0 +1,56 @@
+@import url('https://fonts.googleapis.com/css2?family=Arsenal:wght@400;600&display=swap');
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0;
+  padding: 10px 0;
+  font-size: 13px;
+  font-family: 'Arsenal', sans-serif;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.sep {
+  font-size: 10px;
+  color: #ccc;
+  margin: 0 6px;
+  flex-shrink: 0;
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #888;
+  text-decoration: none;
+  transition: color 0.2s;
+  white-space: nowrap;
+}
+
+.link:hover {
+  color: #1b437c;
+}
+
+.current {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #1b437c;
+  font-weight: 600;
+  white-space: nowrap;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+}
