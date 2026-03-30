@@ -1,23 +1,53 @@
 @import url('https://fonts.googleapis.com/css2?family=Arsenal:wght@400;600;700&display=swap');
 
-:global(body) {
+:global(html), :global(body) {
   margin: 0 !important;
   padding: 0 !important;
+  width: 100%;
+  height: 100%;
   font-family: 'Arsenal', sans-serif !important;
   background-color: #f4f7f9 !important;
+  overflow-x: hidden;
 }
 
 .loginContainer {
-  min-height: 100vh;
+  height: 100vh; 
   display: flex;
   align-items: center;
   justify-content: center;
   background: linear-gradient(rgba(255, 255, 255, 0.4), rgba(213, 233, 255, 0.7)), url('https://res.cloudinary.com/dcmwz0uis/image/upload/v1774819412/bghome_dnne19.avif') center/cover no-repeat fixed;
-  padding: 20px;
+  padding: 2vh 2vw; 
   position: relative;
+  overflow: hidden; 
+  box-sizing: border-box;
+}
+
+.combinedCard {
+  display: flex;
+  width: 100%;
+  max-width: 1050px;
+  height: 100%; 
+  max-height: 620px; 
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 24px;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-  box-sizing: border-box;
-  box-sizing: border-box;
+  position: relative;
+  z-index: 10;
+  animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.cardForm {
+  flex: 1;
+  padding: 50px 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: #ffffff;
+  overflow-y: auto;
 }
 
 .shape1 {
@@ -73,22 +103,6 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-.combinedCard {
-  display: flex;
-  width: 100%;
-  max-width: 1050px;
-  min-height: 620px;
-  background: rgba(255, 255, 255, 0.65);
-  backdrop-filter: blur(25px);
-  -webkit-backdrop-filter: blur(25px);
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  border-radius: 24px;
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  position: relative;
-  z-index: 10;
-  animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
 
 .cardImage {
   flex: 1.2;
@@ -150,15 +164,6 @@
   font-weight: 600;
   position: relative;
   z-index: 1;
-}
-
-.cardForm {
-  flex: 1;
-  padding: 50px 60px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  background: #ffffff;
 }
 
 .backButton {
