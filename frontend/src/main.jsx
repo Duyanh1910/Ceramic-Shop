@@ -22,16 +22,12 @@ import AdminStaffs from './AdminStaffs.jsx'
 
 const PublicRoute = ({ children }) => {
   const isCustomerActive = localStorage.getItem('customer_session_active') === 'true';
-  const isAdminActive = localStorage.getItem('admin_session_active') === 'true';
+  
 
   if (isCustomerActive) {
     return <Navigate to="/home" replace />;
   }
   
-  if (isAdminActive) {
-    return <Navigate to="/admin" replace />;
-  }
-
   return children;
 };
 
