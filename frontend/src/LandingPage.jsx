@@ -429,7 +429,7 @@ function LandingPage() {
                     )}
 
                     <div className={styles.btnWrapCenter}>
-                        <button className={styles.btnViewAll} onClick={() => navigate('/')}>XEM TẤT CẢ SẢN PHẨM</button>
+                        <button className={styles.btnViewAll} onClick={() => navigate('/home')}>XEM TẤT CẢ SẢN PHẨM</button>
                     </div>
                 </div>
             </section>
