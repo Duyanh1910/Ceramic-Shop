@@ -4,7 +4,7 @@ import styles from './Breadcrumb.module.css';
 
 const ROUTE_LABELS = {
   '':           { label: 'Trang chủ', icon: <HomeOutlined /> },
-  'home':       { label: 'Trang chủ', icon: <HomeOutlined /> },
+  'home':       { label: 'Cửa hàng', icon: <HomeOutlined /> },
   'landing':    { label: 'Giới thiệu' },
   'login':      { label: 'Đăng nhập' },
   'register':   { label: 'Đăng ký' },
@@ -14,9 +14,10 @@ const ROUTE_LABELS = {
   'orders':     { label: 'Đơn hàng của tôi' },
   'profile':    { label: 'Hồ sơ' },
   'change-password': { label: 'Đổi mật khẩu' },
-  'home':       { label: 'Cửa hàng' },
   'admin':      { label: 'Quản lý' },
-  'products':   { label: 'Sản phẩm' },
+  
+  'product':    { label: 'Cửa hàng', redirect: '/home' }, 
+  
   'customers':  { label: 'Khách hàng' },
   'staffs':     { label: 'Nhân viên' },
   'reports':    { label: 'Báo cáo' },
@@ -43,6 +44,7 @@ export default function Breadcrumb({ customLabels = {}, className = '' }) {
 
     let label = '';
     let icon = null;
+    let targetPath = accPath;
 
     if (customLabels[customKey]) {
       label = customLabels[customKey];
@@ -55,9 +57,14 @@ export default function Breadcrumb({ customLabels = {}, className = '' }) {
       const config = ROUTE_LABELS[seg];
       label = config?.label || seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, ' ');
       icon = config?.icon || null;
+      
+      // KIỂM TRA REDIRECT: Nếu trong từ điển có cài redirect thì ưu tiên lấy nó
+      if (config?.redirect) {
+        targetPath = config.redirect;
+      }
     }
 
-    crumbs.push({ label, icon, path: accPath });
+    crumbs.push({ label, icon, path: targetPath });
   });
 
   if (crumbs.length <= 1) return null;
@@ -67,7 +74,7 @@ export default function Breadcrumb({ customLabels = {}, className = '' }) {
       {crumbs.map((crumb, i) => {
         const isLast = i === crumbs.length - 1;
         return (
-          <span key={crumb.path} className={styles.item}>
+          <span key={crumb.path + i} className={styles.item}>
             {i > 0 && <RightOutlined className={styles.sep} />}
             {isLast ? (
               <span className={styles.current}>
