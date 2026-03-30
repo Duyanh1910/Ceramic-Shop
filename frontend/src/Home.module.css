@@ -38,12 +38,13 @@
   flex: 1;
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: flex-start; 
+  gap: 15px; 
   cursor: pointer;
 }
 
 .logoImg {
-  width: 50px;
+  width: 60px; 
   height: auto;
   object-fit: contain;
 }
@@ -56,18 +57,17 @@
 
 .logoText {
   font-family: 'Arsenal', serif;
-  font-size: 24px;
+  font-size: 28px; 
   font-weight: 700;
-  color: #1b437c;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  color: #173354; 
+  letter-spacing: 2px; 
   margin: 0;
-  line-height: 1.2;
+  line-height: normal; 
 }
 
 .logoSub {
   font-size: 11px;
-  letter-spacing: 1.5px;
+  letter-spacing: 2px;
   color: #BB9244;
   text-transform: uppercase;
 }
