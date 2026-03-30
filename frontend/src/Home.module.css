@@ -12,7 +12,7 @@
 .homeWrapper {
   min-height: 100vh;
   background-color: #fdfdfd;
-  background: linear-gradient(rgba(255, 255, 255, 0.8), rgb(213, 233, 255)), url('bghome.avif');
+  background: linear-gradient(rgba(255, 255, 255, 0.8), rgb(213, 233, 255)), url('https://res.cloudinary.com/dcmwz0uis/image/upload/v1774819412/bghome_dnne19.avif') center/cover no-repeat fixed;
   background-size: cover;
   background-attachment: fixed;
   background-position: center;

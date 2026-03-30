@@ -50,8 +50,7 @@ export default function AdminLayout() {
 
   const userMenu = {
     items: [
-      { key: 'profile', icon: <UserOutlined />, label: 'Hồ sơ cá nhân' },
-      { key: 'settings', icon: <SettingOutlined />, label: 'Cài đặt' },
+      { key: 'profile', icon: <UserOutlined />, label: 'Sửa hồ sơ' },
       { type: 'divider' },
       { key: 'logout', icon: <LogoutOutlined />, label: 'Đăng xuất', danger: true },
     ],
@@ -108,9 +107,6 @@ export default function AdminLayout() {
             className={styles.collapseBtn}
           />
           <div className={styles.headerRight}>
-            <Badge count={3} size="small">
-              <Button type="text" icon={<BellOutlined />} className={styles.iconBtn} />
-            </Badge>
             <Dropdown menu={userMenu} placement="bottomRight" arrow>
               <div className={styles.userInfo}>
                 <Avatar className={styles.avatar}>{username?.[0]?.toUpperCase()}</Avatar>
