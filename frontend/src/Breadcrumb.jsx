@@ -14,7 +14,7 @@ const ROUTE_LABELS = {
   'orders':     { label: 'Đơn hàng của tôi' },
   'profile':    { label: 'Hồ sơ' },
   'change-password': { label: 'Đổi mật khẩu' },
-  'product':    { label: 'Sản phẩm' },
+  'home':       { label: 'Cửa hàng' },
   'admin':      { label: 'Quản lý' },
   'products':   { label: 'Sản phẩm' },
   'customers':  { label: 'Khách hàng' },
