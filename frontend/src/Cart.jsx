@@ -271,7 +271,6 @@ function Cart() {
         <div className={styles.logo} onClick={() => navigate('/landing')}>CERAMIC-SHOP</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
           
-          {/* NÚT ĐĂNG NHẬP TRÊN HEADER */}
           {!isLoggedIn && !isFetchingCart && (
             <Button type="link" icon={<LoginOutlined />} onClick={() => setLoginModal(true)} style={{ fontWeight: 600, color: '#1b437c' }}>
               Đăng nhập

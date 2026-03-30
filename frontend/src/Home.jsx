@@ -679,7 +679,7 @@ function Home() {
       </Helmet>
 
       <Header className={styles.topHeader}>
-        <div className={styles.logoBox} onClick={() => navigate('/landing')}>
+        <div className={styles.logoBox} onClick={() => navigate('/')}>
           <img 
             src="/logo.png" 
             alt="Ceramic Shop Logo" 
