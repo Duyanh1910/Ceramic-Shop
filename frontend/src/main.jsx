@@ -13,7 +13,7 @@ import Cart from './Cart.jsx'
 import ChatBot from './ChatBot'
 import ChangePassword from './ChangePassword.jsx'
 import ForgotPassword from './ForgotPassword.jsx'
-
+import LoginSuccess from './LoginSuccess.jsx'
 import AdminLayout from './AdminLayout.jsx'
 import AdminDashboard from './AdminDashboard.jsx'
 import AdminProducts from './AdminProducts.jsx'
@@ -27,7 +27,7 @@ const PublicRoute = ({ children }) => {
   if (isCustomerActive) {
     return <Navigate to="/home" replace />;
   }
-  
+
   return children;
 };
 
@@ -112,6 +112,7 @@ createRoot(document.getElementById('root')).render(
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="/login-success" element={<LoginSuccess />} />
         </Routes>
         
         <ConditionalChatBot />

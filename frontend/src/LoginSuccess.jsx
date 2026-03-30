@@ -20,11 +20,18 @@ function LoginSuccess() {
         const user = response.data.user || response.data.result || response.data;
         const currentUsername = user.profile?.TenKhachHang || user.username || 'Khách hàng';
         const currentRole = user.role || 'Customer';
+        
+        const token = response.data.token || response.data.result?.token || user.token;
 
-        saveSession(currentUsername, currentRole, true);
+        saveSession(currentUsername, currentRole, true, token);
 
         message.success('Đăng nhập mạng xã hội thành công!');
-        navigate('/home', { replace: true });
+        
+        if (currentRole === 'Admin' || currentRole === 'Staff') {
+            navigate('/admin', { replace: true });
+        } else {
+            navigate('/home', { replace: true });
+        }
         
       } catch (error) {
         console.error('Lỗi xác thực OAuth:', error);

@@ -33,41 +33,36 @@ function LandingPage() {
 
     useEffect(() => {
         const checkOAuth = async () => {
-        const isCustomer = localStorage.getItem('customer_session_active') === 'true';
-        const isAdmin = localStorage.getItem('admin_session_active') === 'true';
-        
-        if (isCustomer) { navigate('/home'); return; }
-        if (isAdmin) { navigate('/admin'); return; }
-
-        try {
-            const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/me', { 
-                withCredentials: true 
-            });
-            
-            const userData = res.data.user || res.data.result;
-            const token = res.data.token || res.data.result?.token || userData?.token;
-
-            if (userData) {
-                const role = userData.role || 'Customer';
-                const profileData = userData.profile || userData;
-                const username = profileData.TenKhachHang || userData.username || 'Thành viên';
+            try {
+                const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/me', { 
+                    withCredentials: true 
+                });
                 
-                saveSession(username, role, true, token);
-                
-                if (role === 'Admin' || role === 'Staff') {
-                    navigate('/admin');
-                } else {
-                    navigate('/home');
+                const userData = res.data.user || res.data.result;
+                const token = res.data.token || res.data.result?.token || userData?.token;
+
+                if (userData) {
+                    const role = userData.role || 'Customer';
+                    const profileData = userData.profile || userData;
+                    const username = profileData.TenKhachHang || userData.username || 'Thành viên';
+                    
+                    saveSession(username, role, true, token);
+                    
+                    if (role === 'Admin' || role === 'Staff') {
+                        navigate('/admin');
+                    } else {
+                        navigate('/home');
+                    }
+                    return;
                 }
-                return;
+            } catch (err) {
+                localStorage.removeItem('admin_session_active');
+                localStorage.removeItem('customer_session_active');
             }
-        } catch (err) {
-            console.error("OAuth check failed", err);
-        }
-        setIsChecking(false);
-    };
-    
-    checkOAuth();
+            setIsChecking(false);
+        };
+        
+        checkOAuth();
     }, [navigate]);
 
     useEffect(() => {
