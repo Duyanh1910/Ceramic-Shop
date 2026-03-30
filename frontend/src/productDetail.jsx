@@ -506,7 +506,18 @@ function ProductDetail() {
       <Helmet><title>{product.TenSanPham}</title></Helmet>
       
       <Header className={styles.topHeader}>
-        <div className={styles.logo} onClick={() => navigate('/')} style={{cursor: 'pointer'}}>CERAMIC-SHOP</div>
+        <div className={styles.logoBox} onClick={() => navigate('/home')}>
+          <img 
+            src="/logo.png" 
+            alt="Ceramic Shop Logo" 
+            className={styles.logoImg} 
+          />
+          <div className={styles.logoTextWrap}>
+              <h1 className={styles.logoText}>CERAMIC-SHOP</h1>
+              <span className={styles.logoSub}>TINH HOA GỐM SỨ VIỆT</span>
+          </div>
+        </div>
+
         <div className={styles.headerSearch}>
           <div className={styles.searchWrapper}>
             <AutoComplete className={styles.searchAutoComplete} options={searchOptions} onSearch={handleSearchInput} value={searchKw} defaultActiveFirstOption={false} backfill={false}>
@@ -652,6 +663,56 @@ function ProductDetail() {
           </div>
         </Content>
       </Layout>
+
+      <footer className={styles.footer}>
+          <div className={styles.container}>
+              <div className={styles.footerGrid}>
+                  <div className={styles.footerCol}>
+                      <h3>HỖ TRỢ KHÁCH HÀNG</h3>
+                      <ul>
+                          <li><a href="#guide">Hướng dẫn mua hàng</a></li>
+                          <li><a href="#payment">Chính sách thanh toán</a></li>
+                          <li><a href="#shipping">Chính sách giao hàng</a></li>
+                          <li><a href="#return">Chính sách đổi trả</a></li>
+                          <li><a href="#warranty">Chính sách bảo hành</a></li>
+                      </ul>
+                  </div>
+                  
+                  <div className={styles.footerCol}>
+                      <h3>PHƯƠNG THỨC THANH TOÁN</h3>
+                      <ul>
+                          <li>💵 Thanh toán COD (Tiền mặt)</li>
+                          <li>🏦 VNPay (Quét mã QR)</li>
+                          <li>📱 Ví điện tử (MoMo / ZaloPay)</li>
+                          <li>🔗 Tiền điện tử (MetaMask)</li>
+                          <li>💳 Chuyển khoản ngân hàng</li>
+                      </ul>
+                  </div>
+
+                  <div className={styles.footerCol}>
+                      <h3>THÔNG TIN LIÊN HỆ</h3>
+                      <ul>
+                          <li>📍 Địa chỉ: 484 Lạch Tray, Lê Chân, Hải Phòng</li>
+                          <li>📞 Hotline: 0329.835.725</li>
+                          <li>✉️ Email: theceramicshop24@gmail.com</li>
+                          <li>🕐 Giờ làm việc: 8:00 - 22:00 (Thứ 2 - Thứ 7)</li>
+                      </ul>
+                  </div>
+
+                  <div className={styles.footerCol}>
+                      <h3>ĐĂNG KÝ NHẬN TIN</h3>
+                      <p className={styles.footerText}>Nhận thông tin về sản phẩm mới và các chương trình khuyến mãi.</p>
+                      <div className={styles.subscribeBox}>
+                          <input type="email" placeholder="Nhập email của bạn..." />
+                          <button>ĐĂNG KÝ</button>
+                      </div>
+                  </div>
+              </div>
+          </div>
+          <div className={styles.copyright}>
+              <p>© 2026 Bản quyền thuộc về CeramicShop. Bảo lưu mọi quyền.</p>
+          </div>
+      </footer>
     </Layout>
   );
 }
