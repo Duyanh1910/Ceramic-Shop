@@ -7,8 +7,13 @@
   font-family: 'Arsenal', sans-serif !important;
   color: #333;
   overflow-x: hidden;
+  overflow-x: hidden !important; 
+  overflow-y: auto !important
 }
-
+:global(#root) {
+  min-height: 100vh;
+  overflow: visible !important;
+}
 .homeWrapper {
   min-height: 100vh;
   background-color: #fdfdfd;
