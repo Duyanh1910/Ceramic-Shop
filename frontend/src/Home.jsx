@@ -8,7 +8,6 @@ import styles from './Home.module.css';
 import { useAutoLogout, clearSession } from './useAuth.js';
 
 const { Header, Sider, Content } = Layout;
-const { Option } = Select;
 
 function Home() {
   useAutoLogout();
@@ -470,7 +469,7 @@ function Home() {
         Chọn phân loại:
       </div>
       <Radio.Group onChange={(e) => setSelectedVariantId(e.target.value)} value={selectedVariantId} style={{ width: '100%' }}>
-        <Space direction="vertical" style={{ width: '100%' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
           {variants.map(v => {
             const isSelected = selectedVariantId === v.MaBienThe;
             return (
@@ -492,7 +491,7 @@ function Home() {
               </Radio>
             );
           })}
-        </Space>
+        </div>
       </Radio.Group>
       <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'flex-end', gap: '10px', paddingTop: '12px', borderTop: '1px solid #f0f0f0' }}>
         <Button 
@@ -680,7 +679,14 @@ function Home() {
       </Helmet>
 
       <Header className={styles.topHeader}>
-        <div className={styles.logo} onClick={() => navigate('/landing')}>CERAMIC-SHOP</div>
+        <div className={styles.logo} onClick={() => navigate('/landing')}>
+          <img 
+            src="https://res.cloudinary.com/dcmwz0uis/image/upload/v1774819165/IMG_20260330_041641_qwo8lc.jpg" 
+            alt="Ceramic Shop Logo" 
+            className={styles.logoImg} 
+          />
+          <span className={styles.logoText}>CERAMIC-SHOP</span>
+        </div>
         
         <div className={styles.headerSearch}>
           <div className={styles.searchWrapper}>
@@ -697,18 +703,14 @@ function Home() {
                 setCurrentPage(1); 
                 setSearchOptions([]); 
               }}
-              onSearch={handleSearchInput}
+              onChange={handleSearchInput}
               value={searchKw}
               notFoundContent={null}
-              defaultActiveFirstOption={false} 
-              filterOption={false}
-              backfill={false}
             >
               <Input 
                 ref={inputRef}
                 placeholder="Tìm kiếm ấm trà, bình hoa..." 
                 className={styles.searchInput}
-                onChange={(e) => setSearchKw(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     e.preventDefault();
@@ -776,31 +778,36 @@ function Home() {
             </h2>
             
             <div className={styles.sortTools}>
-              <Select value={sortField} className={styles.filterSelect} onChange={handleSortFieldChange}>
-                <Option value="">Tiêu chí (Tất cả)</Option>
-                <Option value="MaSanPham">Theo ngày</Option>
-                <Option value="Gia">Theo Giá</Option>
-              </Select>
+              <Select 
+                value={sortField} 
+                className={styles.filterSelect} 
+                onChange={handleSortFieldChange}
+                options={[
+                  { value: '', label: 'Tiêu chí (Tất cả)' },
+                  { value: 'MaSanPham', label: 'Theo ngày' },
+                  { value: 'Gia', label: 'Theo Giá' }
+                ]}
+              />
 
               <Select 
                 value={sortOrder} 
                 className={styles.filterSelect} 
                 onChange={(val) => {setSortOrder(val); setCurrentPage(1);}} 
                 disabled={!sortField}
-              >
-                {sortField === 'Gia' && (
-                  <>
-                    <Option value="ASC">Thấp đến cao</Option>
-                    <Option value="DESC">Cao đến thấp</Option>
-                  </>
-                )}
-                {sortField === 'MaSanPham' && (
-                  <>
-                    <Option value="DESC">Gần đây nhất</Option>
-                    <Option value="ASC">Cũ nhất</Option>
-                  </>
-                )}
-              </Select>
+                options={
+                  sortField === 'Gia' 
+                    ? [
+                        { value: 'ASC', label: 'Thấp đến cao' },
+                        { value: 'DESC', label: 'Cao đến thấp' }
+                      ] 
+                    : sortField === 'MaSanPham'
+                    ? [
+                        { value: 'DESC', label: 'Gần đây nhất' },
+                        { value: 'ASC', label: 'Cũ nhất' }
+                      ]
+                    : []
+                }
+              />
 
               <Button icon={<ReloadOutlined />} onClick={handleResetFilters} className={styles.resetBtn}>
                 Xóa lọc
@@ -912,6 +919,56 @@ function Home() {
           )}
         </Content>
       </Layout>
+
+      <footer className={styles.footer}>
+          <div className={styles.container}>
+              <div className={styles.footerGrid}>
+                  <div className={styles.footerCol}>
+                      <h3>HỖ TRỢ KHÁCH HÀNG</h3>
+                      <ul>
+                          <li><a href="#guide">Hướng dẫn mua hàng</a></li>
+                          <li><a href="#payment">Chính sách thanh toán</a></li>
+                          <li><a href="#shipping">Chính sách giao hàng</a></li>
+                          <li><a href="#return">Chính sách đổi trả</a></li>
+                          <li><a href="#warranty">Chính sách bảo hành</a></li>
+                      </ul>
+                  </div>
+                  
+                  <div className={styles.footerCol}>
+                      <h3>PHƯƠNG THỨC THANH TOÁN</h3>
+                      <ul>
+                          <li>💵 Thanh toán COD (Tiền mặt)</li>
+                          <li>🏦 VNPay (Quét mã QR)</li>
+                          <li>📱 Ví điện tử (MoMo / ZaloPay)</li>
+                          <li>🔗 Tiền điện tử (MetaMask)</li>
+                          <li>💳 Chuyển khoản ngân hàng</li>
+                      </ul>
+                  </div>
+
+                  <div className={styles.footerCol}>
+                      <h3>THÔNG TIN LIÊN HỆ</h3>
+                      <ul>
+                          <li>📍 Địa chỉ: 484 Lạch Tray, Lê Chân, Hải Phòng</li>
+                          <li>📞 Hotline: 0329.835.725</li>
+                          <li>✉️ Email: theceramicshop24@gmail.com</li>
+                          <li>🕐 Giờ làm việc: 8:00 - 22:00 (Thứ 2 - Thứ 7)</li>
+                      </ul>
+                  </div>
+
+                  <div className={styles.footerCol}>
+                      <h3>ĐĂNG KÝ NHẬN TIN</h3>
+                      <p className={styles.footerText}>Nhận thông tin về sản phẩm mới và các chương trình khuyến mãi.</p>
+                      <div className={styles.subscribeBox}>
+                          <input type="email" placeholder="Nhập email của bạn..." />
+                          <button>ĐĂNG KÝ</button>
+                      </div>
+                  </div>
+              </div>
+          </div>
+          <div className={styles.copyright}>
+              <p>© 2026 Bản quyền thuộc về CeramicShop. Bảo lưu mọi quyền.</p>
+          </div>
+      </footer>
     </Layout>
   );
 }
