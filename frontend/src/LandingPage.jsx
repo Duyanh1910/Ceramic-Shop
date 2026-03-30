@@ -29,10 +29,15 @@ function LandingPage() {
     const [searchOptions, setSearchOptions] = useState([]);
     const inputRef = useRef(null);
 
-    const [isChecking, setIsChecking] = useState(true);
+    const [isChecking, setIsChecking] = useState(false); 
 
     useEffect(() => {
         const checkOAuth = async () => {
+            const isCustomer = localStorage.getItem('customer_session_active') === 'true';
+            const isAdmin = localStorage.getItem('admin_session_active') === 'true';
+
+            if (isCustomer || isAdmin) return;
+
             try {
                 const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/me', { 
                     withCredentials: true 
@@ -47,23 +52,13 @@ function LandingPage() {
                     const username = profileData.TenKhachHang || userData.username || 'Thành viên';
                     
                     saveSession(username, role, true, token);
-                    
-                    if (role === 'Admin' || role === 'Staff') {
-                        navigate('/admin');
-                    } else {
-                        navigate('/home');
-                    }
-                    return;
                 }
             } catch (err) {
-                localStorage.removeItem('admin_session_active');
-                localStorage.removeItem('customer_session_active');
             }
-            setIsChecking(false);
         };
         
         checkOAuth();
-    }, [navigate]);
+    }, []);
 
     useEffect(() => {
         const savedCart = localStorage.getItem('ceramic_cart');
