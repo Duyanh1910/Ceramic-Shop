@@ -681,11 +681,14 @@ function Home() {
       <Header className={styles.topHeader}>
         <div className={styles.logo} onClick={() => navigate('/landing')}>
           <img 
-            src="https://res.cloudinary.com/dcmwz0uis/image/upload/v1774819165/IMG_20260330_041641_qwo8lc.jpg" 
+            src="/logo.png" 
             alt="Ceramic Shop Logo" 
             className={styles.logoImg} 
           />
-          <span className={styles.logoText}>CERAMIC-SHOP</span>
+          <div className={styles.logoTextWrap}>
+              <span className={styles.logoText}>CERAMIC-SHOP</span>
+              <span className={styles.logoSub}>TINH HOA GỐM SỨ VIỆT</span>
+          </div>
         </div>
         
         <div className={styles.headerSearch}>

@@ -48,12 +48,28 @@
   object-fit: contain;
 }
 
+.logoTextWrap {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 .logoText {
-  font-size: 26px;
+  font-family: 'Arsenal', serif;
+  font-size: 24px;
   font-weight: 700;
   color: #1b437c;
   text-transform: uppercase;
   letter-spacing: 1px;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.logoSub {
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  color: #BB9244;
+  text-transform: uppercase;
 }
 
 .headerSearch {
