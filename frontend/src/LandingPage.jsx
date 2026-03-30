@@ -29,45 +29,36 @@ function LandingPage() {
     const [searchOptions, setSearchOptions] = useState([]);
     const inputRef = useRef(null);
 
-    const [isChecking, setIsChecking] = useState(true);
+    const [isChecking, setIsChecking] = useState(false); 
 
     useEffect(() => {
         const checkOAuth = async () => {
             const isCustomer = localStorage.getItem('customer_session_active') === 'true';
             const isAdmin = localStorage.getItem('admin_session_active') === 'true';
-            
-            if (isCustomer || isAdmin) {
-                setIsChecking(false);
-                return;
-            }
+
+            if (isCustomer || isAdmin) return;
 
             try {
                 const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/me', { 
                     withCredentials: true 
                 });
-                const userData = res.data.user || res.data.result;
                 
+                const userData = res.data.user || res.data.result;
+                const token = res.data.token || res.data.result?.token || userData?.token;
+
                 if (userData) {
                     const role = userData.role || 'Customer';
                     const profileData = userData.profile || userData;
                     const username = profileData.TenKhachHang || userData.username || 'Thành viên';
                     
-                    saveSession(username, role, true);
-                    
-                    if (role === 'Admin' || role === 'Staff') {
-                        navigate('/admin');
-                    } else {
-                        navigate('/home');
-                    }
-                    return;
+                    saveSession(username, role, true, token);
                 }
             } catch (err) {
             }
-            setIsChecking(false);
         };
         
         checkOAuth();
-    }, [navigate]);
+    }, []);
 
     useEffect(() => {
         const savedCart = localStorage.getItem('ceramic_cart');
@@ -85,7 +76,6 @@ function LandingPage() {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    // Load dữ liệu sản phẩm
     useEffect(() => {
         fetchProducts();
     }, []);
@@ -213,7 +203,7 @@ function LandingPage() {
                     <div className={styles.topbarInner}>
                         <a href="#"><EnvironmentOutlined /> Hệ thống cửa hàng</a>
                         <span className={styles.divider}>|</span>
-                        <a href="#"><PhoneOutlined /> Hotline: <strong>1900 2268</strong></a>
+                        <a href="#"><PhoneOutlined /> Hotline: <strong>0329835725</strong></a>
                     </div>
                 </div>
             </div>
@@ -222,6 +212,18 @@ function LandingPage() {
                 <div className={styles.container}>
                     <div className={styles.headerFlex}>
                         
+                        <div className={styles.logoBox} onClick={() => navigate('/landing')}>
+                            <img 
+                                src="https://res.cloudinary.com/dcmwz0uis/image/upload/v1774819165/IMG_20260330_041641_qwo8lc.jpg" 
+                                alt="Ceramic Shop Logo" 
+                                className={styles.logoImg} 
+                            />
+                            <div className={styles.logoTextWrap}>
+                                <h1 className={styles.logoText}>CERAMIC-SHOP</h1>
+                                <span className={styles.logoSub}>TINH HOA GỐM SỨ VIỆT</span>
+                            </div>
+                        </div>
+
                         <div className={styles.searchBox}>
                             <AutoComplete
                                 className={styles.searchAutoComplete}
@@ -230,19 +232,15 @@ function LandingPage() {
                                     setSearchKw(val); 
                                     executeSearch(val);
                                 }}
-                                onSearch={handleSearchInput}
+                                onChange={handleSearchInput}
                                 value={searchKw}
                                 notFoundContent={null}
-                                defaultActiveFirstOption={false} 
-                                filterOption={false}
-                                backfill={false}
                                 style={{ width: '100%' }}
                             >
                                 <Input 
                                     ref={inputRef}
                                     placeholder="Tìm kiếm sản phẩm..." 
                                     className={styles.searchInput}
-                                    onChange={(e) => setSearchKw(e.target.value)}
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter') {
                                             e.preventDefault();
@@ -251,14 +249,9 @@ function LandingPage() {
                                         }
                                     }}
                                     prefix={<SearchOutlined className={styles.iconSearch} onClick={() => executeSearch(searchKw)} />}
-                                    bordered={false}
+                                    variant="borderless"
                                 />
                             </AutoComplete>
-                        </div>
-
-                        <div className={styles.logoBox} onClick={() => navigate('/landing')}>
-                            <h1 className={styles.logoText}>CERAMIC-SHOP</h1>
-                            <span className={styles.logoSub}>TINH HOA GỐM SỨ VIỆT</span>
                         </div>
 
                         <div className={styles.utilityBox}>
@@ -427,7 +420,7 @@ function LandingPage() {
                     )}
 
                     <div className={styles.btnWrapCenter}>
-                        <button className={styles.btnViewAll} onClick={() => navigate('/')}>XEM TẤT CẢ SẢN PHẨM</button>
+                        <button className={styles.btnViewAll} onClick={() => navigate('/home')}>XEM TẤT CẢ SẢN PHẨM</button>
                     </div>
                 </div>
             </section>

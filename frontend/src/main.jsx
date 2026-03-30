@@ -1,4 +1,4 @@
-import { StrictMode} from 'react'
+import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
@@ -13,7 +13,7 @@ import Cart from './Cart.jsx'
 import ChatBot from './ChatBot'
 import ChangePassword from './ChangePassword.jsx'
 import ForgotPassword from './ForgotPassword.jsx'
-
+import LoginSuccess from './LoginSuccess.jsx'
 import AdminLayout from './AdminLayout.jsx'
 import AdminDashboard from './AdminDashboard.jsx'
 import AdminProducts from './AdminProducts.jsx'
@@ -22,26 +22,32 @@ import AdminStaffs from './AdminStaffs.jsx'
 
 const PublicRoute = ({ children }) => {
   const isCustomerActive = localStorage.getItem('customer_session_active') === 'true';
+  
 
   if (isCustomerActive) {
     return <Navigate to="/home" replace />;
   }
+
   return children;
 };
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
-  const isAdmin = allowedRoles.includes('Admin') || allowedRoles.includes('Staff');
-  const prefix = isAdmin ? 'admin_' : 'customer_';
-  
-  const isActive = localStorage.getItem(prefix + 'session_active') === 'true';
-  const role = localStorage.getItem(prefix + 'role');
+  const isCustomer = localStorage.getItem('customer_session_active') === 'true';
+  const isAdmin = localStorage.getItem('admin_session_active') === 'true';
 
-  if (!isActive) {
+  let currentRole = null;
+  if (isAdmin) currentRole = localStorage.getItem('admin_role');
+  else if (isCustomer) currentRole = localStorage.getItem('customer_role');
+
+  if (!isCustomer && !isAdmin) {
     return <Navigate to="/login" replace />;
   }
 
-  if (!allowedRoles.includes(role)) {
-    return <Navigate to="/" replace />;
+  if (allowedRoles && !allowedRoles.includes(currentRole)) {
+    if (currentRole === 'Admin' || currentRole === 'Staff') {
+        return <Navigate to="/admin" replace />;
+    }
+    return <Navigate to="/home" replace />;
   }
 
   return children;
@@ -76,7 +82,9 @@ createRoot(document.getElementById('root')).render(
           } />
 
           <Route path="/home" element={<Home />} />
+          
           <Route path="/cart" element={<Cart />} />
+          
           <Route path="/profile" element={
             <ProtectedRoute allowedRoles={['Customer', 'Admin', 'Staff']}>
               <Profile />
@@ -104,6 +112,7 @@ createRoot(document.getElementById('root')).render(
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="/login-success" element={<LoginSuccess />} />
         </Routes>
         
         <ConditionalChatBot />

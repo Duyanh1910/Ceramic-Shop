@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { Dropdown, Avatar, Space, Layout, Menu, Input, Select, Row, Col, Pagination, Spin, Badge, message, AutoComplete, Popover, Button, Radio } from 'antd';
-import { LogoutOutlined, SettingOutlined, SearchOutlined, ShoppingCartOutlined, DeleteOutlined, ReloadOutlined, AppstoreOutlined, EyeOutlined } from '@ant-design/icons';
+import { LogoutOutlined, SettingOutlined, SearchOutlined, ShoppingCartOutlined, DeleteOutlined, ReloadOutlined, AppstoreOutlined, EyeOutlined, UserOutlined } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import styles from './Home.module.css';
 import { useAutoLogout, clearSession } from './useAuth.js';
+
 const { Header, Sider, Content } = Layout;
-const { Option } = Select;
 
 function Home() {
   useAutoLogout();
@@ -28,9 +28,10 @@ function Home() {
   
   const inputRef = useRef(null);
   const [userInfo, setUserInfo] = useState({ username: '', avatar: '' });
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const [isFetchingCart, setIsFetchingCart] = useState(!!localStorage.getItem('session_active'));
+  const [isLoggedIn, setIsLoggedIn] = useState(localStorage.getItem('customer_session_active') === 'true');
+  const [isAuthChecking, setIsAuthChecking] = useState(localStorage.getItem('customer_session_active') === 'true');
+  const [isFetchingCart, setIsFetchingCart] = useState(localStorage.getItem('customer_session_active') === 'true');
   
   const [cart, setCart] = useState(() => {
     if (localStorage.getItem('customer_session_active') === 'true') return [];
@@ -44,13 +45,11 @@ function Home() {
   const [selectedVariantId, setSelectedVariantId] = useState(null);
   const [pendingAction, setPendingAction] = useState('cart');
 
-  const [isAuthChecking, setIsAuthChecking] = useState(localStorage.getItem('customer_session_active') === 'true');
-
   useEffect(() => {
-    if (!isLoggedIn) {
+    if (!isLoggedIn && !isAuthChecking) {
       localStorage.setItem('ceramic_cart', JSON.stringify(cart));
     }
-  }, [cart, isLoggedIn]);
+  }, [cart, isLoggedIn, isAuthChecking]);
 
   const fetchCartFromDB = async () => {
     try {
@@ -79,9 +78,8 @@ function Home() {
   };
 
   const handleLogoutLocal = () => {
-    clearSession();
-    localStorage.removeItem('name');
-    localStorage.removeItem('avatar');
+    clearSession(false); 
+    localStorage.removeItem('customer_avatar');
     setIsLoggedIn(false);
     setUserInfo({ username: '', avatar: '' });
     const savedCart = localStorage.getItem('ceramic_cart');
@@ -90,40 +88,47 @@ function Home() {
 
   useEffect(() => {
     const checkAuth = async () => {
-    if (localStorage.getItem('customer_session_active') !== 'true') {
-      setIsLoggedIn(false);
-      setIsAuthChecking(false);
-      setIsFetchingCart(false);
-      return;
-    }
-
-    try {
-      const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/me', { 
-        withCredentials: true 
-      });
-      const userData = res.data.user || res.data.result;
-      
-      if (userData.role === 'Admin' || userData.role === 'Staff') {
+      if (localStorage.getItem('customer_session_active') !== 'true') {
         setIsLoggedIn(false);
-        const savedCart = localStorage.getItem('ceramic_cart');
-        setCart(savedCart ? JSON.parse(savedCart) : []);
-      } else {
-        setIsLoggedIn(true);
-        const profileData = userData?.profile || userData;
-        setUserInfo({
-          username: profileData?.TenKhachHang || userData?.username,
-          avatar: profileData?.Avatar || null
-        });
-        await fetchCartFromDB();
+        setIsAuthChecking(false);
+        setIsFetchingCart(false);
+        return;
       }
-    } catch (error) {
-      handleLogoutLocal();
-    } finally {
-      setIsAuthChecking(false);
-    }
-  };
-  checkAuth();
-}, []);
+
+      try {
+        const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/me', { 
+          withCredentials: true 
+        });
+        const userData = res.data.user || res.data.result;
+        
+        if (userData.role === 'Admin' || userData.role === 'Staff') {
+          setIsLoggedIn(false);
+          const savedCart = localStorage.getItem('ceramic_cart');
+          setCart(savedCart ? JSON.parse(savedCart) : []);
+        } else {
+          setIsLoggedIn(true);
+          const profileData = userData?.profile || userData;
+          const displayUsername = profileData?.TenKhachHang || userData?.username || 'Thành viên';
+          
+          let safeAvatar = profileData?.Avatar;
+          if (!safeAvatar || safeAvatar.includes('default_avatar_gojcul')) {
+            safeAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayUsername)}&background=random&color=fff`;
+          }
+
+          setUserInfo({
+            username: displayUsername,
+            avatar: safeAvatar
+          });
+          await fetchCartFromDB();
+        }
+      } catch (error) {
+        handleLogoutLocal();
+      } finally {
+        setIsAuthChecking(false);
+      }
+    };
+    checkAuth();
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -131,11 +136,11 @@ function Home() {
         withCredentials: true 
       });
     } catch (err) {
-      console.error("Lỗi đăng xuất", err);
+      console.error(err);
     }
     
     handleLogoutLocal();
-    message.success("Đã đăng xuất");
+    message.success("Đã đăng xuất tài khoản mua hàng");
   };
 
   useEffect(() => {
@@ -331,7 +336,6 @@ function Home() {
   };
 
   const totalCartPrice = isFetchingCart ? 0 : cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const totalCartItems = isFetchingCart ? 0 : cart.reduce((sum, item) => sum + item.quantity, 0);
 
   const miniCartContent = (
     <div className={styles.miniCartContainer}>
@@ -465,7 +469,7 @@ function Home() {
         Chọn phân loại:
       </div>
       <Radio.Group onChange={(e) => setSelectedVariantId(e.target.value)} value={selectedVariantId} style={{ width: '100%' }}>
-        <Space direction="vertical" style={{ width: '100%' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
           {variants.map(v => {
             const isSelected = selectedVariantId === v.MaBienThe;
             return (
@@ -487,7 +491,7 @@ function Home() {
               </Radio>
             );
           })}
-        </Space>
+        </div>
       </Radio.Group>
       <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'flex-end', gap: '10px', paddingTop: '12px', borderTop: '1px solid #f0f0f0' }}>
         <Button 
@@ -675,7 +679,17 @@ function Home() {
       </Helmet>
 
       <Header className={styles.topHeader}>
-        <div className={styles.logo} onClick={() => navigate('/landing')}>CERAMIC-SHOP</div>
+        <div className={styles.logoBox} onClick={() => navigate('/landing')}>
+          <img 
+            src="/logo.png" 
+            alt="Ceramic Shop Logo" 
+            className={styles.logoImg} 
+          />
+          <div className={styles.logoTextWrap}>
+              <h1 className={styles.logoText}>CERAMIC-SHOP</h1>
+              <span className={styles.logoSub}>TINH HOA GỐM SỨ VIỆT</span>
+          </div>
+        </div>
         
         <div className={styles.headerSearch}>
           <div className={styles.searchWrapper}>
@@ -692,18 +706,14 @@ function Home() {
                 setCurrentPage(1); 
                 setSearchOptions([]); 
               }}
-              onSearch={handleSearchInput}
+              onChange={handleSearchInput}
               value={searchKw}
               notFoundContent={null}
-              defaultActiveFirstOption={false} 
-              filterOption={false}
-              backfill={false}
             >
               <Input 
                 ref={inputRef}
                 placeholder="Tìm kiếm ấm trà, bình hoa..." 
                 className={styles.searchInput}
-                onChange={(e) => setSearchKw(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     e.preventDefault();
@@ -728,10 +738,14 @@ function Home() {
             </Badge>
           </Popover>
           
-          {isLoggedIn ? (
+          {isAuthChecking ? (
+             <Space size="middle" style={{ opacity: 0.5 }}>
+               <Avatar icon={<UserOutlined />} />
+             </Space>
+          ) : isLoggedIn ? (
             <Dropdown menu={{ items: userMenu }} placement="bottomRight" arrow>
-              <Space className={styles.userProfile}>
-                <Avatar src={userInfo.avatar || null} />
+              <Space className={styles.userProfile} style={{ cursor: 'pointer' }}>
+                <Avatar src={userInfo.avatar || null} icon={!userInfo.avatar && <UserOutlined />} />
                 <div className={styles.userInfoBox}>
                   <span className={styles.userName}>{userInfo.username}</span>
                 </div>
@@ -767,31 +781,36 @@ function Home() {
             </h2>
             
             <div className={styles.sortTools}>
-              <Select value={sortField} className={styles.filterSelect} onChange={handleSortFieldChange}>
-                <Option value="">Tiêu chí (Tất cả)</Option>
-                <Option value="MaSanPham">Theo ngày</Option>
-                <Option value="Gia">Theo Giá</Option>
-              </Select>
+              <Select 
+                value={sortField} 
+                className={styles.filterSelect} 
+                onChange={handleSortFieldChange}
+                options={[
+                  { value: '', label: 'Tiêu chí (Tất cả)' },
+                  { value: 'MaSanPham', label: 'Theo ngày' },
+                  { value: 'Gia', label: 'Theo Giá' }
+                ]}
+              />
 
               <Select 
                 value={sortOrder} 
                 className={styles.filterSelect} 
                 onChange={(val) => {setSortOrder(val); setCurrentPage(1);}} 
                 disabled={!sortField}
-              >
-                {sortField === 'Gia' && (
-                  <>
-                    <Option value="ASC">Thấp đến cao</Option>
-                    <Option value="DESC">Cao đến thấp</Option>
-                  </>
-                )}
-                {sortField === 'MaSanPham' && (
-                  <>
-                    <Option value="DESC">Gần đây nhất</Option>
-                    <Option value="ASC">Cũ nhất</Option>
-                  </>
-                )}
-              </Select>
+                options={
+                  sortField === 'Gia' 
+                    ? [
+                        { value: 'ASC', label: 'Thấp đến cao' },
+                        { value: 'DESC', label: 'Cao đến thấp' }
+                      ] 
+                    : sortField === 'MaSanPham'
+                    ? [
+                        { value: 'DESC', label: 'Gần đây nhất' },
+                        { value: 'ASC', label: 'Cũ nhất' }
+                      ]
+                    : []
+                }
+              />
 
               <Button icon={<ReloadOutlined />} onClick={handleResetFilters} className={styles.resetBtn}>
                 Xóa lọc
@@ -903,6 +922,56 @@ function Home() {
           )}
         </Content>
       </Layout>
+
+      <footer className={styles.footer}>
+          <div className={styles.container}>
+              <div className={styles.footerGrid}>
+                  <div className={styles.footerCol}>
+                      <h3>HỖ TRỢ KHÁCH HÀNG</h3>
+                      <ul>
+                          <li><a href="#guide">Hướng dẫn mua hàng</a></li>
+                          <li><a href="#payment">Chính sách thanh toán</a></li>
+                          <li><a href="#shipping">Chính sách giao hàng</a></li>
+                          <li><a href="#return">Chính sách đổi trả</a></li>
+                          <li><a href="#warranty">Chính sách bảo hành</a></li>
+                      </ul>
+                  </div>
+                  
+                  <div className={styles.footerCol}>
+                      <h3>PHƯƠNG THỨC THANH TOÁN</h3>
+                      <ul>
+                          <li>💵 Thanh toán COD (Tiền mặt)</li>
+                          <li>🏦 VNPay (Quét mã QR)</li>
+                          <li>📱 Ví điện tử (MoMo / ZaloPay)</li>
+                          <li>🔗 Tiền điện tử (MetaMask)</li>
+                          <li>💳 Chuyển khoản ngân hàng</li>
+                      </ul>
+                  </div>
+
+                  <div className={styles.footerCol}>
+                      <h3>THÔNG TIN LIÊN HỆ</h3>
+                      <ul>
+                          <li>📍 Địa chỉ: 484 Lạch Tray, Lê Chân, Hải Phòng</li>
+                          <li>📞 Hotline: 0329.835.725</li>
+                          <li>✉️ Email: theceramicshop24@gmail.com</li>
+                          <li>🕐 Giờ làm việc: 8:00 - 22:00 (Thứ 2 - Thứ 7)</li>
+                      </ul>
+                  </div>
+
+                  <div className={styles.footerCol}>
+                      <h3>ĐĂNG KÝ NHẬN TIN</h3>
+                      <p className={styles.footerText}>Nhận thông tin về sản phẩm mới và các chương trình khuyến mãi.</p>
+                      <div className={styles.subscribeBox}>
+                          <input type="email" placeholder="Nhập email của bạn..." />
+                          <button>ĐĂNG KÝ</button>
+                      </div>
+                  </div>
+              </div>
+          </div>
+          <div className={styles.copyright}>
+              <p>© 2026 Bản quyền thuộc về CeramicShop. Bảo lưu mọi quyền.</p>
+          </div>
+      </footer>
     </Layout>
   );
 }

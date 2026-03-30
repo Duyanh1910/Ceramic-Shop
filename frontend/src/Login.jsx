@@ -58,10 +58,10 @@ function Login() {
 
       <div className={styles.combinedCard}>
         <div className={styles.cardImage}>
-          <div className={styles.imageOverlay}>
-            <h2>Ceramic Shop</h2>
-            <p>Tinh hoa gốm sứ Việt — Mang nghệ thuật vào không gian sống của bạn.</p>
-          </div>
+          <div className={styles.glowEffect} />
+          <img src="/logo.png" alt="Ceramic Shop Logo" className={styles.logoDisplayImg} />
+          <h2 className={styles.logoDisplayTitle}>CERAMIC-SHOP</h2>
+          <p className={styles.logoDisplaySub}>TINH HOA GỐM SỨ VIỆT</p>
         </div>
 
         <div className={styles.cardForm}>
@@ -103,7 +103,7 @@ function Login() {
             </Form.Item>
 
             <div className={styles.formOptions}>
-              <Checkbox checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)}>
+              <Checkbox checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} className={styles.customCheckbox}>
                 Ghi nhớ đăng nhập
               </Checkbox>
               <Link onClick={() => navigate('/forgot-password')} className={styles.forgotPassword}>
@@ -113,7 +113,7 @@ function Login() {
 
             <Button className={styles.customButton} type="primary" htmlType="submit"
               block loading={loading} size="large">
-              Đăng Nhập
+              ĐĂNG NHẬP
             </Button>
           </Form>
 

@@ -2,11 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Layout, Input, Dropdown, Avatar, Space, Badge, Popover, Button, Spin, Row, Col, message, AutoComplete } from 'antd';
-import { SearchOutlined, ShoppingCartOutlined, SettingOutlined, LogoutOutlined, ArrowLeftOutlined, DeleteOutlined } from '@ant-design/icons';
+import { SearchOutlined, ShoppingCartOutlined, SettingOutlined, LogoutOutlined, ArrowLeftOutlined, DeleteOutlined, UserOutlined } from '@ant-design/icons';
 import { Helmet } from 'react-helmet-async';
 import styles from './productDetail.module.css';
-import ChatBot from './ChatBot';
-
+import { clearSession } from './useAuth.js';
+import Breadcrumb from './Breadcrumb.jsx';
 const { Header, Content } = Layout;
 
 function ProductDetail() {
@@ -28,24 +28,31 @@ function ProductDetail() {
   const [zoomScale, setZoomScale] = useState(2);
 
   const [userInfo, setUserInfo] = useState({ username: '', avatar: '' });
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isFetchingCart, setIsFetchingCart] = useState(!!localStorage.getItem('token'));
+  
+  const [isLoggedIn, setIsLoggedIn] = useState(localStorage.getItem('customer_session_active') === 'true');
+  const [isAuthChecking, setIsAuthChecking] = useState(localStorage.getItem('customer_session_active') === 'true');
+  const [isFetchingCart, setIsFetchingCart] = useState(localStorage.getItem('customer_session_active') === 'true');
   
   const [cart, setCart] = useState(() => {
+    if (localStorage.getItem('customer_session_active') === 'true') return [];
     const savedCart = localStorage.getItem('ceramic_cart');
     return savedCart ? JSON.parse(savedCart) : [];
   });
 
+  const [searchKw, setSearchKw] = useState('');
+  const [searchOptions, setSearchOptions] = useState([]);
+  const inputRef = useRef(null);
+
   useEffect(() => {
-    if (!isLoggedIn) {
+    if (!isLoggedIn && !isAuthChecking) {
       localStorage.setItem('ceramic_cart', JSON.stringify(cart));
     }
-  }, [cart, isLoggedIn]);
+  }, [cart, isLoggedIn, isAuthChecking]);
 
-  const fetchCartFromDB = async (token) => {
+  const fetchCartFromDB = async () => {
     try {
       const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/cart', {
-        headers: { Authorization: `Bearer ${token}` }
+        withCredentials: true
       });
       if (res.data.cart && res.data.cart.items) {
         const dbCart = res.data.cart.items.map(item => ({
@@ -62,62 +69,63 @@ function ProductDetail() {
         setCart([]);
       }
     } catch (error) {
+      console.error(error);
     } finally {
       setIsFetchingCart(false);
     }
   };
 
-  const [searchKw, setSearchKw] = useState('');
-  const [searchOptions, setSearchOptions] = useState([]);
-  const inputRef = useRef(null);
+  const handleLogoutLocal = () => {
+    clearSession(false);
+    localStorage.removeItem('customer_avatar');
+    setIsLoggedIn(false);
+    setUserInfo({ username: '', avatar: '' });
+    const savedCart = localStorage.getItem('ceramic_cart');
+    setCart(savedCart ? JSON.parse(savedCart) : []);
+  };
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const checkAuth = async () => {
+      if (localStorage.getItem('customer_session_active') !== 'true') {
+        setIsLoggedIn(false);
+        setIsAuthChecking(false);
+        setIsFetchingCart(false);
+        return;
+      }
 
-    if (token) {
       try {
-        const base64Url = token.split('.')[1];
-        if (base64Url) {
-            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-            }).join(''));
+        const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/me', { 
+          withCredentials: true 
+        });
+        const userData = res.data.user || res.data.result;
+        
+        if (userData.role === 'Admin' || userData.role === 'Staff') {
+          setIsLoggedIn(false);
+          const savedCart = localStorage.getItem('ceramic_cart');
+          setCart(savedCart ? JSON.parse(savedCart) : []);
+        } else {
+          setIsLoggedIn(true);
+          const profileData = userData?.profile || userData;
+          const displayUsername = profileData?.TenKhachHang || userData?.username || 'Thành viên';
+          
+          let safeAvatar = profileData?.Avatar;
+          if (!safeAvatar || safeAvatar.includes('default_avatar_gojcul')) {
+            safeAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayUsername)}&background=random&color=fff`;
+          }
 
-            const payload = JSON.parse(jsonPayload);
-            const currentTime = Math.floor(Date.now() / 1000); 
-            
-            if (payload.exp && payload.exp < currentTime) {
-                handleLogout();
-                setIsFetchingCart(false);
-                return;
-            }
-            
-            setIsLoggedIn(true);
-
-            axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/me', {
-              headers: { Authorization: `Bearer ${token}` }
-            }).then(res => {
-              const userData = res.data.user || res.data.result;
-              const profileData = userData?.profile || userData;
-              
-              const fetchedAvatar = profileData?.Avatar || 'https://res.cloudinary.com/dcmwz0uis/image/upload/v1773107213/default_avatar_gojcul.png';
-              const fetchedName = profileData?.TenKhachHang || profileData?.TenNhanVien || userData?.username || 'Thành viên';
-
-              setUserInfo({ username: fetchedName, avatar: fetchedAvatar });
-              fetchCartFromDB(token);
-            }).catch(() => {
-              setIsLoggedIn(false);
-              setIsFetchingCart(false);
-            });
+          setUserInfo({
+            username: displayUsername,
+            avatar: safeAvatar
+          });
+          await fetchCartFromDB();
         }
       } catch (error) {
-        setIsLoggedIn(false);
-        setIsFetchingCart(false);
+        handleLogoutLocal();
+      } finally {
+        setIsAuthChecking(false);
       }
-    } else {
-      setIsLoggedIn(false);
-      setIsFetchingCart(false);
-    }
+    };
+    checkAuth();
   }, [navigate]);
 
   useEffect(() => {
@@ -194,17 +202,17 @@ function ProductDetail() {
   const bgSizeW = cursorPos.containerW * zoomScale;
   const bgSizeH = cursorPos.containerH * zoomScale;
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('username');
-    localStorage.removeItem('name');
-    localStorage.removeItem('role');
-    localStorage.removeItem('avatar');
-    setIsLoggedIn(false);
-    setUserInfo({ username: '', avatar: '' });
-    navigate('/login');
+  const handleLogout = async () => {
+    try {
+      await axios.post('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/logout', {}, {
+        withCredentials: true 
+      });
+    } catch (err) {}
+    handleLogoutLocal();
     message.success("Đã đăng xuất");
+    navigate('/login');
   };
+
   const userMenu = [
     { 
       key: '1', 
@@ -215,6 +223,7 @@ function ProductDetail() {
     { type: 'divider' },
     { key: '2', danger: true, label: 'Đăng xuất', icon: <LogoutOutlined />, onClick: handleLogout },
   ];
+
   const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price || 0);
 
   const getPriceDisplay = () => {
@@ -270,14 +279,13 @@ function ProductDetail() {
 
     if (isLoggedIn) {
       try {
-        const token = localStorage.getItem('token');
         await axios.post('https://ceramic-shop-u8ak.onrender.com/api/v1/cart/items', {
           MaBienThe: targetVariantId,
           SoLuong: currentQty
-        }, { headers: { Authorization: `Bearer ${token}` } });
+        }, { withCredentials: true });
         
         message.success(`Đã thêm ${currentQty} sản phẩm vào giỏ hàng!`);
-        await fetchCartFromDB(token); 
+        await fetchCartFromDB(); 
         return true;
       } catch (error) {
         message.error(error.response?.data?.message || 'Lỗi thêm sản phẩm!');
@@ -340,10 +348,9 @@ function ProductDetail() {
 
     if (isLoggedIn) {
       try {
-        const token = localStorage.getItem('token');
         await axios.patch(`https://ceramic-shop-u8ak.onrender.com/api/v1/cart/items/${variantId || id}`, 
           { SoLuong: newQty },
-          { headers: { Authorization: `Bearer ${token}` }}
+          { withCredentials: true }
         );
       } catch (error) {}
     }
@@ -353,9 +360,8 @@ function ProductDetail() {
     setCart(prevCart => prevCart.filter(item => !(item.id === id && item.variantId === variantId)));
     if (isLoggedIn) {
       try {
-        const token = localStorage.getItem('token');
         await axios.delete(`https://ceramic-shop-u8ak.onrender.com/api/v1/cart/items/${variantId || id}`, {
-          headers: { Authorization: `Bearer ${token}` }
+          withCredentials: true
         });
       } catch (error) {}
     }
@@ -373,10 +379,9 @@ function ProductDetail() {
         
         if (isLoggedIn) {
           try {
-            const token = localStorage.getItem('token');
             await axios.patch(`https://ceramic-shop-u8ak.onrender.com/api/v1/cart/items/${variantId || id}`, 
               { SoLuong: finalQty },
-              { headers: { Authorization: `Bearer ${token}` }}
+              { withCredentials: true }
             );
           } catch (error) {}
         }
@@ -487,7 +492,7 @@ function ProductDetail() {
   };
 
   const executeSearch = () => {
-    navigate(`/?search=${searchKw}`);
+    navigate(`/home?search=${searchKw}`);
     if (inputRef.current) inputRef.current.blur(); 
   };
 
@@ -501,7 +506,18 @@ function ProductDetail() {
       <Helmet><title>{product.TenSanPham}</title></Helmet>
       
       <Header className={styles.topHeader}>
-        <div className={styles.logo} onClick={() => navigate('/')} style={{cursor: 'pointer'}}>CERAMIC-SHOP</div>
+        <div className={styles.logoBox} onClick={() => navigate('/home')}>
+          <img 
+            src="/logo.png" 
+            alt="Ceramic Shop Logo" 
+            className={styles.logoImg} 
+          />
+          <div className={styles.logoTextWrap}>
+              <h1 className={styles.logoText}>CERAMIC-SHOP</h1>
+              <span className={styles.logoSub}>TINH HOA GỐM SỨ VIỆT</span>
+          </div>
+        </div>
+
         <div className={styles.headerSearch}>
           <div className={styles.searchWrapper}>
             <AutoComplete className={styles.searchAutoComplete} options={searchOptions} onSearch={handleSearchInput} value={searchKw} defaultActiveFirstOption={false} backfill={false}>
@@ -516,10 +532,15 @@ function ProductDetail() {
               <ShoppingCartOutlined className={styles.cartIcon} onClick={() => navigate('/cart')}/>
             </Badge>
           </Popover>
-          {isLoggedIn ? (
+
+          {isAuthChecking ? (
+             <Space size="middle" style={{ opacity: 0.5 }}>
+               <Avatar icon={<UserOutlined />} />
+             </Space>
+          ) : isLoggedIn ? (
             <Dropdown menu={{ items: userMenu }} placement="bottomRight" arrow zIndex={9999}>
-              <Space className={styles.userProfile}>
-                <Avatar src={userInfo.avatar || null} />
+              <Space className={styles.userProfile} style={{ cursor: 'pointer' }}>
+                <Avatar src={userInfo.avatar || null} icon={!userInfo.avatar && <UserOutlined />} />
                 <div className={styles.userInfoBox}><span className={styles.userName}>{userInfo.username}</span></div>
               </Space>
             </Dropdown>
@@ -534,13 +555,14 @@ function ProductDetail() {
 
       <Layout className={styles.mainContainer}>
         <Content className={styles.mainContent}>
+          <Breadcrumb customLabels={{ [id]: product?.TenSanPham }} />
           <div className={styles.btnBackWrap}>
-             <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate('/')} className={styles.btnBack}>Quay lại Cửa hàng</Button>
+             <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate('/home')} className={styles.btnBack}>Quay lại Cửa hàng</Button>
           </div>
 
           <div className={styles.productDetailBox}>
             <div className={styles.gallery}>
-              <div 
+              <div
                 className={styles.mainImgBox} 
                 ref={imgContainerRef}
                 onMouseMove={handleMouseMoveZoom} 
@@ -642,6 +664,56 @@ function ProductDetail() {
           </div>
         </Content>
       </Layout>
+
+      <footer className={styles.footer}>
+          <div className={styles.container}>
+              <div className={styles.footerGrid}>
+                  <div className={styles.footerCol}>
+                      <h3>HỖ TRỢ KHÁCH HÀNG</h3>
+                      <ul>
+                          <li><a href="#guide">Hướng dẫn mua hàng</a></li>
+                          <li><a href="#payment">Chính sách thanh toán</a></li>
+                          <li><a href="#shipping">Chính sách giao hàng</a></li>
+                          <li><a href="#return">Chính sách đổi trả</a></li>
+                          <li><a href="#warranty">Chính sách bảo hành</a></li>
+                      </ul>
+                  </div>
+                  
+                  <div className={styles.footerCol}>
+                      <h3>PHƯƠNG THỨC THANH TOÁN</h3>
+                      <ul>
+                          <li>💵 Thanh toán COD (Tiền mặt)</li>
+                          <li>🏦 VNPay (Quét mã QR)</li>
+                          <li>📱 Ví điện tử (MoMo / ZaloPay)</li>
+                          <li>🔗 Tiền điện tử (MetaMask)</li>
+                          <li>💳 Chuyển khoản ngân hàng</li>
+                      </ul>
+                  </div>
+
+                  <div className={styles.footerCol}>
+                      <h3>THÔNG TIN LIÊN HỆ</h3>
+                      <ul>
+                          <li>📍 Địa chỉ: 484 Lạch Tray, Lê Chân, Hải Phòng</li>
+                          <li>📞 Hotline: 0329.835.725</li>
+                          <li>✉️ Email: theceramicshop24@gmail.com</li>
+                          <li>🕐 Giờ làm việc: 8:00 - 22:00 (Thứ 2 - Thứ 7)</li>
+                      </ul>
+                  </div>
+
+                  <div className={styles.footerCol}>
+                      <h3>ĐĂNG KÝ NHẬN TIN</h3>
+                      <p className={styles.footerText}>Nhận thông tin về sản phẩm mới và các chương trình khuyến mãi.</p>
+                      <div className={styles.subscribeBox}>
+                          <input type="email" placeholder="Nhập email của bạn..." />
+                          <button>ĐĂNG KÝ</button>
+                      </div>
+                  </div>
+              </div>
+          </div>
+          <div className={styles.copyright}>
+              <p>© 2026 Bản quyền thuộc về CeramicShop. Bảo lưu mọi quyền.</p>
+          </div>
+      </footer>
     </Layout>
   );
 }
