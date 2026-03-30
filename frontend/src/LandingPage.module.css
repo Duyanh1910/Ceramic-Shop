@@ -61,13 +61,50 @@ ul {
     align-items: center;
 }
 
-.searchBox {
+.logoBox {
     flex: 1;
     display: flex;
     align-items: center;
+    justify-content: flex-start;
+    gap: 15px;
+    cursor: pointer;
+}
+
+.logoImg {
+    width: 60px;
+    height: auto;
+    object-fit: contain;
+}
+
+.logoTextWrap {
+    display: flex;
+    flex-direction: column;
+}
+
+.logoText {
+    font-family: 'Arsenal', serif;
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0;
+    color: #173354;
+    letter-spacing: 2px;
+}
+
+.logoSub {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: #BB9244;
+}
+
+.searchBox {
+    flex: 1.5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border-bottom: 1px solid #e1e1e1;
     padding-bottom: 5px;
-    max-width: 250px;
+    max-width: 400px;
+    margin: 0 auto;
 }
 
 .iconSearch {
@@ -83,27 +120,6 @@ ul {
     width: 100%;
     font-family: 'Arsenal', sans-serif;
     font-size: 14px;
-}
-
-.logoBox {
-    flex: 1;
-    text-align: center;
-    cursor: pointer;
-}
-
-.logoText {
-    font-family: 'Arsenal', serif;
-    font-size: 32px;
-    font-weight: 700;
-    margin: 0;
-    color: #173354;
-    letter-spacing: 2px;
-}
-
-.logoSub {
-    font-size: 12px;
-    letter-spacing: 3px;
-    color: #BB9244;
 }
 
 .utilityBox {
