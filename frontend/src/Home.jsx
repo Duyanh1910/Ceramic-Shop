@@ -136,7 +136,7 @@ function Home() {
         withCredentials: true 
       });
     } catch (err) {
-      console.error("Lỗi đăng xuất", err);
+      console.error(err);
     }
     
     handleLogoutLocal();
@@ -679,14 +679,14 @@ function Home() {
       </Helmet>
 
       <Header className={styles.topHeader}>
-        <div className={styles.logo} onClick={() => navigate('/landing')}>
+        <div className={styles.logoBox} onClick={() => navigate('/landing')}>
           <img 
             src="/logo.png" 
             alt="Ceramic Shop Logo" 
             className={styles.logoImg} 
           />
           <div className={styles.logoTextWrap}>
-              <span className={styles.logoText}>CERAMIC-SHOP</span>
+              <h1 className={styles.logoText}>CERAMIC-SHOP</h1>
               <span className={styles.logoSub}>TINH HOA GỐM SỨ VIỆT</span>
           </div>
         </div>

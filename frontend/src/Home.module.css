@@ -34,17 +34,17 @@
   transition: all 0.3s ease;
 }
 
-.logo {
+.logoBox {
   flex: 1;
   display: flex;
   align-items: center;
-  justify-content: flex-start; 
-  gap: 15px; 
+  justify-content: flex-start;
+  gap: 15px;
   cursor: pointer;
 }
 
 .logoImg {
-  width: 60px; 
+  width: 60px;
   height: auto;
   object-fit: contain;
 }
@@ -52,24 +52,22 @@
 .logoTextWrap {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  line-height: 1.6;
 }
 
 .logoText {
   font-family: 'Arsenal', serif;
-  font-size: 28px; 
+  font-size: 28px;
   font-weight: 700;
-  color: #173354; 
-  letter-spacing: 2px; 
   margin: 0;
-  line-height: normal; 
+  color: #173354;
+  letter-spacing: 2px;
 }
 
 .logoSub {
   font-size: 11px;
   letter-spacing: 2px;
   color: #BB9244;
-  text-transform: uppercase;
 }
 
 .headerSearch {
