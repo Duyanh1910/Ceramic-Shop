@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { Dropdown, Avatar, Space, Layout, Menu, Input, Select, Row, Col, Pagination, Spin, Badge, message, AutoComplete, Popover, Button, Radio } from 'antd';
+import { Dropdown, Avatar, Space, Layout, Menu, Input, Select, Row, Col, Pagination, Spin, Badge, message, AutoComplete, Popover, Button, Radio, Rate } from 'antd';
 import { LogoutOutlined, SettingOutlined, SearchOutlined, ShoppingCartOutlined, DeleteOutlined, ReloadOutlined, AppstoreOutlined, EyeOutlined, UserOutlined } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -122,6 +122,7 @@ function Home() {
           await fetchCartFromDB();
         }
       } catch (error) {
+        console.error(error);
         handleLogoutLocal();
       } finally {
         setIsAuthChecking(false);
@@ -129,6 +130,32 @@ function Home() {
     };
     checkAuth();
   }, []);
+
+  const ProductRating = ({ productId }) => {
+  const [rating, setRating] = useState(0);
+  const [total, setTotal] = useState(0);
+
+  useEffect(() => {
+    const fetchRating = async () => {
+      try {
+        const res = await axios.get(`https://ceramic-shop-u8ak.onrender.com/api/v1/reviews/${productId}/ratings`);
+        const data = res.data.result;
+        setRating(data?.DiemTrungBinh || 0);
+        setTotal(data?.TongDanhGia || 0);
+      } catch (error) {
+          console.error(error);
+      }
+    };
+    fetchRating();
+  }, [productId]);
+
+  return (
+    <div className={styles.ratingBox}>
+      <Rate disabled allowHalf value={parseFloat(rating)} className={styles.stars} />
+      <span className={styles.ratingCount}>({total})</span>
+    </div>
+  );
+};
 
   const handleLogout = async () => {
     try {
@@ -854,6 +881,7 @@ function Home() {
                               <div className={styles.catTag}>{p.DanhMuc?.TenDanhMuc || 'Chưa phân loại'}</div>
 
                               <h3 className={styles.productName} title={p.TenSanPham}>{p.TenSanPham}</h3>
+                              <ProductRating productId={p.MaSanPham} />
                               <div className={styles.productPrice}>{formatPrice(p.GiaThapNhat)}</div>
                             </div>
 

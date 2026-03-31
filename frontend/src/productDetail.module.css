@@ -526,7 +526,7 @@
   font-family: 'Arsenal', serif;
   font-size: 32px;
   font-weight: 700;
-  margin: 0 0 20px 0;
+  margin: 0 0 10px 0; /* Thu nhỏ margin dưới một chút để chèn sao */
   color: #1b437c;
   line-height: 1.3;
 }
@@ -896,4 +896,211 @@
 
 @media (max-width: 576px) {
   .footerGrid { grid-template-columns: 1fr; }
+}
+
+/* ------------------------------------- */
+/* --- CÁC CLASS CSS CHO PHẦN ĐÁNH GIÁ --- */
+/* ------------------------------------- */
+
+.detailRatingBox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.detailStars {
+  font-size: 16px !important;
+  color: #faad14;
+}
+
+.detailRatingText {
+  font-size: 16px;
+  font-weight: bold;
+  color: #d0021b;
+}
+
+.detailRatingCount {
+  font-size: 15px;
+  color: #777;
+}
+
+.reviewList {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 20px;
+  padding: 0 15px;
+}
+
+.reviewItem {
+  display: flex;
+  gap: 15px;
+  padding-bottom: 20px;
+  border-bottom: 1px dashed #eaeaea;
+}
+
+.reviewItem:last-child {
+  border-bottom: none;
+}
+
+.reviewContent {
+  flex: 1;
+}
+
+.reviewHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 5px;
+}
+
+.reviewUser {
+  font-weight: 700;
+  color: #333;
+  font-size: 15px;
+}
+
+.reviewDate {
+  font-size: 12px;
+  color: #999;
+}
+
+.reviewStars {
+  font-size: 12px !important;
+  color: #faad14;
+  margin-bottom: 5px;
+  display: block;
+}
+
+.reviewVariant {
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 8px;
+}
+
+.reviewText {
+  font-size: 15px;
+  color: #444;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ------------------------------------------- */
+/* --- CSS KHỐI THỐNG KÊ ĐÁNH GIÁ (OVERVIEW) ---*/
+/* ------------------------------------------- */
+
+.ratingOverview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border: 1px solid #eaeaea;
+  border-radius: 8px;
+  padding: 30px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+}
+
+.overviewCol {
+  flex: 1.2; /* Cho cột thanh ngang rộng hơn chút */
+  padding: 0 20px;
+}
+
+.overviewColCenter {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
+}
+
+.verticalDivider {
+  width: 1px;
+  height: 120px;
+  background-color: #f0f0f0;
+}
+
+.progressRow {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.progressRow:last-child {
+  margin-bottom: 0;
+}
+
+.starLabel {
+  width: 40px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.singleStar {
+  font-size: 12px !important;
+  color: #faad14;
+}
+
+.progressBar {
+  flex: 1;
+  margin: 0 15px !important;
+}
+
+/* Ẩn margin mặc định của Ant Design Progress */
+:global(.ant-progress) {
+  margin-bottom: 0 !important;
+}
+
+.percentLabel {
+  width: 40px;
+  text-align: right;
+  font-size: 13px;
+  color: #666;
+  font-weight: 500;
+}
+
+.overviewTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 12px;
+  font-family: 'Arsenal', serif;
+}
+
+.overviewTotalNum {
+  font-size: 32px;
+  font-weight: 700;
+  color: #8892a0;
+}
+
+.overviewAvgNum {
+  font-size: 42px;
+  font-weight: 700;
+  color: #8892a0;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.overviewStars {
+  font-size: 22px !important;
+  color: #faad14;
+}
+
+/* Đảm bảo giao diện không bị nát trên điện thoại */
+@media (max-width: 768px) {
+  .ratingOverview {
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+  }
+  .verticalDivider {
+    width: 100%;
+    height: 1px;
+  }
 }

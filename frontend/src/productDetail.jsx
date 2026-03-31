@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Layout, Input, Dropdown, Avatar, Space, Badge, Popover, Button, Spin, Row, Col, message, AutoComplete } from 'antd';
+import { Layout, Input, Dropdown, Avatar, Space, Badge, Popover, Button, Spin, Row, Col, message, AutoComplete, Rate, Progress } from 'antd';
 import { SearchOutlined, ShoppingCartOutlined, SettingOutlined, LogoutOutlined, ArrowLeftOutlined, DeleteOutlined, UserOutlined } from '@ant-design/icons';
 import { Helmet } from 'react-helmet-async';
 import styles from './productDetail.module.css';
 import { clearSession } from './useAuth.js';
 import Breadcrumb from './Breadcrumb.jsx';
+import ReviewForm from './ReviewForm.jsx'; 
+
 const { Header, Content } = Layout;
 
 function ProductDetail() {
@@ -42,6 +44,10 @@ function ProductDetail() {
   const [searchKw, setSearchKw] = useState('');
   const [searchOptions, setSearchOptions] = useState([]);
   const inputRef = useRef(null);
+
+  // --- THÊM STATE ĐÁNH GIÁ ---
+  const [reviews, setReviews] = useState([]);
+  const [ratingStats, setRatingStats] = useState({ avg: 0, total: 0 });
 
   useEffect(() => {
     if (!isLoggedIn && !isAuthChecking) {
@@ -166,6 +172,34 @@ function ProductDetail() {
       }
     };
     if (id) fetchProductDetail();
+  }, [id]);
+
+  // --- HÀM GỌI API ĐÁNH GIÁ ---
+  const fetchReviews = async () => {
+    try {
+      const [resRating, resList] = await Promise.all([
+        axios.get(`https://ceramic-shop-u8ak.onrender.com/api/v1/reviews/${id}/ratings`),
+        axios.get(`https://ceramic-shop-u8ak.onrender.com/api/v1/reviews/${id}/reviews`)
+      ]);
+
+      if (resRating.data.success) {
+        const ratingData = resRating.data.result;
+        setRatingStats({
+          avg: parseFloat(ratingData.DiemTrungBinh) || 0,
+          total: parseInt(ratingData.TongDanhGia) || 0
+        });
+      }
+
+      if (resList.data.success) {
+        setReviews(resList.data.result || []);
+      }
+    } catch (error) {
+      console.error("Lỗi khi lấy dữ liệu đánh giá:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (id) fetchReviews();
   }, [id]);
 
   useEffect(() => {
@@ -465,6 +499,30 @@ function ProductDetail() {
     </div>
   );
 
+  // Tính toán phần trăm cho từng mốc sao (từ 1 đến 5)
+  const calculateStarPercentages = () => {
+    let counts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    if (reviews.length === 0) return counts;
+
+    reviews.forEach(rev => {
+      const star = Math.round(rev.DiemDanhGia);
+      if (counts[star] !== undefined) {
+        counts[star] += 1;
+      }
+    });
+
+    const total = reviews.length;
+    return {
+      5: Math.round((counts[5] / total) * 100) || 0,
+      4: Math.round((counts[4] / total) * 100) || 0,
+      3: Math.round((counts[3] / total) * 100) || 0,
+      2: Math.round((counts[2] / total) * 100) || 0,
+      1: Math.round((counts[1] / total) * 100) || 0,
+    };
+  };
+
+  const starPercentages = calculateStarPercentages();
+
   const handleSearchInput = async (value) => {
     setSearchKw(value);
     if (!value) { setSearchOptions([]); return; }
@@ -598,6 +656,18 @@ function ProductDetail() {
 
             <div className={styles.info}>
               <h1 className={styles.title}>{product.TenSanPham}</h1>
+              
+              {/* --- ĐÁNH GIÁ TRUNG BÌNH --- */}
+              <div className={styles.detailRatingBox}>
+                <Rate disabled allowHalf value={ratingStats.avg} className={styles.detailStars} />
+                <span className={styles.detailRatingText}>
+                  {ratingStats.avg} / 5
+                </span>
+                <span className={styles.detailRatingCount}>
+                  ({ratingStats.total} đánh giá)
+                </span>
+              </div>
+
               <div className={styles.priceBox}>
                  <div className={styles.price}>{selectedVariant ? formatPrice(selectedVariant.Gia) : getPriceDisplay()}</div>
               </div>
@@ -640,6 +710,86 @@ function ProductDetail() {
           <div className={styles.sectionBox}>
             <h3 className={styles.sectionTitle}>Mô Tả Sản Phẩm</h3>
             <div className={styles.descContent} dangerouslySetInnerHTML={{ __html: product.MoTa || 'Chưa có thông tin mô tả chi tiết.' }}></div>
+          </div>
+
+          {/* --- KHU VỰC ĐÁNH GIÁ SẢN PHẨM --- */}
+          <div className={styles.sectionBox}>
+            <h3 className={styles.sectionTitle}>Đánh Giá Sản Phẩm</h3>
+            {/* --- BẮT ĐẦU: KHỐI THỐNG KÊ TỔNG QUAN --- */}
+  <div className={styles.ratingOverview}>
+    {/* Cột 1: Progress bars (Phân bổ sao) */}
+    <div className={styles.overviewCol}>
+      {[5, 4, 3, 2, 1].map(star => (
+        <div key={star} className={styles.progressRow}>
+          <span className={styles.starLabel}>
+            {star} <Rate disabled count={1} defaultValue={1} className={styles.singleStar} />
+          </span>
+          <Progress 
+            percent={starPercentages[star]} 
+            showInfo={false} 
+            strokeColor="#1b437c" 
+            trailColor="#f0f0f0"
+            className={styles.progressBar}
+          />
+          <span className={styles.percentLabel}>{starPercentages[star]}%</span>
+        </div>
+      ))}
+    </div>
+
+    <div className={styles.verticalDivider}></div>
+
+    {/* Cột 2: Tổng đánh giá */}
+    <div className={styles.overviewColCenter}>
+      <div className={styles.overviewTitle}>Tổng Đánh Giá</div>
+      <div className={styles.overviewTotalNum}>
+        {ratingStats.total} <span style={{fontSize: 16, color: '#888', fontWeight: 'normal'}}>Đánh giá</span>
+      </div>
+    </div>
+
+    <div className={styles.verticalDivider}></div>
+
+    {/* Cột 3: Điểm trung bình */}
+    <div className={styles.overviewColCenter}>
+      <div className={styles.overviewTitle}>Điểm Trung Bình</div>
+      <div className={styles.overviewAvgNum}>{ratingStats.avg}</div>
+      <Rate disabled allowHalf value={ratingStats.avg} className={styles.overviewStars} />
+    </div>
+  </div>
+  {/* --- KẾT THÚC: KHỐI THỐNG KÊ TỔNG QUAN --- */}
+            <ReviewForm productId={id} onReviewSubmitted={fetchReviews} />
+
+            {reviews.length === 0 ? (
+              <p style={{ color: '#888', fontStyle: 'italic', padding: '15px' }}>
+                Chưa có đánh giá nào cho sản phẩm này. Hãy là người đầu tiên trải nghiệm!
+              </p>
+            ) : (
+              <div className={styles.reviewList}>
+                {reviews.map((rev) => (
+                  <div key={rev.MaDanhGia} className={styles.reviewItem}>
+                    <Avatar src={rev.KhachHang?.Avatar || 'https://via.placeholder.com/40'} size={45} />
+                    
+                    <div className={styles.reviewContent}>
+                      <div className={styles.reviewHeader}>
+                        <span className={styles.reviewUser}>
+                          {rev.KhachHang?.TenKhachHang || 'Người dùng ẩn danh'}
+                        </span>
+                        <span className={styles.reviewDate}>
+                          {new Date(rev.NgayGui).toLocaleDateString('vi-VN')}
+                        </span>
+                      </div>
+
+                      <Rate disabled defaultValue={rev.DiemDanhGia} className={styles.reviewStars} />
+
+                      <div className={styles.reviewVariant}>
+                          Phân loại: {rev.ChiTietDonHang?.BienTheSanPham?.TenBienThe || 'Mặc định'}
+                      </div>
+
+                      <p className={styles.reviewText}>{rev.NoiDung}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className={styles.sectionBox} style={{ marginTop: 30 }}>

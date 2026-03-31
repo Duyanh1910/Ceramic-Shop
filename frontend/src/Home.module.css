@@ -997,3 +997,24 @@
 @media (max-width: 576px) {
   .footerGrid { grid-template-columns: 1fr; }
 }
+
+/* THÊM VÀO CUỐI FILE HOME.MODULE.CSS */
+.ratingBox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  width: 100%;
+}
+
+.stars {
+  font-size: 13px !important;
+  color: #faad14;
+}
+
+.ratingCount {
+  font-size: 12px;
+  color: #888;
+  margin-top: 2px;
+}
