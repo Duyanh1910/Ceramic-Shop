@@ -27,6 +27,8 @@ import InventoryHistoryModel from "./inventory_history.model.js";
 import SystemModel from "./system_model.model.js";
 import AccountProviderModel from "./account_provider.model.js";
 
+import RatingModel from "./rating.model.js";
+
 // --- QUAN HỆ TÀI KHOẢN & PHÂN QUYỀN ---
 RoleModel.hasMany(AccountModel, {
   foreignKey: "MaQuyen",
@@ -146,6 +148,21 @@ OrderModel.hasMany(InventoryHistoryModel, {
   },
 });
 
+// --- QUAN HỆ ĐÁNH GIÁ ---
+RatingModel.belongsTo(CustomerModel, {
+  foreignKey: "MaKhachHang",
+});
+RatingModel.belongsTo(OrderDetailModel, {
+  foreignKey: "MaCTDH",
+});
+
+CustomerModel.hasMany(RatingModel, {
+  foreignKey: "MaKhachHang",
+});
+OrderDetailModel.hasMany(RatingModel, {
+  foreignKey: "MaCTDH",
+});
+
 export {
   sequelize,
   AccountModel,
@@ -171,4 +188,5 @@ export {
   PromotionWalletModel,
   SystemModel,
   AccountProviderModel,
+  RatingModel,
 };
