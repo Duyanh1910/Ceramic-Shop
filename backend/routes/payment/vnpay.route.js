@@ -11,17 +11,26 @@ const router = express.Router();
 router.get("/vnpay-return", (req, res) => {
   const verify = verifyVnpay(req.query, process.env.VNP_HASHSECRET);
 
+  const { vnp_TxnRef, vnp_ResponseCode } = req.query;
+
   if (!verify.isSuccess) {
-    return res.send("Sai chữ ký");
+    return res.redirect(
+      `http://localhost:5173/fail.html?txnRef=${vnp_TxnRef}&reason=invalid_signature`,
+    );
   }
 
-  const data = verify.data;
-
-  if (data.vnp_ResponseCode === "00") {
-    return res.redirect("http://localhost:5173/payment-success");
-  } else {
-    return res.redirect("http://localhost:5173/payment-fail");
+  if (vnp_ResponseCode === "24") {
+    return res.redirect(
+      `http://localhost:5173/fail.html?txnRef=${vnp_TxnRef}&type=cancel`,
+    );
   }
+  if (vnp_ResponseCode !== "00") {
+    return res.redirect(`http://localhost:5173/fail.html?txnRef=${vnp_TxnRef}`);
+  }
+
+  return res.redirect(
+    `http://localhost:5173/success.html?txnRef=${vnp_TxnRef}`,
+  );
 });
 
 router.get("/vnpay-ipn", async (req, res) => {
