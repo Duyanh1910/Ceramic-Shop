@@ -2,8 +2,8 @@ import { VNPay } from "vnpay";
 
 const vnpay = new VNPay({
   vnpayHost: "https://sandbox.vnpayment.vn",
-  tmnCode: "TMNCODE",
-  secureSecret: "SERCRET",
+  tmnCode: process.env.VNP_TMNCODE,
+  secureSecret: process.env.VNP_HASHSECRET,
   testMode: true,
   hashAlgorithm: "SHA512",
   endpoints: {

@@ -109,7 +109,6 @@ const processIpn = async (query) => {
   });
 };
 
-
 const checkPaymentStatus = async (txnRef) => {
   const giaoDich = await PaymentTransactionModel.findOne({
     where: { MaThamChieu: txnRef },
