@@ -22,7 +22,8 @@ import OrderDetailModel from "./order/order_detail.model.js";
 import OrderModel from "./order/order.model.js";
 import OrderPromotionModel from "./order/order_promotion.model.js";
 
-import PaymentMethodModel from "./payment_method.model.js";
+import PaymentMethodModel from "./payment/payment_method.model.js";
+import PaymentTransactionModel from "./payment/payment_transaction.model.js";
 import InventoryHistoryModel from "./inventory_history.model.js";
 import SystemModel from "./system_model.model.js";
 import AccountProviderModel from "./account_provider.model.js";
@@ -163,6 +164,20 @@ OrderDetailModel.hasMany(RatingModel, {
   foreignKey: "MaCTDH",
 });
 
+// --- QUAN HỆ THANH TOÁN ---
+PaymentMethodModel.hasMany(PaymentTransactionModel, {
+  foreignKey: "MaPhuongThuc",
+});
+PaymentTransactionModel.belongsTo(PaymentMethodModel, {
+  foreignKey: "MaPhuongThuc",
+});
+
+PaymentTransactionModel.belongsTo(OrderModel, {
+  foreignKey: "MaDonHang",
+});
+OrderModel.hasMany(PaymentTransactionModel, {
+  foreignKey: "MaDonHang",
+});
 export {
   sequelize,
   AccountModel,
@@ -189,4 +204,5 @@ export {
   SystemModel,
   AccountProviderModel,
   RatingModel,
+  PaymentTransactionModel,
 };

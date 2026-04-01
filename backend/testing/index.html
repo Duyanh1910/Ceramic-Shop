@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh toán Đơn Hàng</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+        <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">Thông tin thanh toán</h2>
+        
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2">Mã đơn hàng (Để test)</label>
+            <input type="text" id="orderId" placeholder="Nhập ID đơn hàng (VD: 1, 2, 3...)" 
+                   class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <div class="bg-blue-50 p-4 rounded-lg mb-6">
+            <p class="text-sm text-gray-600 mb-1">Sản phẩm: <strong>Bình Gốm Sứ Bát Tràng</strong></p>
+            <p class="text-sm text-gray-600">Tổng tiền: <strong class="text-red-500 text-lg">Theo DB của bạn</strong></p>
+        </div>
+
+        <button onclick="payWithVNPay()" id="payBtn"
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded focus:outline-none focus:shadow-outline transition duration-200 flex justify-center items-center">
+            <span>Thanh toán qua VNPay</span>
+        </button>
+
+        <p id="errorMsg" class="text-red-500 text-sm mt-3 text-center hidden"></p>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:3000/api/v1/payment'; 
+
+        async function payWithVNPay() {
+            const orderId = document.getElementById('orderId').value;
+            const errorMsg = document.getElementById('errorMsg');
+            const btn = document.getElementById('payBtn');
+
+            if (!orderId) {
+                errorMsg.innerText = "Vui lòng nhập mã đơn hàng!";
+                errorMsg.classList.remove('hidden');
+                return;
+            }
+
+            try {
+                btn.innerHTML = 'Đang tạo link...';
+                btn.disabled = true;
+                btn.classList.add('opacity-70');
+                errorMsg.classList.add('hidden');
+
+                const response = await fetch(`${API_BASE_URL}/vnpay/create`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ maDonHang: orderId })
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.paymentUrl) {
+                    window.location.href = data.paymentUrl;
+                } else {
+                    throw new Error(data.message || 'Lỗi không xác định từ server');
+                }
+            } catch (error) {
+                errorMsg.innerText = error.message;
+                errorMsg.classList.remove('hidden');
+            } finally {
+                btn.innerHTML = 'Thanh toán qua VNPay';
+                btn.disabled = false;
+                btn.classList.remove('opacity-70');
+            }
+        }
+    </script>
+</body>
+</html>

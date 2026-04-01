@@ -238,6 +238,7 @@ export const checkOutService = async (idAccount, orderData, selectedItems) => {
       success: true,
       message: "Đặt hàng thành công!",
       data: {
+        orderID: newOrder.MaDonHang,
         orderCode: newOrder.MaHienThi,
         totalPayment,
       },

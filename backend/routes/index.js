@@ -14,6 +14,7 @@ import voucherRoutes from "./voucher.route.js";
 import promotionRoutes from "./promotion.route.js";
 import orderRoutes from "./order.route.js";
 import ratingRoutes from "./rating.route.js";
+import vnpayRoutes from "./payment/vnpay.route.js";
 
 import jwtMiddleware from "../middlewares/jwt.middlewares.js";
 import checkRole from "../middlewares/authorize.middlewares.js";
@@ -63,5 +64,7 @@ router.use("/promotions", promotionRoutes);
 router.use("/orders", jwtMiddleware, orderRoutes);
 
 router.use("/reviews", ratingRoutes);
+
+router.use("/payment", vnpayRoutes);
 
 export default router;

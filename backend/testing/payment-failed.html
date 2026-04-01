@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh toán Thất Bại</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md text-center">
+        <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </div>
+        <h2 class="text-2xl font-bold mb-2 text-gray-800">Giao dịch thất bại</h2>
+        <p class="text-gray-600 mb-6" id="failReason">Rất tiếc, quá trình thanh toán không thành công.</p>
+        
+        <div class="bg-gray-50 p-4 rounded-lg text-left mb-6">
+            <p class="text-sm text-gray-500">Mã giao dịch (Nếu có):</p>
+            <p class="font-mono font-bold text-gray-800" id="txnRef">---</p>
+        </div>
+
+        <a href="index.html" class="inline-block w-full border-2 border-red-500 text-red-500 hover:bg-red-50 font-bold py-3 px-4 rounded transition duration-200">
+            Thử thanh toán lại
+        </a>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const txnRef = urlParams.get('txnRef');
+        const type = urlParams.get('type');
+        const reason = urlParams.get('reason');
+
+        if (txnRef) document.getElementById('txnRef').innerText = txnRef;
+
+        const reasonEl = document.getElementById('failReason');
+        if (type === 'cancel') {
+            reasonEl.innerText = "Bạn đã hủy giao dịch thanh toán.";
+        } else if (reason === 'invalid_signature') {
+            reasonEl.innerText = "Dữ liệu trả về không hợp lệ (Sai chữ ký bảo mật).";
+        }
+    </script>
+</body>
+</html>
