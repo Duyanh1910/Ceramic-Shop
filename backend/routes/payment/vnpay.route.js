@@ -1,5 +1,6 @@
 import express from "express";
 import { verifyVnpay } from "../../utils/payment/vnpay.util.js";
+import { createVnpayUrl } from "../../services/payment/vnpay.services.js";
 import {
   PaymentTransactionModel,
   OrderModel,
@@ -89,6 +90,24 @@ router.get("/vnpay-ipn", async (req, res) => {
     return res.json({ RspCode: "00", Message: "OK" });
   } catch (err) {
     return res.json({ RspCode: "99", Message: err.message });
+  }
+});
+
+router.post("/vnpay-create", async (req, res, next) => {
+  try {
+    const ipAddr = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+
+    const paymentUrl = await createVnpayUrl({
+      maDonHang: req.body.maDonHang,
+      ipAddr,
+    });
+
+    res.json({
+      success: true,
+      paymentUrl,
+    });
+  } catch (err) {
+    next(err);
   }
 });
 
