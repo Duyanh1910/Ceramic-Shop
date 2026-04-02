@@ -161,13 +161,6 @@ router.post("/webhook", async (req, res) => {
     let maKhachHang = rawPayload.maKhachHang || rawPayload.userId || null;
     if (maKhachHang === "null" || maKhachHang === "undefined" || maKhachHang === "") maKhachHang = null;
 
-    if (!maKhachHang) {
-      return res.json({
-        fulfillmentText:
-          "Dạ, để bảo mật thông tin, bạn vui lòng đăng nhập vào tài khoản trên website trước khi tra cứu nhé ạ.",
-      });
-    }
-
     const maDonHang = parameters.ma_don_hang || null;
 
     if (!maDonHang) {
@@ -191,12 +184,6 @@ router.post("/webhook", async (req, res) => {
       const [rows] = await pool.execute(sqlQuery, [maDonReal]);
 
       if (rows.length > 0) {
-        if (String(rows[0].MaKhachHang) !== String(maKhachHang)) {
-          return res.json({
-            fulfillmentText: `Dạ, bạn không có quyền truy cập thông tin của đơn hàng ${maDonReal} do đơn hàng này không thuộc về tài khoản của bạn.`,
-          });
-        }
-
         const donHang = rows[0];
         const trangThaiCode = donHang.TrangThaiDonHang;
         let trangThaiText = "";
@@ -221,24 +208,34 @@ router.post("/webhook", async (req, res) => {
             trangThaiText = "Đang được xử lý";
         }
 
-        const ngayDat = new Date(donHang.NgayDat).toLocaleDateString("vi-VN");
-        const tongTien = new Intl.NumberFormat("vi-VN", {
-          style: "currency",
-          currency: "VND",
-        }).format(donHang.TongThanhToan);
+        let displayInfo = [];
+        const isOwner = maKhachHang && String(donHang.MaKhachHang) === String(maKhachHang);
 
-        let displayInfo = [
-          `• Ngày đặt: ${ngayDat}`,
-          `• Tổng hóa đơn: ${tongTien}`,
-          `• Trạng thái: ${trangThaiText}`,
-        ];
+        if (isOwner) {
+          const ngayDat = new Date(donHang.NgayDat).toLocaleDateString("vi-VN");
+          const tongTien = new Intl.NumberFormat("vi-VN", {
+            style: "currency",
+            currency: "VND",
+          }).format(donHang.TongThanhToan);
+
+          displayInfo = [
+            `• Ngày đặt: ${ngayDat}`,
+            `• Tổng hóa đơn: ${tongTien}`,
+            `• Trạng thái: ${trangThaiText}`,
+          ];
+        } else {
+          displayInfo = [
+            `• Trạng thái: ${trangThaiText}`,
+            `(Bạn đăng nhập đúng tài khoản trên website để xem chi tiết hóa đơn)`
+          ];
+        }
 
         return res.json({
           fulfillmentMessages: [
             {
               text: {
                 text: [
-                  `Dạ, em gửi bạn thông tự tra cứu của đơn hàng ${maDonReal} ạ:`,
+                  `Dạ, em gửi bạn thông tin tra cứu của đơn hàng ${maDonReal} ạ:`,
                 ],
               },
             },
@@ -279,13 +276,6 @@ router.post("/webhook", async (req, res) => {
     let maKhachHang = rawPayload.maKhachHang || rawPayload.userId || null;
     if (maKhachHang === "null" || maKhachHang === "undefined" || maKhachHang === "") maKhachHang = null;
 
-    if (!maKhachHang) {
-      return res.json({
-        fulfillmentText:
-          "Dạ, để bảo mật thông tin, bạn vui lòng đăng nhập vào tài khoản trên website trước khi kiểm tra bảo hành nhé ạ.",
-      });
-    }
-
     const maDonHang = parameters.ma_don_hang || null;
 
     if (!maDonHang) {
@@ -310,12 +300,6 @@ router.post("/webhook", async (req, res) => {
       if (orderRows.length === 0) {
         return res.json({
           fulfillmentText: `Dạ em không tìm thấy đơn hàng ${maDonReal} trên hệ thống. Bạn kiểm tra lại mã giúp em nhé.`,
-        });
-      }
-
-      if (String(orderRows[0].MaKhachHang) !== String(maKhachHang)) {
-        return res.json({
-          fulfillmentText: `Dạ, bạn không có quyền tra cứu bảo hành của đơn hàng ${maDonReal} do đơn hàng này không thuộc về tài khoản của bạn.`,
         });
       }
 
@@ -356,7 +340,7 @@ router.post("/webhook", async (req, res) => {
             {
               text: {
                 text: [
-                  `Dạ đây là thông bảo hành các sản phẩm thuộc đơn hàng ${maDonReal}:`,
+                  `Dạ đây là thông tin bảo hành các sản phẩm thuộc đơn hàng ${maDonReal}:`,
                 ],
               },
             },
