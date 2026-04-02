@@ -12,7 +12,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
-import styles from './OrderTracking.module.css'; 
+import styles from './OrderTracking.module.css'; // Thay đổi import CSS cho phù hợp với dự án của bạn
 
 const { Search } = Input;
 const { Option } = Select;
@@ -48,14 +48,19 @@ export default function AdminOrder() {
     headers: { Authorization: `Bearer ${token}` },
     withCredentials: true 
   };
+
+  // State quản lý danh sách & bộ lọc
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
+  
+  // State của các bộ lọc (Filters)
   const [page, setPage] = useState(1);
   const [activeTab, setActiveTab] = useState('all');
   const [searchText, setSearchText] = useState('');
-  const [dateRange, setDateRange] = useState(['', '']); 
+  const [dateRange, setDateRange] = useState(['', '']); // ['startDate', 'endDate']
   
+  // State Modal
   const [detailModal, setDetailModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -65,6 +70,7 @@ export default function AdminOrder() {
   const [newStatus, setNewStatus] = useState(null);
   const [updateLoading, setUpdateLoading] = useState(false);
 
+  // useEffect sẽ tự động gọi lại API mỗi khi 1 trong 4 bộ lọc này thay đổi
   useEffect(() => {
     fetchOrders();
   }, [page, activeTab, searchText, dateRange]);
@@ -74,7 +80,7 @@ export default function AdminOrder() {
     try {
       const params = {
         page: page,
-        limit: 10, 
+        limit: 10, // Số đơn trên 1 trang
         search: searchText || "",
       };
       
@@ -98,9 +104,10 @@ export default function AdminOrder() {
     }
   };
 
+  // --- CÁC HÀM XỬ LÝ SỰ KIỆN ĐỔI BỘ LỌC ---
   const handleSearch = (value) => {
     setSearchText(value);
-    setPage(1);
+    setPage(1); // Khi tìm kiếm mới thì quay về trang 1
   };
 
   const handleTabChange = (key) => {
@@ -109,6 +116,7 @@ export default function AdminOrder() {
   };
 
   const handleDateChange = (dates, dateStrings) => {
+    // dateStrings là mảng ['YYYY-MM-DD', 'YYYY-MM-DD']
     setDateRange(dateStrings);
     setPage(1);
   };
@@ -117,6 +125,7 @@ export default function AdminOrder() {
     setPage(pagination.current);
   };
 
+  // --- CÁC HÀM XỬ LÝ API KHÁC (Chi tiết, Cập nhật) ---
   const fetchOrderDetail = async (orderCode) => {
     setDetailLoading(true);
     try {
@@ -147,7 +156,7 @@ export default function AdminOrder() {
       );
       message.success('Cập nhật trạng thái thành công!');
       setUpdateModal(false);
-      fetchOrders(); 
+      fetchOrders(); // Tải lại danh sách
     } catch (err) {
       message.error(err.response?.data?.message || 'Không thể cập nhật trạng thái!');
     } finally {
@@ -155,6 +164,7 @@ export default function AdminOrder() {
     }
   };
 
+  // --- CẤU HÌNH GIAO DIỆN ---
   const tabItems = ORDER_STATUS.map((s) => ({
     key: s.value === undefined ? 'all' : String(s.value),
     label: s.label,
@@ -209,6 +219,7 @@ export default function AdminOrder() {
     <div className={styles.pageWrapper}>
       <Helmet><title>Quản lý Đơn hàng | Ceramic Shop</title></Helmet>
 
+      {}
       <header className={styles.topHeader}>
         <div className={styles.logo} onClick={() => navigate('/')}>CERAMIC-SHOP</div>
         <Button type="link" icon={<ArrowLeftOutlined />} onClick={() => navigate('/')}>
@@ -224,6 +235,7 @@ export default function AdminOrder() {
           </div>
 
           <div className={styles.card}>
+            {}
             <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
               <Tabs
                 activeKey={activeTab}
@@ -256,6 +268,7 @@ export default function AdminOrder() {
                 dataSource={orders}
                 columns={columns}
                 rowKey="MaHienThi"
+                // CẤU HÌNH PHÂN TRANG (Pagination)
                 onChange={handleTableChange}
                 pagination={{
                   current: page,
@@ -263,7 +276,7 @@ export default function AdminOrder() {
                   total: total,
                   showTotal: (t) => `Tổng ${t} đơn hàng`,
                   showSizeChanger: false,
-                  position: ['bottomCenter'], 
+                  position: ['bottomCenter'], // Đặt thanh phân trang ở giữa phía dưới
                 }}
                 locale={{ emptyText: 'Không tìm thấy đơn hàng nào phù hợp' }}
                 size="middle"
@@ -274,7 +287,7 @@ export default function AdminOrder() {
         </div>
       </div>
 
-      {/* Modal Cập Nhật Trạng Thái */}
+      {}
       <Modal
         title="Cập nhật trạng thái đơn hàng"
         open={updateModal}
@@ -294,7 +307,7 @@ export default function AdminOrder() {
         </Select>
       </Modal>
 
-      {/*  Modal Chi tiết đơn hàng */}
+      {}
     </div>
   );
 }
