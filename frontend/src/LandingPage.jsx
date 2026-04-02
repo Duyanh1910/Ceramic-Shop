@@ -85,6 +85,9 @@ function LandingPage() {
                     }
                 }
             }
+            if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 10) {
+                current = 'contact';
+            }
             setActiveSection(current);
         };
         
