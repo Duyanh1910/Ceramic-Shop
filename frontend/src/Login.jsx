@@ -32,7 +32,7 @@ function Login() {
       const currentRole = user.role;
 
       const token = response.data.token || null;
-      const maKhachHang = user.MaKhachHang || user.id || null;
+      const maKhachHang = user.MaKhachHang || user.maKhachHang || user.MaTaiKhoan || user.id || user.profile?.MaKhachHang || null;
       saveSession(currentUsername, currentRole, rememberMe, token, maKhachHang);
 
       message.success('Đăng nhập thành công!');
