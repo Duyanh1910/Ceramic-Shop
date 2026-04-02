@@ -6,7 +6,7 @@ export const sortObject = (obj) => {
 
   for (let key of keys) {
     if (obj[key] !== "" && obj[key] !== undefined && obj[key] !== null) {
-      sorted[key] = encodeURIComponent(String(obj[key])).replace(/%20/g, "+");
+      sorted[key] = obj[key];
     }
   }
 
@@ -48,7 +48,7 @@ export const buildPaymentUrl = (params, config) => {
   sorted.vnp_SecureHash = secureHash;
 
   const queryString = Object.keys(sorted)
-    .map((key) => `${key}=${sorted[key]}`)
+    .map((key) => `${key}=${encodeURIComponent(sorted[key])}`)
     .join("&");
 
   return `${config.vnpUrl}?${queryString}`;
