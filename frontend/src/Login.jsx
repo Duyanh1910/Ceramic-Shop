@@ -31,7 +31,9 @@ function Login() {
       const currentUsername = user.username || values.username;
       const currentRole = user.role;
 
-      saveSession(currentUsername, currentRole, rememberMe);
+      const token = response.data.token || null;
+      const maKhachHang = user.MaKhachHang || user.id || null;
+      saveSession(currentUsername, currentRole, rememberMe, token, maKhachHang);
 
       message.success('Đăng nhập thành công!');
 
