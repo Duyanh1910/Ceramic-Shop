@@ -37,12 +37,13 @@ router.get("/vnpay-return", (req, res) => {
 });
 
 router.get("/vnpay-ipn", async (req, res) => {
+  console.log("-----> ĐÃ NHẬN REQUEST TỪ VNPAY VÀO IPN URL!");
   const verify = verifyVnpay(req.query, process.env.VNP_HASHSECRET);
-
+  console.log(`${verify}:verify`);
   if (!verify.isSuccess) {
     return res.json({ RspCode: "97", Message: "Invalid signature" });
   }
-
+  console.log(`xác thực thành công`);
   const data = verify.data;
   const { vnp_TxnRef, vnp_ResponseCode, vnp_TransactionNo, vnp_Amount } = data;
 
@@ -91,13 +92,13 @@ router.get("/vnpay-ipn", async (req, res) => {
 
     return res.json({ RspCode: "00", Message: "OK" });
   } catch (err) {
+    console.error(err);
     return res.json({ RspCode: "99", Message: err.message });
   }
 });
 
 router.post("/vnpay-create", async (req, res, next) => {
   try {
-    console.log("-----> ĐÃ NHẬN REQUEST TỪ VNPAY VÀO IPN URL!");
     // SỬA LỖI 4: Xử lý chuỗi IP có chứa dấu phẩy từ Proxy/Load Balancer
     let ipAddr =
       req.headers["x-forwarded-for"] || req.socket.remoteAddress || "127.0.0.1";
