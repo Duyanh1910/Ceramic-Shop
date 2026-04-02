@@ -1,11 +1,11 @@
 import moment from "moment";
-import { buildPaymentUrl, verifyVnpay } from "../utils/vnpay.util.js";
+import { buildPaymentUrl } from "../../utils/payment/vnpay.util.js";
 import ErrorHandler from "../../utils/error_handler.js";
 import {
   OrderModel,
   PaymentTransactionModel,
   sequelize,
-} from "../models/index.js";
+} from "../../models/index.js";
 
 const CONFIG = {
   tmnCode: process.env.VNP_TMNCODE,
