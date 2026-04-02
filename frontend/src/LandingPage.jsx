@@ -31,7 +31,7 @@ function LandingPage() {
     const inputRef = useRef(null);
 
     const [isChecking, setIsChecking] = useState(false);
-    
+    const [apiCategories, setApiCategories]=useState([]);
     useEffect(() => {
         const fetchCats = async()=>{
             try{
