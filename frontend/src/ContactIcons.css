@@ -1,11 +1,66 @@
-.contact-floating-wrapper {
+.contact-wrapper {
     position: fixed;
     bottom: 30px;
-    left: 30px;
+    left: 10px;
     display: flex;
-    flex-direction: column; 
-    gap: 15px;
+    flex-direction: column-reverse;
+    align-items: center;
+    gap: 10px;
     z-index: 999999;
+}
+
+.contact-toggle-btn {
+    width: 50px;
+    height: 70px;
+    border-radius: 25px;
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 5px 0;
+    gap: 2px;
+}
+
+.contact-toggle-btn:hover {
+    box-shadow: 0 6px 15px rgba(0,0,0,0.25);
+    transform: translateY(-2px);
+}
+
+.main-phone-icon {
+    width: 28px;
+    height: 28px;
+    animation: ringRingMain 2s infinite ease-in-out;
+}
+
+.main-arrow-icon {
+    width: 14px;
+    height: 14px;
+    transition: transform 0.3s ease;
+}
+
+.contact-wrapper.open .main-arrow-icon {
+    transform: rotate(180deg);
+}
+
+.contact-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+}
+
+.contact-wrapper.open .contact-list {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
 }
 
 .contact-icon-btn {
@@ -17,40 +72,30 @@
     justify-content: center;
     box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     transition: all 0.3s ease;
-    text-decoration: none;
-    color: white;
-    font-size: 24px;
     cursor: pointer;
+    background-color: white;
+    border: none;
+    padding: 0;
+}
+
+.contact-icon-btn img {
+    width: 26px;
+    height: 26px;
 }
 
 .contact-icon-btn:hover {
-    transform: scale(1.15) translateY(-5px);
+    transform: scale(1.1) translateY(-3px);
     box-shadow: 0 6px 15px rgba(0,0,0,0.3);
-    color: white;
 }
 
-.btn-zalo {
-    background-color: #0068ff; 
-}
+.btn-zalo:hover { background-color: #f0f7ff; }
+.btn-gmail:hover { background-color: #fff0f0; }
+.btn-facebook:hover { background-color: #f0f4ff; }
+.btn-phone:hover { background-color: #f0fff0; }
 
-.btn-zalo img {
-    width: 28px;
-    height: 28px;
-    filter: brightness(0) invert(1);
-}
-
-.btn-gmail {
-    background-color: #ea4335; 
-}
-
-.btn-phone {
-    background-color: #4caf50; 
-    animation: ringRing 2s infinite ease-in-out; 
-}
-
-@keyframes ringRing {
+@keyframes ringRingMain {
     0%, 100% { transform: rotate(0deg); }
-    10%, 30%, 50% { transform: rotate(15deg); }
-    20%, 40% { transform: rotate(-15deg); }
+    10%, 30%, 50% { transform: rotate(10deg); }
+    20%, 40% { transform: rotate(-10deg); }
     60% { transform: rotate(0deg); }
 }
