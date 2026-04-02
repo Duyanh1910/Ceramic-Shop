@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import './ChatBot.css';
 
 const animationConfigs = [
@@ -31,19 +32,44 @@ function ChatBot() {
   });
 
   useEffect(() => {
+    const fetchMaKH = async () => {
+        try {
+            const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/me', { withCredentials: true });
+            const userData = res.data.user || res.data.result;
+            const profileData = userData?.profile || userData;
+
+            const actualMaKH = profileData?.MaKhachHang || profileData?.maKhachHang || userData?.MaKhachHang || userData?.maKhachHang || userData?.MaTaiKhoan || userData?.id || null;
+
+            if (actualMaKH && String(actualMaKH) !== String(maKhachHang)) {
+                setMaKhachHang(actualMaKH);
+                localStorage.setItem("customer_maKhachHang", String(actualMaKH));
+            }
+        } catch (e) {
+        }
+    };
+
     const checkLogin = () => {
       const isActive = localStorage.getItem("customer_session_active");
-      let maKH = isActive === "true" ? localStorage.getItem("customer_maKhachHang") : null;
-      if (maKH === "null" || maKH === "undefined" || maKH === "") {
-          maKH = null;
-      }
-      if (maKH !== maKhachHang) {
-          setMaKhachHang(maKH);
+      if (isActive === "true") {
+          let maKH = localStorage.getItem("customer_maKhachHang");
+          if (maKH === "null" || maKH === "undefined" || maKH === "") {
+              maKH = null;
+          }
+
+          if (maKH) {
+              if (String(maKH) !== String(maKhachHang)) {
+                  setMaKhachHang(maKH);
+              }
+          } else {
+              fetchMaKH();
+          }
+      } else {
+          if (maKhachHang !== null) setMaKhachHang(null);
       }
     };
 
     checkLogin();
-    const interval = setInterval(checkLogin, 1000);
+    const interval = setInterval(checkLogin, 1500);
     return () => clearInterval(interval);
   }, [maKhachHang]);
 
@@ -243,7 +269,7 @@ function ChatBot() {
         agent-id="6add2f93-9961-40d6-9b52-f4af5862c6a1"
         language-code="vi"
         session-id={sessionId}
-        user-id={maKhachHang || ''}
+        user-id={maKhachHang ? String(maKhachHang) : ''}
         query-parameters={queryParams}
       ></df-messenger>
     </>

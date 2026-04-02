@@ -227,8 +227,7 @@ router.post("/webhook", async (req, res) => {
         } else {
           displayInfo = [
             `• Trạng thái: ${trangThaiText}`,
-            `(Bạn đăng nhập đúng tài khoản trên website để xem chi tiết hóa đơn)`,
-            `[🛠️ GÓC TÌM LỖI]: Mã KH mà Bot nhận được từ Web là: ${maKhachHang || "RỖNG"} | Mã chủ đơn trong SQL là: ${donHang.MaKhachHang}`
+            `(Bạn đăng nhập đúng tài khoản trên website để xem chi tiết hóa đơn)`
           ];
         }
 
@@ -237,7 +236,7 @@ router.post("/webhook", async (req, res) => {
             {
               text: {
                 text: [
-                  `Dạ, em gửi bạn thông tin tra cứu của đơn hàng ${maDonReal} ạ:`,
+                  `Dạ, em gửi bạn thông tra cứu của đơn hàng ${maDonReal} ạ:`,
                 ],
               },
             },
