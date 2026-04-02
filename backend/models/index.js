@@ -28,6 +28,7 @@ import InventoryHistoryModel from "./inventory_history.model.js";
 import SystemModel from "./system_model.model.js";
 import AccountProviderModel from "./account_provider.model.js";
 
+import ShippingTypeModel from "./shipping/shipping_type.model.js";
 import RatingModel from "./rating.model.js";
 
 // --- QUAN HỆ TÀI KHOẢN & PHÂN QUYỀN ---
@@ -205,4 +206,5 @@ export {
   AccountProviderModel,
   RatingModel,
   PaymentTransactionModel,
+  ShippingTypeModel,
 };

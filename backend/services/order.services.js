@@ -12,6 +12,9 @@ import {
   PromotionModel,
   PromotionWalletModel,
   VariantImageModel,
+  ShippingTypeModel,
+  PaymentMethodModel,
+  PaymentTransactionModel,
 } from "../models/index.js";
 import ErrorHandler from "../utils/error_handler.js";
 import { Op } from "sequelize";
@@ -322,7 +325,7 @@ export const getMyOrderInfoService = async (idAccount, orderCode) => {
       );
 
     return order;
-  } catch (error) {
+  } catch (err) {
     console.error(err);
     if (err.statusCode) throw err;
     throw new ErrorHandler(
@@ -493,4 +496,70 @@ export const adminGetOrderService = async (
     currentPage: parseInt(page),
     orders: orders,
   };
+};
+
+export const adminGetOrderDetailService = async (orderCode) => {
+  try {
+    const order = await OrderModel.findOne({
+      where: { MaHienThi: orderCode },
+      include: [
+        {
+          model: OrderDetailModel,
+          include: [
+            {
+              model: VariantModel,
+              attributes: ["TenBienThe"],
+              include: [
+                { model: VariantImageModel, attributes: ["DuongDan"] },
+                {
+                  model: ProductModel,
+                  attributes: ["TenSanPham", "Thumbnail"],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          model: CustomerModel,
+          attributes: ["MaKhachHang", "TenKhachHang", "SDT"],
+        },
+        {
+          model: PaymentMethodModel,
+          attributes: ["MaPhuongThuc", "TenPhuongThuc"],
+        },
+        {
+          model: PaymentTransactionModel,
+          attributes: [
+            "MaGiaoDich",
+            "MaThamChieu",
+            "SoTien",
+            "TrangThai",
+            "ThoiGianGiaoDich",
+          ],
+        },
+        {
+          model: PromotionModel,
+          attributes: [
+            "MaKhuyenMai",
+            "MaCode",
+            "TenKhuyenMai",
+            "LoaiGiamGia",
+            "GiaTriGiam",
+          ],
+          through: { attributes: ["SoTienChietKhau"] },
+        },
+      ],
+    });
+
+    if (!order) throw new ErrorHandler("Đơn hàng không tồn tại!", 404);
+
+    return order;
+  } catch (error) {
+    console.error("Lỗi khi lấy chi tiết đơn:", error);
+    if (error.statusCode) throw error;
+    throw new ErrorHandler(
+      "Lỗi server! Không thể xem thông tin đơn hàng!",
+      500,
+    );
+  }
 };

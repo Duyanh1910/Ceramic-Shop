@@ -1,4 +1,7 @@
-import { adminGetOrderService } from "../../../services/order.services.js";
+import {
+  adminGetOrderService,
+  adminGetOrderDetailService,
+} from "../../../services/order.services.js";
 
 export const getAllOrders = async (req, res, next) => {
   try {
@@ -22,6 +25,20 @@ export const getAllOrders = async (req, res, next) => {
       success: true,
       message: "Lấy danh sách đơn hàng thành công!",
       result: orders,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getOrderDetail = async (req, res, next) => {
+  try {
+    const { orderCode } = req.params;
+    const orderInfo = await adminGetOrderDetailService(orderCode);
+    return res.status(200).json({
+      success: true,
+      message: `Lấy thông tin chi tiết đơn hàng ${orderCode} thành công!`,
+      result: orderInfo,
     });
   } catch (error) {
     next(error);
