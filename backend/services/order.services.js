@@ -435,7 +435,7 @@ export const adminGetOrderService = async (
   if (search) {
     whereCondition[Op.or] = [
       { MaHienThi: { [Op.like]: `%${search}%` } },
-      { "$KhachHang.SDT$": { [Op.like]: `%${search}%` } },
+      { SDT: { [Op.like]: `%${search}%` } },
     ];
   }
   if (startDate || endDate) {

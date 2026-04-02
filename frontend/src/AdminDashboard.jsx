@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   Tabs, Tag, Table, Button, Empty, Spin, Modal,
-  Steps, Descriptions, message, Select, Input, Space, DatePicker
+  Descriptions, message, Select, Input, Space, DatePicker, Card, Row, Col
 } from 'antd';
 import {
   ShoppingOutlined, ArrowLeftOutlined, EyeOutlined,
@@ -12,9 +12,8 @@ import {
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
-import styles from './OrderTracking.module.css'; 
+import styles from './AdminDashboard.module.css'; 
 
-const { Search } = Input;
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 
@@ -48,39 +47,49 @@ export default function AdminOrder() {
     headers: { Authorization: `Bearer ${token}` },
     withCredentials: true 
   };
+
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
+  
   const [page, setPage] = useState(1);
   const [activeTab, setActiveTab] = useState('all');
-  const [searchText, setSearchText] = useState('');
-  const [dateRange, setDateRange] = useState(['', '']); 
+  const [dateRange, setDateRange] = useState(['', '']);
   
+  const [searchInput, setSearchInput] = useState(''); 
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
   const [detailModal, setDetailModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [detailLoading, setDetailLoading] = useState(false);
   
   const [updateModal, setUpdateModal] = useState(false);
   const [editingOrder, setEditingOrder] = useState(null);
   const [newStatus, setNewStatus] = useState(null);
   const [updateLoading, setUpdateLoading] = useState(false);
 
+  // Debounce tìm kiếm
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchInput);
+      setPage(1); 
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
+  // Gọi API
   useEffect(() => {
     fetchOrders();
-  }, [page, activeTab, searchText, dateRange]);
+  }, [page, activeTab, debouncedSearch, dateRange]);
 
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const params = {
-        page: page,
-        limit: 10, 
-        search: searchText || "",
-      };
+      const params = { page: page, limit: 10 };
       
+      if (debouncedSearch) params.search = debouncedSearch;
       if (activeTab !== 'all') params.status = activeTab;
-      if (dateRange[0]) params.startDate = dateRange[0];
-      if (dateRange[1]) params.endDate = dateRange[1];
+      if (dateRange && dateRange[0]) params.startDate = dateRange[0];
+      if (dateRange && dateRange[1]) params.endDate = dateRange[1];
 
       const res = await axios.get(`${API_BASE}/admin/orders`, { 
         ...authHeader, 
@@ -98,35 +107,27 @@ export default function AdminOrder() {
     }
   };
 
-  const handleSearch = (value) => {
-    setSearchText(value);
-    setPage(1);
-  };
-
   const handleTabChange = (key) => {
     setActiveTab(key);
     setPage(1);
   };
 
   const handleDateChange = (dates, dateStrings) => {
-    setDateRange(dateStrings);
+    if (dates) {
+      setDateRange(dateStrings);
+    } else {
+      setDateRange(['', '']);
+    }
     setPage(1);
   };
 
-  const handleTableChange = (pagination) => {
-    setPage(pagination.current);
-  };
-
   const fetchOrderDetail = async (orderCode) => {
-    setDetailLoading(true);
     try {
       const res = await axios.get(`${API_BASE}/orders/${orderCode}`, authHeader);
       setSelectedOrder(res.data?.result);
       setDetailModal(true);
     } catch {
       message.error('Không thể tải chi tiết đơn hàng!');
-    } finally {
-      setDetailLoading(false);
     }
   };
 
@@ -170,16 +171,32 @@ export default function AdminOrder() {
     {
       title: 'Ngày đặt',
       dataIndex: 'NgayDat',
+      width: 110,
       render: (v) => new Date(v).toLocaleDateString('vi-VN'),
     },
     {
-      title: 'Số điện thoại',
-      dataIndex: 'SDT',
+      title: 'Khách hàng',
+      dataIndex: 'TenNguoiNhan',
+      render: (text, record) => (
+        <div>
+          <div className={styles.customerName}>{text}</div>
+          <div className={styles.customerPhone}>{record.SDT}</div>
+        </div>
+      ),
     },
     {
       title: 'Tổng tiền',
       dataIndex: 'TongThanhToan',
       render: (v) => <span className={styles.amount}>{fmt(v)}</span>,
+    },
+    {
+      title: 'Thanh toán',
+      dataIndex: 'TrangThaiThanhToan',
+      render: (v) => (
+        <Tag color={v === 1 ? 'green' : 'default'} bordered={false}>
+          {v === 1 ? 'Đã thanh toán' : 'Chưa thanh toán'}
+        </Tag>
+      ),
     },
     {
       title: 'Trạng thái',
@@ -191,7 +208,8 @@ export default function AdminOrder() {
     },
     {
       title: 'Thao tác',
-      width: 200,
+      width: 220,
+      align: 'center',
       render: (_, row) => (
         <Space>
           <Button size="small" icon={<EyeOutlined />} onClick={() => fetchOrderDetail(row.MaHienThi)}>
@@ -209,72 +227,74 @@ export default function AdminOrder() {
     <div className={styles.pageWrapper}>
       <Helmet><title>Quản lý Đơn hàng | Ceramic Shop</title></Helmet>
 
-      <header className={styles.topHeader}>
-        <div className={styles.logo} onClick={() => navigate('/')}>CERAMIC-SHOP</div>
-        <Button type="link" icon={<ArrowLeftOutlined />} onClick={() => navigate('/')}>
-          Về trang chủ
-        </Button>
-      </header>
-
-      <div className={styles.mainContent}>
-        <div className={styles.container}>
-          <div className={styles.pageHeader}>
-            <h1 className={styles.pageTitle}><ShoppingOutlined /> Quản lý Đơn hàng</h1>
-            <p className={styles.pageSub}>Theo dõi và quản lý tất cả đơn hàng</p>
-          </div>
-
-          <div className={styles.card}>
-            <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
-              <Tabs
-                activeKey={activeTab}
-                onChange={handleTabChange}
-                items={tabItems}
-                style={{ flex: 1, minWidth: '300px' }}
-              />
-              
-              <Space style={{ marginBottom: '14px' }}>
-                <RangePicker 
-                  placeholder={['Từ ngày', 'Đến ngày']} 
-                  format="YYYY-MM-DD"
-                  onChange={handleDateChange}
-                  allowClear
-                />
-                <Search
-                  placeholder="Tìm mã đơn, SĐT..."
-                  allowClear
-                  enterButton={<SearchOutlined />}
-                  onSearch={handleSearch}
-                  style={{ width: 250 }}
-                />
-              </Space>
-            </div>
-
-            {loading ? (
-              <div className={styles.loadingWrap}><Spin size="large" /></div>
-            ) : (
-              <Table
-                dataSource={orders}
-                columns={columns}
-                rowKey="MaHienThi"
-                onChange={handleTableChange}
-                pagination={{
-                  current: page,
-                  pageSize: 10,
-                  total: total,
-                  showTotal: (t) => `Tổng ${t} đơn hàng`,
-                  showSizeChanger: false,
-                  position: ['bottomCenter'], 
-                }}
-                locale={{ emptyText: 'Không tìm thấy đơn hàng nào phù hợp' }}
-                size="middle"
-                scroll={{ x: 800 }}
-              />
-            )}
-          </div>
+      <div className={styles.topHeader}>
+        <div>
+          <h1 className={styles.pageTitle}>
+            <ShoppingOutlined /> Quản lý Đơn hàng
+          </h1>
+          <p className={styles.pageSub}>Theo dõi và quản lý tất cả đơn hàng hệ thống</p>
         </div>
+        <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/')}>
+          Trang chủ
+        </Button>
       </div>
 
-      {/* Modal Cập Nhật Trạng Thái */}
+      <Card bordered={false} className={styles.mainCard}>
+        <Row gutter={[16, 16]} align="middle" className={styles.filterRow}>
+          <Col xs={24} lg={12}>
+            <Tabs
+              activeKey={activeTab}
+              onChange={handleTabChange}
+              items={tabItems}
+              className={styles.tabs}
+            />
+          </Col>
+          <Col xs={24} lg={12} className={styles.filterControls}>
+            <RangePicker 
+              placeholder={['Từ ngày', 'Đến ngày']} 
+              format="YYYY-MM-DD"
+              onChange={handleDateChange}
+              allowClear
+              className={styles.datePicker}
+            />
+            <Input
+              placeholder="Nhập mã đơn, SĐT khách..."
+              prefix={<SearchOutlined style={{ color: '#bfbfbf' }} />}
+              allowClear
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              className={styles.searchInput}
+            />
+          </Col>
+        </Row>
+
+        <div className={styles.tableWrap}>
+          {loading ? (
+            <div className={styles.loadingWrap}><Spin size="large" /></div>
+          ) : (
+            <Table
+              dataSource={orders}
+              columns={columns}
+              rowKey="MaHienThi"
+              onChange={(pagination) => setPage(pagination.current)}
+              pagination={{
+                current: page,
+                pageSize: 10,
+                total: total,
+                showTotal: (t) => `Tổng ${t} đơn hàng`,
+                showSizeChanger: false,
+                position: ['bottomCenter'],
+              }}
+              locale={{ emptyText: <Empty description="Không tìm thấy đơn hàng nào" /> }}
+              size="middle"
+              scroll={{ x: 1000 }}
+              bordered
+              className={styles.table}
+            />
+          )}
+        </div>
+      </Card>
+
       <Modal
         title="Cập nhật trạng thái đơn hàng"
         open={updateModal}
@@ -285,16 +305,69 @@ export default function AdminOrder() {
         cancelText="Hủy"
         centered
       >
-        <div style={{ marginBottom: 16 }}>Mã đơn hàng: <strong>#{editingOrder?.MaHienThi}</strong></div>
-        <div style={{ marginBottom: 8 }}>Chọn trạng thái mới:</div>
-        <Select style={{ width: '100%' }} value={newStatus} onChange={(val) => setNewStatus(val)}>
+        <div className={styles.modalText}>
+          Mã đơn hàng: <strong>#{editingOrder?.MaHienThi}</strong>
+        </div>
+        <div className={styles.modalLabel}>Chọn trạng thái mới:</div>
+        <Select 
+          className={styles.fullWidth} 
+          value={newStatus} 
+          onChange={(val) => setNewStatus(val)}
+        >
           {ORDER_STATUS.filter(s => s.value !== undefined).map(status => (
             <Option key={status.value} value={status.value}>{status.label}</Option>
           ))}
         </Select>
       </Modal>
 
-      {/*  Modal Chi tiết đơn hàng */}
+      <Modal
+        open={detailModal}
+        onCancel={() => setDetailModal(false)}
+        footer={null}
+        width={750}
+        centered
+        title={<span className={styles.modalTitle}>Chi tiết đơn hàng #{selectedOrder?.MaHienThi}</span>}
+      >
+        {selectedOrder && (
+          <div>
+            <Descriptions column={2} bordered size="small" className={styles.descriptions}>
+              <Descriptions.Item label="Người nhận">{selectedOrder.TenNguoiNhan}</Descriptions.Item>
+              <Descriptions.Item label="Số điện thoại">{selectedOrder.SDT}</Descriptions.Item>
+              <Descriptions.Item label="Địa chỉ" span={2}>{selectedOrder.DiaChiGiaoHang}</Descriptions.Item>
+              <Descriptions.Item label="Ghi chú" span={2}>{selectedOrder.GhiChu || 'Không có'}</Descriptions.Item>
+            </Descriptions>
+
+            <div className={styles.productListTitle}>Danh sách sản phẩm:</div>
+            <Table 
+              dataSource={selectedOrder.ChiTietDonHangs} 
+              rowKey="MaCTDH"
+              pagination={false}
+              size="small"
+              className={styles.table}
+              columns={[
+                { 
+                  title: 'Sản phẩm', 
+                  render: (_, r) => r.BienTheSanPham?.SanPham?.TenSanPham 
+                },
+                { 
+                  title: 'Phân loại', 
+                  render: (_, r) => r.BienTheSanPham?.TenBienThe 
+                },
+                { 
+                  title: 'SL', 
+                  dataIndex: 'SoLuong',
+                  width: 60,
+                },
+                { 
+                  title: 'Thành tiền', 
+                  dataIndex: 'ThanhTien',
+                  render: (v) => fmt(v) 
+                }
+              ]}
+            />
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }
