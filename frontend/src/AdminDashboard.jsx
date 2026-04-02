@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Row, Col, Card, Table, Tag, Statistic, Spin, Avatar } from 'antd';
+import { Row, Col, Card, Table, Tag, Statistic, Spin, Avatar, Button, Modal, Select, message } from 'antd';
 import {
   ShoppingOutlined, TeamOutlined, DollarOutlined,
-  FileTextOutlined, RiseOutlined, ClockCircleOutlined,
+  FileTextOutlined, RiseOutlined, ClockCircleOutlined, EditOutlined
 } from '@ant-design/icons';
 import axios from 'axios';
 import styles from './AdminDashboard.module.css';
@@ -23,7 +23,16 @@ export default function AdminDashboard() {
   const [recentOrders, setRecentOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  const axiosConfig = { withCredentials: true };
+  const [updateModal, setUpdateModal] = useState(false);
+  const [editingOrder, setEditingOrder] = useState(null);
+  const [newStatus, setNewStatus] = useState(null);
+  const [updateLoading, setUpdateLoading] = useState(false);
+  
+  const token = localStorage.getItem('customer_token') || localStorage.getItem('token');
+  const axiosConfig = { 
+    headers: { Authorization: `Bearer ${token}` },
+    withCredentials: true 
+  };
 
   useEffect(() => {
     fetchData();
@@ -39,8 +48,8 @@ export default function AdminDashboard() {
       ]);
 
       if (ordersRes.status === 'fulfilled') {
-        setRecentOrders(ordersRes.value.data?.result?.data || []);
-        setStats((prev) => ({ ...prev, totalOrders: ordersRes.value.data?.result?.total || 0 }));
+        setRecentOrders(ordersRes.value.data?.result?.orders || []);
+        setStats((prev) => ({ ...prev, totalOrders: ordersRes.value.data?.result?.totalItems || 0 }));
       }
       if (customersRes.status === 'fulfilled') {
         setStats((prev) => ({ ...prev, totalCustomers: customersRes.value.data?.result?.total || 0 }));
@@ -48,9 +57,35 @@ export default function AdminDashboard() {
       if (productsRes.status === 'fulfilled') {
         setStats((prev) => ({ ...prev, totalProducts: productsRes.value.data?.result?.total || 0 }));
       }
-    } catch {
+    } catch (error) {
+      console.error("Lỗi khi tải dữ liệu dashboard:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const openUpdateModal = (order) => {
+    setEditingOrder(order);
+    setNewStatus(order.TrangThaiDonHang);
+    setUpdateModal(true);
+  };
+
+  const handleUpdateStatus = async () => {
+    if (!editingOrder) return;
+    setUpdateLoading(true);
+    try {
+      await axios.put(
+        `${API_BASE}/admin/orders/${editingOrder.MaHienThi}/status`, 
+        { TrangThaiDonHang: newStatus }, 
+        axiosConfig
+      );
+      message.success('Cập nhật trạng thái thành công!');
+      setUpdateModal(false);
+      fetchData(); 
+    } catch (err) {
+      message.error(err.response?.data?.message || 'Không thể cập nhật trạng thái!');
+    } finally {
+      setUpdateLoading(false);
     }
   };
 
@@ -64,8 +99,8 @@ export default function AdminDashboard() {
   const columns = [
     {
       title: 'Mã đơn',
-      dataIndex: 'MaDonHang',
-      width: 90,
+      dataIndex: 'MaHienThi',
+      width: 130,
       render: (v) => <span className={styles.orderId}>#{v}</span>,
     },
     {
@@ -94,6 +129,21 @@ export default function AdminDashboard() {
       title: 'Ngày đặt',
       dataIndex: 'NgayDat',
       render: (v) => new Date(v).toLocaleDateString('vi-VN'),
+    },
+    {
+      title: 'Thao tác',
+      width: 120,
+      render: (_, row) => (
+        <Button 
+          size="small" 
+          type="primary" 
+          ghost 
+          icon={<EditOutlined />}
+          onClick={() => openUpdateModal(row)}
+        >
+          Cập nhật
+        </Button>
+      ),
     },
   ];
 
@@ -139,7 +189,7 @@ export default function AdminDashboard() {
               <Table
                 dataSource={recentOrders}
                 columns={columns}
-                rowKey="MaDonHang"
+                rowKey="MaHienThi"
                 pagination={false}
                 size="middle"
                 className={styles.table}
@@ -149,6 +199,34 @@ export default function AdminDashboard() {
           </div>
         </>
       )}
+
+      {/* Modal Cập nhật trạng thái */}
+      <Modal
+        title="Cập nhật trạng thái đơn hàng"
+        open={updateModal}
+        onOk={handleUpdateStatus}
+        onCancel={() => setUpdateModal(false)}
+        confirmLoading={updateLoading}
+        okText="Lưu thay đổi"
+        cancelText="Hủy"
+        centered
+      >
+        <div style={{ marginBottom: 16 }}>
+          Mã đơn hàng: <strong>#{editingOrder?.MaHienThi}</strong>
+        </div>
+        <div style={{ marginBottom: 8 }}>Chọn trạng thái mới:</div>
+        <Select
+          style={{ width: '100%' }}
+          value={newStatus}
+          onChange={(val) => setNewStatus(val)}
+        >
+          {Object.entries(ORDER_STATUS).map(([key, value]) => (
+            <Select.Option key={key} value={Number(key)}>
+              {value.label}
+            </Select.Option>
+          ))}
+        </Select>
+      </Modal>
     </div>
   );
 }

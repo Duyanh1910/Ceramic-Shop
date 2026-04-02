@@ -414,3 +414,83 @@ export const cancelOrderService = async (idAccount, orderCode, reason) => {
     throw new ErrorHandler("Lỗi server! Không thể hủy đơn hàng!", 500);
   }
 };
+
+export const adminGetOrderService = async (
+  page = 1,
+  limit = 10,
+  search = "",
+  status = "",
+  startDate = "",
+  endDate = "",
+) => {
+  const offset = (page - 1) * limit;
+  const whereCondition = {};
+
+  if (status !== "" && status !== undefined && status !== null) {
+    const statusInt = parseInt(status);
+    if (Object.values(ORDER_STATUS).includes(statusInt)) {
+      whereCondition.TrangThaiDonHang = statusInt;
+    }
+  }
+  if (search) {
+    whereCondition[Op.or] = [
+      { MaHienThi: { [Op.like]: `%${search}%` } },
+      { "$KhachHang.SDT$": { [Op.like]: `%${search}%` } },
+    ];
+  }
+  if (startDate || endDate) {
+    whereCondition.NgayDat = {};
+
+    if (startDate) {
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      whereCondition.NgayDat[Op.gte] = start;
+    }
+
+    if (endDate) {
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      whereCondition.NgayDat[Op.lte] = end;
+    }
+  }
+
+  const { count, rows: orders } = await OrderModel.findAndCountAll({
+    limit: parseInt(limit),
+    offset: parseInt(offset),
+    distinct: true,
+    order: [["NgayDat", "DESC"]],
+    where: whereCondition,
+    include: [
+      {
+        model: OrderDetailModel,
+        include: [
+          {
+            model: VariantModel,
+            attributes: ["TenBienThe", "Gia"],
+            include: [
+              {
+                model: VariantImageModel,
+                attributes: ["DuongDan"],
+              },
+              {
+                model: ProductModel,
+                attributes: ["TenSanPham", "Thumbnail"],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        model: CustomerModel,
+        attributes: ["MaKhachHang", "TenKhachHang", "SDT"],
+      },
+    ],
+  });
+
+  return {
+    totalItems: count,
+    totalPages: Math.ceil(count / limit),
+    currentPage: parseInt(page),
+    orders: orders,
+  };
+};

@@ -3,6 +3,9 @@ import authRoutes from "./auth.route.js";
 import adminCustomerRoutes from "./admin/adminCustomer.route.js";
 import adminStaffRoutes from "./admin/adminStaff.route.js";
 import adminProductRoutes from "./admin/adminProduct.route.js";
+import adminOrderRoutes from "./admin/adminOrder.route.js";
+
+
 import customerRoutes from "../routes/customer.route.js";
 import staffRoutes from "../routes/staff.route.js";
 import categoryRoutes from "./category.route.js";
@@ -46,6 +49,13 @@ router.use(
   jwtMiddleware,
   checkRole("Admin", "Staff"),
   adminProductRoutes,
+);
+
+router.use(
+  "/admin/orders",
+  jwtMiddleware,
+  checkRole("Admin", "Staff"),
+  adminOrderRoutes,
 );
 
 router.use("/categories", categoryRoutes);
