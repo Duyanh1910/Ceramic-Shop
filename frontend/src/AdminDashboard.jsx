@@ -1,66 +1,132 @@
 import { useState, useEffect } from 'react';
-import { Row, Col, Card, Table, Tag, Statistic, Spin, Avatar, Button, Modal, Select, message } from 'antd';
 import {
-  ShoppingOutlined, TeamOutlined, DollarOutlined,
-  FileTextOutlined, RiseOutlined, ClockCircleOutlined, EditOutlined
+  Tabs, Tag, Table, Button, Empty, Spin, Modal,
+  Steps, Descriptions, message, Select, Input, Space, DatePicker
+} from 'antd';
+import {
+  ShoppingOutlined, ArrowLeftOutlined, EyeOutlined,
+  CloseCircleOutlined, FileTextOutlined, CarOutlined,
+  CheckCircleOutlined, ClockCircleOutlined, StopOutlined,
+  EditOutlined, SearchOutlined
 } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import styles from './AdminDashboard.module.css';
+import { Helmet } from 'react-helmet-async';
+import styles from './OrderTracking.module.css'; 
+
+const { Search } = Input;
+const { Option } = Select;
+const { RangePicker } = DatePicker;
 
 const API_BASE = 'https://ceramic-shop-u8ak.onrender.com/api/v1';
-const fmt = (p) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(p);
 
-const ORDER_STATUS = {
-  0: { label: 'Chờ xác nhận', color: 'gold' },
-  1: { label: 'Đang chuẩn bị', color: 'blue' },
-  2: { label: 'Đang giao', color: 'cyan' },
-  3: { label: 'Hoàn thành', color: 'green' },
-  4: { label: 'Đã huỷ', color: 'red' },
+const fmt = (p) =>
+  new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(p ?? 0);
+
+const ORDER_STATUS = [
+  { value: undefined, label: 'Tất cả' },
+  { value: 0, label: 'Chờ xác nhận' },
+  { value: 1, label: 'Đang chuẩn bị' },
+  { value: 2, label: 'Đang giao' },
+  { value: 3, label: 'Hoàn thành' },
+  { value: 4, label: 'Đã huỷ' },
+];
+
+const STATUS_CONFIG = {
+  0: { color: 'gold',    label: 'Chờ xác nhận', icon: <ClockCircleOutlined /> },
+  1: { color: 'blue',    label: 'Đang chuẩn bị', icon: <FileTextOutlined /> },
+  2: { color: 'cyan',    label: 'Đang giao',      icon: <CarOutlined /> },
+  3: { color: 'green',   label: 'Hoàn thành',     icon: <CheckCircleOutlined /> },
+  4: { color: 'red',     label: 'Đã huỷ',         icon: <StopOutlined /> },
 };
 
-export default function AdminDashboard() {
-  const [stats, setStats] = useState({});
-  const [recentOrders, setRecentOrders] = useState([]);
+export default function AdminOrder() {
+  const navigate = useNavigate();
+  const token = localStorage.getItem('customer_token') || localStorage.getItem('token');
+  
+  const authHeader = { 
+    headers: { Authorization: `Bearer ${token}` },
+    withCredentials: true 
+  };
+  const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [activeTab, setActiveTab] = useState('all');
+  const [searchText, setSearchText] = useState('');
+  const [dateRange, setDateRange] = useState(['', '']); 
+  
+  const [detailModal, setDetailModal] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [detailLoading, setDetailLoading] = useState(false);
   
   const [updateModal, setUpdateModal] = useState(false);
   const [editingOrder, setEditingOrder] = useState(null);
   const [newStatus, setNewStatus] = useState(null);
   const [updateLoading, setUpdateLoading] = useState(false);
-  
-  const token = localStorage.getItem('customer_token') || localStorage.getItem('token');
-  const axiosConfig = { 
-    headers: { Authorization: `Bearer ${token}` },
-    withCredentials: true 
-  };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    fetchOrders();
+  }, [page, activeTab, searchText, dateRange]);
 
-  const fetchData = async () => {
+  const fetchOrders = async () => {
     setLoading(true);
     try {
-      const [ordersRes, customersRes, productsRes] = await Promise.allSettled([
-        axios.get(`${API_BASE}/admin/orders?page=1&limit=5`, axiosConfig),
-        axios.get(`${API_BASE}/admin/customers?page=1&limit=1`, axiosConfig),
-        axios.get(`${API_BASE}/products?page=1&limit=1`, axiosConfig),
-      ]);
+      const params = {
+        page: page,
+        limit: 10, 
+        search: searchText || "",
+      };
+      
+      if (activeTab !== 'all') params.status = activeTab;
+      if (dateRange[0]) params.startDate = dateRange[0];
+      if (dateRange[1]) params.endDate = dateRange[1];
 
-      if (ordersRes.status === 'fulfilled') {
-        setRecentOrders(ordersRes.value.data?.result?.orders || []);
-        setStats((prev) => ({ ...prev, totalOrders: ordersRes.value.data?.result?.totalItems || 0 }));
-      }
-      if (customersRes.status === 'fulfilled') {
-        setStats((prev) => ({ ...prev, totalCustomers: customersRes.value.data?.result?.total || 0 }));
-      }
-      if (productsRes.status === 'fulfilled') {
-        setStats((prev) => ({ ...prev, totalProducts: productsRes.value.data?.result?.total || 0 }));
-      }
+      const res = await axios.get(`${API_BASE}/admin/orders`, { 
+        ...authHeader, 
+        params: params 
+      });
+
+      setOrders(res.data?.result?.orders || []);
+      setTotal(res.data?.result?.totalItems || 0);
+
     } catch (error) {
-      console.error("Lỗi khi tải dữ liệu dashboard:", error);
+      console.error(error);
+      message.error('Không thể tải danh sách đơn hàng!');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSearch = (value) => {
+    setSearchText(value);
+    setPage(1);
+  };
+
+  const handleTabChange = (key) => {
+    setActiveTab(key);
+    setPage(1);
+  };
+
+  const handleDateChange = (dates, dateStrings) => {
+    setDateRange(dateStrings);
+    setPage(1);
+  };
+
+  const handleTableChange = (pagination) => {
+    setPage(pagination.current);
+  };
+
+  const fetchOrderDetail = async (orderCode) => {
+    setDetailLoading(true);
+    try {
+      const res = await axios.get(`${API_BASE}/orders/${orderCode}`, authHeader);
+      setSelectedOrder(res.data?.result);
+      setDetailModal(true);
+    } catch {
+      message.error('Không thể tải chi tiết đơn hàng!');
+    } finally {
+      setDetailLoading(false);
     }
   };
 
@@ -77,11 +143,11 @@ export default function AdminDashboard() {
       await axios.put(
         `${API_BASE}/admin/orders/${editingOrder.MaHienThi}/status`, 
         { TrangThaiDonHang: newStatus }, 
-        axiosConfig
+        authHeader
       );
       message.success('Cập nhật trạng thái thành công!');
       setUpdateModal(false);
-      fetchData(); 
+      fetchOrders(); 
     } catch (err) {
       message.error(err.response?.data?.message || 'Không thể cập nhật trạng thái!');
     } finally {
@@ -89,29 +155,26 @@ export default function AdminDashboard() {
     }
   };
 
-  const statCards = [
-    { title: 'Tổng đơn hàng', value: stats?.totalOrders ?? '—', icon: <FileTextOutlined />, color: '#1b437c', bg: '#e8f0fe' },
-    { title: 'Khách hàng', value: stats?.totalCustomers ?? '—', icon: <TeamOutlined />, color: '#52c41a', bg: '#f6ffed' },
-    { title: 'Sản phẩm', value: stats?.totalProducts ?? '—', icon: <ShoppingOutlined />, color: '#c48c46', bg: '#fff8e6' },
-    { title: 'Doanh thu tháng', value: '—', icon: <DollarOutlined />, color: '#e74c3c', bg: '#fff1f0', prefix: '' },
-  ];
+  const tabItems = ORDER_STATUS.map((s) => ({
+    key: s.value === undefined ? 'all' : String(s.value),
+    label: s.label,
+  }));
 
   const columns = [
     {
       title: 'Mã đơn',
       dataIndex: 'MaHienThi',
-      width: 130,
+      width: 140,
       render: (v) => <span className={styles.orderId}>#{v}</span>,
     },
     {
-      title: 'Khách hàng',
-      dataIndex: 'TenNguoiNhan',
-      render: (v) => (
-        <div className={styles.customerCell}>
-          <Avatar size={28} className={styles.customerAvatar}>{v?.[0]}</Avatar>
-          <span>{v}</span>
-        </div>
-      ),
+      title: 'Ngày đặt',
+      dataIndex: 'NgayDat',
+      render: (v) => new Date(v).toLocaleDateString('vi-VN'),
+    },
+    {
+      title: 'Số điện thoại',
+      dataIndex: 'SDT',
     },
     {
       title: 'Tổng tiền',
@@ -121,86 +184,97 @@ export default function AdminDashboard() {
     {
       title: 'Trạng thái',
       dataIndex: 'TrangThaiDonHang',
-      render: (v) => (
-        <Tag color={ORDER_STATUS[v]?.color}>{ORDER_STATUS[v]?.label}</Tag>
-      ),
-    },
-    {
-      title: 'Ngày đặt',
-      dataIndex: 'NgayDat',
-      render: (v) => new Date(v).toLocaleDateString('vi-VN'),
+      render: (v) => {
+        const cfg = STATUS_CONFIG[v];
+        return <Tag color={cfg?.color} icon={cfg?.icon}>{cfg?.label}</Tag>;
+      },
     },
     {
       title: 'Thao tác',
-      width: 120,
+      width: 200,
       render: (_, row) => (
-        <Button 
-          size="small" 
-          type="primary" 
-          ghost 
-          icon={<EditOutlined />}
-          onClick={() => openUpdateModal(row)}
-        >
-          Cập nhật
-        </Button>
+        <Space>
+          <Button size="small" icon={<EyeOutlined />} onClick={() => fetchOrderDetail(row.MaHienThi)}>
+            Chi tiết
+          </Button>
+          <Button size="small" type="primary" ghost icon={<EditOutlined />} onClick={() => openUpdateModal(row)}>
+            Cập nhật
+          </Button>
+        </Space>
       ),
     },
   ];
 
   return (
-    <div className={styles.wrapper}>
-      <div className={styles.pageHeader}>
-        <div>
-          <h1 className={styles.pageTitle}>Tổng quan</h1>
-          <p className={styles.pageSub}>
-            <ClockCircleOutlined /> {new Date().toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-          </p>
+    <div className={styles.pageWrapper}>
+      <Helmet><title>Quản lý Đơn hàng | Ceramic Shop</title></Helmet>
+
+      <header className={styles.topHeader}>
+        <div className={styles.logo} onClick={() => navigate('/')}>CERAMIC-SHOP</div>
+        <Button type="link" icon={<ArrowLeftOutlined />} onClick={() => navigate('/')}>
+          Về trang chủ
+        </Button>
+      </header>
+
+      <div className={styles.mainContent}>
+        <div className={styles.container}>
+          <div className={styles.pageHeader}>
+            <h1 className={styles.pageTitle}><ShoppingOutlined /> Quản lý Đơn hàng</h1>
+            <p className={styles.pageSub}>Theo dõi và quản lý tất cả đơn hàng</p>
+          </div>
+
+          <div className={styles.card}>
+            <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
+              <Tabs
+                activeKey={activeTab}
+                onChange={handleTabChange}
+                items={tabItems}
+                style={{ flex: 1, minWidth: '300px' }}
+              />
+              
+              <Space style={{ marginBottom: '14px' }}>
+                <RangePicker 
+                  placeholder={['Từ ngày', 'Đến ngày']} 
+                  format="YYYY-MM-DD"
+                  onChange={handleDateChange}
+                  allowClear
+                />
+                <Search
+                  placeholder="Tìm mã đơn, SĐT..."
+                  allowClear
+                  enterButton={<SearchOutlined />}
+                  onSearch={handleSearch}
+                  style={{ width: 250 }}
+                />
+              </Space>
+            </div>
+
+            {loading ? (
+              <div className={styles.loadingWrap}><Spin size="large" /></div>
+            ) : (
+              <Table
+                dataSource={orders}
+                columns={columns}
+                rowKey="MaHienThi"
+                onChange={handleTableChange}
+                pagination={{
+                  current: page,
+                  pageSize: 10,
+                  total: total,
+                  showTotal: (t) => `Tổng ${t} đơn hàng`,
+                  showSizeChanger: false,
+                  position: ['bottomCenter'], 
+                }}
+                locale={{ emptyText: 'Không tìm thấy đơn hàng nào phù hợp' }}
+                size="middle"
+                scroll={{ x: 800 }}
+              />
+            )}
+          </div>
         </div>
       </div>
 
-      {loading ? (
-        <div className={styles.loadingWrap}><Spin size="large" /></div>
-      ) : (
-        <>
-          <Row gutter={[20, 20]} className={styles.statsRow}>
-            {statCards.map((card, i) => (
-              <Col xs={24} sm={12} xl={6} key={i}>
-                <div className={styles.statCard}>
-                  <div className={styles.statIcon} style={{ background: card.bg, color: card.color }}>
-                    {card.icon}
-                  </div>
-                  <div className={styles.statInfo}>
-                    <div className={styles.statLabel}>{card.title}</div>
-                    <div className={styles.statValue} style={{ color: card.color }}>
-                      {card.value}
-                    </div>
-                  </div>
-                  <RiseOutlined className={styles.trendIcon} />
-                </div>
-              </Col>
-            ))}
-          </Row>
-
-          <div className={styles.section}>
-            <div className={styles.sectionHeader}>
-              <h2 className={styles.sectionTitle}>Đơn hàng gần đây</h2>
-            </div>
-            <div className={styles.tableWrap}>
-              <Table
-                dataSource={recentOrders}
-                columns={columns}
-                rowKey="MaHienThi"
-                pagination={false}
-                size="middle"
-                className={styles.table}
-                locale={{ emptyText: 'Chưa có đơn hàng nào' }}
-              />
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* Modal Cập nhật trạng thái */}
+      {/* Modal Cập Nhật Trạng Thái */}
       <Modal
         title="Cập nhật trạng thái đơn hàng"
         open={updateModal}
@@ -211,22 +285,16 @@ export default function AdminDashboard() {
         cancelText="Hủy"
         centered
       >
-        <div style={{ marginBottom: 16 }}>
-          Mã đơn hàng: <strong>#{editingOrder?.MaHienThi}</strong>
-        </div>
+        <div style={{ marginBottom: 16 }}>Mã đơn hàng: <strong>#{editingOrder?.MaHienThi}</strong></div>
         <div style={{ marginBottom: 8 }}>Chọn trạng thái mới:</div>
-        <Select
-          style={{ width: '100%' }}
-          value={newStatus}
-          onChange={(val) => setNewStatus(val)}
-        >
-          {Object.entries(ORDER_STATUS).map(([key, value]) => (
-            <Select.Option key={key} value={Number(key)}>
-              {value.label}
-            </Select.Option>
+        <Select style={{ width: '100%' }} value={newStatus} onChange={(val) => setNewStatus(val)}>
+          {ORDER_STATUS.filter(s => s.value !== undefined).map(status => (
+            <Option key={status.value} value={status.value}>{status.label}</Option>
           ))}
         </Select>
       </Modal>
+
+      {/*  Modal Chi tiết đơn hàng */}
     </div>
   );
 }
