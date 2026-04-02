@@ -630,30 +630,21 @@ function Home() {
         const parents = catData.filter(c => !c.ParentID);
 
         parents.forEach(p => {
+          menuItems.push({
+            key:p.MaDanhMuc.toString(),
+            label:p.TenDanhMuc,
+            className:styles.parentMenuItem,
+          });
+          
            const mappedChildren = catData.filter(c => c.ParentID === p.MaDanhMuc);
            
-           if (mappedChildren.length > 0) {
-               menuItems.push({
-                   key:`grp_${p.MaDanhMuc}`,
-                   label: p.TenDanhMuc,
-                   children:[
-                    {
-                      key:p.MaDanhMuc.toString(),
-                      label:`Tất cả ${p.TenDanhMuc}`,
-
-                    },
-                    ...mappedChildren.map(c=>({
-                      key:c.MaDanhMuc.toString(),
-                      label:c.TenDanhMuc,
-                    }))
-                   ]
-               });
-           } else {
-               menuItems.push({
-                   key: p.MaDanhMuc.toString(),
-                   label: p.TenDanhMuc,
-               });
-           }
+           mappedChildren.forEach(c=>{
+            menuItems.push({
+              key:c.MaDanhMuc.toString(),
+              label:c.TenDanhMuc,
+              className:styles.childMenuItem,
+            })
+           })
         });
         
         setCategories(menuItems);
