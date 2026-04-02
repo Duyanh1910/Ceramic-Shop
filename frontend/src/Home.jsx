@@ -190,7 +190,7 @@ function Home() {
   const userMenu = [
     { 
       key: '1', 
-      label: 'Sửa hồ sơ', 
+      label: 'Tài khoản', 
       icon: <SettingOutlined />,
       onClick: () => navigate('/profile') 
     },
