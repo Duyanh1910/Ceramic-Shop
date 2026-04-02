@@ -24,6 +24,7 @@ function LandingPage() {
     const [loading, setLoading] = useState(false);
     const [cartCount, setCartCount] = useState(0);
     const [isSticky, setIsSticky] = useState(false);
+    const [activeSection, setActiveSection] = useState('home');
     
     const [searchKw, setSearchKw] = useState('');
     const [searchOptions, setSearchOptions] = useState([]);
@@ -54,6 +55,7 @@ function LandingPage() {
                     saveSession(username, role, true, token);
                 }
             } catch (err) {
+
             }
         };
         
@@ -71,7 +73,21 @@ function LandingPage() {
         const handleScroll = () => {
             if (window.scrollY > 140) setIsSticky(true);
             else setIsSticky(false);
+
+            const sections = ['home', 'about', 'categories', 'news', 'contact'];
+            let current = 'home';
+            for (let sectionId of sections) {
+                const section = document.getElementById(sectionId);
+                if (section) {
+                    const sectionTop = section.offsetTop;
+                    if (window.scrollY >= sectionTop - 150) { 
+                        current = sectionId;
+                    }
+                }
+            }
+            setActiveSection(current);
         };
+        
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
@@ -285,11 +301,11 @@ function LandingPage() {
             <nav className={`${styles.navBar} ${isSticky ? styles.sticky : ''}`}>
                 <div className={styles.container}>
                     <ul className={styles.menuList}>
-                        <li><a href="#home" className={styles.active}>TRANG CHỦ</a></li>
-                        <li><a href="#about">GIỚI THIỆU</a></li>
-                        <li><a href="#categories">SẢN PHẨM</a></li>
-                        <li><a href="#news">TIN TỨC</a></li>
-                        <li><a href="#contact">LIÊN HỆ</a></li>
+                        <li><a href="#home" className={activeSection === 'home' ? styles.active : ''}>TRANG CHỦ</a></li>
+                        <li><a href="#about" className={activeSection === 'about' ? styles.active : ''}>GIỚI THIỆU</a></li>
+                        <li><a href="#categories" className={activeSection === 'categories' ? styles.active : ''}>SẢN PHẨM</a></li>
+                        <li><a href="#news" className={activeSection === 'news' ? styles.active : ''}>TIN TỨC</a></li>
+                        <li><a href="#contact" className={activeSection === 'contact' ? styles.active : ''}>LIÊN HỆ</a></li>
                     </ul>
                 </div>
             </nav>
