@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getUserInfo } from './useAuth';
+import axios from 'axios';
 import './ChatBot.css';
 
 const animationConfigs = [
@@ -16,11 +16,11 @@ const animationConfigs = [
 
 function ChatBot() {
   const navigate = useNavigate();
-  const user = getUserInfo(); 
   const chibiRef = useRef(null);
   const [currentAnimIndex, setCurrentAnimIndex] = useState(0);
   const [isBubbleHidden, setIsBubbleHidden] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [maKhachHang, setMaKhachHang] = useState(null);
 
   const [sessionId] = useState(() => {
       let sid = sessionStorage.getItem('ceramic_df_session');
@@ -31,34 +31,46 @@ function ChatBot() {
       return sid;
   });
 
-  const maKhachHang = user ? user.maKhachHang : null;
-
   useEffect(() => {
-    const setMessengerPayload = () => {
-      const dfMessenger = document.querySelector('df-messenger');
-      if (dfMessenger && dfMessenger.setQueryParameters) {
-        dfMessenger.setQueryParameters({
-          payload: {
-            maKhachHang: maKhachHang,
-          },
-        });
+    const fetchMaKH = async () => {
+        try {
+            const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/me', { withCredentials: true });
+            const userData = res.data.user || res.data.result;
+            const profileData = userData?.profile || userData;
+
+            const actualMaKH = profileData?.MaKhachHang || profileData?.maKhachHang || userData?.MaKhachHang || userData?.maKhachHang || userData?.MaTaiKhoan || userData?.id || null;
+
+            if (actualMaKH && String(actualMaKH) !== String(maKhachHang)) {
+                setMaKhachHang(actualMaKH);
+                localStorage.setItem("customer_maKhachHang", String(actualMaKH));
+            }
+        } catch (e) {
+        }
+    };
+
+    const checkLogin = () => {
+      const isActive = localStorage.getItem("customer_session_active");
+      if (isActive === "true") {
+          let maKH = localStorage.getItem("customer_maKhachHang");
+          if (maKH === "null" || maKH === "undefined" || maKH === "") {
+              maKH = null;
+          }
+
+          if (maKH) {
+              if (String(maKH) !== String(maKhachHang)) {
+                  setMaKhachHang(maKH);
+              }
+          } else {
+              fetchMaKH();
+          }
+      } else {
+          if (maKhachHang !== null) setMaKhachHang(null);
       }
     };
 
-    window.addEventListener('df-messenger-loaded', setMessengerPayload);
-
-    const payloadInterval = setInterval(() => {
-      const dfMessenger = document.querySelector('df-messenger');
-      if (dfMessenger && dfMessenger.setQueryParameters) {
-        setMessengerPayload();
-        clearInterval(payloadInterval);
-      }
-    }, 200);
-
-    return () => {
-      window.removeEventListener('df-messenger-loaded', setMessengerPayload);
-      clearInterval(payloadInterval);
-    };
+    checkLogin();
+    const interval = setInterval(checkLogin, 1500);
+    return () => clearInterval(interval);
   }, [maKhachHang]);
 
   useEffect(() => {
@@ -216,6 +228,10 @@ function ChatBot() {
     }
   };
 
+  const queryParams = JSON.stringify({
+      payload: { maKhachHang: maKhachHang }
+  });
+
   return (
     <>
       <div id="bot-wrapper" className={`bot-wrapper ${isChatOpen ? 'chat-open' : ''}`}>
@@ -246,12 +262,15 @@ function ChatBot() {
           ></model-viewer>
       </div>
       <df-messenger
+        key={maKhachHang || 'guest'}
         intent="WELCOME"
         wait-open="true"
         chat-title="CeramicShop Chatbot"
         agent-id="6add2f93-9961-40d6-9b52-f4af5862c6a1"
         language-code="vi"
         session-id={sessionId}
+        user-id={maKhachHang ? String(maKhachHang) : ''}
+        query-parameters={queryParams}
       ></df-messenger>
     </>
   );

@@ -30,7 +30,18 @@ function LandingPage() {
     const [searchOptions, setSearchOptions] = useState([]);
     const inputRef = useRef(null);
 
-    const [isChecking, setIsChecking] = useState(false); 
+    const [isChecking, setIsChecking] = useState(false);
+    const [apiCategories, setApiCategories]=useState([]);
+    useEffect(() => {
+        const fetchCats = async()=>{
+            try{
+                const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/categories');
+                const all = res.data?.result || [];
+                setApiCategories(all.filter(c=>!c.ParentID));
+            }catch{}
+        };
+        fetchCats();
+    },[]);
 
     useEffect(() => {
         const checkOAuth = async () => {
@@ -160,33 +171,24 @@ function LandingPage() {
     const executeSearch = (val) => {
         const keyword = val || searchKw;
         if (keyword.trim()) {
-            navigate(`/?search=${encodeURIComponent(keyword)}`); 
+            navigate(`/home?search=${encodeURIComponent(keyword)}`); 
         }
     };
 
-    const categories = [
-        { 
-            name: "Đồ phòng bếp", 
-            img: "https://res.cloudinary.com/dcmwz0uis/image/upload/v1773744001/bo-do-an-30-san-pham-hoang-cung-lac-hong-30208-00_z2uoxf.png" 
-        },
-        { 
-            name: "Đồ phòng khách", 
-            img: "https://res.cloudinary.com/dcmwz0uis/image/upload/v1773798497/00-f5e6732e-77c1-489d-9972-0804386f0860_nsci6h.webp" 
-        },
-        { 
-            name: "Đồ thờ", 
-            img: "https://res.cloudinary.com/dcmwz0uis/image/upload/v1773801851/RD060723-2-removebg-preview_vnbzkb.png" 
-        },
-        { 
-            name: "Đồ phong thủy", 
-            img: "https://res.cloudinary.com/dcmwz0uis/image/upload/v1773818260/thum-removebg-preview_f0xndm.png" 
-        },
-        { 
-            name: "Đồ trang trí", 
-            img: "https://res.cloudinary.com/dcmwz0uis/image/upload/v1773823016/mtmt_ayvor6.webp" 
-        }
-    ];
-
+    const CATEGORY_IMGS = {
+        "Đồ phòng bếp": "https://res.cloudinary.com/dcmwz0uis/image/upload/v1773744001/bo-do-an-30-san-pham-hoang-cung-lac-hong-30208-00_z2uoxf.png",
+        "Đồ phòng khách": "https://res.cloudinary.com/dcmwz0uis/image/upload/v1773798497/00-f5e6732e-77c1-489d-9972-0804386f0860_nsci6h.webp", 
+        "Đồ thờ": "https://res.cloudinary.com/dcmwz0uis/image/upload/v1773801851/RD060723-2-removebg-preview_vnbzkb.png" ,
+        "Đồ phong thủy": "https://res.cloudinary.com/dcmwz0uis/image/upload/v1773818260/thum-removebg-preview_f0xndm.png" ,
+        "Đồ trang trí": "https://res.cloudinary.com/dcmwz0uis/image/upload/v1773823016/mtmt_ayvor6.webp" ,
+    };
+    const categories = apiCategories.length > 0
+    ? apiCategories.map(c=>({
+        id:c.MaDanhMuc,
+        name:c.TenDanhMuc,
+        img: CATEGORY_IMGS[c.TenDanhMuc]
+    }))
+    : Object.entries(CATEGORY_IMGS).map(([name,img])=>({id:null,name,img}))
     const newsArticles = [
         {
             id: 1,
@@ -323,7 +325,7 @@ function LandingPage() {
                     <div className={styles.bannerContent}>
                         <h2 className={styles.bannerTitle}>TINH HOA GỐM SỨ VIỆT</h2>
                         <p className={styles.bannerSubtitle}>Nơi Nghệ Thuật Giao Thoa Cùng Phong Cách Sống Hiện Đại</p>
-                        <button className={styles.btnBanner} onClick={() => navigate('/')}>KHÁM PHÁ NGAY</button>
+                        <button className={styles.btnBanner} onClick={() => navigate('/home')}>KHÁM PHÁ NGAY</button>
                     </div>
                 </div>
             </section>
@@ -413,7 +415,11 @@ function LandingPage() {
                     
                     <div className={styles.categoryGrid}>
                         {categories.map((cat, idx) => (
-                            <div key={idx} className={styles.categoryItem} onClick={() => navigate('/')}>
+                            <div 
+                                key={idx} 
+                                className={styles.categoryItem} 
+                                onClick={() => cat.id ? navigate(`/home?category=${cat.id}`) : navigate(`/home`)}
+                            >
                                 <div className={styles.categoryImgWrap}>
                                     <img src={cat.img} alt={cat.name} />
                                 </div>

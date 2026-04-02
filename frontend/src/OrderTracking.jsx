@@ -122,7 +122,7 @@ export default function OrderTracking() {
             authHeader
           );
           message.success('Huỷ đơn hàng thành công!');
-          fetchOrders(); // Tải lại danh sách
+          fetchOrders();
           if (selectedOrder?.MaHienThi === orderCode) {
             setDetailModal(false);
           }
@@ -232,8 +232,8 @@ export default function OrderTracking() {
       <header className={styles.topHeader}>
         <div className={styles.logo} onClick={() => navigate('/')}>CERAMIC-SHOP</div>
         <Button type="link" icon={<ArrowLeftOutlined />}
-          onClick={() => navigate('/')} className={styles.btnBack}>
-          Về trang chủ
+          onClick={() => navigate('/profile')} className={styles.btnBack}>
+          Về hồ sơ
         </Button>
       </header>
 

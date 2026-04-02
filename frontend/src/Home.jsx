@@ -171,8 +171,10 @@ function Home() {
   };
 
   useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     const searchParams = new URLSearchParams(location.search);
     const keyword = searchParams.get('search');
+    const categoryParam = searchParams.get('category');
     
     if (keyword) {
       setSearchKw(keyword);
@@ -180,12 +182,16 @@ function Home() {
       setSelectedCategory('all');
       setCurrentPage(1);
     }
+    if(categoryParam){
+      setSelectedCategory(categoryParam);
+      setCurrentPage(1);
+    }
   }, [location.search]);
 
   const userMenu = [
     { 
       key: '1', 
-      label: 'Sửa hồ sơ', 
+      label: 'Tài khoản', 
       icon: <SettingOutlined />,
       onClick: () => navigate('/profile') 
     },
@@ -625,23 +631,21 @@ function Home() {
         const parents = catData.filter(c => !c.ParentID);
 
         parents.forEach(p => {
+          menuItems.push({
+            key:p.MaDanhMuc.toString(),
+            label:p.TenDanhMuc,
+            className:styles.parentMenuItem,
+          });
+          
            const mappedChildren = catData.filter(c => c.ParentID === p.MaDanhMuc);
            
-           if (mappedChildren.length > 0) {
-               menuItems.push({
-                   type: 'group',
-                   label: p.TenDanhMuc,
-                   children: mappedChildren.map(c => ({
-                       key: c.MaDanhMuc.toString(),
-                       label: c.TenDanhMuc,
-                   }))
-               });
-           } else {
-               menuItems.push({
-                   key: p.MaDanhMuc.toString(),
-                   label: p.TenDanhMuc,
-               });
-           }
+           mappedChildren.forEach(c=>{
+            menuItems.push({
+              key:c.MaDanhMuc.toString(),
+              label:c.TenDanhMuc,
+              className:styles.childMenuItem,
+            })
+           })
         });
         
         setCategories(menuItems);

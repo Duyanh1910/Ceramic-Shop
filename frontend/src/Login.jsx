@@ -30,9 +30,26 @@ function Login() {
       
       const currentUsername = user.username || values.username;
       const currentRole = user.role;
-
       const token = response.data.token || null;
-      const maKhachHang = user.MaKhachHang || user.id || null;
+
+      let maKhachHang = user.profile?.MaKhachHang || user.profile?.maKhachHang || user.MaKhachHang || user.maKhachHang || null;
+
+      if (!maKhachHang && currentRole !== 'Admin' && currentRole !== 'Staff') {
+          try {
+              const meRes = await axios.get(`${API_BASE}/auth/me`, { withCredentials: true });
+              const meData = meRes.data.user || meRes.data.result;
+              const profileData = meData?.profile || meData;
+              
+              maKhachHang = profileData?.MaKhachHang || profileData?.maKhachHang || meData?.MaKhachHang || null;
+          } catch (err) {
+              console.log(err);
+          }
+      }
+
+      if (!maKhachHang) {
+          maKhachHang = user.MaTaiKhoan || user.id || user.userId || user._id || null;
+      }
+
       saveSession(currentUsername, currentRole, rememberMe, token, maKhachHang);
 
       message.success('Đăng nhập thành công!');
