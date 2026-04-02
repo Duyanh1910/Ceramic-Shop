@@ -415,7 +415,7 @@ function LandingPage() {
                     
                     <div className={styles.categoryGrid}>
                         {categories.map((cat, idx) => (
-                            <div key={idx} className={styles.categoryItem} onClick={() => navigate('/home')}>
+                            <div key={idx} className={styles.categoryItem} onClick={() => navigate('/home?category=' + encodeURIComponent(cat.name))}>
                                 <div className={styles.categoryImgWrap}>
                                     <img src={cat.img} alt={cat.name} />
                                 </div>
