@@ -29,7 +29,7 @@ export const createMomoPaymentUrl = async (maDonHang) => {
       throw new ErrorHandler("Đơn hàng không tồn tại hoặc đã thanh toán", 404);
     }
 
-    const amount = donHang.TongThanhToan.toString();
+    const amount = Math.round(Number(donHang.TongThanhToan));
     const orderId = `MOMO_${maDonHang}_${Date.now()}`;
     const requestId = orderId;
     const orderInfo = `Thanh toan don hang ${maDonHang}`;
