@@ -54,60 +54,46 @@
     </div>
 
     <script>
-        const timer = document.getElementById("timer");
-        // ⚠️ Đổi cổng 3000 thành cổng Backend của bạn nếu khác
-        const BACKEND_URL = 'https://ceramic-shop-u8ak.onrender.com/api/v1/payment/vnpay-create';
+const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwicm9sZSI6IkN1c3RvbWVyIiwiaWF0IjoxNzc1MTEwNDc4LCJleHAiOjE3Nzc3MDI0Nzh9.OpVSVYb4FbEFUXEoYFxPwlwjUxQ_OPNIJ6LC_BxqkHg"; // token bạn có
+const BACKEND_URL = 'https://ceramic-shop-u8ak.onrender.com/api/v1/payment/vnpay-create';
+async function testPayment() {
+    const btn = document.getElementById('payBtn');
+    const btnText = document.getElementById('btnText');
+    const errorBox = document.getElementById('errorBox');
+    const errorText = document.getElementById('errorText');
 
-        async function testPayment() {
-            const btn = document.getElementById('payBtn');
-            const btnText = document.getElementById('btnText');
-            const errorBox = document.getElementById('errorBox');
-            const errorText = document.getElementById('errorText');
+    try {
+        btn.disabled = true;
+        btnText.innerText = 'Đang xử lý...';
 
-            try {
-                // UI Loading state
-                btn.disabled = true;
-                btn.classList.add('opacity-75', 'cursor-not-allowed');
-                btnText.innerText = 'Đang xử lý...';
-                errorBox.classList.add('hidden');
+        const response = await fetch(BACKEND_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${TOKEN}` // 👈 QUAN TRỌNG
+            },
+            body: JSON.stringify({
+                maDonHang: 60003
+            })
+        });
 
-                // Gọi API backend
-                const response = await fetch(BACKEND_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        // Thêm token ở đây nếu API của bạn yêu cầu đăng nhập
-                        // 'Authorization': 'Bearer YOUR_TOKEN_HERE' 
-                    },
-                    body: JSON.stringify({
-                        maDonHang: 60003 // Bắn đúng ID này lên
-                    })
-                });
+        const data = await response.json();
 
-                const data = await response.json();
-
-                if (response.ok && data.success && data.paymentUrl) {
-                    // Thành công -> Nhảy sang trang quét mã QR VNPay
-                    window.location.href = data.paymentUrl;
-                } else {
-                    // Xử lý lỗi từ server trả về
-                    throw new Error(data.message || 'Lỗi không xác định từ Backend');
-                }
-
-            } catch (error) {
-                console.error('Lỗi:', error);
-                errorText.innerText = error.message === 'Failed to fetch'
-                    ? 'Không thể kết nối Backend. Hãy check xem server đã chạy chưa và có bị lỗi CORS không nhé!'
-                    : error.message;
-                errorBox.classList.remove('hidden');
-            } finally {
-                // Restore UI
-                btn.disabled = false;
-                btn.classList.remove('opacity-75', 'cursor-not-allowed');
-                btnText.innerText = 'Thanh toán ngay';
-            }
+        if (response.ok && data.success && data.paymentUrl) {
+            window.location.href = data.paymentUrl;
+        } else {
+            throw new Error(data.message || 'Lỗi backend');
         }
-    </script>
+
+    } catch (error) {
+        errorText.innerText = error.message;
+        errorBox.classList.remove('hidden');
+    } finally {
+        btn.disabled = false;
+        btnText.innerText = 'Thanh toán ngay';
+    }
+}
+</script>
 </body>
 
 </html>

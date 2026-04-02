@@ -10,6 +10,8 @@ import {
 const router = express.Router();
 
 router.get("/vnpay-return", (req, res) => {
+  console.log("-----> ĐÃ NHẬN REQUEST TỪ VNPAY VÀO RETURN URL!");
+  console.log("Query URL là:", req.query);
   const verify = verifyVnpay(req.query, process.env.VNP_HASHSECRET);
 
   const { vnp_TxnRef, vnp_ResponseCode } = req.query;
@@ -95,6 +97,7 @@ router.get("/vnpay-ipn", async (req, res) => {
 
 router.post("/vnpay-create", async (req, res, next) => {
   try {
+    console.log("-----> ĐÃ NHẬN REQUEST TỪ VNPAY VÀO IPN URL!");
     // SỬA LỖI 4: Xử lý chuỗi IP có chứa dấu phẩy từ Proxy/Load Balancer
     let ipAddr =
       req.headers["x-forwarded-for"] || req.socket.remoteAddress || "127.0.0.1";
@@ -112,6 +115,7 @@ router.post("/vnpay-create", async (req, res, next) => {
       paymentUrl,
     });
   } catch (err) {
+    console.error(err);
     next(err);
   }
 });
