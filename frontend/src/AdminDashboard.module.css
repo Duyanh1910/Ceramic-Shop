@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Arsenal:wght@400;600;700&display=swap');
 
-/* Bố cục trang */
+/* --- BỐ CỤC TRANG CHUNG --- */
 .pageWrapper {
   padding: 24px;
   background: #f5f7fa;
@@ -10,39 +10,105 @@
 .topHeader {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 24px;
 }
 
 .pageTitle {
   font-family: 'Arsenal', serif;
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 700;
   color: #1b437c;
-  margin: 0;
+  margin: 0 0 4px;
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
 .pageSub {
-  margin: 4px 0 0 0;
-  color: #666;
   font-size: 13px;
+  color: #888;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
+/* --- PHẦN THẺ THỐNG KÊ (STAT CARDS) --- */
+.statsRow { 
+  margin-bottom: 24px !important; 
+}
+
+.statCard {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  border: 1px solid #f0f0f0;
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.statCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+
+.statIcon {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.statInfo { 
+  flex: 1; 
+  min-width: 0; 
+}
+
+.statLabel {
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 4px;
+}
+
+.statValue {
+  font-size: 24px;
+  font-weight: 700;
+  font-family: 'Arsenal', serif;
+  line-height: 1;
+}
+
+.trendIcon {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  font-size: 18px;
+  color: #52c41a;
+  opacity: 0.4;
+}
+
+/* --- KHU VỰC QUẢN LÝ ĐƠN HÀNG (CARD & BỘ LỌC) --- */
 .mainCard {
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  background: #fff;
 }
 
-/* Khu vực bộ lọc */
 .filterRow {
   margin-bottom: 20px;
 }
 
 .tabs {
-  margin-bottom: -16px;
+  margin-bottom: -16px; /* Ép sát thanh tab xuống viền cho gọn */
 }
 
 .filterControls {
@@ -61,44 +127,69 @@
 }
 
 .loadingWrap {
-  text-align: center;
-  padding: 50px 0;
+  display: flex;
+  justify-content: center;
+  padding: 80px 0;
 }
 
-/* Định dạng các cột trong bảng */
+/* --- CHI TIẾT BẢNG (TABLE) --- */
+.tableWrap { 
+  overflow-x: auto; 
+}
+
 .orderId {
-  font-weight: 600;
+  font-weight: 700;
   color: #1b437c;
   font-family: monospace;
+  font-size: 14px;
 }
 
 .customerName {
-  font-weight: 500;
+  font-weight: 600;
+  color: #333;
 }
 
 .customerPhone {
   font-size: 12px;
   color: #888;
+  margin-top: 2px;
 }
 
 .amount {
   color: #d0021b;
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 14px;
 }
 
-/* Modal */
+/* Ghi đè giao diện Table mặc định của Ant Design */
+.table :global(.ant-table-thead > tr > th) {
+  background: #f7f9fc !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  color: #555 !important;
+  border-bottom: 1px solid #eee !important;
+}
+
+.table :global(.ant-table-tbody > tr:hover > td) {
+  background: #fafcff !important;
+}
+
+/* --- KHU VỰC MODAL --- */
 .modalTitle {
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 700;
   font-family: 'Arsenal', serif;
+  color: #1b437c;
 }
 
 .modalText {
   margin-bottom: 16px;
+  font-size: 15px;
 }
 
 .modalLabel {
   margin-bottom: 8px;
+  font-weight: 500;
 }
 
 .fullWidth {
@@ -111,23 +202,8 @@
 }
 
 .productListTitle {
-  font-weight: 600;
-  margin-bottom: 10px;
-}
-
-/* Ghi đè style của Bảng Ant Design */
-.tableWrap { 
-  overflow-x: auto; 
-}
-
-.table :global(.ant-table-thead > tr > th) {
-  background: #f7f9fc !important;
-  font-weight: 700 !important;
-  font-size: 13px !important;
-  color: #555 !important;
-  border-bottom: 1px solid #eee !important;
-}
-
-.table :global(.ant-table-tbody > tr:hover > td) {
-  background: #fafcff !important;
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 12px;
+  color: #333;
 }
