@@ -171,6 +171,7 @@ function Home() {
   };
 
   useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     const searchParams = new URLSearchParams(location.search);
     const keyword = searchParams.get('search');
     const categoryParam = searchParams.get('category');
