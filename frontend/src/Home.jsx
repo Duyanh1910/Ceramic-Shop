@@ -644,7 +644,7 @@ function Home() {
                     },
                     ...mappedChildren.map(c=>({
                       key:c.MaDanhMuc.toString(),
-                      label:c.MaDanhMuc,
+                      label:c.TenDanhMuc,
                     }))
                    ]
                });
