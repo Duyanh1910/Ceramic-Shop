@@ -300,3 +300,33 @@
 @media (max-width: 640px) {
   .topHeader { padding: 0 16px; }
 }
+.tabs :global(.ant-tabs-nav-list) {
+  width: 100%;
+}
+
+.tabs :global(.ant-tabs-tab) {
+  flex: 1;
+  justify-content: center;
+  padding: 16px 0 !important;
+  margin: 0 !important;
+}
+
+.tabs :global(.ant-tabs-nav::before) {
+  border-bottom: 2px solid #f0f0f0 !important;
+}
+
+.tabs :global(.ant-tabs-ink-bar) {
+  background-color: #1b437c !important;
+  height: 3px !important;
+  border-radius: 4px;
+}
+.tabs :global(.ant-tabs-tab-btn) {
+  font-size: 15px !important;
+  color: #666 !important;
+  transition: color 0.3s ease !important;
+}
+
+.tabs :global(.ant-tabs-tab-active .ant-tabs-tab-btn) {
+  color: #1b437c !important;
+  font-weight: 700 !important;
+}
