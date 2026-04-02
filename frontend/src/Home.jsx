@@ -173,11 +173,16 @@ function Home() {
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const keyword = searchParams.get('search');
+    const categoryParam = searchParams.get('category');
     
     if (keyword) {
       setSearchKw(keyword);
       setAppliedSearchKw(keyword); 
       setSelectedCategory('all');
+      setCurrentPage(1);
+    }
+    if(categoryParam){
+      setSelectedCategory(categoryParam);
       setCurrentPage(1);
     }
   }, [location.search]);
@@ -629,12 +634,19 @@ function Home() {
            
            if (mappedChildren.length > 0) {
                menuItems.push({
-                   type: 'group',
+                   key:'grp_${p.MaDanhMuc}',
                    label: p.TenDanhMuc,
-                   children: mappedChildren.map(c => ({
-                       key: c.MaDanhMuc.toString(),
-                       label: c.TenDanhMuc,
-                   }))
+                   children:[
+                    {
+                      key:p.MaDanhMuc.toString(),
+                      label:'Tất cả ${p.TenDanhMuc}',
+
+                    },
+                    ...mappedChildren.map(c=>({
+                      key:c.MaDanhMuc.toString(),
+                      label:c.MaDanhMuc,
+                    }))
+                   ]
                });
            } else {
                menuItems.push({
