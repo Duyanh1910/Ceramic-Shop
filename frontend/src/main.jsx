@@ -36,19 +36,16 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   const isCustomer = localStorage.getItem('customer_session_active') === 'true';
   const isAdmin = localStorage.getItem('admin_session_active') === 'true';
 
-  let currentRole = null;
-  if (isAdmin) currentRole = localStorage.getItem('admin_role');
-  else if (isCustomer) currentRole = localStorage.getItem('customer_role');
-
   if (!isCustomer && !isAdmin) {
     return <Navigate to="/login" replace />;
   }
 
-  if (allowedRoles && !allowedRoles.includes(currentRole)) {
-    if (currentRole === 'Admin' || currentRole === 'Staff') {
-        return <Navigate to="/admin" replace />;
-    }
-    return <Navigate to="/home" replace />;
+  let userRole = 'Customer'; 
+  if (isAdmin) userRole = localStorage.getItem('admin_role') || 'Admin';
+  else if (isCustomer) userRole = localStorage.getItem('customer_role') || 'Customer';
+
+  if (allowedRoles && !allowedRoles.includes(userRole)) {
+    return <Navigate to="/" replace />;
   }
 
   return children;
