@@ -48,8 +48,11 @@ export const createVnpayUrl = async ({ maDonHang, ipAddr }) => {
         vnp_OrderType: "other",
         vnp_IpAddr: ipAddr,
         vnp_Locale: "vn",
-        vnp_CreateDate: moment().format("YYYYMMDDHHmmss"),
-        vnp_ExpireDate: moment().add(15, "minutes").format("YYYYMMDDHHmmss"),
+        vnp_CreateDate: moment().utcOffset(7).format("YYYYMMDDHHmmss"),
+        vnp_ExpireDate: moment()
+          .utcOffset(7)
+          .add(15, "minutes")
+          .format("YYYYMMDDHHmmss"),
         vnp_ReturnUrl: process.env.VNP_RETURN_URL,
       },
       CONFIG,

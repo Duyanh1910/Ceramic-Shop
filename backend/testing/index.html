@@ -54,8 +54,9 @@
     </div>
 
     <script>
+        const timer = document.getElementById("timer");
         // ⚠️ Đổi cổng 3000 thành cổng Backend của bạn nếu khác
-        const BACKEND_URL = 'https://ceramic-shop-u8ak.onrender.com/api/v1/payment/vnpay/create';
+        const BACKEND_URL = 'https://ceramic-shop-u8ak.onrender.com/api/v1/payment/vnpay-create';
 
         async function testPayment() {
             const btn = document.getElementById('payBtn');
