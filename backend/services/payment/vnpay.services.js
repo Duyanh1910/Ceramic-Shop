@@ -44,7 +44,10 @@ export const createVnpayUrl = async ({ maDonHang, ipAddr }) => {
         vnp_Amount: soTien * 100,
         vnp_CurrCode: "VND",
         vnp_TxnRef: maThamChieu,
-        vnp_OrderInfo: `Thanh toan don hang ${maDonHang}`,
+
+        // ✅ FIX KHÔNG DÙNG SPACE
+        vnp_OrderInfo: `Thanh_toan_don_hang_${maDonHang}`,
+
         vnp_OrderType: "other",
         vnp_IpAddr: ipAddr,
         vnp_Locale: "vn",
