@@ -20,7 +20,7 @@ import AdminDashboard from './AdminDashboard.jsx'
 import AdminProducts from './AdminProducts.jsx'
 import AdminCustomers from './AdminCustomers.jsx'
 import AdminStaffs from './AdminStaffs.jsx'
-import OrderTracking from './OderTracking.jsx'
+import OrderTracking from './OrderTracking.jsx'
 
 const PublicRoute = ({ children }) => {
   const isCustomerActive = localStorage.getItem('customer_session_active') === 'true';
