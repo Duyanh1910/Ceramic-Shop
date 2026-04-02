@@ -20,6 +20,7 @@ import AdminDashboard from './AdminDashboard.jsx'
 import AdminProducts from './AdminProducts.jsx'
 import AdminCustomers from './AdminCustomers.jsx'
 import AdminStaffs from './AdminStaffs.jsx'
+import PaymentSuccess from './PaymentSuccess.jsx'
 
 const PublicRoute = ({ children }) => {
   const isCustomerActive = localStorage.getItem('customer_session_active') === 'true';
@@ -96,6 +97,8 @@ createRoot(document.getElementById('root')).render(
           <Route path="/home" element={<Home />} />
           
           <Route path="/cart" element={<Cart />} />
+          
+          <Route path="/payment-result" element={<PaymentSuccess />} />
           
           <Route path="/profile" element={
             <ProtectedRoute allowedRoles={['Customer', 'Admin', 'Staff']}>
