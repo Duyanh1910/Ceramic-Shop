@@ -1,5 +1,6 @@
 import crypto from "crypto";
 
+// ✅ KHÔNG encode ở đây
 export const sortObject = (obj) => {
   const sorted = {};
   const keys = Object.keys(obj).sort();
@@ -13,19 +14,7 @@ export const sortObject = (obj) => {
   return sorted;
 };
 
-export const createSecureHash = (params, secretKey) => {
-  const sorted = sortObject(params);
-
-  const signData = Object.keys(sorted)
-    .map((key) => `${key}=${sorted[key]}`)
-    .join("&");
-
-  return crypto
-    .createHmac("sha512", secretKey)
-    .update(signData, "utf-8")
-    .digest("hex");
-};
-
+// ✅ CREATE PAYMENT URL
 export const buildPaymentUrl = (params, config) => {
   const vnpParams = {
     vnp_Version: "2.1.0",
@@ -40,20 +29,24 @@ export const buildPaymentUrl = (params, config) => {
     .map((key) => `${key}=${sorted[key]}`)
     .join("&");
 
+  console.log("\n====== [CREATE SIGN DATA] ======");
+  console.log(signData);
+  console.log("================================\n");
+
   const secureHash = crypto
     .createHmac("sha512", config.hashSecret)
     .update(signData, "utf-8")
     .digest("hex");
 
-  sorted.vnp_SecureHash = secureHash;
-
+  // ✅ CHỈ encode khi build URL
   const queryString = Object.keys(sorted)
     .map((key) => `${key}=${encodeURIComponent(sorted[key])}`)
     .join("&");
 
-  return `${config.vnpUrl}?${queryString}`;
+  return `${config.vnpUrl}?${queryString}&vnp_SecureHash=${secureHash}`;
 };
 
+// ✅ VERIFY
 export const verifyVnpay = (query, secretKey) => {
   const vnpParams = { ...query };
 
@@ -78,21 +71,16 @@ export const verifyVnpay = (query, secretKey) => {
     .createHmac("sha512", secretKey)
     .update(signData, "utf-8")
     .digest("hex");
-  console.log("\n====== DEBUG VNPAY SIGNATURE ======");
-  console.log("1. Dữ liệu gốc VNPAY gửi về (Query):", query);
-  console.log("2. Chuỗi hash VNPAY gửi về (secureHash):", secureHash);
-  console.log("3. Chuỗi hash Server tự tính (signed):", signed);
-  console.log(
-    "4. Trạng thái SecretKey:",
-    secretKey
-      ? `Hợp lệ (Độ dài: ${secretKey.length})`
-      : "BỊ MISSING (Undefined/Null)",
-  );
-  console.log("\n---> 5. CHUỖI SIGN-DATA TRƯỚC KHI HASH (Quan trọng nhất):");
+
+  console.log("\n====== [VERIFY SIGN DATA] ======");
   console.log(signData);
-  console.log("=====================================\n");
+  console.log("VNPAY HASH:", secureHash);
+  console.log("SERVER HASH:", signed);
+  console.log("MATCH:", secureHash === signed);
+  console.log("================================\n");
+
   return {
-    isSuccess: secureHash.toLowerCase() === signed.toLowerCase(),
+    isSuccess: secureHash?.toLowerCase() === signed.toLowerCase(),
     data: vnpParams,
   };
 };
