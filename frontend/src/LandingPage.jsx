@@ -171,7 +171,7 @@ function LandingPage() {
     const executeSearch = (val) => {
         const keyword = val || searchKw;
         if (keyword.trim()) {
-            navigate(`/?search=${encodeURIComponent(keyword)}`); 
+            navigate(`/home?search=${encodeURIComponent(keyword)}`); 
         }
     };
 
@@ -415,7 +415,7 @@ function LandingPage() {
                     
                     <div className={styles.categoryGrid}>
                         {categories.map((cat, idx) => (
-                            <div key={idx} className={styles.categoryItem} onClick={() => cat.id ? navigate(`/?category=${cat.id}`) : navigate(`/`)}>
+                            <div key={idx} className={styles.categoryItem} onClick={() => navigate('/home')}>
                                 <div className={styles.categoryImgWrap}>
                                     <img src={cat.img} alt={cat.name} />
                                 </div>
