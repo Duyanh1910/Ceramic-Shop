@@ -325,7 +325,7 @@ function LandingPage() {
                     <div className={styles.bannerContent}>
                         <h2 className={styles.bannerTitle}>TINH HOA GỐM SỨ VIỆT</h2>
                         <p className={styles.bannerSubtitle}>Nơi Nghệ Thuật Giao Thoa Cùng Phong Cách Sống Hiện Đại</p>
-                        <button className={styles.btnBanner} onClick={() => navigate('/')}>KHÁM PHÁ NGAY</button>
+                        <button className={styles.btnBanner} onClick={() => navigate('/home')}>KHÁM PHÁ NGAY</button>
                     </div>
                 </div>
             </section>
@@ -415,7 +415,11 @@ function LandingPage() {
                     
                     <div className={styles.categoryGrid}>
                         {categories.map((cat, idx) => (
-                            <div key={idx} className={styles.categoryItem} onClick={() => navigate('/home?category=' + encodeURIComponent(cat.name))}>
+                            <div 
+                                key={idx} 
+                                className={styles.categoryItem} 
+                                onClick={() => cat.id ? navigate(`/home?category=${cat.id}`) : navigate(`/home`)}
+                            >
                                 <div className={styles.categoryImgWrap}>
                                     <img src={cat.img} alt={cat.name} />
                                 </div>
