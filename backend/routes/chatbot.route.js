@@ -157,6 +157,16 @@ router.post("/webhook", async (req, res) => {
       });
     }
   } else if (intentName === "Tra_Cuu_Don_Hang") {
+    const payload = req.body.originalDetectIntentRequest?.payload;
+    const maKhachHang = payload?.maKhachHang || null;
+
+    if (!maKhachHang) {
+      return res.json({
+        fulfillmentText:
+          "Dạ, để bảo mật thông tin, bạn vui lòng đăng nhập vào tài khoản trên website trước khi tra cứu nhé ạ.",
+      });
+    }
+
     const maDonHang = parameters.ma_don_hang || null;
 
     if (!maDonHang) {
@@ -182,10 +192,16 @@ router.post("/webhook", async (req, res) => {
 
     try {
       const sqlQuery =
-        "SELECT TrangThaiDonHang, NgayDat, TongThanhToan FROM DonHang WHERE MaDonHang = ?";
+        "SELECT TrangThaiDonHang, NgayDat, TongThanhToan, MaKhachHang FROM DonHang WHERE MaDonHang = ?";
       const [rows] = await pool.execute(sqlQuery, [maDonReal]);
 
       if (rows.length > 0) {
+        if (String(rows[0].MaKhachHang) !== String(maKhachHang)) {
+          return res.json({
+            fulfillmentText: `Dạ, bạn không có quyền truy cập thông tin của đơn hàng số ${maDonReal} do đơn hàng này không thuộc về tài khoản của bạn.`,
+          });
+        }
+
         const donHang = rows[0];
         const trangThaiCode = donHang.TrangThaiDonHang;
         let trangThaiText = "";
@@ -261,6 +277,366 @@ router.post("/webhook", async (req, res) => {
       return res.json({
         fulfillmentText:
           "Hệ thống đang bảo trì, bạn vui lòng tra cứu lại sau nhé.",
+      });
+    }
+  } else if (intentName === "Kiem_Tra_Bao_Hanh_Don_Hang") {
+    const payload = req.body.originalDetectIntentRequest?.payload;
+    const maKhachHang = payload?.maKhachHang || null;
+
+    if (!maKhachHang) {
+      return res.json({
+        fulfillmentText:
+          "Dạ, để bảo mật thông tin, bạn vui lòng đăng nhập vào tài khoản trên website trước khi kiểm tra bảo hành nhé ạ.",
+      });
+    }
+
+    const maDonHang = parameters.ma_don_hang || null;
+
+    if (!maDonHang) {
+      return res.json({
+        fulfillmentText:
+          "Dạ bạn cho mình xin mã đơn hàng (ví dụ: 1024) để kiểm tra bảo hành nhé.",
+      });
+    }
+
+    let cleanMaDon = maDonHang
+      .toString()
+      .replace(/số|mã|so|ma|đơn|don/gi, "")
+      .trim();
+
+    if (/[a-zA-Z]/.test(cleanMaDon)) {
+      const errText = `Dạ "${maDonHang}" có vẻ là Mã vận đơn của bên giao hàng rồi ạ. Để em tra cứu được hệ thống, bạn vui lòng cung cấp "Mã đơn hàng" của CeramicShop (chỉ bao gồm các con số, ví dụ: 1024) nhé!`;
+      return res.json({
+        fulfillmentMessages: [{ text: { text: [errText] } }],
+      });
+    }
+
+    const maDonReal = cleanMaDon.replace(/\D/g, "");
+
+    try {
+      const checkOrder = "SELECT MaKhachHang FROM DonHang WHERE MaDonHang = ?";
+      const [orderRows] = await pool.execute(checkOrder, [maDonReal]);
+
+      if (orderRows.length > 0) {
+        if (String(orderRows[0].MaKhachHang) !== String(maKhachHang)) {
+          return res.json({
+            fulfillmentText: `Dạ, bạn không có quyền tra cứu bảo hành của đơn hàng số ${maDonReal} do đơn hàng này không thuộc về tài khoản của bạn.`,
+          });
+        }
+      }
+
+      const sqlQuery = `
+                SELECT sp.TenSanPham, bt.TenBienThe, bh.NgayKetThuc, bh.TrangThai
+                FROM DonHang dh
+                JOIN ChiTietDonHang ctdh ON dh.MaDonHang = ctdh.MaDonHang
+                JOIN BienTheSanPham bt ON ctdh.MaBienThe = bt.MaBienThe
+                JOIN SanPham sp ON bt.MaSanPham = sp.MaSanPham
+                JOIN BaoHanh bh ON ctdh.MaCTDH = bh.MaCTDH
+                WHERE dh.MaDonHang = ?
+            `;
+
+      const [rows] = await pool.execute(sqlQuery, [maDonReal]);
+
+      if (rows.length > 0) {
+        let textArray = [];
+        const currentDate = new Date();
+
+        rows.forEach((item) => {
+          const ngayKT = new Date(item.NgayKetThuc);
+          const ngayKTStr = ngayKT.toLocaleDateString("vi-VN");
+          let statusStr = "";
+
+          if (item.TrangThai === 1 && ngayKT >= currentDate) {
+            statusStr = "✅ Còn hạn bảo hành";
+          } else {
+            statusStr = "❌ Hết hạn";
+          }
+
+          textArray.push(
+            `🔸 ${item.TenSanPham} (${item.TenBienThe})\n   Hạn: ${ngayKTStr} - ${statusStr}`,
+          );
+        });
+
+        return res.json({
+          fulfillmentMessages: [
+            {
+              text: {
+                text: [
+                  `Dạ đây là thông bảo hành các sản phẩm thuộc đơn hàng #${maDonReal}:`,
+                ],
+              },
+            },
+            {
+              payload: {
+                richContent: [
+                  [
+                    {
+                      type: "description",
+                      title: "🛡️ Trạng thái bảo hành",
+                      text: textArray,
+                    },
+                  ],
+                ],
+              },
+            },
+          ],
+        });
+      } else {
+        return res.json({
+          fulfillmentText: `Dạ em không tìm thấy gói bảo hành nào cho đơn hàng số ${maDonReal}. Với các lỗi nứt vỡ do vận chuyển, shop áp dụng chính sách đổi trả ngay lúc nhận hàng. Bạn cần hỗ trợ thêm gì không ạ?`,
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      return res.json({
+        fulfillmentText:
+          "Dạ hệ thống kiểm tra bảo hành đang bận, bạn vui lòng thử lại sau nhé.",
+      });
+    }
+  } else if (intentName === "Yeu_Cau_Huy_Don_Hang") {
+    const payload = req.body.originalDetectIntentRequest?.payload;
+    const maKhachHang = payload?.maKhachHang || null;
+
+    if (!maKhachHang) {
+      return res.json({
+        fulfillmentText:
+          "Dạ, để bảo mật thông tin, bạn vui lòng đăng nhập vào tài khoản trên website trước khi thực hiện hủy đơn nhé ạ.",
+      });
+    }
+
+    const maDonHang = parameters.ma_don_hang || null;
+
+    if (!maDonHang) {
+      return res.json({
+        fulfillmentText:
+          "Dạ bạn cho mình xin mã đơn hàng (ví dụ: 1024) để tiến hành hủy nhé.",
+      });
+    }
+
+    let cleanMaDon = maDonHang
+      .toString()
+      .replace(/số|mã|so|ma|đơn|don/gi, "")
+      .trim();
+
+    if (/[a-zA-Z]/.test(cleanMaDon)) {
+      const errText = `Dạ "${maDonHang}" có vẻ là Mã vận đơn của bên giao hàng rồi ạ. Để em xử lý được trên hệ thống, bạn vui lòng cung cấp "Mã đơn hàng" của CeramicShop (chỉ bao gồm các con số, ví dụ: 1024) nhé!`;
+      return res.json({
+        fulfillmentMessages: [{ text: { text: [errText] } }],
+      });
+    }
+
+    const maDonReal = cleanMaDon.replace(/\D/g, "");
+
+    try {
+      const checkQuery =
+        "SELECT TrangThaiDonHang, MaKhachHang FROM DonHang WHERE MaDonHang = ?";
+      const [rows] = await pool.execute(checkQuery, [maDonReal]);
+
+      if (rows.length > 0) {
+        if (String(rows[0].MaKhachHang) !== String(maKhachHang)) {
+          return res.json({
+            fulfillmentText: `Dạ, bạn không có quyền hủy đơn hàng số ${maDonReal} do đơn hàng này không thuộc về tài khoản của bạn.`,
+          });
+        }
+
+        const trangThai = rows[0].TrangThaiDonHang;
+
+        if (trangThai === 0) {
+          const updateQuery =
+            "UPDATE DonHang SET TrangThaiDonHang = 4 WHERE MaDonHang = ?";
+          await pool.execute(updateQuery, [maDonReal]);
+          return res.json({
+            fulfillmentText: `✅ Dạ thành công! Đơn hàng số ${maDonReal} của bạn đã được hủy trên hệ thống.`,
+          });
+        } else if (trangThai === 4) {
+          return res.json({
+            fulfillmentText: `Dạ đơn hàng số ${maDonReal} này đã được hủy từ trước rồi ạ.`,
+          });
+        } else {
+          const errText = `❌ Dạ rất tiếc, đơn hàng ${maDonReal} đã được xác nhận và đang trong quá trình xử lý/giao hàng nên không thể hủy tự động. Bạn vui lòng liên hệ CSKH để được hỗ trợ nhé.`;
+          return res.json({
+            fulfillmentMessages: [
+              { text: { text: [errText] } },
+              {
+                payload: {
+                  richContent: [
+                    [
+                      {
+                        type: "button",
+                        icon: { type: "phone", color: "#34A853" },
+                        text: "Gọi điện khẩn cấp",
+                        link: phoneLink,
+                      },
+                      {
+                        type: "button",
+                        icon: { type: "chat", color: "#0068FF" },
+                        text: "Hỗ trợ hủy đơn qua Zalo",
+                        link: zaloLink,
+                      },
+                      {
+                        type: "button",
+                        icon: { type: "facebook", color: "#0866FF" },
+                        text: "Hỗ trợ qua Fanpage Facebook",
+                        link: fbLink,
+                      },
+                      {
+                        type: "button",
+                        icon: { type: "mail", color: "#EA4335" },
+                        text: "Gửi Email yêu cầu hủy",
+                        link: emailLink,
+                      },
+                    ],
+                  ],
+                },
+              },
+            ],
+          });
+        }
+      } else {
+        return res.json({
+          fulfillmentText: `Dạ em không tìm thấy đơn hàng số ${maDonReal}. Bạn kiểm tra lại mã giúp em nhé.`,
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      return res.json({
+        fulfillmentText: "Dạ hệ thống đang bận, bạn vui lòng thử lại sau nhé.",
+      });
+    }
+  } else if (intentName === "Yeu_Cau_Doi_Thong_Tin_Don") {
+    const payload = req.body.originalDetectIntentRequest?.payload;
+    const maKhachHang = payload?.maKhachHang || null;
+
+    if (!maKhachHang) {
+      return res.json({
+        fulfillmentText:
+          "Dạ, để bảo mật thông tin, bạn vui lòng đăng nhập vào tài khoản trên website trước khi yêu cầu thay đổi thông tin đơn nhé ạ.",
+      });
+    }
+
+    const maDonHang = parameters.ma_don_hang || null;
+
+    if (!maDonHang) {
+      return res.json({
+        fulfillmentText:
+          "Dạ bạn cho mình xin mã đơn hàng (ví dụ: 1024) để hệ thống kiểm tra và hỗ trợ thay đổi thông vị nhé.",
+      });
+    }
+
+    let cleanMaDon = maDonHang
+      .toString()
+      .replace(/số|mã|so|ma|đơn|don/gi, "")
+      .trim();
+
+    if (/[a-zA-Z]/.test(cleanMaDon)) {
+      const errText = `Dạ "${maDonHang}" có vẻ là Mã vận đơn của bên giao hàng rồi ạ. Để em cập nhật được trên hệ thống, bạn vui lòng cung cấp "Mã đơn hàng" của CeramicShop (chỉ bao gồm các con số, ví dụ: 1024) nhé!`;
+      return res.json({
+        fulfillmentMessages: [{ text: { text: [errText] } }],
+      });
+    }
+
+    const maDonReal = cleanMaDon.replace(/\D/g, "");
+
+    try {
+      const checkQuery =
+        "SELECT TrangThaiDonHang, MaKhachHang FROM DonHang WHERE MaDonHang = ?";
+      const [rows] = await pool.execute(checkQuery, [maDonReal]);
+
+      if (rows.length > 0) {
+        if (String(rows[0].MaKhachHang) !== String(maKhachHang)) {
+          return res.json({
+            fulfillmentText: `Dạ, bạn không có quyền thay đổi thông tin của đơn hàng số ${maDonReal} do đơn hàng này không thuộc về tài khoản của bạn.`,
+          });
+        }
+
+        const trangThai = rows[0].TrangThaiDonHang;
+
+        if (trangThai === 0 || trangThai === 1) {
+          const processText = `Dạ đơn hàng số ${maDonReal} đang trong quá trình xử lý. Để thay đổi thông tin, bạn vui lòng liên hệ Zalo, Fanpage Facebook hoặc Gọi trực tiếp cho CSKH để cập nhật gấp nhé ạ!`;
+          return res.json({
+            fulfillmentMessages: [
+              { text: { text: [processText] } },
+              {
+                payload: {
+                  richContent: [
+                    [
+                      {
+                        type: "button",
+                        icon: { type: "phone", color: "#34A853" },
+                        text: "Gọi điện báo thay đổi",
+                        link: phoneLink,
+                      },
+                      {
+                        type: "button",
+                        icon: { type: "chat", color: "#0068FF" },
+                        text: "Cập nhật qua Zalo",
+                        link: zaloLink,
+                      },
+                      {
+                        type: "button",
+                        icon: { type: "facebook", color: "#0866FF" },
+                        text: "Cập nhật qua Fanpage Facebook",
+                        link: fbLink,
+                      },
+                      {
+                        type: "button",
+                        icon: { type: "mail", color: "#EA4335" },
+                        text: "Gửi Email báo thay đổi",
+                        link: emailLink,
+                      },
+                    ],
+                  ],
+                },
+              },
+            ],
+          });
+        } else if (trangThai === 4) {
+          return res.json({
+            fulfillmentText: `Dạ đơn hàng số ${maDonReal} này đã bị hủy từ trước rồi ạ. Bạn có thể lên website để đặt lại một đơn hàng mới với thông tin chính xác nhé.`,
+          });
+        } else {
+          const denyText = `❌ Dạ rất tiếc, đơn hàng ${maDonReal} đã được bàn giao cho đơn vị vận chuyển nên hệ thống không thể tự động thay đổi thông tin nữa. Bạn vui lòng liên hệ gấp các kênh dưới đây để bên em gọi bưu tá hỗ trợ nhé ạ.`;
+          return res.json({
+            fulfillmentMessages: [
+              { text: { text: [denyText] } },
+              {
+                payload: {
+                  richContent: [
+                    [
+                      {
+                        type: "button",
+                        icon: { type: "phone", color: "#34A853" },
+                        text: "Gọi Hotline khẩn cấp",
+                        link: phoneLink,
+                      },
+                      {
+                        type: "button",
+                        icon: { type: "chat", color: "#0068FF" },
+                        text: "Báo CSKH hỗ trợ (Zalo)",
+                        link: zaloLink,
+                      },
+                      {
+                        type: "button",
+                        icon: { type: "facebook", color: "#0866FF" },
+                        text: "Báo CSKH hỗ trợ (Fanpage)",
+                        link: fbLink,
+                      },
+                    ],
+                  ],
+                },
+              },
+            ],
+          });
+        }
+      } else {
+        return res.json({
+          fulfillmentText: `Dạ em không tìm thấy đơn hàng số ${maDonReal} trên hệ thống. Bạn kiểm tra lại mã giúp em nhé.`,
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      return res.json({
+        fulfillmentText: "Dạ hệ thống đang bận, bạn vui lòng thử lại sau nhé.",
       });
     }
   } else if (intentName === "Hoi_Khuyen_Mai") {
@@ -577,313 +953,6 @@ router.post("/webhook", async (req, res) => {
       return res.json({
         fulfillmentText:
           "Dạ hệ thống kho đang bận cập nhật dữ liệu, bạn vui lòng đợi chút rồi hỏi lại em nha.",
-      });
-    }
-  } else if (intentName === "Kiem_Tra_Bao_Hanh_Don_Hang") {
-    const maDonHang = parameters.ma_don_hang || null;
-
-    if (!maDonHang) {
-      return res.json({
-        fulfillmentText:
-          "Dạ bạn cho mình xin mã đơn hàng (ví dụ: 1024) để kiểm tra bảo hành nhé.",
-      });
-    }
-
-    let cleanMaDon = maDonHang
-      .toString()
-      .replace(/số|mã|so|ma|đơn|don/gi, "")
-      .trim();
-
-    if (/[a-zA-Z]/.test(cleanMaDon)) {
-      const errText = `Dạ "${maDonHang}" có vẻ là Mã vận đơn của bên giao hàng rồi ạ. Để em tra cứu được hệ thống, bạn vui lòng cung cấp "Mã đơn hàng" của CeramicShop (chỉ bao gồm các con số, ví dụ: 1024) nhé!`;
-      return res.json({
-        fulfillmentMessages: [{ text: { text: [errText] } }],
-      });
-    }
-
-    const maDonReal = cleanMaDon.replace(/\D/g, "");
-
-    try {
-      const sqlQuery = `
-                SELECT sp.TenSanPham, bt.TenBienThe, bh.NgayKetThuc, bh.TrangThai
-                FROM DonHang dh
-                JOIN ChiTietDonHang ctdh ON dh.MaDonHang = ctdh.MaDonHang
-                JOIN BienTheSanPham bt ON ctdh.MaBienThe = bt.MaBienThe
-                JOIN SanPham sp ON bt.MaSanPham = sp.MaSanPham
-                JOIN BaoHanh bh ON ctdh.MaCTDH = bh.MaCTDH
-                WHERE dh.MaDonHang = ?
-            `;
-
-      const [rows] = await pool.execute(sqlQuery, [maDonReal]);
-
-      if (rows.length > 0) {
-        let textArray = [];
-        const currentDate = new Date();
-
-        rows.forEach((item) => {
-          const ngayKT = new Date(item.NgayKetThuc);
-          const ngayKTStr = ngayKT.toLocaleDateString("vi-VN");
-          let statusStr = "";
-
-          if (item.TrangThai === 1 && ngayKT >= currentDate) {
-            statusStr = "✅ Còn hạn bảo hành";
-          } else {
-            statusStr = "❌ Hết hạn";
-          }
-
-          textArray.push(
-            `🔸 ${item.TenSanPham} (${item.TenBienThe})\n   Hạn: ${ngayKTStr} - ${statusStr}`,
-          );
-        });
-
-        return res.json({
-          fulfillmentMessages: [
-            {
-              text: {
-                text: [
-                  `Dạ đây là thông bảo hành các sản phẩm thuộc đơn hàng #${maDonReal}:`,
-                ],
-              },
-            },
-            {
-              payload: {
-                richContent: [
-                  [
-                    {
-                      type: "description",
-                      title: "🛡️ Trạng thái bảo hành",
-                      text: textArray,
-                    },
-                  ],
-                ],
-              },
-            },
-          ],
-        });
-      } else {
-        return res.json({
-          fulfillmentText: `Dạ em không tìm thấy gói bảo hành nào cho đơn hàng số ${maDonReal}. Với các lỗi nứt vỡ do vận chuyển, shop áp dụng chính sách đổi trả ngay lúc nhận hàng. Bạn cần hỗ trợ thêm gì không ạ?`,
-        });
-      }
-    } catch (error) {
-      console.error(error);
-      return res.json({
-        fulfillmentText:
-          "Dạ hệ thống kiểm tra bảo hành đang bận, bạn vui lòng thử lại sau nhé.",
-      });
-    }
-  } else if (intentName === "Yeu_Cau_Huy_Don_Hang") {
-    const maDonHang = parameters.ma_don_hang || null;
-
-    if (!maDonHang) {
-      return res.json({
-        fulfillmentText:
-          "Dạ bạn cho mình xin mã đơn hàng (ví dụ: 1024) để tiến hành hủy nhé.",
-      });
-    }
-
-    let cleanMaDon = maDonHang
-      .toString()
-      .replace(/số|mã|so|ma|đơn|don/gi, "")
-      .trim();
-
-    if (/[a-zA-Z]/.test(cleanMaDon)) {
-      const errText = `Dạ "${maDonHang}" có vẻ là Mã vận đơn của bên giao hàng rồi ạ. Để em xử lý được trên hệ thống, bạn vui lòng cung cấp "Mã đơn hàng" của CeramicShop (chỉ bao gồm các con số, ví dụ: 1024) nhé!`;
-      return res.json({
-        fulfillmentMessages: [{ text: { text: [errText] } }],
-      });
-    }
-
-    const maDonReal = cleanMaDon.replace(/\D/g, "");
-
-    try {
-      const checkQuery =
-        "SELECT TrangThaiDonHang FROM DonHang WHERE MaDonHang = ?";
-      const [rows] = await pool.execute(checkQuery, [maDonReal]);
-
-      if (rows.length > 0) {
-        const trangThai = rows[0].TrangThaiDonHang;
-
-        if (trangThai === 0) {
-          const updateQuery =
-            "UPDATE DonHang SET TrangThaiDonHang = 4 WHERE MaDonHang = ?";
-          await pool.execute(updateQuery, [maDonReal]);
-          return res.json({
-            fulfillmentText: `✅ Dạ thành công! Đơn hàng số ${maDonReal} của bạn đã được hủy trên hệ thống.`,
-          });
-        } else if (trangThai === 4) {
-          return res.json({
-            fulfillmentText: `Dạ đơn hàng số ${maDonReal} này đã được hủy từ trước rồi ạ.`,
-          });
-        } else {
-          const errText = `❌ Dạ rất tiếc, đơn hàng ${maDonReal} đã được xác nhận và đang trong quá trình xử lý/giao hàng nên không thể hủy tự động. Bạn vui lòng liên hệ CSKH để được hỗ trợ nhé.`;
-          return res.json({
-            fulfillmentMessages: [
-              { text: { text: [errText] } },
-              {
-                payload: {
-                  richContent: [
-                    [
-                      {
-                        type: "button",
-                        icon: { type: "phone", color: "#34A853" },
-                        text: "Gọi điện khẩn cấp",
-                        link: phoneLink,
-                      },
-                      {
-                        type: "button",
-                        icon: { type: "chat", color: "#0068FF" },
-                        text: "Hỗ trợ hủy đơn qua Zalo",
-                        link: zaloLink,
-                      },
-                      {
-                        type: "button",
-                        icon: { type: "facebook", color: "#0866FF" },
-                        text: "Hỗ trợ qua Fanpage Facebook",
-                        link: fbLink,
-                      },
-                      {
-                        type: "button",
-                        icon: { type: "mail", color: "#EA4335" },
-                        text: "Gửi Email yêu cầu hủy",
-                        link: emailLink,
-                      },
-                    ],
-                  ],
-                },
-              },
-            ],
-          });
-        }
-      } else {
-        return res.json({
-          fulfillmentText: `Dạ em không tìm thấy đơn hàng số ${maDonReal}. Bạn kiểm tra lại mã giúp em nhé.`,
-        });
-      }
-    } catch (error) {
-      console.error(error);
-      return res.json({
-        fulfillmentText: "Dạ hệ thống đang bận, bạn vui lòng thử lại sau nhé.",
-      });
-    }
-  } else if (intentName === "Yeu_Cau_Doi_Thong_Tin_Don") {
-    const maDonHang = parameters.ma_don_hang || null;
-
-    if (!maDonHang) {
-      return res.json({
-        fulfillmentText:
-          "Dạ bạn cho mình xin mã đơn hàng (ví dụ: 1024) để hệ thống kiểm tra và hỗ trợ thay đổi thông vị nhé.",
-      });
-    }
-
-    let cleanMaDon = maDonHang
-      .toString()
-      .replace(/số|mã|so|ma|đơn|don/gi, "")
-      .trim();
-
-    if (/[a-zA-Z]/.test(cleanMaDon)) {
-      const errText = `Dạ "${maDonHang}" có vẻ là Mã vận đơn của bên giao hàng rồi ạ. Để em cập nhật được trên hệ thống, bạn vui lòng cung cấp "Mã đơn hàng" của CeramicShop (chỉ bao gồm các con số, ví dụ: 1024) nhé!`;
-      return res.json({
-        fulfillmentMessages: [{ text: { text: [errText] } }],
-      });
-    }
-
-    const maDonReal = cleanMaDon.replace(/\D/g, "");
-
-    try {
-      const checkQuery =
-        "SELECT TrangThaiDonHang FROM DonHang WHERE MaDonHang = ?";
-      const [rows] = await pool.execute(checkQuery, [maDonReal]);
-
-      if (rows.length > 0) {
-        const trangThai = rows[0].TrangThaiDonHang;
-
-        if (trangThai === 0 || trangThai === 1) {
-          const processText = `Dạ đơn hàng số ${maDonReal} đang trong quá trình xử lý. Để thay đổi thông tin, bạn vui lòng liên hệ Zalo, Fanpage Facebook hoặc Gọi trực tiếp cho CSKH để cập nhật gấp nhé ạ!`;
-          return res.json({
-            fulfillmentMessages: [
-              { text: { text: [processText] } },
-              {
-                payload: {
-                  richContent: [
-                    [
-                      {
-                        type: "button",
-                        icon: { type: "phone", color: "#34A853" },
-                        text: "Gọi điện báo thay đổi",
-                        link: phoneLink,
-                      },
-                      {
-                        type: "button",
-                        icon: { type: "chat", color: "#0068FF" },
-                        text: "Cập nhật qua Zalo",
-                        link: zaloLink,
-                      },
-                      {
-                        type: "button",
-                        icon: { type: "facebook", color: "#0866FF" },
-                        text: "Cập nhật qua Fanpage Facebook",
-                        link: fbLink,
-                      },
-                      {
-                        type: "button",
-                        icon: { type: "mail", color: "#EA4335" },
-                        text: "Gửi Email báo thay đổi",
-                        link: emailLink,
-                      },
-                    ],
-                  ],
-                },
-              },
-            ],
-          });
-        } else if (trangThai === 4) {
-          return res.json({
-            fulfillmentText: `Dạ đơn hàng số ${maDonReal} này đã bị hủy từ trước rồi ạ. Bạn có thể lên website để đặt lại một đơn hàng mới với thông tin chính xác nhé.`,
-          });
-        } else {
-          const denyText = `❌ Dạ rất tiếc, đơn hàng ${maDonReal} đã được bàn giao cho đơn vị vận chuyển nên hệ thống không thể tự động thay đổi thông tin nữa. Bạn vui lòng liên hệ gấp các kênh dưới đây để bên em gọi bưu tá hỗ trợ nhé ạ.`;
-          return res.json({
-            fulfillmentMessages: [
-              { text: { text: [denyText] } },
-              {
-                payload: {
-                  richContent: [
-                    [
-                      {
-                        type: "button",
-                        icon: { type: "phone", color: "#34A853" },
-                        text: "Gọi Hotline khẩn cấp",
-                        link: phoneLink,
-                      },
-                      {
-                        type: "button",
-                        icon: { type: "chat", color: "#0068FF" },
-                        text: "Báo CSKH hỗ trợ (Zalo)",
-                        link: zaloLink,
-                      },
-                      {
-                        type: "button",
-                        icon: { type: "facebook", color: "#0866FF" },
-                        text: "Báo CSKH hỗ trợ (Fanpage)",
-                        link: fbLink,
-                      },
-                    ],
-                  ],
-                },
-              },
-            ],
-          });
-        }
-      } else {
-        return res.json({
-          fulfillmentText: `Dạ em không tìm thấy đơn hàng số ${maDonReal} trên hệ thống. Bạn kiểm tra lại mã giúp em nhé.`,
-        });
-      }
-    } catch (error) {
-      console.error(error);
-      return res.json({
-        fulfillmentText: "Dạ hệ thống đang bận, bạn vui lòng thử lại sau nhé.",
       });
     }
   } else if (intentName === "Khieu_Nai_Bao_Loi") {

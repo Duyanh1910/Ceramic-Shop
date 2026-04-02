@@ -1,25 +1,27 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './ChatBot.css'; 
+import { getUserInfo } from './useAuth';
+import './ChatBot.css';
 
 const animationConfigs = [
     { name: 'Idle_Base', file: '/basic.glb' },
     { name: 'Cast_Cycle', file: '/basic.glb' },
     { name: 'Cast_Cycle', file: '/smile.glb' },
     { name: 'Joke', file: '/basic.glb' },
-    { name: 'Laugh01', file: '/smile.glb' }, 
-    { name: 'Taunt_loop', file: '/basic.glb' }, 
+    { name: 'Laugh01', file: '/smile.glb' },
+    { name: 'Taunt_loop', file: '/basic.glb' },
     { name: 'Dance_In', file: '/happy.glb' },
-    { name: 'Dance_Loop', file: '/happy.glb' }, 
+    { name: 'Dance_Loop', file: '/happy.glb' },
 ];
 
 function ChatBot() {
   const navigate = useNavigate();
+  const user = getUserInfo(); 
   const chibiRef = useRef(null);
   const [currentAnimIndex, setCurrentAnimIndex] = useState(0);
-  const [isBubbleHidden, setIsBubbleHidden] = useState(false); 
+  const [isBubbleHidden, setIsBubbleHidden] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
-  
+
   const [sessionId] = useState(() => {
       let sid = sessionStorage.getItem('ceramic_df_session');
       if (!sid) {
@@ -28,7 +30,37 @@ function ChatBot() {
       }
       return sid;
   });
-    
+
+  const maKhachHang = user ? user.maKhachHang : null;
+
+  useEffect(() => {
+    const setMessengerPayload = () => {
+      const dfMessenger = document.querySelector('df-messenger');
+      if (dfMessenger && dfMessenger.setQueryParameters) {
+        dfMessenger.setQueryParameters({
+          payload: {
+            maKhachHang: maKhachHang,
+          },
+        });
+      }
+    };
+
+    window.addEventListener('df-messenger-loaded', setMessengerPayload);
+
+    const payloadInterval = setInterval(() => {
+      const dfMessenger = document.querySelector('df-messenger');
+      if (dfMessenger && dfMessenger.setQueryParameters) {
+        setMessengerPayload();
+        clearInterval(payloadInterval);
+      }
+    }, 200);
+
+    return () => {
+      window.removeEventListener('df-messenger-loaded', setMessengerPayload);
+      clearInterval(payloadInterval);
+    };
+  }, [maKhachHang]);
+
   useEffect(() => {
     if (!document.getElementById('model-viewer-script')) {
         const modelViewerScript = document.createElement('script');
@@ -76,7 +108,7 @@ function ChatBot() {
         const userInput = document.querySelector('df-messenger')
             ?.shadowRoot?.querySelector('df-messenger-chat')
             ?.shadowRoot?.querySelector('df-messenger-user-input');
-            
+
         if (userInput && !userInput.hasAttribute('fixed-input')) {
             const inputStyle = document.createElement('style');
             inputStyle.innerHTML = `
@@ -87,7 +119,7 @@ function ChatBot() {
             clearInterval(initInterval);
         }
     }, 500);
-    
+
     const observer = new MutationObserver(() => {
         const df = document.querySelector('df-messenger');
         if (df) {
@@ -122,19 +154,19 @@ function ChatBot() {
         if (isInsideBot && anchor && anchor.href) {
             try {
                 const urlObj = new URL(anchor.href);
-                
+
                 if (urlObj.origin === window.location.origin) {
-                    e.preventDefault();  
-                    
+                    e.preventDefault();
+
                     navigate(urlObj.pathname + urlObj.search);
-                    
+
                     const dfMessenger = document.querySelector('df-messenger');
                     if (dfMessenger) {
                         dfMessenger.setAttribute('expand', 'false');
                     }
                     if (chibiRef.current) {
-                        chibiRef.current.src = animationConfigs[0].file; 
-                        chibiRef.current.animationName = animationConfigs[0].name; 
+                        chibiRef.current.src = animationConfigs[0].file;
+                        chibiRef.current.animationName = animationConfigs[0].name;
                     }
                 }
             } catch (error) {
@@ -166,19 +198,19 @@ function ChatBot() {
     e.stopPropagation();
     const dfMessenger = document.querySelector('df-messenger');
     if (!dfMessenger) return;
-    
+
     const isExpanded = dfMessenger.getAttribute('expand') === 'true';
 
     if (!isExpanded) {
         if (chibiRef.current) {
-            chibiRef.current.src = '/smile.glb'; 
-            chibiRef.current.animationName = 'Laugh01'; 
+            chibiRef.current.src = '/smile.glb';
+            chibiRef.current.animationName = 'Laugh01';
         }
         dfMessenger.setAttribute('expand', 'true');
     } else {
         if (chibiRef.current) {
-            chibiRef.current.src = animationConfigs[0].file; 
-            chibiRef.current.animationName = animationConfigs[0].name; 
+            chibiRef.current.src = animationConfigs[0].file;
+            chibiRef.current.animationName = animationConfigs[0].name;
         }
         dfMessenger.setAttribute('expand', 'false');
     }
@@ -195,18 +227,18 @@ function ChatBot() {
           <button id="change-anim-btn" className="change-anim-btn" onClick={handleChangeAnimation}>
             ✨
           </button>
-          <model-viewer 
+          <model-viewer
             ref={chibiRef}
-            id="chibi-character" 
+            id="chibi-character"
             className="chibi-character"
-            src={animationConfigs[currentAnimIndex].file} 
-            autoplay 
-            animation-name={animationConfigs[currentAnimIndex].name} 
+            src={animationConfigs[currentAnimIndex].file}
+            autoplay
+            animation-name={animationConfigs[currentAnimIndex].name}
             camera-orbit="0deg 75deg 270%"
-            max-camera-orbit="auto auto 600%" 
-            field-of-view="45deg" 
-            camera-target="0m 0.22m 0m" 
-            shadow-intensity="0" 
+            max-camera-orbit="auto auto 600%"
+            field-of-view="45deg"
+            camera-target="0m 0.22m 0m"
+            shadow-intensity="0"
             interaction-prompt="none"
             camera-controls
             disable-zoom disable-pan disable-tap

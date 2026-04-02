@@ -10,7 +10,7 @@ const TOKEN_EXPIRY_KEY = "token_expiry";
 const REMEMBER_ME_KEY = "remember_me";
 const SESSION_ACTIVE_KEY = "session_active";
 
-export function saveSession(username, role, rememberMe) {
+export function saveSession(username, role, rememberMe, token = null, maKhachHang = null) {
   const days = rememberMe ? 30 : 1;
   const expiry = Date.now() + days * 24 * 60 * 60 * 1000;
 
@@ -20,6 +20,9 @@ export function saveSession(username, role, rememberMe) {
   localStorage.setItem(prefix + "role", role);
   localStorage.setItem(prefix + "token_expiry", String(expiry));
   localStorage.setItem(prefix + "session_active", "true");
+  
+  if (token) localStorage.setItem(prefix + "token", token);
+  if (maKhachHang) localStorage.setItem(prefix + "maKhachHang", String(maKhachHang));
 }
 
 export function clearSession(isAdmin = false) {
@@ -29,6 +32,8 @@ export function clearSession(isAdmin = false) {
     prefix + "role",
     prefix + "token_expiry",
     prefix + "session_active",
+    prefix + "token",
+    prefix + "maKhachHang"
   ].forEach((k) => localStorage.removeItem(k));
 }
 
@@ -70,4 +75,18 @@ export function useAutoLogout(isAdmin = false) {
 
     return () => clearInterval(intervalRef.current);
   }, [logout, isAdmin, prefix]);
+}
+
+export function getUserInfo() {
+  const prefix = "customer_";
+  const isActive = localStorage.getItem(prefix + "session_active");
+  
+  if (isActive === "true") {
+    return {
+      username: localStorage.getItem(prefix + "username"),
+      role: localStorage.getItem(prefix + "role"),
+      maKhachHang: localStorage.getItem(prefix + "maKhachHang")
+    };
+  }
+  return null;
 }
