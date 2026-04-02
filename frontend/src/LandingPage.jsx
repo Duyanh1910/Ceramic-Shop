@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
-import { AutoComplete, Input, Spin } from 'antd';
+import { AutoComplete, Input, Spin, Button } from 'antd';
 import { 
     ShoppingCartOutlined, 
     SearchOutlined, 
@@ -13,7 +13,8 @@ import {
     CheckCircleOutlined,
     SafetyOutlined,
     TrophyOutlined,
-    CustomerServiceOutlined
+    CustomerServiceOutlined,
+    LockOutlined
 } from '@ant-design/icons';
 import styles from './LandingPage.module.css';
 import { saveSession } from './useAuth.js';
@@ -24,7 +25,7 @@ function LandingPage() {
     const [loading, setLoading] = useState(false);
     const [cartCount, setCartCount] = useState(0);
     const [isSticky, setIsSticky] = useState(false);
-    const [activeSection, setActiveSection] = useState('home');
+    const [activeSection, setActiveSection] = useState('home'); 
     
     const [searchKw, setSearchKw] = useState('');
     const [searchOptions, setSearchOptions] = useState([]);
@@ -55,7 +56,7 @@ function LandingPage() {
                     saveSession(username, role, true, token);
                 }
             } catch (err) {
-
+                // Ignore lỗi vì người dùng là khách
             }
         };
         
@@ -85,9 +86,12 @@ function LandingPage() {
                     }
                 }
             }
+
+            // Ép active mục Contact khi cuộn kịch kim xuống đáy trang
             if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 10) {
                 current = 'contact';
             }
+
             setActiveSection(current);
         };
         
@@ -165,61 +169,22 @@ function LandingPage() {
     };
 
     const categories = [
-        { 
-            name: "Đồ phòng bếp", 
-            img: "https://res.cloudinary.com/dcmwz0uis/image/upload/v1773744001/bo-do-an-30-san-pham-hoang-cung-lac-hong-30208-00_z2uoxf.png" 
-        },
-        { 
-            name: "Đồ phòng khách", 
-            img: "https://res.cloudinary.com/dcmwz0uis/image/upload/v1773798497/00-f5e6732e-77c1-489d-9972-0804386f0860_nsci6h.webp" 
-        },
-        { 
-            name: "Đồ thờ", 
-            img: "https://res.cloudinary.com/dcmwz0uis/image/upload/v1773801851/RD060723-2-removebg-preview_vnbzkb.png" 
-        },
-        { 
-            name: "Đồ phong thủy", 
-            img: "https://res.cloudinary.com/dcmwz0uis/image/upload/v1773818260/thum-removebg-preview_f0xndm.png" 
-        },
-        { 
-            name: "Đồ trang trí", 
-            img: "https://res.cloudinary.com/dcmwz0uis/image/upload/v1773823016/mtmt_ayvor6.webp" 
-        }
+        { name: "Đồ phòng bếp", img: "https://res.cloudinary.com/dcmwz0uis/image/upload/v1773744001/bo-do-an-30-san-pham-hoang-cung-lac-hong-30208-00_z2uoxf.png" },
+        { name: "Đồ phòng khách", img: "https://res.cloudinary.com/dcmwz0uis/image/upload/v1773798497/00-f5e6732e-77c1-489d-9972-0804386f0860_nsci6h.webp" },
+        { name: "Đồ thờ", img: "https://res.cloudinary.com/dcmwz0uis/image/upload/v1773801851/RD060723-2-removebg-preview_vnbzkb.png" },
+        { name: "Đồ phong thủy", img: "https://res.cloudinary.com/dcmwz0uis/image/upload/v1773818260/thum-removebg-preview_f0xndm.png" },
+        { name: "Đồ trang trí", img: "https://res.cloudinary.com/dcmwz0uis/image/upload/v1773823016/mtmt_ayvor6.webp" }
     ];
 
     const newsArticles = [
-        {
-            id: 1,
-            title: "Ra mắt bộ sưu tập Gốm Sứ Xuân 2026",
-            excerpt: "Khám phá những thiết kế độc đáo lấy cảm hứng từ hoa đào, mai vàng và các biểu tượng may mắn của năm mới.",
-            image: "https://images.unsplash.com/photo-1578500494198-246f612d3b3d?w=400&h=250&fit=crop",
-            date: "15/01/2026"
-        },
-        {
-            id: 2,
-            title: "Bí quyết chọn bộ ấm trà phù hợp",
-            excerpt: "Hướng dẫn chi tiết cách lựa chọn ấm trà tử sa, sứ cao cấp phù hợp với từng loại trà và phong cách thưởng thức.",
-            image: "https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?w=400&h=250&fit=crop",
-            date: "10/01/2026"
-        },
-        {
-            id: 3,
-            title: "Nghệ thuật Bát Tràng - Di sản nghìn năm",
-            excerpt: "Tìm hiểu về lịch sử và quy trình làm gốm truyền thống tại làng nghề Bát Tràng nổi tiếng.",
-            image: "https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=400&h=250&fit=crop",
-            date: "05/01/2026"
-        }
+        { id: 1, title: "Ra mắt bộ sưu tập Gốm Sứ Xuân 2026", excerpt: "Khám phá những thiết kế độc đáo lấy cảm hứng từ hoa đào, mai vàng và các biểu tượng may mắn của năm mới.", image: "https://images.unsplash.com/photo-1578500494198-246f612d3b3d?w=400&h=250&fit=crop", date: "15/01/2026" },
+        { id: 2, title: "Bí quyết chọn bộ ấm trà phù hợp", excerpt: "Hướng dẫn chi tiết cách lựa chọn ấm trà tử sa, sứ cao cấp phù hợp với từng loại trà và phong cách thưởng thức.", image: "https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?w=400&h=250&fit=crop", date: "10/01/2026" },
+        { id: 3, title: "Nghệ thuật Bát Tràng - Di sản nghìn năm", excerpt: "Tìm hiểu về lịch sử và quy trình làm gốm truyền thống tại làng nghề Bát Tràng nổi tiếng.", image: "https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=400&h=250&fit=crop", date: "05/01/2026" }
     ];
 
     if (isChecking) {
         return (
-            <div style={{ 
-                height: '100vh', 
-                display: 'flex', 
-                justifyContent: 'center', 
-                alignItems: 'center',
-                background: '#fdfdfd' 
-            }}>
+            <div style={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#fdfdfd' }}>
                 <Spin size="large" tip="Đang kết nối..." />
             </div>
         );
@@ -247,11 +212,7 @@ function LandingPage() {
                     <div className={styles.headerFlex}>
                         
                         <div className={styles.logoBox} onClick={() => navigate('/landing')}>
-                            <img 
-                                src="https://res.cloudinary.com/dcmwz0uis/image/upload/v1774819165/IMG_20260330_041641_qwo8lc.jpg" 
-                                alt="Ceramic Shop Logo" 
-                                className={styles.logoImg} 
-                            />
+                            <img src="https://res.cloudinary.com/dcmwz0uis/image/upload/v1774819165/IMG_20260330_041641_qwo8lc.jpg" alt="Ceramic Shop Logo" className={styles.logoImg} />
                             <div className={styles.logoTextWrap}>
                                 <h1 className={styles.logoText}>CERAMIC-SHOP</h1>
                                 <span className={styles.logoSub}>TINH HOA GỐM SỨ VIỆT</span>
@@ -262,10 +223,7 @@ function LandingPage() {
                             <AutoComplete
                                 className={styles.searchAutoComplete}
                                 options={searchKw ? searchOptions : []}
-                                onSelect={(val) => { 
-                                    setSearchKw(val); 
-                                    executeSearch(val);
-                                }}
+                                onSelect={(val) => { setSearchKw(val); executeSearch(val); }}
                                 onChange={handleSearchInput}
                                 value={searchKw}
                                 notFoundContent={null}
@@ -301,6 +259,7 @@ function LandingPage() {
                 </div>
             </header>
 
+            {/* THANH ĐIỀU HƯỚNG SCROLL SPY - ĐƯỢC GIỮ NGUYÊN */}
             <nav className={`${styles.navBar} ${isSticky ? styles.sticky : ''}`}>
                 <div className={styles.container}>
                     <ul className={styles.menuList}>
@@ -313,20 +272,93 @@ function LandingPage() {
                 </div>
             </nav>
 
-            <section id="home" className={styles.bannerSection}>
-                <img 
-                    src="https://images.unsplash.com/photo-1610701596007-11502861dcfa?q=80&w=1920&auto=format&fit=crop" 
-                    alt="Banner Gốm Sứ" 
-                    className={styles.bannerImg}
-                />
-                <div className={styles.bannerOverlay}>
-                    <div className={styles.bannerContent}>
-                        <h2 className={styles.bannerTitle}>TINH HOA GỐM SỨ VIỆT</h2>
-                        <p className={styles.bannerSubtitle}>Nơi Nghệ Thuật Giao Thoa Cùng Phong Cách Sống Hiện Đại</p>
-                        <button className={styles.btnBanner} onClick={() => navigate('/')}>KHÁM PHÁ NGAY</button>
+            {/* =============================================================== */}
+            {/* HERO SECTION - THIẾT KẾ MỚI THEO PHONG CÁCH QX CLAYZ PASSWORD */}
+            {/* =============================================================== */}
+            <section id="home" style={{
+                position: 'relative',
+                height: '80vh',
+                minHeight: '650px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundImage: 'url("https://images.unsplash.com/photo-1610701596007-11502861dcfa?q=80&w=1920&auto=format&fit=crop")',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundAttachment: 'fixed'
+            }}>
+                {/* Lớp phủ đen mờ */}
+                <div style={{
+                    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: 'rgba(0, 0, 0, 0.45)'
+                }}></div>
+
+                {/* Hộp nội dung kiểu Password Page */}
+                <div style={{
+                    position: 'relative',
+                    zIndex: 1,
+                    backgroundColor: 'rgba(255, 255, 255, 0.96)',
+                    padding: '50px 45px',
+                    borderRadius: '16px',
+                    textAlign: 'center',
+                    maxWidth: '480px',
+                    width: '90%',
+                    boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
+                    backdropFilter: 'blur(10px)'
+                }}>
+                    <h2 style={{ 
+                        fontSize: '32px', 
+                        color: '#1b437c', 
+                        marginBottom: '16px', 
+                        fontFamily: "'Arsenal', sans-serif", 
+                        fontWeight: 700,
+                        letterSpacing: '1px'
+                    }}>
+                        MỞ BÁN SỚM
+                    </h2>
+                    <p style={{ color: '#555', marginBottom: '32px', lineHeight: '1.6', fontSize: '15px' }}>
+                        Khám phá các tuyệt tác gốm sứ thủ công độc quyền. Hãy nhập email của bạn để trở thành người đầu tiên nhận thông báo và ưu đãi đặc quyền khi cửa hàng ra mắt.
+                    </p>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        <Input
+                            size="large"
+                            placeholder="Email của bạn..."
+                            style={{ 
+                                borderRadius: '8px', 
+                                height: '48px',
+                                borderColor: '#dbe2f9',
+                                textAlign: 'center'
+                            }}
+                        />
+                        <Button
+                            type="primary"
+                            size="large"
+                            style={{ 
+                                backgroundColor: '#1b437c', 
+                                borderColor: '#1b437c', 
+                                borderRadius: '8px', 
+                                height: '48px',
+                                fontWeight: 600,
+                                letterSpacing: '0.5px'
+                            }}
+                        >
+                            NHẬN THÔNG BÁO NGAY
+                        </Button>
+                    </div>
+
+                    <div style={{ marginTop: '28px', paddingTop: '20px', borderTop: '1px solid #eef2f6', fontSize: '14px', color: '#666' }}>
+                        <LockOutlined style={{ marginRight: '6px' }}/> Bạn đã có tài khoản?{' '}
+                        <span 
+                            style={{ color: '#1b437c', cursor: 'pointer', fontWeight: 700, textDecoration: 'underline' }} 
+                            onClick={() => navigate('/login')}
+                        >
+                            Đăng nhập
+                        </span>
                     </div>
                 </div>
             </section>
+            {/* =============================================================== */}
 
             <section id="about" className={styles.aboutSection}>
                 <div className={styles.container}>
@@ -486,6 +518,7 @@ function LandingPage() {
                 </div>
             </section>
 
+            {/* PHẦN FOOTER - ĐƯỢC GIỮ NGUYÊN */}
             <footer id="contact" className={styles.footer}>
                 <div className={styles.container}>
                     <div className={styles.footerGrid}>
