@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getUserInfo } from './useAuth';
+import { getUserInfo } from './useAuth.js'; 
 import './ChatBot.css';
 
 const animationConfigs = [
