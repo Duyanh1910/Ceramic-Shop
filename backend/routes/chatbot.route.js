@@ -163,7 +163,7 @@ router.post("/webhook", async (req, res) => {
     if (!maKhachHang) {
       return res.json({
         fulfillmentText:
-          "Dạ, để bảo mật thông tin, bạn vui lòng đăng nhập vào tài khoản trên website trước khi tra cứu nhé ạ.",
+          "Dạ, để bảo mật thông tin, Dạ, để bảo mật thông tin, bạn vui lòng đăng nhập vào đúng tài khoản có đơn hàng trên website  trước khi tra cứu nhé ạ.",
       });
     }
 
@@ -286,7 +286,7 @@ router.post("/webhook", async (req, res) => {
     if (!maKhachHang) {
       return res.json({
         fulfillmentText:
-          "Dạ, để bảo mật thông tin, bạn vui lòng đăng nhập vào tài khoản trên website trước khi kiểm tra bảo hành nhé ạ.",
+          "Dạ, để bảo mật thông tin, Dạ, để bảo mật thông tin, bạn vui lòng đăng nhập vào đúng tài khoản có đơn hàng trên website  trước khi kiểm tra bảo hành nhé ạ.",
       });
     }
 
@@ -400,7 +400,7 @@ router.post("/webhook", async (req, res) => {
     if (!maKhachHang) {
       return res.json({
         fulfillmentText:
-          "Dạ, để bảo mật thông tin, bạn vui lòng đăng nhập vào tài khoản trên website trước khi thực hiện hủy đơn nhé ạ.",
+          "Dạ, để bảo mật thông tin, Dạ, để bảo mật thông tin, bạn vui lòng đăng nhập vào đúng tài khoản có đơn hàng trên website  trước khi thực hiện hủy đơn nhé ạ.",
       });
     }
 
@@ -510,7 +510,7 @@ router.post("/webhook", async (req, res) => {
     if (!maKhachHang) {
       return res.json({
         fulfillmentText:
-          "Dạ, để bảo mật thông tin, bạn vui lòng đăng nhập vào tài khoản trên website trước khi yêu cầu thay đổi thông tin đơn nhé ạ.",
+          "Dạ, để bảo mật thông tin, Dạ, để bảo mật thông tin, bạn vui lòng đăng nhập vào đúng tài khoản có đơn hàng trên website  trước khi yêu cầu thay đổi thông tin đơn nhé ạ.",
       });
     }
 
