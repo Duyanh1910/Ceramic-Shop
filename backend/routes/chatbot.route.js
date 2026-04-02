@@ -13,6 +13,11 @@ router.post("/webhook", async (req, res) => {
   const phoneLink = CHATBOT_LINKS.phoneLink;
   const fbLink = CHATBOT_LINKS.fbLink;
 
+  // HÀM QUÉT MÃ KHÁCH HÀNG TỪ MỌI NƠI TRONG PAYLOAD DIALOGFLOW
+  const rawPayload = req.body.originalDetectIntentRequest?.payload || {};
+  let maKhachHang = rawPayload.maKhachHang || rawPayload.userId || parameters.maKhachHang || null;
+  if (maKhachHang === "null" || maKhachHang === "undefined" || maKhachHang === "") maKhachHang = null;
+
   if (intentName === "Hoi_Gia_San_Pham") {
     const rawTenSP = parameters.Ten_San_Pham || null;
 
@@ -157,11 +162,6 @@ router.post("/webhook", async (req, res) => {
       });
     }
   } else if (intentName === "Tra_Cuu_Don_Hang") {
-    const originalPayload = req.body.originalDetectIntentRequest?.payload || {};
-    const webhookPayload = req.body.queryResult?.webhookPayload || {};
-    let maKhachHang = originalPayload.maKhachHang || webhookPayload.maKhachHang || originalPayload.userId || webhookPayload.userId || null;
-    if (maKhachHang === "null" || maKhachHang === "undefined" || maKhachHang === "") maKhachHang = null;
-
     const maDonHang = parameters.ma_don_hang || null;
 
     if (!maDonHang) {
@@ -190,23 +190,12 @@ router.post("/webhook", async (req, res) => {
         let trangThaiText = "";
 
         switch (trangThaiCode) {
-          case 0:
-            trangThaiText = "⏳ Đang chờ shop xác nhận";
-            break;
-          case 1:
-            trangThaiText = "📦 Đã xác nhận & Đang chuẩn bị hàng";
-            break;
-          case 2:
-            trangThaiText = "🚚 Đang giao cho đơn vị vận chuyển";
-            break;
-          case 3:
-            trangThaiText = "✅ Đã giao hàng thành công";
-            break;
-          case 4:
-            trangThaiText = "❌ Đã bị hủy";
-            break;
-          default:
-            trangThaiText = "Đang được xử lý";
+          case 0: trangThaiText = "⏳ Đang chờ shop xác nhận"; break;
+          case 1: trangThaiText = "📦 Đã xác nhận & Đang chuẩn bị hàng"; break;
+          case 2: trangThaiText = "🚚 Đang giao cho đơn vị vận chuyển"; break;
+          case 3: trangThaiText = "✅ Đã giao hàng thành công"; break;
+          case 4: trangThaiText = "❌ Đã bị hủy"; break;
+          default: trangThaiText = "Đang được xử lý";
         }
 
         let displayInfo = [];
@@ -227,7 +216,8 @@ router.post("/webhook", async (req, res) => {
         } else {
           displayInfo = [
             `• Trạng thái: ${trangThaiText}`,
-            `(Bạn đăng nhập đúng tài khoản trên website để xem chi tiết hóa đơn)`
+            `(Bạn đăng nhập đúng tài khoản trên website để xem chi tiết hóa đơn)`,
+            `[🛠️ Debug] Bot đang nhận mã KH: ${maKhachHang || "RỖNG"} | Đơn hàng thuộc mã KH: ${donHang.MaKhachHang}`
           ];
         }
 
@@ -273,11 +263,6 @@ router.post("/webhook", async (req, res) => {
       });
     }
   } else if (intentName === "Kiem_Tra_Bao_Hanh_Don_Hang") {
-    const originalPayload = req.body.originalDetectIntentRequest?.payload || {};
-    const webhookPayload = req.body.queryResult?.webhookPayload || {};
-    let maKhachHang = originalPayload.maKhachHang || webhookPayload.maKhachHang || originalPayload.userId || webhookPayload.userId || null;
-    if (maKhachHang === "null" || maKhachHang === "undefined" || maKhachHang === "") maKhachHang = null;
-
     const maDonHang = parameters.ma_don_hang || null;
 
     if (!maDonHang) {
@@ -374,11 +359,6 @@ router.post("/webhook", async (req, res) => {
       });
     }
   } else if (intentName === "Yeu_Cau_Huy_Don_Hang") {
-    const originalPayload = req.body.originalDetectIntentRequest?.payload || {};
-    const webhookPayload = req.body.queryResult?.webhookPayload || {};
-    let maKhachHang = originalPayload.maKhachHang || webhookPayload.maKhachHang || originalPayload.userId || webhookPayload.userId || null;
-    if (maKhachHang === "null" || maKhachHang === "undefined" || maKhachHang === "") maKhachHang = null;
-
     if (!maKhachHang) {
       return res.json({
         fulfillmentText:
@@ -480,11 +460,6 @@ router.post("/webhook", async (req, res) => {
       });
     }
   } else if (intentName === "Yeu_Cau_Doi_Thong_Tin_Don") {
-    const originalPayload = req.body.originalDetectIntentRequest?.payload || {};
-    const webhookPayload = req.body.queryResult?.webhookPayload || {};
-    let maKhachHang = originalPayload.maKhachHang || webhookPayload.maKhachHang || originalPayload.userId || webhookPayload.userId || null;
-    if (maKhachHang === "null" || maKhachHang === "undefined" || maKhachHang === "") maKhachHang = null;
-
     if (!maKhachHang) {
       return res.json({
         fulfillmentText:
