@@ -19,6 +19,7 @@ function ChatBot() {
   const [currentAnimIndex, setCurrentAnimIndex] = useState(0);
   const [isBubbleHidden, setIsBubbleHidden] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [maKhachHang, setMaKhachHang] = useState(null);
 
   const [sessionId] = useState(() => {
       let sid = sessionStorage.getItem('ceramic_df_session');
@@ -30,32 +31,21 @@ function ChatBot() {
   });
 
   useEffect(() => {
-    const updatePayload = () => {
-      const dfMessenger = document.querySelector('df-messenger');
-      if (dfMessenger && dfMessenger.setQueryParameters) {
-        const isActive = localStorage.getItem("customer_session_active");
-        let maKH = isActive === "true" ? localStorage.getItem("customer_maKhachHang") : null;
-        
-        if (maKH === "null" || maKH === "undefined" || maKH === "") {
-            maKH = null;
-        }
-
-        dfMessenger.setQueryParameters({
-          payload: {
-            maKhachHang: maKH,
-          },
-        });
+    const checkLogin = () => {
+      const isActive = localStorage.getItem("customer_session_active");
+      let maKH = isActive === "true" ? localStorage.getItem("customer_maKhachHang") : null;
+      if (maKH === "null" || maKH === "undefined" || maKH === "") {
+          maKH = null;
+      }
+      if (maKH !== maKhachHang) {
+          setMaKhachHang(maKH);
       }
     };
 
-    window.addEventListener('df-messenger-loaded', updatePayload);
-    const interval = setInterval(updatePayload, 1500);
-
-    return () => {
-      window.removeEventListener('df-messenger-loaded', updatePayload);
-      clearInterval(interval);
-    };
-  }, []);
+    checkLogin();
+    const interval = setInterval(checkLogin, 1000);
+    return () => clearInterval(interval);
+  }, [maKhachHang]);
 
   useEffect(() => {
     if (!document.getElementById('model-viewer-script')) {
@@ -212,6 +202,10 @@ function ChatBot() {
     }
   };
 
+  const queryParams = JSON.stringify({
+      payload: { maKhachHang: maKhachHang }
+  });
+
   return (
     <>
       <div id="bot-wrapper" className={`bot-wrapper ${isChatOpen ? 'chat-open' : ''}`}>
@@ -242,12 +236,15 @@ function ChatBot() {
           ></model-viewer>
       </div>
       <df-messenger
+        key={maKhachHang || 'guest'}
         intent="WELCOME"
         wait-open="true"
         chat-title="CeramicShop Chatbot"
         agent-id="6add2f93-9961-40d6-9b52-f4af5862c6a1"
         language-code="vi"
         session-id={sessionId}
+        user-id={maKhachHang || ''}
+        query-parameters={queryParams}
       ></df-messenger>
     </>
   );

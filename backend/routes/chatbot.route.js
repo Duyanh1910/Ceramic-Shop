@@ -157,8 +157,8 @@ router.post("/webhook", async (req, res) => {
       });
     }
   } else if (intentName === "Tra_Cuu_Don_Hang") {
-    const rawPayload = req.body.originalDetectIntentRequest?.payload;
-    let maKhachHang = rawPayload?.maKhachHang;
+    const rawPayload = req.body.originalDetectIntentRequest?.payload || {};
+    let maKhachHang = rawPayload.maKhachHang || rawPayload.userId || null;
     if (maKhachHang === "null" || maKhachHang === "undefined" || maKhachHang === "") maKhachHang = null;
 
     if (!maKhachHang) {
@@ -275,8 +275,8 @@ router.post("/webhook", async (req, res) => {
       });
     }
   } else if (intentName === "Kiem_Tra_Bao_Hanh_Don_Hang") {
-    const rawPayload = req.body.originalDetectIntentRequest?.payload;
-    let maKhachHang = rawPayload?.maKhachHang;
+    const rawPayload = req.body.originalDetectIntentRequest?.payload || {};
+    let maKhachHang = rawPayload.maKhachHang || rawPayload.userId || null;
     if (maKhachHang === "null" || maKhachHang === "undefined" || maKhachHang === "") maKhachHang = null;
 
     if (!maKhachHang) {
@@ -388,8 +388,8 @@ router.post("/webhook", async (req, res) => {
       });
     }
   } else if (intentName === "Yeu_Cau_Huy_Don_Hang") {
-    const rawPayload = req.body.originalDetectIntentRequest?.payload;
-    let maKhachHang = rawPayload?.maKhachHang;
+    const rawPayload = req.body.originalDetectIntentRequest?.payload || {};
+    let maKhachHang = rawPayload.maKhachHang || rawPayload.userId || null;
     if (maKhachHang === "null" || maKhachHang === "undefined" || maKhachHang === "") maKhachHang = null;
 
     if (!maKhachHang) {
@@ -493,8 +493,8 @@ router.post("/webhook", async (req, res) => {
       });
     }
   } else if (intentName === "Yeu_Cau_Doi_Thong_Tin_Don") {
-    const rawPayload = req.body.originalDetectIntentRequest?.payload;
-    let maKhachHang = rawPayload?.maKhachHang;
+    const rawPayload = req.body.originalDetectIntentRequest?.payload || {};
+    let maKhachHang = rawPayload.maKhachHang || rawPayload.userId || null;
     if (maKhachHang === "null" || maKhachHang === "undefined" || maKhachHang === "") maKhachHang = null;
 
     if (!maKhachHang) {
