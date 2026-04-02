@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getUserInfo } from './useAuth.js'; 
 import './ChatBot.css';
 
 const animationConfigs = [
@@ -16,7 +15,6 @@ const animationConfigs = [
 
 function ChatBot() {
   const navigate = useNavigate();
-  const user = getUserInfo(); 
   const chibiRef = useRef(null);
   const [currentAnimIndex, setCurrentAnimIndex] = useState(0);
   const [isBubbleHidden, setIsBubbleHidden] = useState(false);
@@ -31,35 +29,33 @@ function ChatBot() {
       return sid;
   });
 
-  const maKhachHang = user ? user.maKhachHang : null;
-
   useEffect(() => {
-    const setMessengerPayload = () => {
+    const updatePayload = () => {
       const dfMessenger = document.querySelector('df-messenger');
       if (dfMessenger && dfMessenger.setQueryParameters) {
+        const isActive = localStorage.getItem("customer_session_active");
+        let maKH = isActive === "true" ? localStorage.getItem("customer_maKhachHang") : null;
+        
+        if (maKH === "null" || maKH === "undefined" || maKH === "") {
+            maKH = null;
+        }
+
         dfMessenger.setQueryParameters({
           payload: {
-            maKhachHang: maKhachHang,
+            maKhachHang: maKH,
           },
         });
       }
     };
 
-    window.addEventListener('df-messenger-loaded', setMessengerPayload);
-
-    const payloadInterval = setInterval(() => {
-      const dfMessenger = document.querySelector('df-messenger');
-      if (dfMessenger && dfMessenger.setQueryParameters) {
-        setMessengerPayload();
-        clearInterval(payloadInterval);
-      }
-    }, 200);
+    window.addEventListener('df-messenger-loaded', updatePayload);
+    const interval = setInterval(updatePayload, 1500);
 
     return () => {
-      window.removeEventListener('df-messenger-loaded', setMessengerPayload);
-      clearInterval(payloadInterval);
+      window.removeEventListener('df-messenger-loaded', updatePayload);
+      clearInterval(interval);
     };
-  }, [maKhachHang]);
+  }, []);
 
   useEffect(() => {
     if (!document.getElementById('model-viewer-script')) {

@@ -157,8 +157,9 @@ router.post("/webhook", async (req, res) => {
       });
     }
   } else if (intentName === "Tra_Cuu_Don_Hang") {
-    const payload = req.body.originalDetectIntentRequest?.payload;
-    const maKhachHang = payload?.maKhachHang || null;
+    const rawPayload = req.body.originalDetectIntentRequest?.payload;
+    let maKhachHang = rawPayload?.maKhachHang;
+    if (maKhachHang === "null" || maKhachHang === "undefined" || maKhachHang === "") maKhachHang = null;
 
     if (!maKhachHang) {
       return res.json({
@@ -274,8 +275,9 @@ router.post("/webhook", async (req, res) => {
       });
     }
   } else if (intentName === "Kiem_Tra_Bao_Hanh_Don_Hang") {
-    const payload = req.body.originalDetectIntentRequest?.payload;
-    const maKhachHang = payload?.maKhachHang || null;
+    const rawPayload = req.body.originalDetectIntentRequest?.payload;
+    let maKhachHang = rawPayload?.maKhachHang;
+    if (maKhachHang === "null" || maKhachHang === "undefined" || maKhachHang === "") maKhachHang = null;
 
     if (!maKhachHang) {
       return res.json({
@@ -386,8 +388,9 @@ router.post("/webhook", async (req, res) => {
       });
     }
   } else if (intentName === "Yeu_Cau_Huy_Don_Hang") {
-    const payload = req.body.originalDetectIntentRequest?.payload;
-    const maKhachHang = payload?.maKhachHang || null;
+    const rawPayload = req.body.originalDetectIntentRequest?.payload;
+    let maKhachHang = rawPayload?.maKhachHang;
+    if (maKhachHang === "null" || maKhachHang === "undefined" || maKhachHang === "") maKhachHang = null;
 
     if (!maKhachHang) {
       return res.json({
@@ -490,8 +493,9 @@ router.post("/webhook", async (req, res) => {
       });
     }
   } else if (intentName === "Yeu_Cau_Doi_Thong_Tin_Don") {
-    const payload = req.body.originalDetectIntentRequest?.payload;
-    const maKhachHang = payload?.maKhachHang || null;
+    const rawPayload = req.body.originalDetectIntentRequest?.payload;
+    let maKhachHang = rawPayload?.maKhachHang;
+    if (maKhachHang === "null" || maKhachHang === "undefined" || maKhachHang === "") maKhachHang = null;
 
     if (!maKhachHang) {
       return res.json({
