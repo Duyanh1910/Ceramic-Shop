@@ -5,23 +5,21 @@ export const sortObject = (obj) => {
   const keys = Object.keys(obj).sort();
 
   for (let key of keys) {
-    // VNPAY yêu cầu encodeURIComponent và thay thế khoảng trắng bằng dấu '+'
-    sorted[key] = encodeURIComponent(obj[key]).replace(/%20/g, "+");
+    if (obj[key] !== "" && obj[key] !== undefined && obj[key] !== null) {
+      sorted[key] = encodeURIComponent(String(obj[key])).replace(/%20/g, "+");
+    }
   }
 
   return sorted;
 };
 
 export const createSecureHash = (params, secretKey) => {
-  // Sắp xếp param
   const sorted = sortObject(params);
 
-  // Tự nối chuỗi thủ công theo định dạng key=value&...
   const signData = Object.keys(sorted)
     .map((key) => `${key}=${sorted[key]}`)
     .join("&");
 
-  // Tạo mã băm HMAC-SHA512
   return crypto
     .createHmac("sha512", secretKey)
     .update(signData, "utf-8")
@@ -38,12 +36,10 @@ export const buildPaymentUrl = (params, config) => {
 
   const sorted = sortObject(vnpParams);
 
-  // Nối chuỗi tạo chữ ký
   const signData = Object.keys(sorted)
     .map((key) => `${key}=${sorted[key]}`)
     .join("&");
 
-  // Băm chữ ký
   const secureHash = crypto
     .createHmac("sha512", config.hashSecret)
     .update(signData, "utf-8")
@@ -51,7 +47,6 @@ export const buildPaymentUrl = (params, config) => {
 
   sorted.vnp_SecureHash = secureHash;
 
-  // Nối chuỗi để tạo URL cuối cùng trả về frontend
   const queryString = Object.keys(sorted)
     .map((key) => `${key}=${sorted[key]}`)
     .join("&");
@@ -64,34 +59,40 @@ export const verifyVnpay = (query, secretKey) => {
 
   const secureHash = vnpParams["vnp_SecureHash"];
 
-  // 1. Xóa các trường không dùng để tạo chữ ký
   delete vnpParams["vnp_SecureHash"];
   delete vnpParams["vnp_SecureHashType"];
 
-  // 2. LỚP BẢO VỆ: Quét và xóa toàn bộ các param rác
-  // (Phòng trường hợp frontend hoặc React/Vue tự động nhét thêm param vào URL)
   Object.keys(vnpParams).forEach((key) => {
     if (!key.startsWith("vnp_")) {
       delete vnpParams[key];
     }
   });
 
-  // 3. Sắp xếp lại object đã sạch
   const sorted = sortObject(vnpParams);
 
-  // 4. Tự nối chuỗi thủ công theo chuẩn
   const signData = Object.keys(sorted)
     .map((key) => `${key}=${sorted[key]}`)
     .join("&");
 
-  // 5. Băm chữ ký để so sánh
   const signed = crypto
     .createHmac("sha512", secretKey)
     .update(signData, "utf-8")
     .digest("hex");
-
+  console.log("\n====== DEBUG VNPAY SIGNATURE ======");
+  console.log("1. Dữ liệu gốc VNPAY gửi về (Query):", query);
+  console.log("2. Chuỗi hash VNPAY gửi về (secureHash):", secureHash);
+  console.log("3. Chuỗi hash Server tự tính (signed):", signed);
+  console.log(
+    "4. Trạng thái SecretKey:",
+    secretKey
+      ? `Hợp lệ (Độ dài: ${secretKey.length})`
+      : "BỊ MISSING (Undefined/Null)",
+  );
+  console.log("\n---> 5. CHUỖI SIGN-DATA TRƯỚC KHI HASH (Quan trọng nhất):");
+  console.log(signData);
+  console.log("=====================================\n");
   return {
-    isSuccess: secureHash === signed,
-    data: vnpParams, // Trả về data đã được làm sạch
+    isSuccess: secureHash.toLowerCase() === signed.toLowerCase(),
+    data: vnpParams,
   };
 };

@@ -95,11 +95,16 @@ router.get("/vnpay-ipn", async (req, res) => {
 
 router.post("/vnpay-create", async (req, res, next) => {
   try {
-    const ipAddr = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+    // SỬA LỖI 4: Xử lý chuỗi IP có chứa dấu phẩy từ Proxy/Load Balancer
+    let ipAddr =
+      req.headers["x-forwarded-for"] || req.socket.remoteAddress || "127.0.0.1";
+    if (typeof ipAddr === "string" && ipAddr.includes(",")) {
+      ipAddr = ipAddr.split(",")[0].trim();
+    }
 
     const paymentUrl = await createVnpayUrl({
       maDonHang: req.body.maDonHang,
-      ipAddr,
+      ipAddr, // Truyền IP đã chuẩn hóa
     });
 
     res.json({
