@@ -163,7 +163,7 @@ router.post("/webhook", async (req, res) => {
     if (!maKhachHang) {
       return res.json({
         fulfillmentText:
-          "Dạ, để bảo mật thông tin, Dạ, để bảo mật thông tin, bạn vui lòng đăng nhập vào đúng tài khoản có đơn hàng trên website  trước khi tra cứu nhé ạ.",
+          "Dạ, để bảo mật thông tin, bạn vui lòng đăng nhập vào tài khoản trên website trước khi tra cứu nhé ạ.",
       });
     }
 
@@ -176,29 +176,23 @@ router.post("/webhook", async (req, res) => {
       });
     }
 
-    let cleanMaDon = maDonHang
-      .toString()
-      .replace(/số|mã|so|ma|đơn|don/gi, "")
-      .trim();
+    let maDonReal = maDonHang.toString().toUpperCase().replace(/SỐ|MÃ|SO|MA|ĐƠN|DON|:| /gi, "").trim();
 
-    if (/[a-zA-Z]/.test(cleanMaDon)) {
-      const errText = `Dạ "${maDonHang}" có vẻ là Mã vận đơn của bên giao hàng rồi ạ. Để em tra cứu được hệ thống, bạn vui lòng cung cấp "Mã đơn hàng" của CeramicShop (chỉ bao gồm các con số, ví dụ: 1024) nhé!`;
+    if (!maDonReal.startsWith("DH")) {
       return res.json({
-        fulfillmentMessages: [{ text: { text: [errText] } }],
+        fulfillmentMessages: [{ text: { text: [`Dạ mã đơn hàng bên em bắt đầu bằng chữ "DH" kèm theo các số và chữ cái (ví dụ: DH26040211X6). Bạn vui lòng kiểm tra và cung cấp lại mã chính xác nhé!`] } }],
       });
     }
 
-    const maDonReal = cleanMaDon.replace(/\D/g, "");
-
     try {
       const sqlQuery =
-        "SELECT TrangThaiDonHang, NgayDat, TongThanhToan, MaKhachHang FROM DonHang WHERE MaDonHang = ?";
+        "SELECT TrangThaiDonHang, NgayDat, TongThanhToan, MaKhachHang FROM DonHang WHERE MaHienThi = ?";
       const [rows] = await pool.execute(sqlQuery, [maDonReal]);
 
       if (rows.length > 0) {
         if (String(rows[0].MaKhachHang) !== String(maKhachHang)) {
           return res.json({
-            fulfillmentText: `Dạ, bạn không có quyền truy cập thông tin của đơn hàng số ${maDonReal} do đơn hàng này không thuộc về tài khoản của bạn.`,
+            fulfillmentText: `Dạ, bạn không có quyền truy cập thông tin của đơn hàng ${maDonReal} do đơn hàng này không thuộc về tài khoản của bạn.`,
           });
         }
 
@@ -243,7 +237,7 @@ router.post("/webhook", async (req, res) => {
             {
               text: {
                 text: [
-                  `Dạ, em gửi bạn thông tự tra cứu của đơn hàng #${maDonReal} ạ:`,
+                  `Dạ, em gửi bạn thông tự tra cứu của đơn hàng ${maDonReal} ạ:`,
                 ],
               },
             },
@@ -253,7 +247,7 @@ router.post("/webhook", async (req, res) => {
                   [
                     {
                       type: "info",
-                      title: `Đơn hàng #${maDonReal}`,
+                      title: `Đơn hàng ${maDonReal}`,
                       subtitle: "Trạng thái vận chuyển",
                     },
                     {
@@ -269,7 +263,7 @@ router.post("/webhook", async (req, res) => {
         });
       } else {
         return res.json({
-          fulfillmentText: `Dạ em không tìm thấy thông tin của đơn hàng số ${maDonReal}. Bạn vui lòng kiểm tra lại mã giúp em nhé.`,
+          fulfillmentText: `Dạ em không tìm thấy thông tin của đơn hàng ${maDonReal}. Bạn vui lòng kiểm tra lại mã giúp em nhé.`,
         });
       }
     } catch (error) {
@@ -286,7 +280,7 @@ router.post("/webhook", async (req, res) => {
     if (!maKhachHang) {
       return res.json({
         fulfillmentText:
-          "Dạ, để bảo mật thông tin, Dạ, để bảo mật thông tin, bạn vui lòng đăng nhập vào đúng tài khoản có đơn hàng trên website  trước khi kiểm tra bảo hành nhé ạ.",
+          "Dạ, để bảo mật thông tin, bạn vui lòng đăng nhập vào tài khoản trên website trước khi kiểm tra bảo hành nhé ạ.",
       });
     }
 
@@ -295,34 +289,32 @@ router.post("/webhook", async (req, res) => {
     if (!maDonHang) {
       return res.json({
         fulfillmentText:
-          "Dạ bạn cho mình xin mã đơn hàng (ví dụ: 1024) để kiểm tra bảo hành nhé.",
+          "Dạ bạn cho mình xin mã đơn hàng (ví dụ: DH26040211X6) để kiểm tra bảo hành nhé.",
       });
     }
 
-    let cleanMaDon = maDonHang
-      .toString()
-      .replace(/số|mã|so|ma|đơn|don/gi, "")
-      .trim();
+    let maDonReal = maDonHang.toString().toUpperCase().replace(/SỐ|MÃ|SO|MA|ĐƠN|DON|:| /gi, "").trim();
 
-    if (/[a-zA-Z]/.test(cleanMaDon)) {
-      const errText = `Dạ "${maDonHang}" có vẻ là Mã vận đơn của bên giao hàng rồi ạ. Để em tra cứu được hệ thống, bạn vui lòng cung cấp "Mã đơn hàng" của CeramicShop (chỉ bao gồm các con số, ví dụ: 1024) nhé!`;
+    if (!maDonReal.startsWith("DH")) {
       return res.json({
-        fulfillmentMessages: [{ text: { text: [errText] } }],
+        fulfillmentMessages: [{ text: { text: [`Dạ mã đơn hàng bên em bắt đầu bằng chữ "DH" kèm theo các số và chữ cái (ví dụ: DH26040211X6). Bạn vui lòng kiểm tra và cung cấp lại mã chính xác nhé!`] } }],
       });
     }
-
-    const maDonReal = cleanMaDon.replace(/\D/g, "");
 
     try {
-      const checkOrder = "SELECT MaKhachHang FROM DonHang WHERE MaDonHang = ?";
+      const checkOrder = "SELECT MaKhachHang FROM DonHang WHERE MaHienThi = ?";
       const [orderRows] = await pool.execute(checkOrder, [maDonReal]);
 
-      if (orderRows.length > 0) {
-        if (String(orderRows[0].MaKhachHang) !== String(maKhachHang)) {
-          return res.json({
-            fulfillmentText: `Dạ, bạn không có quyền tra cứu bảo hành của đơn hàng số ${maDonReal} do đơn hàng này không thuộc về tài khoản của bạn.`,
-          });
-        }
+      if (orderRows.length === 0) {
+        return res.json({
+          fulfillmentText: `Dạ em không tìm thấy đơn hàng ${maDonReal} trên hệ thống. Bạn kiểm tra lại mã giúp em nhé.`,
+        });
+      }
+
+      if (String(orderRows[0].MaKhachHang) !== String(maKhachHang)) {
+        return res.json({
+          fulfillmentText: `Dạ, bạn không có quyền tra cứu bảo hành của đơn hàng ${maDonReal} do đơn hàng này không thuộc về tài khoản của bạn.`,
+        });
       }
 
       const sqlQuery = `
@@ -332,7 +324,7 @@ router.post("/webhook", async (req, res) => {
                 JOIN BienTheSanPham bt ON ctdh.MaBienThe = bt.MaBienThe
                 JOIN SanPham sp ON bt.MaSanPham = sp.MaSanPham
                 JOIN BaoHanh bh ON ctdh.MaCTDH = bh.MaCTDH
-                WHERE dh.MaDonHang = ?
+                WHERE dh.MaHienThi = ?
             `;
 
       const [rows] = await pool.execute(sqlQuery, [maDonReal]);
@@ -362,7 +354,7 @@ router.post("/webhook", async (req, res) => {
             {
               text: {
                 text: [
-                  `Dạ đây là thông bảo hành các sản phẩm thuộc đơn hàng #${maDonReal}:`,
+                  `Dạ đây là thông bảo hành các sản phẩm thuộc đơn hàng ${maDonReal}:`,
                 ],
               },
             },
@@ -383,7 +375,7 @@ router.post("/webhook", async (req, res) => {
         });
       } else {
         return res.json({
-          fulfillmentText: `Dạ em không tìm thấy gói bảo hành nào cho đơn hàng số ${maDonReal}. Với các lỗi nứt vỡ do vận chuyển, shop áp dụng chính sách đổi trả ngay lúc nhận hàng. Bạn cần hỗ trợ thêm gì không ạ?`,
+          fulfillmentText: `Dạ em không tìm thấy gói bảo hành nào cho đơn hàng ${maDonReal}. Với các lỗi nứt vỡ do vận chuyển, shop áp dụng chính sách đổi trả ngay lúc nhận hàng. Bạn cần hỗ trợ thêm gì không ạ?`,
         });
       }
     } catch (error) {
@@ -400,7 +392,7 @@ router.post("/webhook", async (req, res) => {
     if (!maKhachHang) {
       return res.json({
         fulfillmentText:
-          "Dạ, để bảo mật thông tin, Dạ, để bảo mật thông tin, bạn vui lòng đăng nhập vào đúng tài khoản có đơn hàng trên website  trước khi thực hiện hủy đơn nhé ạ.",
+          "Dạ, để bảo mật thông tin, bạn vui lòng đăng nhập vào tài khoản trên website trước khi thực hiện hủy đơn nhé ạ.",
       });
     }
 
@@ -409,33 +401,27 @@ router.post("/webhook", async (req, res) => {
     if (!maDonHang) {
       return res.json({
         fulfillmentText:
-          "Dạ bạn cho mình xin mã đơn hàng (ví dụ: 1024) để tiến hành hủy nhé.",
+          "Dạ bạn cho mình xin mã đơn hàng (ví dụ: DH26040211X6) để tiến hành hủy nhé.",
       });
     }
 
-    let cleanMaDon = maDonHang
-      .toString()
-      .replace(/số|mã|so|ma|đơn|don/gi, "")
-      .trim();
+    let maDonReal = maDonHang.toString().toUpperCase().replace(/SỐ|MÃ|SO|MA|ĐƠN|DON|:| /gi, "").trim();
 
-    if (/[a-zA-Z]/.test(cleanMaDon)) {
-      const errText = `Dạ "${maDonHang}" có vẻ là Mã vận đơn của bên giao hàng rồi ạ. Để em xử lý được trên hệ thống, bạn vui lòng cung cấp "Mã đơn hàng" của CeramicShop (chỉ bao gồm các con số, ví dụ: 1024) nhé!`;
+    if (!maDonReal.startsWith("DH")) {
       return res.json({
-        fulfillmentMessages: [{ text: { text: [errText] } }],
+        fulfillmentMessages: [{ text: { text: [`Dạ mã đơn hàng bên em bắt đầu bằng chữ "DH" kèm theo các số và chữ cái (ví dụ: DH26040211X6). Bạn vui lòng kiểm tra và cung cấp lại mã chính xác nhé!`] } }],
       });
     }
-
-    const maDonReal = cleanMaDon.replace(/\D/g, "");
 
     try {
       const checkQuery =
-        "SELECT TrangThaiDonHang, MaKhachHang FROM DonHang WHERE MaDonHang = ?";
+        "SELECT TrangThaiDonHang, MaKhachHang FROM DonHang WHERE MaHienThi = ?";
       const [rows] = await pool.execute(checkQuery, [maDonReal]);
 
       if (rows.length > 0) {
         if (String(rows[0].MaKhachHang) !== String(maKhachHang)) {
           return res.json({
-            fulfillmentText: `Dạ, bạn không có quyền hủy đơn hàng số ${maDonReal} do đơn hàng này không thuộc về tài khoản của bạn.`,
+            fulfillmentText: `Dạ, bạn không có quyền hủy đơn hàng ${maDonReal} do đơn hàng này không thuộc về tài khoản của bạn.`,
           });
         }
 
@@ -443,14 +429,14 @@ router.post("/webhook", async (req, res) => {
 
         if (trangThai === 0) {
           const updateQuery =
-            "UPDATE DonHang SET TrangThaiDonHang = 4 WHERE MaDonHang = ?";
+            "UPDATE DonHang SET TrangThaiDonHang = 4 WHERE MaHienThi = ?";
           await pool.execute(updateQuery, [maDonReal]);
           return res.json({
-            fulfillmentText: `✅ Dạ thành công! Đơn hàng số ${maDonReal} của bạn đã được hủy trên hệ thống.`,
+            fulfillmentText: `✅ Dạ thành công! Đơn hàng ${maDonReal} của bạn đã được hủy trên hệ thống.`,
           });
         } else if (trangThai === 4) {
           return res.json({
-            fulfillmentText: `Dạ đơn hàng số ${maDonReal} này đã được hủy từ trước rồi ạ.`,
+            fulfillmentText: `Dạ đơn hàng ${maDonReal} này đã được hủy từ trước rồi ạ.`,
           });
         } else {
           const errText = `❌ Dạ rất tiếc, đơn hàng ${maDonReal} đã được xác nhận và đang trong quá trình xử lý/giao hàng nên không thể hủy tự động. Bạn vui lòng liên hệ CSKH để được hỗ trợ nhé.`;
@@ -494,7 +480,7 @@ router.post("/webhook", async (req, res) => {
         }
       } else {
         return res.json({
-          fulfillmentText: `Dạ em không tìm thấy đơn hàng số ${maDonReal}. Bạn kiểm tra lại mã giúp em nhé.`,
+          fulfillmentText: `Dạ em không tìm thấy đơn hàng ${maDonReal}. Bạn kiểm tra lại mã giúp em nhé.`,
         });
       }
     } catch (error) {
@@ -510,7 +496,7 @@ router.post("/webhook", async (req, res) => {
     if (!maKhachHang) {
       return res.json({
         fulfillmentText:
-          "Dạ, để bảo mật thông tin, Dạ, để bảo mật thông tin, bạn vui lòng đăng nhập vào đúng tài khoản có đơn hàng trên website  trước khi yêu cầu thay đổi thông tin đơn nhé ạ.",
+          "Dạ, để bảo mật thông tin, bạn vui lòng đăng nhập vào tài khoản trên website trước khi yêu cầu thay đổi thông tin đơn nhé ạ.",
       });
     }
 
@@ -519,40 +505,34 @@ router.post("/webhook", async (req, res) => {
     if (!maDonHang) {
       return res.json({
         fulfillmentText:
-          "Dạ bạn cho mình xin mã đơn hàng (ví dụ: 1024) để hệ thống kiểm tra và hỗ trợ thay đổi thông vị nhé.",
+          "Dạ bạn cho mình xin mã đơn hàng (ví dụ: DH26040211X6) để hệ thống kiểm tra và hỗ trợ thay đổi thông vị nhé.",
       });
     }
 
-    let cleanMaDon = maDonHang
-      .toString()
-      .replace(/số|mã|so|ma|đơn|don/gi, "")
-      .trim();
+    let maDonReal = maDonHang.toString().toUpperCase().replace(/SỐ|MÃ|SO|MA|ĐƠN|DON|:| /gi, "").trim();
 
-    if (/[a-zA-Z]/.test(cleanMaDon)) {
-      const errText = `Dạ "${maDonHang}" có vẻ là Mã vận đơn của bên giao hàng rồi ạ. Để em cập nhật được trên hệ thống, bạn vui lòng cung cấp "Mã đơn hàng" của CeramicShop (chỉ bao gồm các con số, ví dụ: 1024) nhé!`;
+    if (!maDonReal.startsWith("DH")) {
       return res.json({
-        fulfillmentMessages: [{ text: { text: [errText] } }],
+        fulfillmentMessages: [{ text: { text: [`Dạ mã đơn hàng bên em bắt đầu bằng chữ "DH" kèm theo các số và chữ cái (ví dụ: DH26040211X6). Bạn vui lòng kiểm tra và cung cấp lại mã chính xác nhé!`] } }],
       });
     }
-
-    const maDonReal = cleanMaDon.replace(/\D/g, "");
 
     try {
       const checkQuery =
-        "SELECT TrangThaiDonHang, MaKhachHang FROM DonHang WHERE MaDonHang = ?";
+        "SELECT TrangThaiDonHang, MaKhachHang FROM DonHang WHERE MaHienThi = ?";
       const [rows] = await pool.execute(checkQuery, [maDonReal]);
 
       if (rows.length > 0) {
         if (String(rows[0].MaKhachHang) !== String(maKhachHang)) {
           return res.json({
-            fulfillmentText: `Dạ, bạn không có quyền thay đổi thông tin của đơn hàng số ${maDonReal} do đơn hàng này không thuộc về tài khoản của bạn.`,
+            fulfillmentText: `Dạ, bạn không có quyền thay đổi thông tin của đơn hàng ${maDonReal} do đơn hàng này không thuộc về tài khoản của bạn.`,
           });
         }
 
         const trangThai = rows[0].TrangThaiDonHang;
 
         if (trangThai === 0 || trangThai === 1) {
-          const processText = `Dạ đơn hàng số ${maDonReal} đang trong quá trình xử lý. Để thay đổi thông tin, bạn vui lòng liên hệ Zalo, Fanpage Facebook hoặc Gọi trực tiếp cho CSKH để cập nhật gấp nhé ạ!`;
+          const processText = `Dạ đơn hàng ${maDonReal} đang trong quá trình xử lý. Để thay đổi thông tin, bạn vui lòng liên hệ Zalo, Fanpage Facebook hoặc Gọi trực tiếp cho CSKH để cập nhật gấp nhé ạ!`;
           return res.json({
             fulfillmentMessages: [
               { text: { text: [processText] } },
@@ -592,7 +572,7 @@ router.post("/webhook", async (req, res) => {
           });
         } else if (trangThai === 4) {
           return res.json({
-            fulfillmentText: `Dạ đơn hàng số ${maDonReal} này đã bị hủy từ trước rồi ạ. Bạn có thể lên website để đặt lại một đơn hàng mới với thông tin chính xác nhé.`,
+            fulfillmentText: `Dạ đơn hàng ${maDonReal} này đã bị hủy từ trước rồi ạ. Bạn có thể lên website để đặt lại một đơn hàng mới với thông tin chính xác nhé.`,
           });
         } else {
           const denyText = `❌ Dạ rất tiếc, đơn hàng ${maDonReal} đã được bàn giao cho đơn vị vận chuyển nên hệ thống không thể tự động thay đổi thông tin nữa. Bạn vui lòng liên hệ gấp các kênh dưới đây để bên em gọi bưu tá hỗ trợ nhé ạ.`;
@@ -630,7 +610,7 @@ router.post("/webhook", async (req, res) => {
         }
       } else {
         return res.json({
-          fulfillmentText: `Dạ em không tìm thấy đơn hàng số ${maDonReal} trên hệ thống. Bạn kiểm tra lại mã giúp em nhé.`,
+          fulfillmentText: `Dạ em không tìm thấy đơn hàng ${maDonReal} trên hệ thống. Bạn kiểm tra lại mã giúp em nhé.`,
         });
       }
     } catch (error) {
