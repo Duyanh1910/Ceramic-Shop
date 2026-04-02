@@ -157,8 +157,9 @@ router.post("/webhook", async (req, res) => {
       });
     }
   } else if (intentName === "Tra_Cuu_Don_Hang") {
-    const rawPayload = req.body.originalDetectIntentRequest?.payload || {};
-    let maKhachHang = rawPayload.maKhachHang || rawPayload.userId || null;
+    const originalPayload = req.body.originalDetectIntentRequest?.payload || {};
+    const webhookPayload = req.body.queryResult?.webhookPayload || {};
+    let maKhachHang = originalPayload.maKhachHang || webhookPayload.maKhachHang || originalPayload.userId || webhookPayload.userId || null;
     if (maKhachHang === "null" || maKhachHang === "undefined" || maKhachHang === "") maKhachHang = null;
 
     const maDonHang = parameters.ma_don_hang || null;
@@ -272,8 +273,9 @@ router.post("/webhook", async (req, res) => {
       });
     }
   } else if (intentName === "Kiem_Tra_Bao_Hanh_Don_Hang") {
-    const rawPayload = req.body.originalDetectIntentRequest?.payload || {};
-    let maKhachHang = rawPayload.maKhachHang || rawPayload.userId || null;
+    const originalPayload = req.body.originalDetectIntentRequest?.payload || {};
+    const webhookPayload = req.body.queryResult?.webhookPayload || {};
+    let maKhachHang = originalPayload.maKhachHang || webhookPayload.maKhachHang || originalPayload.userId || webhookPayload.userId || null;
     if (maKhachHang === "null" || maKhachHang === "undefined" || maKhachHang === "") maKhachHang = null;
 
     const maDonHang = parameters.ma_don_hang || null;
@@ -372,8 +374,9 @@ router.post("/webhook", async (req, res) => {
       });
     }
   } else if (intentName === "Yeu_Cau_Huy_Don_Hang") {
-    const rawPayload = req.body.originalDetectIntentRequest?.payload || {};
-    let maKhachHang = rawPayload.maKhachHang || rawPayload.userId || null;
+    const originalPayload = req.body.originalDetectIntentRequest?.payload || {};
+    const webhookPayload = req.body.queryResult?.webhookPayload || {};
+    let maKhachHang = originalPayload.maKhachHang || webhookPayload.maKhachHang || originalPayload.userId || webhookPayload.userId || null;
     if (maKhachHang === "null" || maKhachHang === "undefined" || maKhachHang === "") maKhachHang = null;
 
     if (!maKhachHang) {
@@ -477,8 +480,9 @@ router.post("/webhook", async (req, res) => {
       });
     }
   } else if (intentName === "Yeu_Cau_Doi_Thong_Tin_Don") {
-    const rawPayload = req.body.originalDetectIntentRequest?.payload || {};
-    let maKhachHang = rawPayload.maKhachHang || rawPayload.userId || null;
+    const originalPayload = req.body.originalDetectIntentRequest?.payload || {};
+    const webhookPayload = req.body.queryResult?.webhookPayload || {};
+    let maKhachHang = originalPayload.maKhachHang || webhookPayload.maKhachHang || originalPayload.userId || webhookPayload.userId || null;
     if (maKhachHang === "null" || maKhachHang === "undefined" || maKhachHang === "") maKhachHang = null;
 
     if (!maKhachHang) {
