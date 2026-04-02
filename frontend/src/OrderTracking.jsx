@@ -45,7 +45,11 @@ const TIMELINE_STEPS = [
 export default function OrderTracking() {
   const navigate = useNavigate();
   const token = localStorage.getItem('customer_token') || localStorage.getItem('token');
-  const authHeader = { headers: { Authorization: `Bearer ${token}` } };
+  
+  const authHeader = { 
+    headers: { Authorization: `Bearer ${token}` },
+    withCredentials: true 
+  };
 
   const [allOrders, setAllOrders] = useState([]);
   const [orders, setOrders] = useState([]);
