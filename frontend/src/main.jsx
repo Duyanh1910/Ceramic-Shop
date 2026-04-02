@@ -11,6 +11,7 @@ import ProductDetail from './productDetail.jsx'
 import Profile from './Profile.jsx'
 import Cart from './Cart.jsx'
 import ChatBot from './ChatBot'
+import ContactIcons from './ContactIcons.jsx'
 import ChangePassword from './ChangePassword.jsx'
 import ForgotPassword from './ForgotPassword.jsx'
 import LoginSuccess from './LoginSuccess.jsx'
@@ -22,7 +23,6 @@ import AdminStaffs from './AdminStaffs.jsx'
 
 const PublicRoute = ({ children }) => {
   const isCustomerActive = localStorage.getItem('customer_session_active') === 'true';
-  
 
   if (isCustomerActive) {
     return <Navigate to="/home" replace />;
@@ -63,6 +63,14 @@ const ConditionalChatBot = () => {
       <ChatBot />
     </div>
   );
+};
+
+const ConditionalContactIcons = () => {
+  const location = useLocation();
+  const allowedPaths = ['/', '/home'];
+  const isAllowed = allowedPaths.includes(location.pathname);
+
+  return isAllowed ? <ContactIcons /> : null;
 };
 
 createRoot(document.getElementById('root')).render(
@@ -119,6 +127,7 @@ createRoot(document.getElementById('root')).render(
           <Route path="/login-success" element={<LoginSuccess />} />
         </Routes>
         
+        <ConditionalContactIcons />
         <ConditionalChatBot />
       </BrowserRouter>
     </HelmetProvider>
