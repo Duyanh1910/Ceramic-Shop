@@ -32,23 +32,24 @@ function Login() {
       const currentRole = user.role;
       const token = response.data.token || null;
 
-      // Cố gắng tìm mã KH từ mọi trường có thể trong API Login
-      let maKhachHang = user.MaKhachHang || user.maKhachHang || user.MaTaiKhoan || user.id || user.userId || user._id || user.profile?.MaKhachHang || null;
+      let maKhachHang = user.profile?.MaKhachHang || user.profile?.maKhachHang || user.MaKhachHang || user.maKhachHang || null;
 
-      // [THÊM MỚI] Nếu API Login vẫn không trả về mã, tự động gọi API /me để lấy bù
       if (!maKhachHang && currentRole !== 'Admin' && currentRole !== 'Staff') {
           try {
               const meRes = await axios.get(`${API_BASE}/auth/me`, { withCredentials: true });
               const meData = meRes.data.user || meRes.data.result;
               const profileData = meData?.profile || meData;
               
-              maKhachHang = profileData?.MaKhachHang || profileData?.maKhachHang || profileData?.id || meData?.MaKhachHang || meData?.id || null;
+              maKhachHang = profileData?.MaKhachHang || profileData?.maKhachHang || meData?.MaKhachHang || null;
           } catch (err) {
-              console.log("Không thể lấy profile phụ trợ:", err);
+              console.log(err);
           }
       }
 
-      // Lưu Session với mã khách hàng chuẩn
+      if (!maKhachHang) {
+          maKhachHang = user.MaTaiKhoan || user.id || user.userId || user._id || null;
+      }
+
       saveSession(currentUsername, currentRole, rememberMe, token, maKhachHang);
 
       message.success('Đăng nhập thành công!');
