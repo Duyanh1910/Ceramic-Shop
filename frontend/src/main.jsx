@@ -55,10 +55,14 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 
 const ConditionalChatBot = () => {
   const location = useLocation();
-  const allowedPaths = ['/home', '/profile', '/cart'];
+  const allowedPaths = ['/','/home', '/profile', '/cart'];
   const isAllowed = allowedPaths.includes(location.pathname) || location.pathname.startsWith('/product/');
 
-  return isAllowed ? <ChatBot /> : null;
+  return (
+    <div style={{ display: isAllowed ? 'block' : 'none' }}>
+      <ChatBot />
+    </div>
+  );
 };
 
 createRoot(document.getElementById('root')).render(
