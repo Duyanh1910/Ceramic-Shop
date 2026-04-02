@@ -7,12 +7,12 @@ import {
   ShoppingOutlined, ArrowLeftOutlined, EyeOutlined,
   CloseCircleOutlined, FileTextOutlined, CarOutlined,
   CheckCircleOutlined, ClockCircleOutlined, StopOutlined,
-  EditOutlined, SearchOutlined
+  EditOutlined, SearchOutlined, TeamOutlined, DollarOutlined, RiseOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
-import styles from './AdminDashboard.module.css'; 
+import styles from './AdminDashboard.module.css';
 
 const { Option } = Select;
 const { RangePicker } = DatePicker;
@@ -48,6 +48,10 @@ export default function AdminOrder() {
     withCredentials: true 
   };
 
+  // --- STATE CHO THỐNG KÊ (STAT CARDS) ---
+  const [stats, setStats] = useState({});
+
+  // --- STATE CHO BẢNG ĐƠN HÀNG ---
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
@@ -67,7 +71,35 @@ export default function AdminOrder() {
   const [newStatus, setNewStatus] = useState(null);
   const [updateLoading, setUpdateLoading] = useState(false);
 
-  // Debounce tìm kiếm
+  // --- HÀM LOAD THỐNG KÊ (Chạy 1 lần khi mở trang) ---
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const [ordersRes, customersRes, productsRes] = await Promise.allSettled([
+          axios.get(`${API_BASE}/admin/orders?page=1&limit=1`, authHeader), // Lấy tổng đơn hàng
+          axios.get(`${API_BASE}/admin/customers?page=1&limit=1`, authHeader), // Lấy tổng khách
+          axios.get(`${API_BASE}/products?page=1&limit=1`, authHeader), // Lấy tổng sản phẩm
+        ]);
+
+        let newStats = {};
+        if (ordersRes.status === 'fulfilled') {
+          newStats.totalOrders = ordersRes.value.data?.result?.totalItems || 0;
+        }
+        if (customersRes.status === 'fulfilled') {
+          newStats.totalCustomers = customersRes.value.data?.result?.total || 0;
+        }
+        if (productsRes.status === 'fulfilled') {
+          newStats.totalProducts = productsRes.value.data?.result?.total || 0;
+        }
+        setStats(newStats);
+      } catch (error) {
+        console.error('Lỗi load thống kê:', error);
+      }
+    };
+    fetchStats();
+  }, []);
+
+  // --- CÁC HÀM XỬ LÝ ĐƠN HÀNG (Giữ nguyên) ---
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchInput);
@@ -76,7 +108,6 @@ export default function AdminOrder() {
     return () => clearTimeout(timer);
   }, [searchInput]);
 
-  // Gọi API
   useEffect(() => {
     fetchOrders();
   }, [page, activeTab, debouncedSearch, dateRange]);
@@ -161,6 +192,14 @@ export default function AdminOrder() {
     label: s.label,
   }));
 
+  // Cấu hình mảng dữ liệu cho 4 thẻ thống kê
+  const statCards = [
+    { title: 'Tổng đơn hàng', value: stats?.totalOrders ?? '—', icon: <FileTextOutlined />, color: '#1b437c', bg: '#e8f0fe' },
+    { title: 'Khách hàng', value: stats?.totalCustomers ?? '—', icon: <TeamOutlined />, color: '#52c41a', bg: '#f6ffed' },
+    { title: 'Sản phẩm', value: stats?.totalProducts ?? '—', icon: <ShoppingOutlined />, color: '#c48c46', bg: '#fff8e6' },
+    { title: 'Doanh thu tháng', value: '—', icon: <DollarOutlined />, color: '#e74c3c', bg: '#fff1f0' },
+  ];
+
   const columns = [
     {
       title: 'Mã đơn',
@@ -227,6 +266,7 @@ export default function AdminOrder() {
     <div className={styles.pageWrapper}>
       <Helmet><title>Quản lý Đơn hàng | Ceramic Shop</title></Helmet>
 
+      {/* --- PHẦN HEADER --- */}
       <div className={styles.topHeader}>
         <div>
           <h1 className={styles.pageTitle}>
@@ -239,6 +279,27 @@ export default function AdminOrder() {
         </Button>
       </div>
 
+      {/* --- THÊM PHẦN THẺ THỐNG KÊ Ở ĐÂY --- */}
+      <Row gutter={[20, 20]} className={styles.statsRow}>
+        {statCards.map((card, i) => (
+          <Col xs={24} sm={12} xl={6} key={i}>
+            <div className={styles.statCard}>
+              <div className={styles.statIcon} style={{ background: card.bg, color: card.color }}>
+                {card.icon}
+              </div>
+              <div className={styles.statInfo}>
+                <div className={styles.statLabel}>{card.title}</div>
+                <div className={styles.statValue} style={{ color: card.color }}>
+                  {card.value}
+                </div>
+              </div>
+              <RiseOutlined className={styles.trendIcon} />
+            </div>
+          </Col>
+        ))}
+      </Row>
+
+      {/* --- PHẦN QUẢN LÝ ĐƠN HÀNG (GIỮ NGUYÊN) --- */}
       <Card bordered={false} className={styles.mainCard}>
         <Row gutter={[16, 16]} align="middle" className={styles.filterRow}>
           <Col xs={24} lg={12}>
@@ -295,6 +356,7 @@ export default function AdminOrder() {
         </div>
       </Card>
 
+      {/* --- MODAL CẬP NHẬT TRẠNG THÁI --- */}
       <Modal
         title="Cập nhật trạng thái đơn hàng"
         open={updateModal}
@@ -320,6 +382,7 @@ export default function AdminOrder() {
         </Select>
       </Modal>
 
+      {/* --- MODAL CHI TIẾT ĐƠN HÀNG --- */}
       <Modal
         open={detailModal}
         onCancel={() => setDetailModal(false)}
