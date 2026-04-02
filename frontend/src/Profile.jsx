@@ -140,7 +140,7 @@ function Profile() {
                 <li onClick={() => navigate('/change-password')}>
                   <LockOutlined /> Đổi mật khẩu
                 </li>
-                <li><ShoppingOutlined /> Đơn hàng của tôi</li>
+                <li onClick={()=>navigate('/orders')}><ShoppingOutlined /> Đơn hàng của tôi</li>
               </ul>
             </Sider>
 

@@ -24,6 +24,7 @@ function LandingPage() {
     const [loading, setLoading] = useState(false);
     const [cartCount, setCartCount] = useState(0);
     const [isSticky, setIsSticky] = useState(false);
+    const [activeSection, setActiveSection] = useState('home');
     
     const [searchKw, setSearchKw] = useState('');
     const [searchOptions, setSearchOptions] = useState([]);
@@ -54,6 +55,7 @@ function LandingPage() {
                     saveSession(username, role, true, token);
                 }
             } catch (err) {
+
             }
         };
         
@@ -71,7 +73,24 @@ function LandingPage() {
         const handleScroll = () => {
             if (window.scrollY > 140) setIsSticky(true);
             else setIsSticky(false);
+
+            const sections = ['home', 'about', 'categories', 'news', 'contact'];
+            let current = 'home';
+            for (let sectionId of sections) {
+                const section = document.getElementById(sectionId);
+                if (section) {
+                    const sectionTop = section.offsetTop;
+                    if (window.scrollY >= sectionTop - 150) { 
+                        current = sectionId;
+                    }
+                }
+            }
+            if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 10) {
+                current = 'contact';
+            }
+            setActiveSection(current);
         };
+        
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
@@ -146,11 +165,26 @@ function LandingPage() {
     };
 
     const categories = [
-        { name: "Đồ phòng bếp", img: "https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=300&h=300&fit=crop" },
-        { name: "Đồ phòng khách", img: "https://images.unsplash.com/photo-1578898887140-5e580e0c0362?w=300&h=300&fit=crop" },
-        { name: "Đồ thờ", img: "https://res.cloudinary.com/dcmwz0uis/image/upload/v1773368705/bat_huong_sen_1_xov7f0.jpg" },
-        { name: "Đồ phong thủy", img: "https://res.cloudinary.com/dcmwz0uis/image/upload/v1773370680/ca_chep_hoa_rong_1_qgbxrl.jpg" },
-        { name: "Đồ trang trí", img: "https://res.cloudinary.com/dcmwz0uis/image/upload/v1773369371/luc_binh_cong_dao_1_tq0p51.jpg" }
+        { 
+            name: "Đồ phòng bếp", 
+            img: "https://res.cloudinary.com/dcmwz0uis/image/upload/v1773744001/bo-do-an-30-san-pham-hoang-cung-lac-hong-30208-00_z2uoxf.png" 
+        },
+        { 
+            name: "Đồ phòng khách", 
+            img: "https://res.cloudinary.com/dcmwz0uis/image/upload/v1773798497/00-f5e6732e-77c1-489d-9972-0804386f0860_nsci6h.webp" 
+        },
+        { 
+            name: "Đồ thờ", 
+            img: "https://res.cloudinary.com/dcmwz0uis/image/upload/v1773801851/RD060723-2-removebg-preview_vnbzkb.png" 
+        },
+        { 
+            name: "Đồ phong thủy", 
+            img: "https://res.cloudinary.com/dcmwz0uis/image/upload/v1773818260/thum-removebg-preview_f0xndm.png" 
+        },
+        { 
+            name: "Đồ trang trí", 
+            img: "https://res.cloudinary.com/dcmwz0uis/image/upload/v1773823016/mtmt_ayvor6.webp" 
+        }
     ];
 
     const newsArticles = [
@@ -270,11 +304,11 @@ function LandingPage() {
             <nav className={`${styles.navBar} ${isSticky ? styles.sticky : ''}`}>
                 <div className={styles.container}>
                     <ul className={styles.menuList}>
-                        <li><a href="#home" className={styles.active}>TRANG CHỦ</a></li>
-                        <li><a href="#about">GIỚI THIỆU</a></li>
-                        <li><a href="#categories">SẢN PHẨM</a></li>
-                        <li><a href="#news">TIN TỨC</a></li>
-                        <li><a href="#contact">LIÊN HỆ</a></li>
+                        <li><a href="#home" className={activeSection === 'home' ? styles.active : ''}>TRANG CHỦ</a></li>
+                        <li><a href="#about" className={activeSection === 'about' ? styles.active : ''}>GIỚI THIỆU</a></li>
+                        <li><a href="#categories" className={activeSection === 'categories' ? styles.active : ''}>SẢN PHẨM</a></li>
+                        <li><a href="#news" className={activeSection === 'news' ? styles.active : ''}>TIN TỨC</a></li>
+                        <li><a href="#contact" className={activeSection === 'contact' ? styles.active : ''}>LIÊN HỆ</a></li>
                     </ul>
                 </div>
             </nav>

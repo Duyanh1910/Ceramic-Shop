@@ -43,8 +43,19 @@
     transition: transform 0.3s ease;
 }
 
+.contact-toggle-btn .close-icon {
+    display: none;
+    width: 24px;
+    height: 24px;
+}
+
+.contact-wrapper.open .main-phone-icon,
 .contact-wrapper.open .main-arrow-icon {
-    transform: rotate(180deg);
+    display: none;
+}
+
+.contact-wrapper.open .contact-toggle-btn .close-icon {
+    display: block;
 }
 
 .contact-list {
