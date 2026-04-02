@@ -634,12 +634,12 @@ function Home() {
            
            if (mappedChildren.length > 0) {
                menuItems.push({
-                   key:'grp_${p.MaDanhMuc}',
+                   key:`grp_${p.MaDanhMuc}`,
                    label: p.TenDanhMuc,
                    children:[
                     {
                       key:p.MaDanhMuc.toString(),
-                      label:'Tất cả ${p.TenDanhMuc}',
+                      label:`Tất cả ${p.TenDanhMuc}`,
 
                     },
                     ...mappedChildren.map(c=>({
