@@ -1,0 +1,56 @@
+.contact-floating-wrapper {
+    position: fixed;
+    bottom: 30px;
+    left: 30px;
+    display: flex;
+    flex-direction: column; 
+    gap: 15px;
+    z-index: 999999;
+}
+
+.contact-icon-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.contact-icon-btn:hover {
+    transform: scale(1.15) translateY(-5px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+    color: white;
+}
+
+.btn-zalo {
+    background-color: #0068ff; 
+}
+
+.btn-zalo img {
+    width: 28px;
+    height: 28px;
+    filter: brightness(0) invert(1);
+}
+
+.btn-gmail {
+    background-color: #ea4335; 
+}
+
+.btn-phone {
+    background-color: #4caf50; 
+    animation: ringRing 2s infinite ease-in-out; 
+}
+
+@keyframes ringRing {
+    0%, 100% { transform: rotate(0deg); }
+    10%, 30%, 50% { transform: rotate(15deg); }
+    20%, 40% { transform: rotate(-15deg); }
+    60% { transform: rotate(0deg); }
+}
