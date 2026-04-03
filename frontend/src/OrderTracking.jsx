@@ -24,7 +24,7 @@ const ORDER_STATUS = [
   { value: 1, label: 'Đang chuẩn bị' },
   { value: 2, label: 'Đang giao' },
   { value: 3, label: 'Hoàn thành' },
-  { value: 4, label: 'Đã huỷ' },
+  { value: 4, label: 'Đã Hủy' },
 ];
 
 const STATUS_CONFIG = {
@@ -32,7 +32,7 @@ const STATUS_CONFIG = {
   1: { color: 'blue',    label: 'Đang chuẩn bị', icon: <FileTextOutlined /> },
   2: { color: 'cyan',    label: 'Đang giao',      icon: <CarOutlined /> },
   3: { color: 'green',   label: 'Hoàn thành',     icon: <CheckCircleOutlined /> },
-  4: { color: 'red',     label: 'Đã huỷ',         icon: <StopOutlined /> },
+  4: { color: 'red',     label: 'Đã Hủy',         icon: <StopOutlined /> },
 };
 
 const TIMELINE_STEPS = [
@@ -108,9 +108,9 @@ export default function OrderTracking() {
 
   const handleCancelOrder = async (orderCode) => {
     Modal.confirm({
-      title: 'Xác nhận huỷ đơn hàng',
-      content: 'Bạn có chắc chắn muốn huỷ đơn hàng này không?',
-      okText: 'Huỷ đơn',
+      title: 'Xác nhận Hủy đơn hàng',
+      content: 'Bạn có chắc chắn muốn Hủy đơn hàng này không?',
+      okText: 'Hủy đơn',
       okType: 'danger',
       cancelText: 'Quay lại',
       onOk: async () => {
@@ -121,13 +121,13 @@ export default function OrderTracking() {
             { reason: 'Khách hàng thay đổi ý định' }, 
             authHeader
           );
-          message.success('Huỷ đơn hàng thành công!');
+          message.success('Hủy đơn hàng thành công!');
           fetchOrders();
           if (selectedOrder?.MaHienThi === orderCode) {
             setDetailModal(false);
           }
         } catch (err) {
-          message.error(err.response?.data?.message || 'Không thể huỷ đơn hàng!');
+          message.error(err.response?.data?.message || 'Không thể Hủy đơn hàng!');
         } finally {
           setCancelLoading(false);
         }
@@ -214,10 +214,10 @@ export default function OrderTracking() {
             className={styles.btnView}>
             Chi tiết
           </Button>
-          {row.TrangThaiDonHang === 0 && (
+          {row.TrangThaiDonHang === 0 && row.TrangThaiThanhToan!=0(
             <Button size="small" danger icon={<CloseCircleOutlined />}
               onClick={() => handleCancelOrder(row.MaHienThi)}>
-              Huỷ
+              Hủy
             </Button>
           )}
         </div>
@@ -322,7 +322,7 @@ export default function OrderTracking() {
               </div>
             ) : (
               <div className={styles.canceledBanner}>
-                <StopOutlined /> Đơn hàng này đã bị huỷ
+                <StopOutlined /> Đơn hàng này đã bị Hủy
               </div>
             )}
 
@@ -399,8 +399,8 @@ export default function OrderTracking() {
               </div>
             </div>
 
-            {selectedOrder.TrangThaiDonHang === 0 && (
-              <Button
+            {selectedOrder.TrangThaiDonHang === 0 && selectedOrder.TrangThaiThanhToan!=0 &&(
+                  <Button
                 danger
                 block
                 icon={<CloseCircleOutlined />}
@@ -408,8 +408,9 @@ export default function OrderTracking() {
                 onClick={() => handleCancelOrder(selectedOrder.MaHienThi)}
                 className={styles.btnCancel}
               >
-                Huỷ đơn hàng
+                Hủy đơn hàng
               </Button>
+         
             )}
           </div>
         )}
