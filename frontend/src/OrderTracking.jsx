@@ -214,7 +214,7 @@ export default function OrderTracking() {
             className={styles.btnView}>
             Chi tiết
           </Button>
-          {row.TrangThaiDonHang === 0 && row.TrangThaiThanhToan!=0(
+          {row.TrangThaiDonHang === 0 && (
             <Button size="small" danger icon={<CloseCircleOutlined />}
               onClick={() => handleCancelOrder(row.MaHienThi)}>
               Hủy
@@ -399,7 +399,7 @@ export default function OrderTracking() {
               </div>
             </div>
 
-            {selectedOrder.TrangThaiDonHang === 0 && selectedOrder.TrangThaiThanhToan!=0 &&(
+            {selectedOrder.TrangThaiDonHang === 0 &&(
                   <Button
                 danger
                 block
@@ -410,7 +410,7 @@ export default function OrderTracking() {
               >
                 Hủy đơn hàng
               </Button>
-         
+            
             )}
           </div>
         )}
