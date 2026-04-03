@@ -23,7 +23,7 @@ function Login() {
       const keysToRemove = [
         'customer_token', 'admin_token', 'token',
         'customer_session_active', 'admin_session_active',
-        'role', 'username'
+        'role', 'username', 'customer_maKhachHang'
       ];
       keysToRemove.forEach(k => localStorage.removeItem(k));
 

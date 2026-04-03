@@ -7,6 +7,11 @@ router.post("/webhook", async (req, res) => {
   const intentName = req.body.queryResult.intent.displayName;
   const parameters = req.body.queryResult.parameters;
 
+  const originalPayload = req.body.originalDetectIntentRequest?.payload || {};
+  const webhookPayload = req.body.queryResult?.webhookPayload || {};
+  let maKhachHang = originalPayload.maKhachHang || webhookPayload.maKhachHang || originalPayload.userId || webhookPayload.userId || null;
+  if (maKhachHang === "null" || maKhachHang === "undefined" || maKhachHang === "") maKhachHang = null;
+
   const domainWeb = CHATBOT_LINKS.domainWeb;
   const zaloLink = CHATBOT_LINKS.zaloLink;
   const emailLink = CHATBOT_LINKS.emailLink;
@@ -157,11 +162,6 @@ router.post("/webhook", async (req, res) => {
       });
     }
   } else if (intentName === "Tra_Cuu_Don_Hang") {
-    const originalPayload = req.body.originalDetectIntentRequest?.payload || {};
-    const webhookPayload = req.body.queryResult?.webhookPayload || {};
-    let maKhachHang = originalPayload.maKhachHang || webhookPayload.maKhachHang || originalPayload.userId || webhookPayload.userId || null;
-    if (maKhachHang === "null" || maKhachHang === "undefined" || maKhachHang === "") maKhachHang = null;
-
     const maDonHang = parameters.ma_don_hang || null;
 
     if (!maDonHang) {
@@ -277,11 +277,6 @@ router.post("/webhook", async (req, res) => {
       });
     }
   } else if (intentName === "Kiem_Tra_Bao_Hanh_Don_Hang") {
-    const originalPayload = req.body.originalDetectIntentRequest?.payload || {};
-    const webhookPayload = req.body.queryResult?.webhookPayload || {};
-    let maKhachHang = originalPayload.maKhachHang || webhookPayload.maKhachHang || originalPayload.userId || webhookPayload.userId || null;
-    if (maKhachHang === "null" || maKhachHang === "undefined" || maKhachHang === "") maKhachHang = null;
-
     const maDonHang = parameters.ma_don_hang || null;
 
     if (!maDonHang) {
@@ -346,7 +341,7 @@ router.post("/webhook", async (req, res) => {
             {
               text: {
                 text: [
-                  `Dạ đây là thông bảo hành các sản phẩm thuộc đơn hàng ${maDonReal}:`,
+                  `Dạ đây là thông tin bảo hành các sản phẩm thuộc đơn hàng ${maDonReal}:`,
                 ],
               },
             },
@@ -378,11 +373,6 @@ router.post("/webhook", async (req, res) => {
       });
     }
   } else if (intentName === "Yeu_Cau_Huy_Don_Hang") {
-    const originalPayload = req.body.originalDetectIntentRequest?.payload || {};
-    const webhookPayload = req.body.queryResult?.webhookPayload || {};
-    let maKhachHang = originalPayload.maKhachHang || webhookPayload.maKhachHang || originalPayload.userId || webhookPayload.userId || null;
-    if (maKhachHang === "null" || maKhachHang === "undefined" || maKhachHang === "") maKhachHang = null;
-
     if (!maKhachHang) {
       return res.json({
         fulfillmentText:
@@ -488,10 +478,7 @@ router.post("/webhook", async (req, res) => {
       });
     }
   } else if (intentName === "Yeu_Cau_Doi_Thong_Tin_Don") {
-    const originalPayload = req.body.originalDetectIntentRequest?.payload || {};
-    const webhookPayload = req.body.queryResult?.webhookPayload || {};
-    let maKhachHang = originalPayload.maKhachHang || webhookPayload.maKhachHang || originalPayload.userId || webhookPayload.userId || null;
-    if (maKhachHang === "null" || maKhachHang === "undefined" || maKhachHang === "") maKhachHang = null;
+    const maDonHang = parameters.ma_don_hang || null;
 
     if (!maKhachHang) {
       return res.json({
@@ -499,8 +486,6 @@ router.post("/webhook", async (req, res) => {
           "Dạ, để bảo mật thông tin, bạn vui lòng đăng nhập vào tài khoản trên website trước khi yêu cầu thay đổi thông tin đơn nhé ạ.",
       });
     }
-
-    const maDonHang = parameters.ma_don_hang || null;
 
     if (!maDonHang) {
       return res.json({
@@ -1191,7 +1176,7 @@ router.post("/webhook", async (req, res) => {
         return res.json({ fulfillmentText: txtNotFound });
       }
     } catch (error) {
-      consoleerror(error);
+      console.error(error);
       return res.json({
         fulfillmentText:
           "Dạ hệ thống đang tải dữ liệu sản phẩm, bạn chờ chút xíu nhé.",
