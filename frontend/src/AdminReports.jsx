@@ -82,7 +82,6 @@ export default function AdminReports() {
   const [loading, setLoading] = useState(false);
   const [summary, setSummary] = useState({ revenue: 0, orders: 0, customers: 0, avgOrder: 0 });
 
-  // ĐÃ FIX: Xóa localStorage cũ đi, chuẩn bị sẵn axiosConfig bằng Cookie cho sau này bạn nối API thật
   const axiosConfig = { withCredentials: true };
 
   useEffect(() => {
@@ -92,8 +91,6 @@ export default function AdminReports() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      // Hiện tại code đang dùng Dữ liệu giả (Mock Data).
-      // Sau này bạn chỉ cần sửa chỗ này thành: await axios.get(`${API_BASE}/reports...`, axiosConfig)
       const data = buildMockData(mode, year, month, quarter);
       setChartData(data);
 

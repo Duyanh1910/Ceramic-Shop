@@ -188,7 +188,6 @@ export default function AdminOrder() {
     label: s.label,
   }));
 
-  // Cấu hình mảng dữ liệu cho 4 thẻ thống kê
   const statCards = [
     { title: 'Tổng đơn hàng', value: stats?.totalOrders ?? '—', icon: <FileTextOutlined />, color: '#1b437c', bg: '#e8f0fe' },
     { title: 'Khách hàng', value: stats?.totalCustomers ?? '—', icon: <TeamOutlined />, color: '#52c41a', bg: '#f6ffed' },
@@ -262,7 +261,6 @@ export default function AdminOrder() {
     <div className={styles.pageWrapper}>
       <Helmet><title>Quản lý Đơn hàng | Ceramic Shop</title></Helmet>
 
-      {/* --- PHẦN HEADER --- */}
       <div className={styles.topHeader}>
         <div>
           <h1 className={styles.pageTitle}>
@@ -275,7 +273,6 @@ export default function AdminOrder() {
         </Button>
       </div>
 
-      {/* --- THÊM PHẦN THẺ THỐNG KÊ Ở ĐÂY --- */}
       <Row gutter={[20, 20]} className={styles.statsRow}>
         {statCards.map((card, i) => (
           <Col xs={24} sm={12} xl={6} key={i}>
@@ -295,7 +292,6 @@ export default function AdminOrder() {
         ))}
       </Row>
 
-      {/* --- PHẦN QUẢN LÝ ĐƠN HÀNG (GIỮ NGUYÊN) --- */}
       <Card bordered={false} className={styles.mainCard}>
         <Row gutter={[16, 16]} align="middle" className={styles.filterRow}>
           <Col xs={24} lg={12}>
@@ -416,7 +412,6 @@ export default function AdminOrder() {
 
             <Divider />
 
-            {/* 2. LỊCH SỬ GIAO DỊCH (MOMO / VNPAY / COD) */}
             {selectedOrder.GiaoDichThanhToans && selectedOrder.GiaoDichThanhToans.length > 0 && (
               <>
                 <div className={styles.sectionTitle}>Lịch sử thanh toán</div>
@@ -461,7 +456,6 @@ export default function AdminOrder() {
               </>
             )}
 
-            {/* 3. DANH SÁCH SẢN PHẨM */}
             <div className={styles.sectionTitle}>Danh sách sản phẩm</div>
             <Table 
               dataSource={selectedOrder.ChiTietDonHangs} 
@@ -505,7 +499,6 @@ export default function AdminOrder() {
 
             <Divider />
 
-            {/* 4. TỔNG KẾT CHI PHÍ & VOUCHER */}
             <Row justify="space-between" align="bottom">
               <Col xs={24} md={12}>
                 {selectedOrder.KhuyenMais && selectedOrder.KhuyenMais.length > 0 && (
@@ -541,7 +534,6 @@ export default function AdminOrder() {
                     <span className={styles.totalAmount}>{fmt(selectedOrder.TongThanhToan)}</span>
                   </div>
                   
-                  {/* Trạng thái thanh toán tổng thể */}
                   <div style={{ textAlign: 'right', marginTop: '8px' }}>
                     <Tag color={selectedOrder.TrangThaiThanhToan === 1 ? 'green' : 'default'} style={{ margin: 0, fontSize: '14px', padding: '4px 8px' }}>
                       {selectedOrder.TrangThaiThanhToan === 1 ? 'ĐÃ THANH TOÁN' : 'CHƯA THANH TOÁN'}

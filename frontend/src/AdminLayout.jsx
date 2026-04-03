@@ -33,9 +33,13 @@ export default function AdminLayout() {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
 
-  const role = localStorage.getItem('role');
-  const username = localStorage.getItem('username');
-  const menuItems = role === 'Admin' ? ADMIN_MENU : STAFF_MENU;
+  const rawRole = localStorage.getItem('role') || '';
+  
+  const isAdmin = rawRole.trim().toLowerCase() === 'admin';
+  
+  const role = isAdmin ? 'Admin' : 'Staff';
+  const username = localStorage.getItem('username') || 'Tài khoản';
+  const menuItems = isAdmin ? ADMIN_MENU : STAFF_MENU;
 
   const handleLogout = async () => {
     try {

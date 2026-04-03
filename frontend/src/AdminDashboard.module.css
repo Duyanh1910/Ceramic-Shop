@@ -1,6 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Arsenal:wght@400;600;700&display=swap');
 
-/* --- BỐ CỤC TRANG CHUNG --- */
 .pageWrapper {
   padding: 24px;
   background: #f5f7fa;
@@ -96,7 +95,6 @@
   opacity: 0.4;
 }
 
-/* --- KHU VỰC QUẢN LÝ ĐƠN HÀNG (CARD & BỘ LỌC) --- */
 .mainCard {
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.05);
@@ -108,7 +106,7 @@
 }
 
 .tabs {
-  margin-bottom: -16px; /* Ép sát thanh tab xuống viền cho gọn */
+  margin-bottom: -16px;
 }
 
 .filterControls {
@@ -132,7 +130,6 @@
   padding: 80px 0;
 }
 
-/* --- CHI TIẾT BẢNG (TABLE CHÍNH) --- */
 .tableWrap { 
   overflow-x: auto; 
 }
@@ -161,7 +158,6 @@
   font-size: 14px;
 }
 
-/* Ghi đè giao diện Table mặc định của Ant Design */
 .table :global(.ant-table-thead > tr > th) {
   background: #f7f9fc !important;
   font-weight: 700 !important;
@@ -174,7 +170,6 @@
   background: #fafcff !important;
 }
 
-/* --- KHU VỰC MODAL CHUNG --- */
 .modalTitle {
   font-size: 18px;
   font-weight: 700;
@@ -197,12 +192,10 @@
   width: 100%;
 }
 
-/* --- BÊN TRONG MODAL CHI TIẾT ĐƠN HÀNG --- */
 .detailWrap {
   padding-top: 8px;
 }
 
-/* Khung thông tin khách hàng */
 .descriptions {
   background: #fafafa;
   border-radius: 8px;
@@ -228,7 +221,6 @@
   color: #333;
 }
 
-/* Bảng danh sách sản phẩm & Lịch sử giao dịch */
 .productTable {
   border: 1px solid #f0f0f0;
   border-radius: 8px;
