@@ -31,6 +31,8 @@ import AccountProviderModel from "./account_provider.model.js";
 import ShippingTypeModel from "./shipping/shipping_type.model.js";
 import RatingModel from "./rating.model.js";
 
+import NewsModel from "./news.model.js";
+
 // --- QUAN HỆ TÀI KHOẢN & PHÂN QUYỀN ---
 RoleModel.hasMany(AccountModel, {
   foreignKey: "MaQuyen",
@@ -179,6 +181,15 @@ PaymentTransactionModel.belongsTo(OrderModel, {
 OrderModel.hasMany(PaymentTransactionModel, {
   foreignKey: "MaDonHang",
 });
+
+// --- QUAN HỆ TIN TỨC ---
+StaffModel.hasMany(NewsModel, {
+  foreignKey: "MaNhanVien",
+});
+NewsModel.belongsTo(StaffModel, {
+  foreignKey: "MaNhanVien",
+});
+
 export {
   sequelize,
   AccountModel,
@@ -207,4 +218,5 @@ export {
   RatingModel,
   PaymentTransactionModel,
   ShippingTypeModel,
+  NewsModel,
 };

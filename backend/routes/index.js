@@ -5,7 +5,6 @@ import adminStaffRoutes from "./admin/adminStaff.route.js";
 import adminProductRoutes from "./admin/adminProduct.route.js";
 import adminOrderRoutes from "./admin/adminOrder.route.js";
 
-
 import customerRoutes from "../routes/customer.route.js";
 import staffRoutes from "../routes/staff.route.js";
 import categoryRoutes from "./category.route.js";
@@ -19,6 +18,7 @@ import orderRoutes from "./order.route.js";
 import ratingRoutes from "./rating.route.js";
 import vnpayRoutes from "./payment/vnpay.route.js";
 import momoRoutes from "./payment/momo.route.js";
+import newsRoutes from "./news.route.js";
 
 import jwtMiddleware from "../middlewares/jwt.middlewares.js";
 import checkRole from "../middlewares/authorize.middlewares.js";
@@ -77,5 +77,7 @@ router.use("/orders", jwtMiddleware, orderRoutes);
 router.use("/reviews", ratingRoutes);
 
 router.use("/payment", momoRoutes);
+
+router.use("/news", newsRoutes);
 
 export default router;
