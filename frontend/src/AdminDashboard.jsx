@@ -41,17 +41,15 @@ const STATUS_CONFIG = {
 
 export default function AdminOrder() {
   const navigate = useNavigate();
-  const token = localStorage.getItem('customer_token') || localStorage.getItem('token');
+  const token = localStorage.getItem('admin_token') || localStorage.getItem('token');
   
   const authHeader = { 
     headers: { Authorization: `Bearer ${token}` },
     withCredentials: true 
   };
 
-  // --- STATE CHO THỐNG KÊ (STAT CARDS) ---
   const [stats, setStats] = useState({});
 
-  // --- STATE CHO BẢNG ĐƠN HÀNG ---
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
@@ -71,14 +69,13 @@ export default function AdminOrder() {
   const [newStatus, setNewStatus] = useState(null);
   const [updateLoading, setUpdateLoading] = useState(false);
 
-  // --- HÀM LOAD THỐNG KÊ (Chạy 1 lần khi mở trang) ---
   useEffect(() => {
     const fetchStats = async () => {
       try {
         const [ordersRes, customersRes, productsRes] = await Promise.allSettled([
-          axios.get(`${API_BASE}/admin/orders?page=1&limit=1`, authHeader), // Lấy tổng đơn hàng
-          axios.get(`${API_BASE}/admin/customers?page=1&limit=1`, authHeader), // Lấy tổng khách
-          axios.get(`${API_BASE}/products?page=1&limit=1`, authHeader), // Lấy tổng sản phẩm
+          axios.get(`${API_BASE}/admin/orders?page=1&limit=1`, authHeader),
+          axios.get(`${API_BASE}/admin/customers?page=1&limit=1`, authHeader), 
+          axios.get(`${API_BASE}/products?page=1&limit=1`, authHeader),
         ]);
 
         let newStats = {};
@@ -99,7 +96,6 @@ export default function AdminOrder() {
     fetchStats();
   }, []);
 
-  // --- CÁC HÀM XỬ LÝ ĐƠN HÀNG (Giữ nguyên) ---
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchInput);
