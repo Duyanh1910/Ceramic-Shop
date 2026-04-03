@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useEffect } from 'react';
 import { Layout, Menu, Avatar, Dropdown, Button, Badge } from 'antd';
 import {
   DashboardOutlined, ShoppingOutlined, TeamOutlined, UserOutlined,
@@ -34,9 +35,16 @@ export default function AdminLayout() {
   const [collapsed, setCollapsed] = useState(false);
 
   const rawRole = localStorage.getItem('role') || '';
-  
-  const isAdmin = rawRole.trim().toLowerCase() === 'admin';
-  
+  const roleString = rawRole.trim().toLowerCase();
+
+  useEffect(() => {
+    if (roleString === 'customer' || !roleString) {
+      localStorage.clear();
+      navigate('/login');
+    }
+  }, [roleString, navigate]);
+
+  const isAdmin = roleString === 'admin';
   const role = isAdmin ? 'Admin' : 'Staff';
   const username = localStorage.getItem('username') || 'Tài khoản';
   const menuItems = isAdmin ? ADMIN_MENU : STAFF_MENU;

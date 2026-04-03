@@ -20,6 +20,13 @@ function Login() {
   const handleLogin = async (values) => {
     setLoading(true);
     try {
+      const keysToRemove = [
+        'customer_token', 'admin_token', 'token',
+        'customer_session_active', 'admin_session_active',
+        'role', 'username'
+      ];
+      keysToRemove.forEach(k => localStorage.removeItem(k));
+
       const response = await axios.post(
         `${API_BASE}/auth/login`,
         { username: values.username, password: values.password, rememberMe: rememberMe },
@@ -27,43 +34,32 @@ function Login() {
       );
       
       const user = response.data.user || response.data.result || response.data;
-      
       const currentUsername = user.username || values.username;
-      const currentRole = user.role;
+      
+      const currentRole = user.role || user.Role || 'Customer'; 
       const token = response.data.token || null;
 
-      let maKhachHang = user.profile?.MaKhachHang || user.profile?.maKhachHang || user.MaKhachHang || user.maKhachHang || null;
-
-      if (!maKhachHang && currentRole !== 'Admin' && currentRole !== 'Staff') {
-          try {
-              const meRes = await axios.get(`${API_BASE}/auth/me`, { withCredentials: true });
-              const meData = meRes.data.user || meRes.data.result;
-              const profileData = meData?.profile || meData;
-              localStorage.setItem('role', userData.role); 
-              localStorage.setItem('username', userData.username);
-              localStorage.setItem('admin_token', token);             
-              maKhachHang = profileData?.MaKhachHang || profileData?.maKhachHang || meData?.MaKhachHang || null;
-          } catch (err) {
-              console.log(err);
-          }
-      }
-
-      if (!maKhachHang) {
-          maKhachHang = user.MaTaiKhoan || user.id || user.userId || user._id || null;
-      }
-
-      saveSession(currentUsername, currentRole, rememberMe, token, maKhachHang);
-
-      message.success('Đăng nhập thành công!');
-
       if (currentRole === 'Admin' || currentRole === 'Staff') {
+        if (typeof saveSession === 'function') saveSession(currentUsername, currentRole, true, token);
+        localStorage.setItem('admin_token', token);
+        localStorage.setItem('admin_session_active', 'true');
+        localStorage.setItem('role', currentRole);
+        localStorage.setItem('username', currentUsername);
+        
+        message.success(`Đăng nhập ${currentRole} thành công!`);
         navigate('/admin');
       } else {
+        if (typeof saveSession === 'function') saveSession(currentUsername, 'Customer', true, token);
+        localStorage.setItem('customer_token', token);
+        localStorage.setItem('customer_session_active', 'true');
+        localStorage.setItem('role', 'Customer');
+        localStorage.setItem('username', currentUsername);
+        
+        message.success('Đăng nhập thành công!');
         navigate('/home');
-      }      
+      }
     } catch (error) {
-      const errorMsg = error.response?.data?.message || 'Có lỗi xảy ra kết nối đến máy chủ!';
-      message.error(errorMsg);
+      message.error(error.response?.data?.message || 'Đăng nhập thất bại!');
     } finally {
       setLoading(false);
     }
