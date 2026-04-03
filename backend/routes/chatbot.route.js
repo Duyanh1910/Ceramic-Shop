@@ -214,6 +214,7 @@ router.post("/webhook", async (req, res) => {
         }
 
         let displayInfo = [];
+        let richContentBlock = [];
         const isOwner = maKhachHang && (String(donHang.MaKhachHang) === String(maKhachHang) || String(donHang.MaTaiKhoan) === String(maKhachHang));
 
         if (isOwner) {
@@ -228,10 +229,42 @@ router.post("/webhook", async (req, res) => {
             `• Tổng hóa đơn: ${tongTien}`,
             `• Trạng thái: ${trangThaiText}`,
           ];
+
+          richContentBlock = [
+            {
+              type: "info",
+              title: `Đơn hàng ${maDonReal}`,
+              subtitle: "Trạng thái vận chuyển",
+            },
+            {
+              type: "description",
+              title: "",
+              text: displayInfo,
+            },
+            {
+              type: "button",
+              icon: { type: "receipt", color: "#1b437c" },
+              text: "Xem chi tiết Đơn hàng",
+              link: `${domainWeb}/orders`
+            }
+          ];
         } else {
           displayInfo = [
             `• Trạng thái: ${trangThaiText}`,
             `(Bạn đăng nhập đúng tài khoản trên website để xem chi tiết hóa đơn)`
+          ];
+
+          richContentBlock = [
+            {
+              type: "info",
+              title: `Đơn hàng ${maDonReal}`,
+              subtitle: "Trạng thái vận chuyển",
+            },
+            {
+              type: "description",
+              title: "",
+              text: displayInfo,
+            },
           ];
         }
 
@@ -246,20 +279,7 @@ router.post("/webhook", async (req, res) => {
             },
             {
               payload: {
-                richContent: [
-                  [
-                    {
-                      type: "info",
-                      title: `Đơn hàng ${maDonReal}`,
-                      subtitle: "Trạng thái vận chuyển",
-                    },
-                    {
-                      type: "description",
-                      title: "",
-                      text: displayInfo,
-                    },
-                  ],
-                ],
+                richContent: [ richContentBlock ],
               },
             },
           ],
