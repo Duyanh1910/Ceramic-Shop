@@ -40,7 +40,6 @@ export default function AdminLayout() {
   const role = isAdmin ? 'Admin' : 'Staff';
   const username = localStorage.getItem('username') || 'Tài khoản';
   const menuItems = isAdmin ? ADMIN_MENU : STAFF_MENU;
-
   const handleLogout = async () => {
     try {
       await axios.post(`${API_BASE}/auth/logout`, {}, { withCredentials: true });
