@@ -154,7 +154,7 @@ export default function AdminOrder() {
 
   const fetchOrderDetail = async (orderCode) => {
     try {
-      const res = await axios.get(`${API_BASE}/orders/${orderCode}`, authHeader);
+      const res = await axios.get(`${API_BASE}/admin/orders/${orderCode}`, authHeader);
       setSelectedOrder(res.data?.result);
       setDetailModal(true);
     } catch {
