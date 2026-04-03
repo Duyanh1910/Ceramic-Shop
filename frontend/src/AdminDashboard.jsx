@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   Tabs, Tag, Table, Button, Empty, Spin, Modal,
-  Descriptions, message, Select, Input, Space, DatePicker, Card, Row, Col
+  Descriptions, message, Select, Input, Space, DatePicker, Card, Row, Col,Divider
 } from 'antd';
 import {
   ShoppingOutlined, ArrowLeftOutlined, EyeOutlined,
@@ -387,47 +387,117 @@ export default function AdminOrder() {
         open={detailModal}
         onCancel={() => setDetailModal(false)}
         footer={null}
-        width={750}
+        width={800}
         centered
         title={<span className={styles.modalTitle}>Chi tiết đơn hàng #{selectedOrder?.MaHienThi}</span>}
       >
         {selectedOrder && (
-          <div>
-            <Descriptions column={2} bordered size="small" className={styles.descriptions}>
-              <Descriptions.Item label="Người nhận">{selectedOrder.TenNguoiNhan}</Descriptions.Item>
-              <Descriptions.Item label="Số điện thoại">{selectedOrder.SDT}</Descriptions.Item>
+          <div className={styles.detailWrap}>
+            {/* 1. THÔNG TIN KHÁCH HÀNG & GIAO HÀNG */}
+            <Descriptions column={{ xxl: 2, xl: 2, lg: 2, md: 2, sm: 1, xs: 1 }} bordered size="small" className={styles.descriptions}>
+              <Descriptions.Item label="Ngày đặt">{new Date(selectedOrder.NgayDat).toLocaleString('vi-VN')}</Descriptions.Item>
+              <Descriptions.Item label="Trạng thái đơn">
+                 <Tag color={STATUS_CONFIG[selectedOrder.TrangThaiDonHang]?.color} icon={STATUS_CONFIG[selectedOrder.TrangThaiDonHang]?.icon}>
+                    {STATUS_CONFIG[selectedOrder.TrangThaiDonHang]?.label}
+                 </Tag>
+              </Descriptions.Item>
+              <Descriptions.Item label="Người nhận"><strong>{selectedOrder.TenNguoiNhan}</strong></Descriptions.Item>
+              <Descriptions.Item label="Số điện thoại"><strong>{selectedOrder.SDT}</strong></Descriptions.Item>
               <Descriptions.Item label="Địa chỉ" span={2}>{selectedOrder.DiaChiGiaoHang}</Descriptions.Item>
-              <Descriptions.Item label="Ghi chú" span={2}>{selectedOrder.GhiChu || 'Không có'}</Descriptions.Item>
+              <Descriptions.Item label="Ghi chú" span={2}>
+                 {selectedOrder.GhiChu ? <span style={{ color: 'red' }}>{selectedOrder.GhiChu}</span> : 'Không có'}
+              </Descriptions.Item>
+              <Descriptions.Item label="Thanh toán" span={2}>
+                 <Tag color={selectedOrder.TrangThaiThanhToan === 1 ? 'green' : 'default'}>
+                   {selectedOrder.TrangThaiThanhToan === 1 ? 'Đã thanh toán' : 'Chưa thanh toán'}
+                 </Tag>
+              </Descriptions.Item>
             </Descriptions>
 
-            <div className={styles.productListTitle}>Danh sách sản phẩm:</div>
+            <Divider />
+
+            {/* 2. DANH SÁCH SẢN PHẨM */}
+            <div className={styles.sectionTitle}>Danh sách sản phẩm</div>
             <Table 
               dataSource={selectedOrder.ChiTietDonHangs} 
               rowKey="MaCTDH"
               pagination={false}
               size="small"
-              className={styles.table}
+              className={styles.productTable}
               columns={[
                 { 
                   title: 'Sản phẩm', 
-                  render: (_, r) => r.BienTheSanPham?.SanPham?.TenSanPham 
+                  render: (_, r) => (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                       <img src={r.BienTheSanPham?.SanPham?.Thumbnail} alt="product" width={40} height={40} style={{ objectFit: 'cover', borderRadius: 4 }} />
+                       <span style={{ fontWeight: 500 }}>{r.BienTheSanPham?.SanPham?.TenSanPham}</span>
+                    </div>
+                  )
                 },
                 { 
                   title: 'Phân loại', 
-                  render: (_, r) => r.BienTheSanPham?.TenBienThe 
+                  render: (_, r) => <Tag>{r.BienTheSanPham?.TenBienThe}</Tag> 
+                },
+                { 
+                  title: 'Đơn giá', 
+                  dataIndex: 'GiaBan',
+                  render: (v) => fmt(v) 
                 },
                 { 
                   title: 'SL', 
                   dataIndex: 'SoLuong',
                   width: 60,
+                  align: 'center'
                 },
                 { 
                   title: 'Thành tiền', 
                   dataIndex: 'ThanhTien',
-                  render: (v) => fmt(v) 
+                  align: 'right',
+                  render: (v) => <strong style={{ color: '#d9363e' }}>{fmt(v)}</strong> 
                 }
               ]}
             />
+
+            <Divider />
+
+            {/* 3. TỔNG KẾT CHI PHÍ & VOUCHER */}
+            <Row justify="space-between" align="bottom">
+              <Col xs={24} md={12}>
+                {selectedOrder.KhuyenMais && selectedOrder.KhuyenMais.length > 0 && (
+                  <div className={styles.voucherBox}>
+                    <div className={styles.voucherTitle}>Mã giảm giá đã áp dụng:</div>
+                    {selectedOrder.KhuyenMais.map(km => (
+                      <div key={km.MaCode} className={styles.voucherItem}>
+                        <Tag color="gold">{km.MaCode}</Tag>
+                        <span>(-{fmt(km.ChiTietKhuyenMaiDonHang?.SoTienChietKhau)})</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </Col>
+              
+              <Col xs={24} md={12}>
+                <div className={styles.summaryWrap}>
+                  <div className={styles.summaryRow}>
+                    <span>Tổng tiền hàng:</span>
+                    <span>{fmt(selectedOrder.TongTienHang)}</span>
+                  </div>
+                  <div className={styles.summaryRow}>
+                    <span>Phí vận chuyển:</span>
+                    <span>{fmt(selectedOrder.TongPhiVanChuyen)}</span>
+                  </div>
+                  <div className={styles.summaryRow}>
+                    <span>Tổng giảm giá:</span>
+                    <span style={{ color: '#52c41a' }}>- {fmt(selectedOrder.TongGiamGia)}</span>
+                  </div>
+                  <Divider style={{ margin: '12px 0' }} />
+                  <div className={styles.summaryTotal}>
+                    <span>Tổng thanh toán:</span>
+                    <span className={styles.totalAmount}>{fmt(selectedOrder.TongThanhToan)}</span>
+                  </div>
+                </div>
+              </Col>
+            </Row>
           </div>
         )}
       </Modal>
