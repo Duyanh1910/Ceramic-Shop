@@ -180,8 +180,12 @@ router.post("/webhook", async (req, res) => {
     }
 
     try {
-      const sqlQuery =
-        "SELECT TrangThaiDonHang, NgayDat, TongThanhToan, MaKhachHang FROM DonHang WHERE MaHienThi = ?";
+      const sqlQuery = `
+        SELECT dh.TrangThaiDonHang, dh.NgayDat, dh.TongThanhToan, dh.MaKhachHang, kh.MaTaiKhoan 
+        FROM DonHang dh 
+        LEFT JOIN KhachHang kh ON dh.MaKhachHang = kh.MaKhachHang 
+        WHERE dh.MaHienThi = ?
+      `;
       const [rows] = await pool.execute(sqlQuery, [maDonReal]);
 
       if (rows.length > 0) {
@@ -210,7 +214,7 @@ router.post("/webhook", async (req, res) => {
         }
 
         let displayInfo = [];
-        const isOwner = maKhachHang && String(donHang.MaKhachHang) === String(maKhachHang);
+        const isOwner = maKhachHang && (String(donHang.MaKhachHang) === String(maKhachHang) || String(donHang.MaTaiKhoan) === String(maKhachHang));
 
         if (isOwner) {
           const ngayDat = new Date(donHang.NgayDat).toLocaleDateString("vi-VN");
@@ -227,8 +231,7 @@ router.post("/webhook", async (req, res) => {
         } else {
           displayInfo = [
             `• Trạng thái: ${trangThaiText}`,
-            `(Bạn đăng nhập đúng tài khoản trên website để xem chi tiết hóa đơn)`,
-            `[🛠️ GÓC TÌM LỖI]: Mã KH mà Bot nhận được từ Web là: ${maKhachHang || "RỖNG"} | Mã chủ đơn trong SQL là: ${donHang.MaKhachHang}`
+            `(Bạn đăng nhập đúng tài khoản trên website để xem chi tiết hóa đơn)`
           ];
         }
 
@@ -343,7 +346,7 @@ router.post("/webhook", async (req, res) => {
             {
               text: {
                 text: [
-                  `Dạ đây là thông tin bảo hành các sản phẩm thuộc đơn hàng ${maDonReal}:`,
+                  `Dạ đây là thông bảo hành các sản phẩm thuộc đơn hàng ${maDonReal}:`,
                 ],
               },
             },
@@ -405,12 +408,16 @@ router.post("/webhook", async (req, res) => {
     }
 
     try {
-      const checkQuery =
-        "SELECT TrangThaiDonHang, MaKhachHang FROM DonHang WHERE MaHienThi = ?";
+      const checkQuery = `
+        SELECT dh.TrangThaiDonHang, dh.MaKhachHang, kh.MaTaiKhoan 
+        FROM DonHang dh 
+        LEFT JOIN KhachHang kh ON dh.MaKhachHang = kh.MaKhachHang 
+        WHERE dh.MaHienThi = ?
+      `;
       const [rows] = await pool.execute(checkQuery, [maDonReal]);
 
       if (rows.length > 0) {
-        if (String(rows[0].MaKhachHang) !== String(maKhachHang)) {
+        if (String(rows[0].MaKhachHang) !== String(maKhachHang) && String(rows[0].MaTaiKhoan) !== String(maKhachHang)) {
           return res.json({
             fulfillmentText: `Dạ, bạn không có quyền hủy đơn hàng ${maDonReal} do đơn hàng này không thuộc về tài khoản của bạn.`,
           });
@@ -511,12 +518,16 @@ router.post("/webhook", async (req, res) => {
     }
 
     try {
-      const checkQuery =
-        "SELECT TrangThaiDonHang, MaKhachHang FROM DonHang WHERE MaHienThi = ?";
+      const checkQuery = `
+        SELECT dh.TrangThaiDonHang, dh.MaKhachHang, kh.MaTaiKhoan 
+        FROM DonHang dh 
+        LEFT JOIN KhachHang kh ON dh.MaKhachHang = kh.MaKhachHang 
+        WHERE dh.MaHienThi = ?
+      `;
       const [rows] = await pool.execute(checkQuery, [maDonReal]);
 
       if (rows.length > 0) {
-        if (String(rows[0].MaKhachHang) !== String(maKhachHang)) {
+        if (String(rows[0].MaKhachHang) !== String(maKhachHang) && String(rows[0].MaTaiKhoan) !== String(maKhachHang)) {
           return res.json({
             fulfillmentText: `Dạ, bạn không có quyền thay đổi thông tin của đơn hàng ${maDonReal} do đơn hàng này không thuộc về tài khoản của bạn.`,
           });
@@ -1180,7 +1191,7 @@ router.post("/webhook", async (req, res) => {
         return res.json({ fulfillmentText: txtNotFound });
       }
     } catch (error) {
-      console.error(error);
+      consoleerror(error);
       return res.json({
         fulfillmentText:
           "Dạ hệ thống đang tải dữ liệu sản phẩm, bạn chờ chút xíu nhé.",
