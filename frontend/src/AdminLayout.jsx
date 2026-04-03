@@ -34,8 +34,9 @@ export default function AdminLayout() {
   const [collapsed, setCollapsed] = useState(false);
 
   const rawRole = localStorage.getItem('role') || '';
+  const isAdminActive = localStorage.getItem('admin_session_active') === 'true';
   
-  const isAdmin = rawRole.trim().toLowerCase() === 'admin';
+  const isAdmin = rawRole.trim().toLowerCase() === 'admin' || isAdminActive;
   
   const role = isAdmin ? 'Admin' : 'Staff';
   const username = localStorage.getItem('username') || 'Tài khoản';
