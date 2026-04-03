@@ -34,14 +34,12 @@ export default function AdminLayout() {
   const [collapsed, setCollapsed] = useState(false);
 
   const rawRole = localStorage.getItem('role') || '';
-  const isAdminActive = localStorage.getItem('admin_session_active') === 'true';
   
-  const isAdmin = rawRole.trim().toLowerCase() === 'admin' || isAdminActive;
+  const isAdmin = rawRole.trim().toLowerCase() === 'admin';
   
   const role = isAdmin ? 'Admin' : 'Staff';
   const username = localStorage.getItem('username') || 'Tài khoản';
   const menuItems = isAdmin ? ADMIN_MENU : STAFF_MENU;
-
   const handleLogout = async () => {
     try {
       await axios.post(`${API_BASE}/auth/logout`, {}, { withCredentials: true });
