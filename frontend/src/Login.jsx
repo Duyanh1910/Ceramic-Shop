@@ -39,7 +39,9 @@ function Login() {
               const meRes = await axios.get(`${API_BASE}/auth/me`, { withCredentials: true });
               const meData = meRes.data.user || meRes.data.result;
               const profileData = meData?.profile || meData;
-              
+              localStorage.setItem('role', userData.role); 
+              localStorage.setItem('username', userData.username);
+              localStorage.setItem('admin_token', token);             
               maKhachHang = profileData?.MaKhachHang || profileData?.maKhachHang || meData?.MaKhachHang || null;
           } catch (err) {
               console.log(err);
