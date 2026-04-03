@@ -132,7 +132,7 @@
   padding: 80px 0;
 }
 
-/* --- CHI TIẾT BẢNG (TABLE) --- */
+/* --- CHI TIẾT BẢNG (TABLE CHÍNH) --- */
 .tableWrap { 
   overflow-x: auto; 
 }
@@ -174,7 +174,7 @@
   background: #fafcff !important;
 }
 
-/* --- KHU VỰC MODAL --- */
+/* --- KHU VỰC MODAL CHUNG --- */
 .modalTitle {
   font-size: 18px;
   font-weight: 700;
@@ -190,15 +190,35 @@
 .modalLabel {
   margin-bottom: 8px;
   font-weight: 500;
+  color: #262626;
 }
 
 .fullWidth {
   width: 100%;
 }
 
+/* --- BÊN TRONG MODAL CHI TIẾT ĐƠN HÀNG --- */
+.detailWrap {
+  padding-top: 8px;
+}
+
+/* Khung thông tin khách hàng */
 .descriptions {
+  background: #fafafa;
+  border-radius: 8px;
+  padding: 16px;
   margin-top: 10px;
   margin-bottom: 20px;
+  border: 1px solid #f0f0f0;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: #262626;
+  margin-bottom: 16px;
+  margin-top: 8px;
+  font-family: 'Arsenal', serif;
 }
 
 .productListTitle {
@@ -206,4 +226,71 @@
   font-size: 15px;
   margin-bottom: 12px;
   color: #333;
+}
+
+/* Bảng danh sách sản phẩm & Lịch sử giao dịch */
+.productTable {
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.productTable :global(.ant-table-thead > tr > th) {
+  background: #fafafa !important;
+  font-weight: 600 !important;
+  padding: 10px 16px !important;
+}
+
+/* --- TỔNG KẾT THANH TOÁN & VOUCHER --- */
+.voucherBox {
+  background: #fffbe6;
+  border: 1px dashed #ffe58f;
+  padding: 16px;
+  border-radius: 8px;
+  margin-top: 16px;
+}
+
+.voucherTitle {
+  font-weight: 600;
+  color: #faad14;
+  margin-bottom: 12px;
+}
+
+.voucherItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.summaryWrap {
+  background: #fafafa;
+  padding: 20px;
+  border-radius: 8px;
+  margin-top: 16px;
+  border: 1px solid #f0f0f0;
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: #595959;
+}
+
+.summaryTotal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 16px;
+  font-weight: 700;
+  color: #262626;
+}
+
+.totalAmount {
+  font-size: 24px;
+  color: #d0021b;
+  font-family: 'Arsenal', serif;
 }

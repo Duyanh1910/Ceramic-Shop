@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   Tabs, Tag, Table, Button, Empty, Spin, Modal,
-  Descriptions, message, Select, Input, Space, DatePicker, Card, Row, Col,Divider
+  Descriptions, message, Select, Input, Space, DatePicker, Card, Row, Col,Divider,Avatar
 } from 'antd';
 import {
   ShoppingOutlined, ArrowLeftOutlined, EyeOutlined,
@@ -387,7 +387,7 @@ export default function AdminOrder() {
         open={detailModal}
         onCancel={() => setDetailModal(false)}
         footer={null}
-        width={800}
+        width={850}
         centered
         title={<span className={styles.modalTitle}>Chi tiết đơn hàng #{selectedOrder?.MaHienThi}</span>}
       >
@@ -395,28 +395,77 @@ export default function AdminOrder() {
           <div className={styles.detailWrap}>
             {/* 1. THÔNG TIN KHÁCH HÀNG & GIAO HÀNG */}
             <Descriptions column={{ xxl: 2, xl: 2, lg: 2, md: 2, sm: 1, xs: 1 }} bordered size="small" className={styles.descriptions}>
-              <Descriptions.Item label="Ngày đặt">{new Date(selectedOrder.NgayDat).toLocaleString('vi-VN')}</Descriptions.Item>
+              <Descriptions.Item label="Ngày đặt">
+                {new Date(selectedOrder.NgayDat).toLocaleString('vi-VN')}
+              </Descriptions.Item>
               <Descriptions.Item label="Trạng thái đơn">
                  <Tag color={STATUS_CONFIG[selectedOrder.TrangThaiDonHang]?.color} icon={STATUS_CONFIG[selectedOrder.TrangThaiDonHang]?.icon}>
                     {STATUS_CONFIG[selectedOrder.TrangThaiDonHang]?.label}
                  </Tag>
               </Descriptions.Item>
-              <Descriptions.Item label="Người nhận"><strong>{selectedOrder.TenNguoiNhan}</strong></Descriptions.Item>
+              <Descriptions.Item label="Khách hàng">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  {selectedOrder.KhachHang?.Avatar && (
+                    <Avatar src={selectedOrder.KhachHang.Avatar} size="default" />
+                  )}
+                  <strong>{selectedOrder.TenNguoiNhan}</strong>
+                </div>
+              </Descriptions.Item>
               <Descriptions.Item label="Số điện thoại"><strong>{selectedOrder.SDT}</strong></Descriptions.Item>
               <Descriptions.Item label="Địa chỉ" span={2}>{selectedOrder.DiaChiGiaoHang}</Descriptions.Item>
               <Descriptions.Item label="Ghi chú" span={2}>
                  {selectedOrder.GhiChu ? <span style={{ color: 'red' }}>{selectedOrder.GhiChu}</span> : 'Không có'}
               </Descriptions.Item>
-              <Descriptions.Item label="Thanh toán" span={2}>
-                 <Tag color={selectedOrder.TrangThaiThanhToan === 1 ? 'green' : 'default'}>
-                   {selectedOrder.TrangThaiThanhToan === 1 ? 'Đã thanh toán' : 'Chưa thanh toán'}
-                 </Tag>
-              </Descriptions.Item>
             </Descriptions>
 
             <Divider />
 
-            {/* 2. DANH SÁCH SẢN PHẨM */}
+            {/* 2. LỊCH SỬ GIAO DỊCH (MOMO / VNPAY / COD) */}
+            {selectedOrder.GiaoDichThanhToans && selectedOrder.GiaoDichThanhToans.length > 0 && (
+              <>
+                <div className={styles.sectionTitle}>Lịch sử thanh toán</div>
+                <Table
+                  dataSource={selectedOrder.GiaoDichThanhToans}
+                  rowKey="MaGiaoDich"
+                  pagination={{ pageSize: 5 }}
+                  size="small"
+                  className={styles.productTable}
+                  columns={[
+                    { 
+                      title: 'Mã tham chiếu', 
+                      dataIndex: 'MaThamChieu',
+                      render: (v) => <span style={{ fontSize: '12px', color: '#8c8c8c' }}>{v}</span>
+                    },
+                    { 
+                      title: 'Đối tác', 
+                      render: (_, r) => r.DuLieuPhanHoi?.partnerCode || r.DuLieuPhanHoi?.vnp_BankCode || 'Hệ thống' 
+                    },
+                    { 
+                      title: 'Số tiền', 
+                      dataIndex: 'SoTien',
+                      render: (v) => fmt(v) 
+                    },
+                    { 
+                      title: 'Trạng thái', 
+                      dataIndex: 'TrangThai',
+                      render: (v) => (
+                        <Tag color={v === 'SUCCESS' ? 'green' : v === 'PENDING' ? 'gold' : 'red'}>
+                          {v}
+                        </Tag>
+                      )
+                    },
+                    { 
+                      title: 'Thời gian', 
+                      dataIndex: 'ThoiGianGiaoDich',
+                      render: (v) => new Date(v).toLocaleString('vi-VN') 
+                    }
+                  ]}
+                />
+                <Divider />
+              </>
+            )}
+
+            {/* 3. DANH SÁCH SẢN PHẨM */}
             <div className={styles.sectionTitle}>Danh sách sản phẩm</div>
             <Table 
               dataSource={selectedOrder.ChiTietDonHangs} 
@@ -460,7 +509,7 @@ export default function AdminOrder() {
 
             <Divider />
 
-            {/* 3. TỔNG KẾT CHI PHÍ & VOUCHER */}
+            {/* 4. TỔNG KẾT CHI PHÍ & VOUCHER */}
             <Row justify="space-between" align="bottom">
               <Col xs={24} md={12}>
                 {selectedOrder.KhuyenMais && selectedOrder.KhuyenMais.length > 0 && (
@@ -494,6 +543,13 @@ export default function AdminOrder() {
                   <div className={styles.summaryTotal}>
                     <span>Tổng thanh toán:</span>
                     <span className={styles.totalAmount}>{fmt(selectedOrder.TongThanhToan)}</span>
+                  </div>
+                  
+                  {/* Trạng thái thanh toán tổng thể */}
+                  <div style={{ textAlign: 'right', marginTop: '8px' }}>
+                    <Tag color={selectedOrder.TrangThaiThanhToan === 1 ? 'green' : 'default'} style={{ margin: 0, fontSize: '14px', padding: '4px 8px' }}>
+                      {selectedOrder.TrangThaiThanhToan === 1 ? 'ĐÃ THANH TOÁN' : 'CHƯA THANH TOÁN'}
+                    </Tag>
                   </div>
                 </div>
               </Col>

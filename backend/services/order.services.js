@@ -510,10 +510,9 @@ export const adminGetOrderDetailService = async (orderCode) => {
               model: VariantModel,
               attributes: ["TenBienThe"],
               include: [
-                { model: VariantImageModel, attributes: ["DuongDan"] },
+                { model: VariantImageModel },
                 {
                   model: ProductModel,
-                  attributes: ["TenSanPham", "Thumbnail"],
                 },
               ],
             },
@@ -521,31 +520,15 @@ export const adminGetOrderDetailService = async (orderCode) => {
         },
         {
           model: CustomerModel,
-          attributes: ["MaKhachHang", "TenKhachHang", "SDT"],
         },
         {
           model: PaymentMethodModel,
-          attributes: ["MaPhuongThuc", "TenPhuongThuc"],
         },
         {
           model: PaymentTransactionModel,
-          attributes: [
-            "MaGiaoDich",
-            "MaThamChieu",
-            "SoTien",
-            "TrangThai",
-            "ThoiGianGiaoDich",
-          ],
         },
         {
           model: PromotionModel,
-          attributes: [
-            "MaKhuyenMai",
-            "MaCode",
-            "TenKhuyenMai",
-            "LoaiGiamGia",
-            "GiaTriGiam",
-          ],
           through: { attributes: ["SoTienChietKhau"] },
         },
       ],
