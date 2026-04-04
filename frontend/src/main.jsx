@@ -22,6 +22,7 @@ import AdminCustomers from './AdminCustomers.jsx'
 import AdminStaffs from './AdminStaffs.jsx'
 import PaymentSuccess from './PaymentSuccess.jsx'
 import OrderTracking from './OrderTracking.jsx'
+import SupportPage from './Supportpage.jsx'
 
 const PublicRoute = ({ children }) => {
   const isCustomerActive = localStorage.getItem('customer_session_active') === 'true';
@@ -132,6 +133,7 @@ createRoot(document.getElementById('root')).render(
               <OrderTracking />
             </ProtectedRoute>
           }/>
+          <Route path="/support/:slug" element={<SupportPage/>}/>
         </Routes>
         
         <ConditionalContactIcons />
