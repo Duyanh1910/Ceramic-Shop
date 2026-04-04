@@ -142,10 +142,11 @@ export const verifyAndUpdateCallback = async (zaloPayBody) => {
       },
       { transaction: t },
     );
-
+    console.log("Cập nhật thành công giao dịch");
     await OrderModel.update(
       { TrangThaiThanhToan: 1 },
       { where: { MaDonHang: giaoDich.MaDonHang }, transaction: t },
     );
+    console.log("Thanh toán thành công zalopay");
   });
 };

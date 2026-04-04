@@ -26,6 +26,7 @@ export const createZaloPayPayment = async (req, res, next) => {
 };
 export const zaloPayCallback = async (req, res) => {
   try {
+    console.log(">>> ZaloPay đã gọi vào Callback! Body:", req.body);
     await verifyAndUpdateCallback(req.body);
 
     return res.json({
