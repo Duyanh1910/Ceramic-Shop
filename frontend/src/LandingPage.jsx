@@ -498,11 +498,11 @@ function LandingPage() {
                         <div className={styles.footerCol}>
                             <h3>HỖ TRỢ KHÁCH HÀNG</h3>
                             <ul>
-                                <li><span className={styles.footerLink} onClick={(navigate('/support/huong-dan-mua-hang'))}>Hướng dẫn mua hàng</span></li>
-                                <li><span className={styles.footerLink} onClick={(navigate('/support/chinh-sach-thanh-toan'))}>Chính sách thanh toán</span></li>
-                                <li><span className={styles.footerLink} onClick={(navigate('/support/chinh-sach-giao-hang'))}>Chính sách giao hàng</span></li>
-                                <li><span className={styles.footerLink} onClick={(navigate('/support/chinh-sach-doi-tra'))}>Chính sách đổi trả</span></li>
-                                <li><span className={styles.footerLink} onClick={(navigate('/support/chinh-sach-bao-hanh'))}>Chính sách bảo hành</span></li>
+                                <li><span className={styles.footerLink} onClick={()=>navigate('/support/huong-dan-mua-hang')}>Hướng dẫn mua hàng</span></li>
+                                <li><span className={styles.footerLink} onClick={()=>navigate('/support/chinh-sach-thanh-toan')}>Chính sách thanh toán</span></li>
+                                <li><span className={styles.footerLink} onClick={()=>navigate('/support/chinh-sach-giao-hang')}>Chính sách giao hàng</span></li>
+                                <li><span className={styles.footerLink} onClick={()=>navigate('/support/chinh-sach-doi-tra')}>Chính sách đổi trả</span></li>
+                                <li><span className={styles.footerLink} onClick={()=>navigate('/support/chinh-sach-bao-hanh')}>Chính sách bảo hành</span></li>
                             </ul>
                         </div>
                         
