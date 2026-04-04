@@ -2,7 +2,7 @@ import { useNavigate, useParams, Navigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import styles from './Supportpage.module.css';
-
+import {useEffect} from 'react';
 const PAGES = {
   'huong-dan-mua-hang': {
     title: 'Hướng dẫn mua hàng',
@@ -223,6 +223,10 @@ const MENU = [
 export default function SupportPage() {
   const navigate = useNavigate();
   const { slug } = useParams();
+  
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [slug]);
 
   if (slug && !PAGES[slug]) {
     return <Navigate to="/" replace />;
@@ -237,7 +241,7 @@ export default function SupportPage() {
 
       <header className={styles.topHeader}>
         <div className={styles.logo} onClick={() => navigate('/')}>CERAMIC-SHOP</div>
-        <button className={styles.btnBack} onClick={() => navigate(-1)}>
+        <button className={styles.btnBack} onClick={() => navigate('/')}>
           <ArrowLeftOutlined /> Quay lại
         </button>
       </header>
