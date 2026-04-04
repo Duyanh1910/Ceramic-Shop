@@ -28,6 +28,7 @@ export const ORDER_STATUS = {
   COMPLETED: 3,
   CANCELED: 4,
 };
+
 const generateOrderCode = () => {
   const date = new Date();
   const dateStr = `${date.getFullYear().toString().slice(-2)}${(date.getMonth() + 1).toString().padStart(2, "0")}${date.getDate().toString().padStart(2, "0")}`;
@@ -155,6 +156,7 @@ export const checkOutService = async (idAccount, orderData, selectedItems) => {
         TrangThaiDonHang: ORDER_STATUS.PENDING,
         TrangThaiThanhToan: 0,
         MaPhuongThuc,
+        MaLoaiPhi: MaPhi,
         GhiChu,
       },
       { transaction },
@@ -288,6 +290,7 @@ export const getMyOrderService = async (idAccount) => {
           },
         ],
       },
+      { model: ShippingTypeModel },
     ],
   });
   return order;
@@ -315,6 +318,7 @@ export const getMyOrderInfoService = async (idAccount, orderCode) => {
           model: PromotionModel,
           through: { attributes: ["SoTienChietKhau"] },
         },
+        { model: ShippingTypeModel },
       ],
     });
 
@@ -487,6 +491,7 @@ export const adminGetOrderService = async (
         model: CustomerModel,
         attributes: ["MaKhachHang", "TenKhachHang", "SDT"],
       },
+      { model: ShippingTypeModel },
     ],
   });
 
@@ -531,6 +536,7 @@ export const adminGetOrderDetailService = async (orderCode) => {
           model: PromotionModel,
           through: { attributes: ["SoTienChietKhau"] },
         },
+        { model: ShippingTypeModel },
       ],
     });
 
@@ -542,6 +548,129 @@ export const adminGetOrderDetailService = async (orderCode) => {
     if (error.statusCode) throw error;
     throw new ErrorHandler(
       "Lỗi server! Không thể xem thông tin đơn hàng!",
+      500,
+    );
+  }
+};
+
+export const adminUpdateOrderStatusService = async (
+  orderCode,
+  newStatus,
+  note,
+) => {
+  const transaction = await sequelize.transaction();
+  try {
+    const order = await OrderModel.findOne({
+      where: {
+        MaHienThi: orderCode,
+      },
+      include: [
+        {
+          model: OrderDetailModel,
+        },
+        {
+          model: OrderPromotionModel,
+        },
+      ],
+    });
+    if (!order) {
+      throw new ErrorHandler("Không tìm thấy đơn hàng này!", 400);
+    }
+    const currentStatus = order.TrangThaiDonHang;
+    if (
+      currentStatus === ORDER_STATUS.COMPLETED ||
+      currentStatus === ORDER_STATUS.CANCELED
+    ) {
+      throw new ErrorHandler("Không thể thay đổi trạng thái đơn hàng!", 400);
+    }
+    if (
+      currentStatus === ORDER_STATUS.SHIPPING &&
+      newStatus === ORDER_STATUS.CANCELED
+    ) {
+      throw new ErrorHandler(
+        "Đơn hàng đang được giao, vui lòng thông báo với bưu cục hoàn hàng!",
+        400,
+      );
+    }
+    if (newStatus === ORDER_STATUS.CANCELED) {
+      const now = new Date().toLocaleString("vi-VN", {
+        timeZone: "Asia/Ho_Chi_Minh",
+        hour12: false,
+      });
+      order.TrangThaiDonHang = ORDER_STATUS.CANCELED;
+      order.GhiChu = order.GhiChu
+        ? `${order.GhiChu}\n[${now}]Admin hủy: ${note}`
+        : `[${now}]Admin hủy: ${note}`;
+      if (order.TrangThaiThanhToan === 1) {
+        order.GhiChu += `\nVui lòng inbox/đến trực tiếp cửa hàng để yêu cầu hoàn tiền.
+Thông tin liên hệ:
+📍 Địa chỉ: 484 Lạch Tray, Lê Chân, Hải Phòng.
+📞 Hotline: 0329.835.725
+📧 Email: theceramicshop24@gmail.com
+📘 Facebook: https://www.facebook.com/tran.duy.anh.714185
+💬 Zalo: https://zalo.me/0329835725`;
+      }
+      await order.save({
+        transaction,
+      });
+      const orderDetails = order.ChiTietDonHangs;
+      const inventoryLogs = [];
+      for (const detail of orderDetails) {
+        await VariantModel.increment(
+          { SoLuong: detail.SoLuong },
+          { where: { MaBienThe: detail.MaBienThe }, transaction },
+        );
+        const variantUpdated = await VariantModel.findByPk(detail.MaBienThe, {
+          transaction,
+          attributes: ["SoLuong"],
+        });
+        inventoryLogs.push({
+          MaBienThe: detail.MaBienThe,
+          LoaiGiaoDich: "Hủy Đơn",
+          SoLuongThayDoi: detail.SoLuong,
+          TonKhoHienTai: variantUpdated.SoLuong,
+          LoaiThamChieu: "Đơn Hàng",
+          MaThamChieu: order.MaDonHang,
+          GhiChu: `Admin hủy đơn ${order.MaHienThi}`,
+        });
+      }
+      if (inventoryLogs.length > 0) {
+        await InventoryHistoryModel.bulkCreate(inventoryLogs, {
+          transaction,
+        });
+      }
+      const promos =
+        order.OrderPromotionModels || order.ChiTietKhuyenMaiDonHangs || [];
+      for (const promo of promos) {
+        await PromotionWalletModel.update(
+          { TrangThaiSuDung: 0 },
+          {
+            where: {
+              MaKhachHang: order.MaKhachHang,
+              MaKhuyenMai: promo.MaKhuyenMai,
+            },
+            transaction,
+          },
+        );
+        await PromotionModel.increment("SoLuong", {
+          by: 1,
+          where: { MaKhuyenMai: promo.MaKhuyenMai },
+          transaction,
+        });
+      }
+    } else {
+      order.TrangThaiDonHang = newStatus;
+      await order.save({
+        transaction,
+      });
+    }
+    await transaction.commit();
+  } catch (err) {
+    await transaction.rollback();
+    console.error(err);
+    if (err.statusCode) throw err;
+    throw new ErrorHandler(
+      "Lỗi server! Không thể cập nhật trạng thái đơn hàng!",
       500,
     );
   }

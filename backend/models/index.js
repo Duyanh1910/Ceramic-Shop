@@ -123,6 +123,14 @@ OrderDetailModel.belongsTo(VariantModel, { foreignKey: "MaBienThe" });
 PaymentMethodModel.hasMany(OrderModel, { foreignKey: "MaPhuongThuc" });
 OrderModel.belongsTo(PaymentMethodModel, { foreignKey: "MaPhuongThuc" });
 
+ShippingTypeModel.hasMany(OrderModel, {
+  foreignKey: "MaLoaiPhi",
+});
+
+OrderModel.belongsTo(ShippingTypeModel, {
+  foreignKey: "MaLoaiPhi",
+});
+
 // Đơn hàng - Khuyến mãi
 OrderModel.belongsToMany(PromotionModel, {
   through: OrderPromotionModel,
