@@ -39,7 +39,7 @@ export const createMomoPaymentUrl = async (maDonHang) => {
     await PaymentTransactionModel.create(
       {
         MaDonHang: maDonHang,
-        MaPhuongThuc: 1,
+        MaPhuongThuc: 4,
         MaThamChieu: orderId,
         SoTien: amount,
         TrangThai: "PENDING",

@@ -1,7 +1,9 @@
 import {
   adminGetOrderService,
   adminGetOrderDetailService,
+  adminUpdateOrderStatusService,
 } from "../../../services/order.services.js";
+import ErrorHandler from "../../../utils/error_handler.js";
 
 export const getAllOrders = async (req, res, next) => {
   try {
@@ -59,5 +61,39 @@ export const cancelOrder = async (req, res, next) => {
     });
   } catch (error) {
     next(error);
+  }
+};
+
+export const ORDER_STATUS = {
+  PENDING: 0,
+  PREPARING: 1,
+  SHIPPING: 2,
+  COMPLETED: 3,
+  CANCELED: 4,
+};
+
+export const updateOrderStatus = async (req, res, next) => {
+  try {
+    const orderCode = req.params.orderCode;
+    const { newStatus, note } = req.body;
+    if (!orderCode) {
+      return next(
+        new ErrorHandler("Dữ liệu mã đơn hàng đầu vào ko hợp lệ!", 400),
+      );
+    }
+    if (!newStatus) {
+      return next(new ErrorHandler("Chưa chọn trạng thái đơn hàng!", 400));
+    }
+    const result = await adminUpdateOrderStatusService(
+      orderCode,
+      newStatus,
+      note,
+    );
+    res.status(200).json({
+      success: true,
+      message: `Cập nhật thông tin đơn hàng ${orderCode} thành công!`,
+    });
+  } catch (err) {
+    next(err);
   }
 };

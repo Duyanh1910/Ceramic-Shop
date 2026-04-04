@@ -63,6 +63,9 @@ const OrderModel = sequelize.define(
       unique: true,
       allowNull: false,
     },
+    MaLoaiPhi: {
+      type: DataTypes.INTEGER,
+    },
   },
   {
     tableName: "DonHang",
