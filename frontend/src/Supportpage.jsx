@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { ArrowLeftOutlined } from '@ant-design/icons';
-import styles from './SupportPage.module.css';
+import styles from './Supportpage.module.css';
 
 const PAGES = {
   'huong-dan-mua-hang': {
