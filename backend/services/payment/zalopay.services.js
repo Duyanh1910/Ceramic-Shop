@@ -50,7 +50,7 @@ export const createZaloPayPaymentUrl = async (maDonHang) => {
     await PaymentTransactionModel.create(
       {
         MaDonHang: maDonHang,
-        MaPhuongThuc: 2,
+        MaPhuongThuc: 5,
         MaThamChieu: app_trans_id,
         SoTien: amount,
         TrangThai: "PENDING",
