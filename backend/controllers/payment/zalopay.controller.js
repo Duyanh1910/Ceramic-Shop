@@ -3,7 +3,7 @@ import {
   verifyAndUpdateCallback,
 } from "../../services/payment/zalopay.services.js";
 
-import ErrorHandler from "../utils/error_handler.js";
+import ErrorHandler from "../../utils/error_handler.js";
 
 export const createZaloPayPayment = async (req, res, next) => {
   try {
