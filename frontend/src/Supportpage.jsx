@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, Navigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import styles from './Supportpage.module.css';
@@ -223,6 +223,11 @@ const MENU = [
 export default function SupportPage() {
   const navigate = useNavigate();
   const { slug } = useParams();
+
+  if (slug && !PAGES[slug]) {
+    return <Navigate to="/" replace />;
+  }
+
   const current = PAGES[slug] || PAGES['huong-dan-mua-hang'];
   const currentSlug = slug || 'huong-dan-mua-hang';
 
