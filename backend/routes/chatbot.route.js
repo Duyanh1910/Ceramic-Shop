@@ -264,7 +264,7 @@ router.post("/webhook", async (req, res) => {
               type: "description",
               title: "",
               text: displayInfo,
-            },
+            }
           ];
         }
 
