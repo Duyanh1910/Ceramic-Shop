@@ -7,8 +7,10 @@ import {
   createZaloPayPayment,
   zaloPayCallback,
 } from "../../controllers/payment/zalopay.controller.js";
+import { getAllPaymentMethods } from "../../controllers/payment/payment_method.controller.js";
 const router = express.Router();
 
+router.get("/", getAllPaymentMethods);
 router.post("/zalo-create", createZaloPayPayment);
 router.post("/zalo-ipn", zaloPayCallback);
 
