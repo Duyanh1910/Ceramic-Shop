@@ -84,6 +84,7 @@ export const createZaloPayPaymentUrl = async (maDonHang) => {
       description: `Thanh toan don hang ${maDonHang}`,
       bank_code: "",
       mac: mac,
+      callback_url: "https://ceramic-shop-u8ak.onrender.com/api/v1/zalo-ipn",
     };
 
     try {
