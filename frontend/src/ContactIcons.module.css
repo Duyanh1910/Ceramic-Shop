@@ -1,0 +1,141 @@
+.wrapper {
+  position: fixed;
+  bottom: 28px;
+  left: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  z-index: 999998;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  opacity: 0;
+  transform: translateY(10px) scale(0.85);
+  pointer-events: none;
+  transition:
+    opacity 0.25s ease var(--delay, 0s),
+    transform 0.25s ease var(--delay, 0s);
+}
+
+.open .item {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.iconCircle {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  flex-shrink: 0;
+}
+
+.item:hover .iconCircle {
+  transform: scale(1.12);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.2) !important;
+}
+
+.tooltip {
+  font-family: 'Arsenal', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  background: #fff;
+  padding: 4px 10px;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 0.2s, transform 0.2s;
+  pointer-events: none;
+}
+
+.item:hover .tooltip {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.toggleBtn {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1b437c, #2d6abf);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  box-shadow: 0 4px 16px rgba(27,67,124,0.35);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  padding: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.toggleBtn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 20px rgba(27,67,124,0.45);
+}
+
+.open .toggleBtn {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  box-shadow: 0 4px 16px rgba(231,76,60,0.35);
+}
+
+.toggleLabel {
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.85);
+  font-family: 'Arsenal', sans-serif;
+  letter-spacing: 0.5px;
+  margin-top: 1px;
+}
+
+.phoneRing {
+  animation: phoneRing 2.5s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+
+@keyframes phoneRing {
+  0%, 60%, 100% { transform: rotate(0deg); }
+  10%            { transform: rotate(12deg); }
+  20%            { transform: rotate(-10deg); }
+  30%            { transform: rotate(8deg); }
+  40%            { transform: rotate(-6deg); }
+  50%            { transform: rotate(4deg); }
+}
+
+.toggleBtn::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: rgba(27,67,124,0.2);
+  animation: pulse 2s ease-out infinite;
+}
+
+.open .toggleBtn::before {
+  background: rgba(231,76,60,0.2);
+}
+
+@keyframes pulse {
+  0%   { transform: scale(1); opacity: 0.7; }
+  70%  { transform: scale(1.4); opacity: 0; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+
+@media (max-width: 480px) {
+  .wrapper { bottom: 90px; left: 10px; }
+  .tooltip { display: none; }
+}
