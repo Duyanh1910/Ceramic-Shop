@@ -1,0 +1,67 @@
+@import url('https://fonts.googleapis.com/css2?family=Arsenal:wght@400;600;700&display=swap');
+
+.wrapper { font-family: 'Arsenal', sans-serif; }
+.header { margin-bottom: 20px; }
+.title {
+  font-family: 'Arsenal', serif;
+  font-size: 20px; font-weight: 700; color: #1b437c;
+  margin: 0; text-transform: uppercase; letter-spacing: 0.5px;
+}
+.loadingWrap { display: flex; justify-content: center; padding: 40px 0; }
+.statsRow { display: flex; gap: 40px; align-items: center; margin-bottom: 8px; flex-wrap: wrap; }
+.avgBox { text-align: center; flex-shrink: 0; }
+.avgScore { font-family: 'Arsenal', serif; font-size: 56px; font-weight: 700; color: #1b437c; line-height: 1; margin-bottom: 8px; }
+.avgStars { font-size: 20px !important; }
+.avgTotal { font-size: 13px; color: #888; margin-top: 6px; }
+.distBox { flex: 1; min-width: 200px; }
+.distRow { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.distLabel { font-size: 13px; color: #555; width: 32px; flex-shrink: 0; display: flex; align-items: center; gap: 2px; }
+.distBar { flex: 1; }
+.distCount { font-size: 12px; color: #888; width: 24px; text-align: right; flex-shrink: 0; }
+
+.reviewForm {
+  background: #f7f9fc; border-radius: 10px; padding: 20px;
+  margin-bottom: 24px; border: 1px solid #e8eef8;
+}
+.formTitle { font-size: 15px; font-weight: 700; color: #1b437c; margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+.ratingRow { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.ratingLabel { font-size: 14px; font-weight: 600; color: #444; white-space: nowrap; }
+.starPicker { display: flex; align-items: center; gap: 4px; }
+.starBtn {
+  background: none; border: none; font-size: 28px; color: #ddd;
+  cursor: pointer; padding: 0; line-height: 1;
+  transition: color 0.15s, transform 0.15s; font-family: inherit;
+}
+.starBtn:hover, .starActive { color: #fadb14; transform: scale(1.15); }
+.ratingText { font-size: 13px; color: #c48c46; font-weight: 600; margin-left: 6px; }
+.textarea {
+  border-radius: 8px !important; border: 1.5px solid #e0e0e0 !important;
+  font-size: 14px !important; font-family: 'Arsenal', sans-serif !important; resize: none;
+}
+.textarea:focus, .textarea:hover { border-color: #1b437c !important; box-shadow: 0 0 0 2px rgba(27,67,124,0.08) !important; }
+.btnSubmit {
+  height: 40px !important; border-radius: 8px !important;
+  background: #1b437c !important; border-color: #1b437c !important;
+  font-weight: 600 !important; padding: 0 24px !important;
+}
+.btnSubmit:hover { background: #13325c !important; border-color: #13325c !important; }
+
+.noReviewNote {
+  text-align: center; font-size: 14px; color: #888;
+  padding: 16px; margin-bottom: 20px;
+  background: #fafafa; border-radius: 8px; border: 1px dashed #e0e0e0;
+  line-height: 1.6;
+}
+.reviewedNote { background: #f6ffed; border: 1px solid #b7eb8f; color: #389e0d; }
+.loginLink { color: #1b437c; font-weight: 700; text-decoration: underline; }
+
+.reviewList { display: flex; flex-direction: column; }
+.reviewItem { padding: 18px 0; border-bottom: 1px solid #f5f5f5; }
+.reviewItem:last-child { border-bottom: none; }
+.reviewHeader { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.avatar { background: #1b437c !important; font-weight: 700 !important; flex-shrink: 0; }
+.reviewMeta { flex: 1; }
+.reviewAuthor { font-size: 14px; font-weight: 700; color: #222; }
+.reviewDate { font-size: 12px; color: #aaa; margin-top: 1px; }
+.reviewStars { font-size: 14px !important; }
+.reviewContent { font-size: 14px; color: #555; line-height: 1.7; padding-left: 44px; }

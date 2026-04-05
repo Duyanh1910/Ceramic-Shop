@@ -7,7 +7,7 @@ import { Helmet } from 'react-helmet-async';
 import styles from './productDetail.module.css';
 import { clearSession } from './useAuth.js';
 import Breadcrumb from './Breadcrumb.jsx';
-import ReviewForm from './ReviewForm.jsx'; 
+import ProductReview from './ProductReview.jsx';
 
 const { Header, Content } = Layout;
 
@@ -499,7 +499,6 @@ function ProductDetail() {
     </div>
   );
 
-  // Tính toán phần trăm cho từng mốc sao (từ 1 đến 5)
   const calculateStarPercentages = () => {
     let counts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
     if (reviews.length === 0) return counts;
@@ -712,12 +711,9 @@ function ProductDetail() {
             <div className={styles.descContent} dangerouslySetInnerHTML={{ __html: product.MoTa || 'Chưa có thông tin mô tả chi tiết.' }}></div>
           </div>
 
-          {/* --- KHU VỰC ĐÁNH GIÁ SẢN PHẨM --- */}
           <div className={styles.sectionBox}>
             <h3 className={styles.sectionTitle}>Đánh Giá Sản Phẩm</h3>
-            {/* --- BẮT ĐẦU: KHỐI THỐNG KÊ TỔNG QUAN --- */}
   <div className={styles.ratingOverview}>
-    {/* Cột 1: Progress bars (Phân bổ sao) */}
     <div className={styles.overviewCol}>
       {[5, 4, 3, 2, 1].map(star => (
         <div key={star} className={styles.progressRow}>
@@ -738,7 +734,6 @@ function ProductDetail() {
 
     <div className={styles.verticalDivider}></div>
 
-    {/* Cột 2: Tổng đánh giá */}
     <div className={styles.overviewColCenter}>
       <div className={styles.overviewTitle}>Tổng Đánh Giá</div>
       <div className={styles.overviewTotalNum}>
@@ -748,15 +743,13 @@ function ProductDetail() {
 
     <div className={styles.verticalDivider}></div>
 
-    {/* Cột 3: Điểm trung bình */}
     <div className={styles.overviewColCenter}>
       <div className={styles.overviewTitle}>Điểm Trung Bình</div>
       <div className={styles.overviewAvgNum}>{ratingStats.avg}</div>
       <Rate disabled allowHalf value={ratingStats.avg} className={styles.overviewStars} />
     </div>
   </div>
-  {/* --- KẾT THÚC: KHỐI THỐNG KÊ TỔNG QUAN --- */}
-            <ReviewForm productId={id} onReviewSubmitted={fetchReviews} />
+            <ProductReview productId={id} onReviewSubmitted={fetchReviews} />
 
             {reviews.length === 0 ? (
               <p style={{ color: '#888', fontStyle: 'italic', padding: '15px' }}>
