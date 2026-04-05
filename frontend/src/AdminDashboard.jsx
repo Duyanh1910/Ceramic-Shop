@@ -169,7 +169,7 @@ export default function AdminOrder() {
     setUpdateLoading(true);
     try {
       await axios.patch(
-        `${API_BASE}/admin/orders/status/${editingOrder.MaHienThi}`, 
+        `${API_BASE}/admin/orders/${editingOrder.MaHienThi}`, 
         { TrangThaiDonHang: newStatus }, 
         authHeader
       );
