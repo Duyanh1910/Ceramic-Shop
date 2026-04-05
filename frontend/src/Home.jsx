@@ -961,11 +961,11 @@ function Home() {
                   <div className={styles.footerCol}>
                       <h3>HỖ TRỢ KHÁCH HÀNG</h3>
                       <ul>
-                          <li><a href="#guide">Hướng dẫn mua hàng</a></li>
-                          <li><a href="#payment">Chính sách thanh toán</a></li>
-                          <li><a href="#shipping">Chính sách giao hàng</a></li>
-                          <li><a href="#return">Chính sách đổi trả</a></li>
-                          <li><a href="#warranty">Chính sách bảo hành</a></li>
+                          <li><span className={styles.footerLink} onClick={()=>navigate('/support/huong-dan-mua-hang')}>Hướng dẫn mua hàng</span></li>
+                          <li><span className={styles.footerLink} onClick={()=>navigate('/support/chinh-sach-thanh-toan')}>Chính sách thanh toán</span></li>
+                          <li><span className={styles.footerLink} onClick={()=>navigate('/support/chinh-sach-giao-hang')}>Chính sách giao hàng</span></li>
+                          <li><span className={styles.footerLink} onClick={()=>navigate('/support/chinh-sach-doi-tra')}>Chính sách đổi trả</span></li>
+                          <li><span className={styles.footerLink} onClick={()=>navigate('/support/chinh-sach-bao-hanh')}>Chính sách bảo hành</span></li>
                       </ul>
                   </div>
                   
