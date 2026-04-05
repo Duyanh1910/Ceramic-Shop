@@ -10,6 +10,7 @@ import {
   EditOutlined, SearchOutlined, TeamOutlined, DollarOutlined, RiseOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+
 import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
 import styles from './AdminDashboard.module.css';
@@ -170,7 +171,7 @@ export default function AdminOrder() {
     try {
       await axios.patch(
         `${API_BASE}/admin/orders/${editingOrder.MaHienThi}`, 
-        { TrangThaiDonHang: newStatus }, 
+        { newStatus: newStatus }, 
         authHeader
       );
       message.success('Cập nhật trạng thái thành công!');

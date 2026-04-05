@@ -81,7 +81,7 @@ export const updateOrderStatus = async (req, res, next) => {
         new ErrorHandler("Dữ liệu mã đơn hàng đầu vào ko hợp lệ!", 400),
       );
     }
-    if (!newStatus) {
+    if (newStatus === undefined || newStatus === null) {
       return next(new ErrorHandler("Chưa chọn trạng thái đơn hàng!", 400));
     }
     const result = await adminUpdateOrderStatusService(
