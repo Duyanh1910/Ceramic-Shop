@@ -4,7 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Layout, Spin, Breadcrumb, Divider, Typography, Row, Col, Button, Result } from 'antd';
 import { HomeOutlined, CalendarOutlined, EditOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { Helmet } from 'react-helmet-async';
-import styles from './NewsDetail.module.css';
+import styles from './NewsDetails.module.css';
 
 const { Header, Content } = Layout;
 const { Title } = Typography;

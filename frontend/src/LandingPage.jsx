@@ -515,7 +515,14 @@ function LandingPage() {
                                                 ? article.NoiDung.replace(/<[^>]+>/g, '').substring(0, 120) + '...' 
                                                 : 'Đang cập nhật nội dung...'}
                                         </p>
-                                        <span className={styles.newsReadMore}>
+                                        <span 
+                                            className={styles.newsReadMore}
+                                            style={{ cursor: 'pointer' }}
+                                            onClick={(e) => {
+                                                e.stopPropagation(); 
+                                                navigate(`/news/${article.MaTinTuc}`);
+                                            }}
+                                        >
                                             Đọc thêm <RightOutlined />
                                         </span>
                                     </div>
