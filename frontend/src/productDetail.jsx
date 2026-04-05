@@ -173,7 +173,6 @@ function ProductDetail() {
     if (id) fetchProductDetail();
   }, [id]);
 
-  // --- HÀM GỌI API ĐÁNH GIÁ ---
   const fetchReviews = async () => {
     try {
       const [resRating, resList] = await Promise.all([
@@ -184,8 +183,8 @@ function ProductDetail() {
       if (resRating.data.success) {
         const ratingData = resRating.data.result;
         setRatingStats({
-          avg: parseFloat(ratingData.DiemTrungBinh) || 0,
-          total: parseInt(ratingData.TongDanhGia) || 0
+          avg: parseFloat(ratingData?.DiemTrungBinh) || 0,
+          total: parseInt(ratingData?.TongDanhGia) || 0
         });
       }
 
