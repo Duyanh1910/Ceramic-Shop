@@ -1,12 +1,13 @@
 import crypto from "crypto";
 import axios from "axios";
-import qs from "qs";
+import qs from "qs"; 
 import ErrorHandler from "../../utils/error_handler.js";
 import {
   OrderModel,
   PaymentTransactionModel,
   sequelize,
 } from "../../models/index.js";
+
 const ZALOPAY_CONFIG = {
   app_id: "553",
   key1: "9phuAOYhan4urywHTh0ndEXiV3pKHr5Q",
@@ -49,16 +50,12 @@ export const createZaloPayPaymentUrl = async (maDonHang) => {
     const app_time = Date.now();
 
     console.log("app_trans_id:", app_trans_id);
-    console.log("app_time:", app_time);
 
     const embed_data = JSON.stringify({
       redirecturl: ZALOPAY_CONFIG.redirectUrl,
     });
 
     const item = JSON.stringify([{}]);
-
-    console.log("embed_data:", embed_data);
-    console.log("item:", item);
 
     await PaymentTransactionModel.create(
       {
@@ -71,9 +68,8 @@ export const createZaloPayPaymentUrl = async (maDonHang) => {
       { transaction: t },
     );
 
-    console.log("Đã tạo transaction PENDING");
+    console.log("Đã tạo transaction PENDING trong DB");
 
-    // ===== TẠO CHỮ KÝ =====
     const rawSignature = [
       ZALOPAY_CONFIG.app_id,
       app_trans_id,
@@ -84,14 +80,10 @@ export const createZaloPayPaymentUrl = async (maDonHang) => {
       item,
     ].join("|");
 
-    console.log("rawSignature:", rawSignature);
-
     const mac = crypto
       .createHmac("sha256", ZALOPAY_CONFIG.key1)
       .update(rawSignature)
       .digest("hex");
-
-    console.log("mac (signature):", mac);
 
     const requestBody = {
       app_id: ZALOPAY_CONFIG.app_id,
@@ -105,7 +97,7 @@ export const createZaloPayPaymentUrl = async (maDonHang) => {
       bank_code: "",
       mac,
       callback_url:
-        "https://ceramic-shop-u8ak.onrender.com/api/v1/payment/zalo-ipn",
+        "https://ceramic-shop-u8ak.onrender.com/api/v1/payment/zalo-ipn", 
     };
 
     console.log("Request gửi ZaloPay:", requestBody);
@@ -113,13 +105,14 @@ export const createZaloPayPaymentUrl = async (maDonHang) => {
     try {
       const response = await axios.post(
         ZALOPAY_CONFIG.apiUrl,
-        qs.stringify(requestBody),
+        qs.stringify(requestBody), 
         {
           headers: {
             "Content-Type": "application/x-www-form-urlencoded",
           },
         },
       );
+
       console.log("Response từ ZaloPay:", response.data);
 
       if (response.data.return_code === 1) {
@@ -138,45 +131,35 @@ export const createZaloPayPaymentUrl = async (maDonHang) => {
     }
   });
 };
-
 export const verifyAndUpdateCallback = async (zaloPayBody) => {
   console.log("===== [ZALOPAY CALLBACK] START =====");
   console.log("Body nhận được:", zaloPayBody);
 
   const { data: dataStr, mac: reqMac } = zaloPayBody;
 
-  console.log("dataStr:", dataStr);
-  console.log("reqMac:", reqMac);
-
   if (!dataStr) {
     throw new Error("Callback không có data");
   }
 
-  // ===== VERIFY SIGNATURE =====
   const mac = crypto
     .createHmac("sha256", ZALOPAY_CONFIG.key2)
     .update(dataStr)
     .digest("hex");
 
-  console.log("mac server:", mac);
+  console.log("mac server tính:", mac);
 
   if (reqMac !== mac) {
-    console.log("❌ Sai chữ ký!");
+    console.log("❌ Sai chữ ký! Dữ liệu có thể bị giả mạo.");
     throw new Error("Sai chữ ký Callback từ ZaloPay");
   }
 
-  console.log("✅ Chữ ký hợp lệ");
+  console.log("✅ Chữ ký hợp lệ. Bắt đầu cập nhật DB...");
 
   const dataJson = JSON.parse(dataStr);
   console.log("Parsed data:", dataJson);
 
   const app_trans_id = dataJson["app_trans_id"];
   const zp_trans_id = dataJson["zp_trans_id"];
-  const status = dataJson["status"];
-
-  console.log("app_trans_id:", app_trans_id);
-  console.log("zp_trans_id:", zp_trans_id);
-  console.log("status:", status);
 
   await sequelize.transaction(async (t) => {
     const giaoDich = await PaymentTransactionModel.findOne({
@@ -185,36 +168,28 @@ export const verifyAndUpdateCallback = async (zaloPayBody) => {
       transaction: t,
     });
 
-    console.log("Giao dịch DB:", giaoDich?.toJSON());
-
     if (!giaoDich || giaoDich.TrangThai !== "PENDING") {
-      console.log("⚠️ Giao dịch không hợp lệ hoặc đã xử lý");
+      console.log("⚠️ Giao dịch không tồn tại hoặc đã được xử lý từ trước.");
       return;
     }
-
-    const isSuccess = status === 1;
-
-    console.log("Kết quả thanh toán:", isSuccess ? "SUCCESS" : "FAILED");
-
     await giaoDich.update(
       {
-        TrangThai: isSuccess ? "SUCCESS" : "FAILED",
+        TrangThai: "SUCCESS",
         MaGiaoDichDoiTac: zp_trans_id?.toString(),
-        MaLoi: status?.toString(),
+        MaLoi: "1",
         DuLieuPhanHoi: dataJson,
       },
       { transaction: t },
     );
 
-    console.log("✅ Đã update transaction");
+    console.log("✅ Đã update transaction thành SUCCESS");
 
-    if (isSuccess) {
-      await OrderModel.update(
-        { TrangThaiThanhToan: 1 },
-        { where: { MaDonHang: giaoDich.MaDonHang }, transaction: t },
-      );
-      console.log("✅ Đã update đơn hàng SUCCESS");
-    }
+    await OrderModel.update(
+      { TrangThaiThanhToan: 1 },
+      { where: { MaDonHang: giaoDich.MaDonHang }, transaction: t },
+    );
+
+    console.log("✅ Đã update trạng thái đơn hàng thành Đã Thanh Toán");
   });
 
   console.log("===== [ZALOPAY CALLBACK DONE] =====");
