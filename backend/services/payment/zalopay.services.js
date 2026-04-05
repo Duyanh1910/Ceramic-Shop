@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import axios from "axios";
-import qs from "qs"; 
+import qs from "qs";
 import ErrorHandler from "../../utils/error_handler.js";
 import {
   OrderModel,
@@ -97,7 +97,7 @@ export const createZaloPayPaymentUrl = async (maDonHang) => {
       bank_code: "",
       mac,
       callback_url:
-        "https://ceramic-shop-u8ak.onrender.com/api/v1/payment/zalo-ipn", 
+        "https://ceramic-shop-u8ak.onrender.com/api/v1/payment/zalo-ipn",
     };
 
     console.log("Request gửi ZaloPay:", requestBody);
@@ -105,7 +105,7 @@ export const createZaloPayPaymentUrl = async (maDonHang) => {
     try {
       const response = await axios.post(
         ZALOPAY_CONFIG.apiUrl,
-        qs.stringify(requestBody), 
+        qs.stringify(requestBody),
         {
           headers: {
             "Content-Type": "application/x-www-form-urlencoded",
@@ -193,4 +193,53 @@ export const verifyAndUpdateCallback = async (zaloPayBody) => {
   });
 
   console.log("===== [ZALOPAY CALLBACK DONE] =====");
+};
+
+export const queryZaloPayTransaction = async (app_trans_id) => {
+  const postData = {
+    app_id: ZALOPAY_CONFIG.app_id,
+    app_trans_id: app_trans_id,
+  };
+  const dataForMac = `${postData.app_id}|${postData.app_trans_id}|${ZALOPAY_CONFIG.key1}`;
+  postData.mac = crypto
+    .createHmac("sha256", ZALOPAY_CONFIG.key1)
+    .update(dataForMac)
+    .digest("hex");
+
+  try {
+    const response = await axios.post(
+      "https://sb-openapi.zalopay.vn/v2/query",
+      qs.stringify(postData),
+      {
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      },
+    );
+
+    const result = response.data;
+    if (result.return_code === 1) {
+      await sequelize.transaction(async (t) => {
+        const giaoDich = await PaymentTransactionModel.findOne({
+          where: { MaThamChieu: app_trans_id, TrangThai: "PENDING" },
+          lock: true,
+          transaction: t,
+        });
+
+        if (giaoDich) {
+          await giaoDich.update(
+            { TrangThai: "SUCCESS", MaLoi: "1" },
+            { transaction: t },
+          );
+          await OrderModel.update(
+            { TrangThaiThanhToan: 1 },
+            { where: { MaDonHang: giaoDich.MaDonHang }, transaction: t },
+          );
+          console.log("✅ Đã update DB qua lệnh Query chủ động!");
+        }
+      });
+    }
+    return result;
+  } catch (error) {
+    console.error("Lỗi Query:", error);
+    throw new ErrorHandler("Lỗi khi truy vấn ZaloPay", 500);
+  }
 };
