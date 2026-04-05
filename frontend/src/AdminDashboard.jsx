@@ -160,7 +160,7 @@ export default function AdminOrder() {
 
   const openUpdateModal = (order) => {
     setEditingOrder(order);
-    setNewStatus(order.newStatus);
+    setNewStatus(order.TrangThaiDonHang);
     setUpdateModal(true);
   };
 
@@ -234,7 +234,7 @@ export default function AdminOrder() {
     },
     {
       title: 'Trạng thái',
-      dataIndex: 'newStatus',
+      dataIndex: 'TrangThaiDonHang',
       render: (v) => {
         const cfg = STATUS_CONFIG[v];
         return <Tag color={cfg?.color} icon={cfg?.icon}>{cfg?.label}</Tag>;
@@ -391,8 +391,8 @@ export default function AdminOrder() {
                 {new Date(selectedOrder.NgayDat).toLocaleString('vi-VN')}
               </Descriptions.Item>
               <Descriptions.Item label="Trạng thái đơn">
-                 <Tag color={STATUS_CONFIG[selectedOrder.newStatus]?.color} icon={STATUS_CONFIG[selectedOrder.newStatus]?.icon}>
-                    {STATUS_CONFIG[selectedOrder.newStatus]?.label}
+                 <Tag color={STATUS_CONFIG[selectedOrder.TrangThaiDonHang]?.color} icon={STATUS_CONFIG[selectedOrder.TrangThaiDonHang]?.icon}>
+                    {STATUS_CONFIG[selectedOrder.TrangThaiDonHang]?.label}
                  </Tag>
               </Descriptions.Item>
               <Descriptions.Item label="Khách hàng">
