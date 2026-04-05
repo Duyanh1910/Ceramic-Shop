@@ -11,11 +11,12 @@ const PaymentSuccess = () => {
     method: '',
     orderId: '',
     amount: 0,
-    message: 'Đang đồng bộ kết quả giao dịch với máy chủ...'
+    message: 'Đang đồng bộ dữ liệu giao dịch...'
   });
 
   const { status, method, orderId, amount, message } = paymentData;
 
+  // Lấy dữ liệu API
   useEffect(() => {
     const verifyPayment = async () => {
       const appTransId = searchParams.get('apptransid');
@@ -31,23 +32,22 @@ const PaymentSuccess = () => {
             `https://ceramic-shop-u8ak.onrender.com/api/v1/payment/check-status/${appTransId}`
           );
 
-          const statusFromBE = res.data.status;
-
-          if (statusFromBE === 'SUCCESS') {
+          // Lấy đúng biến success/isPending từ Backend API của ZaloPay
+          if (res.data.success === true) {
             setPaymentData({
               status: 'success',
               method: 'ZALOPAY',
               orderId: parsedOrderId,
-              amount: res.data.amount || 0,
-              message: 'Giao dịch ZaloPay thành công.'
+              amount: res.data.data?.amount || 0,
+              message: 'Giao dịch ZaloPay đã hoàn tất.'
             });
-          } else if (statusFromBE === 'PENDING') {
+          } else if (res.data.isPending === true) {
             setPaymentData({
               status: 'pending',
               method: 'ZALOPAY',
               orderId: parsedOrderId,
-              amount: res.data.amount || 0,
-              message: 'Đang chờ xác nhận từ ZaloPay...'
+              amount: res.data.data?.amount || 0,
+              message: 'Đang chờ xác nhận từ hệ thống ZaloPay...'
             });
           } else {
             throw new Error();
@@ -68,7 +68,7 @@ const PaymentSuccess = () => {
           method: 'VNPAY',
           orderId: searchParams.get('vnp_TxnRef'),
           amount: Number(searchParams.get('vnp_Amount') || 0) / 100,
-          message: code === '24' ? 'Bạn đã hủy giao dịch.' : 'Giao dịch thất bại.'
+          message: code === '24' ? 'Bạn đã hủy giao dịch.' : 'Giao dịch VNPAY thất bại.'
         });
       } else if (isMoMo) {
         const code = searchParams.get('resultCode');
@@ -77,7 +77,7 @@ const PaymentSuccess = () => {
           method: 'MOMO',
           orderId: searchParams.get('orderId'),
           amount: Number(searchParams.get('amount') || 0),
-          message: searchParams.get('message')
+          message: searchParams.get('message') || 'Lỗi xử lý giao dịch MoMo.'
         });
       } else {
         setPaymentData({
@@ -90,63 +90,96 @@ const PaymentSuccess = () => {
     verifyPayment();
   }, [searchParams]);
 
-  // auto redirect khi success
+  // Tự động chuyển hướng về trang đơn hàng
   useEffect(() => {
     if (status === 'success') {
       const t = setTimeout(() => {
         window.location.href = '/orders';
-      }, 5000);
+      }, 5000); // 5 giây tự chuyển hướng
       return () => clearTimeout(t);
     }
   }, [status]);
 
+  // Format tiền tệ
   const formatCurrency = (v) =>
     new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(v || 0);
 
+  // Giao diện Đang xử lý
   if (status === 'loading') {
     return (
-      <div className="loader">
+      <div className="loader-wrapper">
         <div className="spinner" />
-        <p>{message}</p>
+        <h3 style={{ color: 'var(--text-main)', fontWeight: '600' }}>{message}</h3>
       </div>
     );
   }
 
+  // Giao diện Kết quả
   return (
     <div className="wrapper">
       <div className="card">
         
-        <div className={`icon ${status}`}>
-          {status === 'success' && <span>✓</span>}
-          {status === 'pending' && <span>⏳</span>}
-          {status === 'error' && <span>✕</span>}
+        {/* ANIMATED ICONS */}
+        <div className={`icon-container ${status}`}>
+          {status === 'success' && (
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <path className="animate-draw" d="M5 13l4 4L19 7" />
+            </svg>
+          )}
+          {status === 'pending' && (
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <path className="animate-draw" d="M12 6v6l4 2" />
+            </svg>
+          )}
+          {status === 'error' && (
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <path className="animate-draw" d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          )}
         </div>
 
+        {/* TIÊU ĐỀ */}
         <h2 className={`title ${status}`}>
-          {status === 'success'
-            ? 'Thanh toán thành công!'
-            : status === 'pending'
-            ? 'Đang xử lý...'
+          {status === 'success' ? 'Thanh toán thành công!'
+            : status === 'pending' ? 'Giao dịch đang xử lý'
             : 'Thanh toán thất bại'}
         </h2>
-
+        
         <p className="message">
-          {status === 'success'
-            ? 'Đơn hàng của bạn đang được xử lý.'
+          {status === 'success' 
+            ? 'Cảm ơn bạn đã mua sắm. Hệ thống sẽ tự động chuyển hướng sau 5 giây.' 
             : message}
         </p>
 
+        {/* BIÊN LAI (RECEIPT) */}
         {orderId && (
-          <div className="box">
-            <div><span>Cổng:</span> <b>{method}</b></div>
-            <div><span>Mã:</span> <b>{orderId}</b></div>
-            <div><span>Số tiền:</span> <b>{formatCurrency(amount)}</b></div>
+          <div className="receipt">
+            {method && (
+              <div className="receipt-row">
+                <span className="receipt-label">Cổng thanh toán</span>
+                <span className="receipt-value tag">{method}</span>
+              </div>
+            )}
+            <div className="receipt-row">
+              <span className="receipt-label">Mã đơn hàng</span>
+              <span className="receipt-value">{orderId}</span>
+            </div>
+            <div className="receipt-row">
+              <span className="receipt-label">Tổng thanh toán</span>
+              <span className="receipt-value highlight-amount">{formatCurrency(amount)}</span>
+            </div>
           </div>
         )}
 
+        {/* NÚT BẤM (BUTTONS) */}
         <div className="actions">
-          <Link to="/orders" className="btn primary">Đơn hàng</Link>
-          <Link to="/" className="btn">Trang chủ</Link>
+          <Link to="/orders" className="btn primary">
+            Xem đơn hàng của tôi
+          </Link>
+          <Link to="/" className="btn secondary">
+            Về trang chủ
+          </Link>
         </div>
 
       </div>
