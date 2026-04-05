@@ -13,8 +13,9 @@ const PaymentSuccess = () => {
     message: 'Không tìm thấy thông tin giao dịch.'
   };
 
-  const isVnPay = searchParams.has('vnp_ResponseCode');
+ const isVnPay = searchParams.has('vnp_ResponseCode');
   const isMoMo = searchParams.has('resultCode');
+  const isZaloPay = searchParams.has('apptransid') || searchParams.has('appid'); // Thêm cờ nhận diện ZaloPay
 
   if (isVnPay) {
     // --- XỬ LÝ VNPAY ---
@@ -39,6 +40,25 @@ const PaymentSuccess = () => {
       orderId: searchParams.get('orderId'),
       amount: Number(searchParams.get('amount') || 0),
       message: searchParams.get('message') || 'Giao dịch MoMo thất bại.'
+    };
+
+  } else if (isZaloPay) {
+    // --- XỬ LÝ ZALOPAY ---
+    const statusCode = searchParams.get('status');
+    const appTransId = searchParams.get('apptransid');
+    
+    // Tách mã đơn hàng từ apptransid (VD: "260405_180002_575699" -> lấy "180002")
+    let parsedOrderId = appTransId;
+    if (appTransId && appTransId.includes('_')) {
+      parsedOrderId = appTransId.split('_')[1];
+    }
+
+    paymentData = {
+      status: statusCode === '1' ? 'success' : 'error',
+      method: 'ZALOPAY',
+      orderId: parsedOrderId,
+      amount: Number(searchParams.get('amount') || 0),
+      message: statusCode === '1' ? 'Giao dịch ZaloPay thành công.' : 'Giao dịch ZaloPay thất bại.'
     };
   }
 
