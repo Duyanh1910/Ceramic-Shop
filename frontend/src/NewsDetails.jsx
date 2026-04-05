@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Layout, Spin, Breadcrumb, Typography, Row, Col, Button, Result, Tag, Tooltip } from 'antd';
+import { Layout, Spin, Breadcrumb, Typography, Button, Result, Tag, Tooltip ,message} from 'antd';
 import { 
   HomeOutlined, 
   CalendarOutlined, 
-  EditOutlined, 
   ArrowLeftOutlined,
   FacebookOutlined,
   TwitterOutlined,
@@ -17,6 +16,7 @@ import styles from './NewsDetails.module.css';
 const { Header, Content } = Layout;
 const { Title } = Typography;
 
+
 function NewsDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -25,7 +25,27 @@ function NewsDetail() {
   const [recentNews, setRecentNews] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Cuộn lên đầu trang mượt mà mỗi khi ID thay đổi
+  const handleShareFacebook = () => {
+    const currentUrl = encodeURIComponent(window.location.href);
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${currentUrl}`, '_blank', 'width=600,height=400');
+  };
+
+  const handleShareTwitter = () => {
+    const currentUrl = encodeURIComponent(window.location.href);
+    const text = encodeURIComponent(`Đọc bài viết tuyệt hay: ${news?.TieuDe}`);
+    window.open(`https://twitter.com/intent/tweet?url=${currentUrl}&text=${text}`, '_blank', 'width=600,height=400');
+  };
+
+  const handleCopyLink = () => {
+    const currentUrl = window.location.href;
+    navigator.clipboard.writeText(currentUrl)
+      .then(() => {
+        message.success('Đã sao chép liên kết bài viết!');
+      })
+      .catch(() => {
+        message.error('Không thể sao chép liên kết. Vui lòng thử lại!');
+      });
+  };
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [id]);
@@ -41,10 +61,9 @@ function NewsDetail() {
         const listRes = await axios.get(`https://ceramic-shop-u8ak.onrender.com/api/v1/news`);
         const allNews = listRes.data?.result || listRes.data?.data || [];
         
-        const filteredNews = allNews.filter(item => item.MaTinTuc !== parseInt(id)).slice(0, 5);
+        const filteredNews = allNews.filter(item => item.MaTinTuc !== parseInt(id)).slice(0, 3);
         setRecentNews(filteredNews);
       } catch (error) {
-        console.error(error);
         setNews(null);
       } finally {
         setLoading(false);
@@ -80,9 +99,14 @@ function NewsDetail() {
       <Helmet>
         <title>{news.TieuDe} - CeramicShop</title>
         <meta name="description" content={news.TieuDe} />
+        <meta property="og:title" content={news.TieuDe} />
+        <meta property="og:description" content="Khám phá góc nhìn nghệ thuật và tinh hoa gốm sứ Bát Tràng cùng CeramicShop." />
+        {news.HinhAnh && <meta property="og:image" content={news.HinhAnh} />}
+        <meta property="og:url" content={window.location.href} />
+        <meta property="og:type" content="article" />
+        <meta name="twitter:card" content="summary_large_image" />
       </Helmet>
 
-      {/* HEADER TỐI GIẢN CỦA TRANG ĐỌC BÁO */}
       <Header className={styles.simpleHeader}>
         <div className={styles.headerContainer}>
           <div className={styles.logoBox} onClick={() => navigate('/landing')}>
@@ -109,114 +133,109 @@ function NewsDetail() {
             </Breadcrumb.Item>
           </Breadcrumb>
 
-          <Row gutter={[40, 40]} className={styles.contentRow}>
-            {/* CỘT TRÁI: BÀI VIẾT CHÍNH */}
-            <Col xs={24} lg={16} className={styles.articleCol}>
-              <div className={styles.articleBox}>
+          <div className={styles.articleWrapper}>
+            <div className={styles.articleBox}>
+              
+              <header className={styles.articleHeader}>
+                <Tag color="gold" className={styles.categoryTag}>Góc Nhìn Nghệ Thuật</Tag>
+                <Title level={1} className={styles.articleTitle}>{news.TieuDe}</Title>
                 
-                {/* Tiêu đề & Thông tin tác giả */}
-                <header className={styles.articleHeader}>
-                  <Tag color="gold" className={styles.categoryTag}>Góc Nhìn Nghệ Thuật</Tag>
-                  <Title level={1} className={styles.articleTitle}>{news.TieuDe}</Title>
-                  
-                  <div className={styles.articleMeta}>
-                    <div className={styles.authorInfo}>
-                      <div className={styles.authorAvatar}>
-                        {news.NhanVien?.TenNhanVien ? news.NhanVien.TenNhanVien.charAt(0) : 'C'}
-                      </div>
-                      <div>
-                        <div className={styles.authorName}>{news.NhanVien?.TenNhanVien || 'Ban Biên Tập CeramicShop'}</div>
-                        <div className={styles.publishDate}>
-                          <CalendarOutlined style={{marginRight: 5}}/> 
-                          {new Date(news.NgayTao).toLocaleDateString('vi-VN', {
-                            weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric'
-                          })}
-                        </div>
+                <div className={styles.articleMeta}>
+                  <div className={styles.authorInfo}>
+                    <div className={styles.authorAvatar}>
+                      {news.NhanVien?.TenNhanVien ? news.NhanVien.TenNhanVien.charAt(0) : 'C'}
+                    </div>
+                    <div>
+                      <div className={styles.authorName}>{news.NhanVien?.TenNhanVien || 'Ban Biên Tập CeramicShop'}</div>
+                      <div className={styles.publishDate}>
+                        <CalendarOutlined style={{marginRight: 5}}/> 
+                        {new Date(news.NgayTao).toLocaleDateString('vi-VN', {
+                          weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric'
+                        })}
                       </div>
                     </div>
                   </div>
-                </header>
+                </div>
+              </header>
 
-                {/* Ảnh bìa (Cover) */}
-                {news.HinhAnh && (
-                  <div className={styles.coverImageWrap}>
-                    <img src={news.HinhAnh} alt={news.TieuDe} className={styles.coverImage} />
-                  </div>
-                )}
+              {news.HinhAnh && (
+                <div className={styles.coverImageWrap}>
+                  <img src={news.HinhAnh} alt={news.TieuDe} className={styles.coverImage} />
+                </div>
+              )}
 
-                {/* Nội dung bài viết */}
-                <div 
-                  className={styles.htmlContent} 
-                  dangerouslySetInnerHTML={{ __html: news.NoiDung }} 
-                />
-                
-                {/* Footer Bài viết (Share & Tags) */}
-                <footer className={styles.articleFooter}>
-                  <div className={styles.tagsWrap}>
-                    <strong>Tags:</strong>
-                    <Tag>Gốm Sứ</Tag>
-                    <Tag>Bát Tràng</Tag>
-                    <Tag>Phong Cách Sống</Tag>
-                  </div>
-                  <div className={styles.shareWrap}>
+              <div 
+                className={styles.htmlContent} 
+                dangerouslySetInnerHTML={{ __html: news.NoiDung }} 
+              />
+              
+              <footer className={styles.articleFooter}>
+                <div className={styles.tagsWrap}>
+                  <strong>Tags:</strong>
+                  <Tag>Gốm Sứ</Tag>
+                  <Tag>Bát Tràng</Tag>
+                  <Tag>Phong Cách Sống</Tag>
+                </div>
+                <div className={styles.shareWrap}>
                     <span style={{marginRight: 10, color: '#666'}}>Chia sẻ:</span>
+                    
                     <Tooltip title="Chia sẻ Facebook">
-                      <Button shape="circle" icon={<FacebookOutlined />} className={styles.shareBtn} />
+                      <Button 
+                        shape="circle" 
+                        icon={<FacebookOutlined />} 
+                        className={styles.shareBtn} 
+                        onClick={handleShareFacebook} // GẮN Ở ĐÂY
+                      />
                     </Tooltip>
+                    
                     <Tooltip title="Chia sẻ Twitter">
-                      <Button shape="circle" icon={<TwitterOutlined />} className={styles.shareBtn} />
+                      <Button 
+                        shape="circle" 
+                        icon={<TwitterOutlined />} 
+                        className={styles.shareBtn} 
+                        onClick={handleShareTwitter} 
+                      />
                     </Tooltip>
+                    
                     <Tooltip title="Sao chép liên kết">
-                      <Button shape="circle" icon={<LinkOutlined />} className={styles.shareBtn} />
+                      <Button 
+                        shape="circle" 
+                        icon={<LinkOutlined />} 
+                        className={styles.shareBtn} 
+                        onClick={handleCopyLink} 
+                      />
                     </Tooltip>
+                    
                   </div>
-                </footer>
+              </footer>
+            </div>
 
-              </div>
-            </Col>
-
-            {/* CỘT PHẢI: TIN TỨC GẦN ĐÂY */}
-            <Col xs={24} lg={8}>
-              <div className={styles.sidebarWrapper}>
-                <div className={styles.sidebar}>
-                  <div className={styles.sidebarHeader}>
-                    <h3 className={styles.sidebarTitle}>CÙNG CHỦ ĐỀ</h3>
-                  </div>
-                  
-                  <div className={styles.recentList}>
-                    {recentNews.map(item => (
-                      <div 
-                        key={item.MaTinTuc} 
-                        className={styles.recentItem} 
-                        onClick={() => navigate(`/news/${item.MaTinTuc}`)}
-                      >
-                        <div className={styles.recentImg}>
-                          <img src={item.HinhAnh || 'https://via.placeholder.com/150'} alt={item.TieuDe} />
-                        </div>
-                        <div className={styles.recentInfo}>
-                          <h4 className={styles.recentTitle}>{item.TieuDe}</h4>
-                          <span className={styles.recentDate}>
-                            {new Date(item.NgayTao).toLocaleDateString('vi-VN')}
-                          </span>
-                        </div>
+            {recentNews.length > 0 && (
+              <div className={styles.relatedSection}>
+                <h3 className={styles.relatedTitle}>CÙNG CHỦ ĐỀ</h3>
+                <div className={styles.relatedGrid}>
+                  {recentNews.map(item => (
+                    <div 
+                      key={item.MaTinTuc} 
+                      className={styles.relatedCard} 
+                      onClick={() => navigate(`/news/${item.MaTinTuc}`)}
+                    >
+                      <div className={styles.relatedImg}>
+                        <img src={item.HinhAnh || 'https://via.placeholder.com/300x200'} alt={item.TieuDe} />
                       </div>
-                    ))}
-                  </div>
-                  
-                  <div className={styles.promoBanner}>
-                    <img src="https://res.cloudinary.com/dcmwz0uis/image/upload/v1773744001/bo-do-an-30-san-pham-hoang-cung-lac-hong-30208-00_z2uoxf.png" alt="Promo" />
-                    <div className={styles.promoText}>
-                      <h4>Bộ Sưu Tập Mới</h4>
-                      <p>Khám phá tuyệt tác gốm sứ tháng này.</p>
-                      <Button type="primary" onClick={() => navigate('/landing#categories')}>Xem ngay</Button>
+                      <div className={styles.relatedInfo}>
+                        <h4 className={styles.relatedItemTitle}>{item.TieuDe}</h4>
+                        <span className={styles.relatedDate}>
+                          {new Date(item.NgayTao).toLocaleDateString('vi-VN')}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-
+                  ))}
                 </div>
               </div>
-            </Col>
-          </Row>
+            )}
 
+          </div>
         </div>
       </Content>
     </Layout>
