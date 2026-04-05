@@ -73,11 +73,14 @@ export default function ProductReview({ productId }) {
 
   const CheckCanreView = async (currentReviews = []) => {
     try {
-      const res = await axios.get(`${API_BASE}/orders?status=3&limit=50`, authHeader);
-      const completedOrders = res.data?.result?.data || res.data?.result?.orders || res.data?.result || [];
+      const res = await axios.get(`${API_BASE}/orders?limit=50`, authHeader);
+      const allOrders = res.data?.result?.data || res.data?.result?.orders || res.data?.result || [];
       let eligible = null;
 
-      for (const order of completedOrders) {
+      for (const order of allOrders) {
+        // RÀO CHẮN: Chỉ xét những đơn hàng đã giao thành công (Status = 3)
+        if (order.TrangThaiDonHang !== 3) continue;
+
         const details = order.ChiTietDonHangs || [];
         const matchItem = details.find((d) => {
           const itemProductId = d.BienTheSanPham?.MaSanPham || d.BienTheSanPham?.SanPham?.MaSanPham;
@@ -90,7 +93,7 @@ export default function ProductReview({ productId }) {
           );
           if (!alreadyReviewed) {
             eligible = matchItem;
-            break;
+            break; // Đã tìm thấy đơn hợp lệ thì thoát vòng lặp
           }
         }
       }
@@ -102,7 +105,7 @@ export default function ProductReview({ productId }) {
       }
       else {
         setCanReview(false);
-        const hasPending = await checkHasPendingOrder();
+        const hasPending = await checkHasPendingOrder(allOrders);
         if (!hasPending) {
           setNoReviewReason('not_purchased');
         }
@@ -117,11 +120,12 @@ export default function ProductReview({ productId }) {
     }
   };
 
-  const checkHasPendingOrder = async () => {
+  const checkHasPendingOrder = async (allOrders) => {
     try {
-      const res = await axios.get(`${API_BASE}/orders?limit=50`, authHeader);
-      const allOrders = res.data?.result?.data || res.data?.result?.orders || res.data?.result || [];
       return allOrders.some((order) => {
+        // Chỉ xét những đơn chưa Hoàn Thành và chưa Hủy
+        if (order.TrangThaiDonHang === 3 || order.TrangThaiDonHang === 4) return false;
+
         const details = order.ChiTietDonHangs || [];
         return details.some((d) => {
           const itemProductId = d.BienTheSanPham?.MaSanPham || d.BienTheSanPham?.SanPham?.MaSanPham;
@@ -139,18 +143,15 @@ export default function ProductReview({ productId }) {
       message.warning('Vui lòng chọn số sao đánh giá');
       return;
     }
-    if (!eligibleOrderDetail) {
-      message.error('Không tìm thấy đơn hàng hợp lệ để đánh giá');
-      return;
-    }
     setSubmitting(true);
     try {
+      // ĐÃ SỬA: Chỉnh lại đường dẫn và truyền MaSanPham cho khớp với Backend
       await axios.post(
-        `${API_BASE}/reviews/${productId}/reviews`,
+        `${API_BASE}/reviews`,
         {
+          MaSanPham: Number(productId),
           DiemDanhGia: userRating,
           NoiDung: values.content,
-          MaCTDH: eligibleOrderDetail.MaCTDH,
         },
         authHeader
       );

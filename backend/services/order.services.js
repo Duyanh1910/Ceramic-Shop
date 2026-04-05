@@ -276,7 +276,7 @@ export const getMyOrderService = async (idAccount) => {
         include: [
           {
             model: VariantModel,
-            attributes: ["TenBienThe", "Gia"],
+            attributes: ["TenBienThe", "Gia", "MaSanPham"], 
             include: [
               {
                 model: VariantImageModel,
@@ -284,7 +284,7 @@ export const getMyOrderService = async (idAccount) => {
               },
               {
                 model: ProductModel,
-                attributes: ["TenSanPham", "Thumbnail"],
+                attributes: ["TenSanPham", "Thumbnail", "MaSanPham"],
               },
             ],
           },
