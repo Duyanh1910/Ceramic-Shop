@@ -2,11 +2,10 @@
 
 .wrapper {
   font-family: 'Arsenal', sans-serif;
-  background-color: #f7f9fc; 
+  background-color: #f7f9fc;
   min-height: 100vh;
   overflow-x: hidden;
 }
-
 
 .simpleHeader {
   background-color: rgba(255, 255, 255, 0.95);
@@ -29,10 +28,6 @@
   height: 100%;
 }
 
-.logoBox {
-  cursor: pointer;
-}
-
 .logoText {
   font-family: 'Arsenal', serif;
   font-size: 22px;
@@ -50,7 +45,6 @@
   color: #1b437c;
   background-color: transparent !important;
 }
-
 
 .mainContent {
   padding: 30px 0 80px;
@@ -78,9 +72,10 @@
   font-weight: 600;
 }
 
-.articleCol {
-  display: flex;
-  flex-direction: column;
+
+.articleWrapper {
+  max-width: 900px;
+  margin: 0 auto;
 }
 
 .articleBox {
@@ -88,10 +83,6 @@
   padding: 50px 60px;
   border-radius: 16px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
-}
-
-.articleHeader {
-  margin-bottom: 30px;
 }
 
 .categoryTag {
@@ -157,7 +148,6 @@
   object-fit: cover;
   display: block;
 }
-
 
 .htmlContent {
   font-size: 18px;
@@ -238,7 +228,6 @@
   margin-bottom: 10px;
 }
 
-
 .articleFooter {
   margin-top: 50px;
   padding-top: 30px;
@@ -259,95 +248,78 @@
   color: #1b437c;
   border-color: #1b437c;
 }
-.sidebarWrapper {
-  height: 100%;
+
+.relatedSection {
+  margin-top: 50px;
+  padding-top: 40px;
+  border-top: 2px solid #edf2f7;
 }
 
-.sidebar {
-  background: #fff;
-  padding: 30px;
-  border-radius: 16px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
-  position: sticky;
-  top: 90px;
-  
-  max-height: calc(100vh - 120px);
-  overflow-y: auto;
-  overscroll-behavior: contain; 
-}
-
-.sidebar::-webkit-scrollbar {
-  width: 5px;
-}
-.sidebar::-webkit-scrollbar-track {
-  background: transparent;
-}
-.sidebar::-webkit-scrollbar-thumb {
-  background: #e2e8f0;
-  border-radius: 10px;
-}
-.sidebar:hover::-webkit-scrollbar-thumb {
-  background: #cbd5e0;
-}
-
-.sidebarHeader {
-  margin-bottom: 25px;
-  padding-bottom: 15px;
-  border-bottom: 2px solid #edf2f7;
-}
-
-.sidebarTitle {
+.relatedTitle {
   font-family: 'Playfair Display', serif;
-  font-size: 20px;
+  font-size: 24px;
   font-weight: 700;
   color: #1a202c;
-  margin: 0;
+  margin-bottom: 30px;
+  text-align: center;
+  text-transform: uppercase;
 }
 
-.recentList {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+.relatedTitle::after {
+  content: '';
+  display: block;
+  width: 50px;
+  height: 3px;
+  background-color: #BB9244;
+  margin: 12px auto 0;
 }
 
-.recentItem {
-  display: flex;
-  gap: 15px;
-  cursor: pointer;
-  transition: all 0.3s ease;
+.relatedGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 25px;
 }
 
-.recentItem:hover .recentTitle {
-  color: #BB9244;
-}
-
-.recentImg {
-  width: 90px;
-  height: 70px;
-  border-radius: 8px;
+.relatedCard {
+  background: #fff;
+  border-radius: 12px;
   overflow: hidden;
-  flex-shrink: 0;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.04);
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.recentImg img {
+.relatedCard:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+}
+
+.relatedImg {
+  width: 100%;
+  height: 180px;
+  overflow: hidden;
+}
+
+.relatedImg img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.4s;
-}
-.recentItem:hover .recentImg img {
-  transform: scale(1.1);
+  transition: transform 0.5s ease;
 }
 
-.recentInfo {
-  flex: 1;
+.relatedCard:hover .relatedImg img {
+  transform: scale(1.08);
 }
 
-.recentTitle {
-  font-size: 15px;
+.relatedInfo {
+  padding: 20px;
+}
+
+.relatedItemTitle {
+  font-size: 16px;
   font-weight: 600;
   color: #2d3748;
-  margin: 0 0 8px;
+  margin: 0 0 10px;
   line-height: 1.4;
   display: -webkit-box;
   line-clamp: 2;
@@ -356,34 +328,14 @@
   transition: color 0.2s;
 }
 
-.recentDate {
-  font-size: 12px;
-  color: #a0aec0;
+.relatedCard:hover .relatedItemTitle {
+  color: #BB9244;
 }
 
-.promoBanner {
-  margin-top: 35px;
-  border-radius: 12px;
-  overflow: hidden;
-  position: relative;
+.relatedDate {
+  font-size: 13px;
+  color: #a0aec0;
 }
-.promoBanner img {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-  display: block;
-}
-.promoText {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  padding: 20px;
-  background: linear-gradient(transparent, rgba(0,0,0,0.8));
-  color: #fff;
-}
-.promoText h4 { color: #fff; margin-bottom: 5px; font-size: 18px; }
-.promoText p { font-size: 13px; margin-bottom: 10px; opacity: 0.9; }
 
 .loadingScreen, .errorScreen {
   height: 100vh;
@@ -404,4 +356,5 @@
   .htmlContent { font-size: 16px; }
   :global(.htmlContent p:first-of-type::first-letter) { font-size: 3.5rem; }
   .articleFooter { flex-direction: column; align-items: flex-start; }
+  .relatedGrid { grid-template-columns: 1fr; }
 }
