@@ -4,6 +4,7 @@ import {
   ProductModel,
   VariantModel,
   OrderDetailModel,
+  OrderModel
 } from "../models/index.js";
 import { fn, col } from "sequelize";
 import ErrorHandler from "../utils/error_handler.js";

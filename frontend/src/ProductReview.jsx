@@ -93,7 +93,7 @@ export default function ProductReview({ productId }) {
           );
           if (!alreadyReviewed) {
             eligible = matchItem;
-            break; // Đã tìm thấy đơn hợp lệ thì thoát vòng lặp
+            break;
           }
         }
       }
@@ -145,7 +145,6 @@ export default function ProductReview({ productId }) {
     }
     setSubmitting(true);
     try {
-      // ĐÃ SỬA: Chỉnh lại đường dẫn và truyền MaSanPham cho khớp với Backend
       await axios.post(
         `${API_BASE}/reviews`,
         {
@@ -240,7 +239,6 @@ export default function ProductReview({ productId }) {
           </div>
           <Divider />
           
-          {/* --- KHU VỰC NHẬP ĐÁNH GIÁ --- */}
           {isLoggedIn && canReview === true && (
             <div className={styles.reviewForm}>
               <div className={styles.formTitle}>
@@ -293,7 +291,6 @@ export default function ProductReview({ productId }) {
           
           {renderReviewGate()}
           
-          {/* --- DANH SÁCH BÌNH LUẬN --- */}
           <div className={styles.reviewList}>
             {reviews.length === 0 ? (
               <Empty
