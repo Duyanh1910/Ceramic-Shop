@@ -45,7 +45,6 @@ function ProductDetail() {
   const [searchOptions, setSearchOptions] = useState([]);
   const inputRef = useRef(null);
 
-  // --- THÊM STATE ĐÁNH GIÁ ---
   const [reviews, setReviews] = useState([]);
   const [ratingStats, setRatingStats] = useState({ avg: 0, total: 0 });
 

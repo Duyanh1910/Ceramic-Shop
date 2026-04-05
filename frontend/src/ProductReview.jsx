@@ -48,7 +48,7 @@ export default function ProductReview({productId}){
   const fetchReview = async()=>{
     setLoading(true);
     try{
-      const res = await axios.get(`${API_BASE}/products/${productId}/reviews`);
+      const res = await axios.get(`${API_BASE}/reviews/${productId}/reviews`);
       setReviews(res.data?.result || []);
     }
     catch{
@@ -129,7 +129,7 @@ export default function ProductReview({productId}){
     setSubmitting(true);
     try{
       await axios.post(
-        `${API_BASE}/products/${productId}/reviews`,
+        `${API_BASE}/reviews/${productId}/reviews`,
         {
           DiemDanhGia: userRating,
           NoiDung:values.content,
