@@ -23,6 +23,7 @@ import AdminStaffs from './AdminStaffs.jsx'
 import PaymentSuccess from './PaymentSuccess.jsx'
 import OrderTracking from './OrderTracking.jsx'
 import SupportPage from './Supportpage.jsx'
+import NewsDetail from './NewsDetails.jsx'
 
 const PublicRoute = ({ children }) => {
   const isCustomerActive = localStorage.getItem('customer_session_active') === 'true';
@@ -81,7 +82,7 @@ createRoot(document.getElementById('root')).render(
           <Route path="/" element={<LandingPage />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/product/:id" element={<ProductDetail />} />
-          
+          <Route path="/news/:id" element={<NewsDetail />} />
           <Route path="/login" element={
             <PublicRoute>
               <Login />
