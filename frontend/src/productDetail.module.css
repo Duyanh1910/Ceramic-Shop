@@ -1104,3 +1104,11 @@
     height: 1px;
   }
 }
+.footerLink{
+    cursor: pointer;
+    transition: color 0.3s;
+
+}
+.footerLink:hover{
+    color:#BB9244;
+}
