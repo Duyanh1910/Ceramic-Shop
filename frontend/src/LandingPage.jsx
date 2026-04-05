@@ -30,6 +30,9 @@ function LandingPage() {
     const [searchOptions, setSearchOptions] = useState([]);
     const inputRef = useRef(null);
 
+    const [newsArticles, setNewsArticles] = useState([]);
+    const [loadingNews, setLoadingNews] = useState(false);
+
     const [isChecking, setIsChecking] = useState(false);
     const [apiCategories, setApiCategories]=useState([]);
     useEffect(() => {
@@ -108,8 +111,21 @@ function LandingPage() {
 
     useEffect(() => {
         fetchProducts();
+        fetchNews();
     }, []);
 
+    const fetchNews = async () => {
+        setLoadingNews(true);
+        try {
+            const response = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/news');
+            const data = response.data?.result || response.data?.data || response.data || [];
+            setNewsArticles(data.slice(0, 3));
+        } catch (error) {
+            console.error("Lỗi khi tải tin tức:", error);
+        } finally {
+            setLoadingNews(false);
+        }
+    };
     const fetchProducts = async () => {
         setLoading(true);
         try {
@@ -189,29 +205,29 @@ function LandingPage() {
         img: CATEGORY_IMGS[c.TenDanhMuc]
     }))
     : Object.entries(CATEGORY_IMGS).map(([name,img])=>({id:null,name,img}))
-    const newsArticles = [
-        {
-            id: 1,
-            title: "Ra mắt bộ sưu tập Gốm Sứ Xuân 2026",
-            excerpt: "Khám phá những thiết kế độc đáo lấy cảm hứng từ hoa đào, mai vàng và các biểu tượng may mắn của năm mới.",
-            image: "https://images.unsplash.com/photo-1578500494198-246f612d3b3d?w=400&h=250&fit=crop",
-            date: "15/01/2026"
-        },
-        {
-            id: 2,
-            title: "Bí quyết chọn bộ ấm trà phù hợp",
-            excerpt: "Hướng dẫn chi tiết cách lựa chọn ấm trà tử sa, sứ cao cấp phù hợp với từng loại trà và phong cách thưởng thức.",
-            image: "https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?w=400&h=250&fit=crop",
-            date: "10/01/2026"
-        },
-        {
-            id: 3,
-            title: "Nghệ thuật Bát Tràng - Di sản nghìn năm",
-            excerpt: "Tìm hiểu về lịch sử và quy trình làm gốm truyền thống tại làng nghề Bát Tràng nổi tiếng.",
-            image: "https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=400&h=250&fit=crop",
-            date: "05/01/2026"
-        }
-    ];
+    // const newsArticles = [
+    //     {
+    //         id: 1,
+    //         title: "Ra mắt bộ sưu tập Gốm Sứ Xuân 2026",
+    //         excerpt: "Khám phá những thiết kế độc đáo lấy cảm hứng từ hoa đào, mai vàng và các biểu tượng may mắn của năm mới.",
+    //         image: "https://images.unsplash.com/photo-1578500494198-246f612d3b3d?w=400&h=250&fit=crop",
+    //         date: "15/01/2026"
+    //     },
+    //     {
+    //         id: 2,
+    //         title: "Bí quyết chọn bộ ấm trà phù hợp",
+    //         excerpt: "Hướng dẫn chi tiết cách lựa chọn ấm trà tử sa, sứ cao cấp phù hợp với từng loại trà và phong cách thưởng thức.",
+    //         image: "https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?w=400&h=250&fit=crop",
+    //         date: "10/01/2026"
+    //     },
+    //     {
+    //         id: 3,
+    //         title: "Nghệ thuật Bát Tràng - Di sản nghìn năm",
+    //         excerpt: "Tìm hiểu về lịch sử và quy trình làm gốm truyền thống tại làng nghề Bát Tràng nổi tiếng.",
+    //         image: "https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=400&h=250&fit=crop",
+    //         date: "05/01/2026"
+    //     }
+    // ];
 
     if (isChecking) {
         return (
@@ -473,21 +489,43 @@ function LandingPage() {
                     </div>
 
                     <div className={styles.newsGrid}>
-                        {newsArticles.map((article) => (
-                            <div key={article.id} className={styles.newsCard}>
-                                <div className={styles.newsImgWrap}>
-                                    <img src={article.image} alt={article.title} />
-                                    <div className={styles.newsDate}>{article.date}</div>
-                                </div>
-                                <div className={styles.newsContent}>
-                                    <h3 className={styles.newsTitle}>{article.title}</h3>
-                                    <p className={styles.newsExcerpt}>{article.excerpt}</p>
-                                    <a href="#" className={styles.newsReadMore}>
-                                        Đọc thêm <RightOutlined />
-                                    </a>
-                                </div>
+                        {loadingNews ? (
+                            <div style={{ textAlign: 'center', gridColumn: '1 / -1', padding: '40px 0' }}>
+                                <Spin tip="Đang tải tin tức..." />
                             </div>
-                        ))}
+                        ) : newsArticles.length > 0 ? (
+                            newsArticles.map((article) => (
+                                <div 
+                                    key={article.MaTinTuc} 
+                                    className={styles.newsCard} 
+                                    onClick={() => navigate(`/news/${article.MaTinTuc}`)} 
+                                >
+                                    <div className={styles.newsImgWrap}>
+                                        <img src={article.HinhAnh || 'https://via.placeholder.com/400x250'} alt={article.TieuDe} />
+                                        <div className={styles.newsDate}>
+                                            {new Date(article.NgayTao).toLocaleDateString('vi-VN')}
+                                        </div>
+                                    </div>
+                                    <div className={styles.newsContent}>
+                                        <h3 className={styles.newsTitle} title={article.TieuDe}>
+                                            {article.TieuDe}
+                                        </h3>
+                                        <p className={styles.newsExcerpt}>
+                                            {article.NoiDung 
+                                                ? article.NoiDung.replace(/<[^>]+>/g, '').substring(0, 120) + '...' 
+                                                : 'Đang cập nhật nội dung...'}
+                                        </p>
+                                        <span className={styles.newsReadMore}>
+                                            Đọc thêm <RightOutlined />
+                                        </span>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div style={{ textAlign: 'center', gridColumn: '1 / -1', color: '#888' }}>
+                                Hiện chưa có tin tức nào.
+                            </div>
+                        )}
                     </div>
                 </div>
             </section>
