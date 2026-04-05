@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   Tabs, Tag, Table, Button, Empty, Spin, Modal,
-  Descriptions, message, Select, Input, Space, DatePicker, Card, Row, Col,Divider,Avatar
+  Descriptions, message, Select, Input, Space, DatePicker, Card, Row, Col, Divider, Avatar
 } from 'antd';
 import {
   ShoppingOutlined, ArrowLeftOutlined, EyeOutlined,
@@ -10,7 +10,6 @@ import {
   EditOutlined, SearchOutlined, TeamOutlined, DollarOutlined, RiseOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-
 import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
 import styles from './AdminDashboard.module.css';
