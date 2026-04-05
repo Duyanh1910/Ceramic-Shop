@@ -42,12 +42,15 @@ export default function ProductReview({productId}){
     return {avg: Math.round(avg*10)/10, total: reviews.length,dist};
   })();
 
-  useEffect(()=>{
-    if(productId){
-      fetchReview();
-      if(isLoggedIn) CheckCanreView();
-    }
-  }, [productId]);
+  useEffect(() => {
+    const init = async () => {
+      if (productId) {
+        await fetchReview();
+        if (isLoggedIn) CheckCanreView();
+      }
+    };
+    init();
+  }, [productId, isLoggedIn]);
 
   const fetchReview = async()=>{
     setLoading(true);
@@ -62,10 +65,10 @@ export default function ProductReview({productId}){
       setLoading(false);
     }
   }
-  const CheckCanreView = async()=>{
+  const CheckCanReview = async()=>{
     try{
       const res = await axios.get(`${API_BASE}/orders?status=3&limit=50`, authHeader);
-      const completedOrders = res.data?.result?.data || [];
+      const completedOrders = res.data?.result?.data || res.data?.result?.orders || res.data?.result || [];
       let eligible = null;
 
       for(const order of completedOrders){
@@ -108,7 +111,7 @@ export default function ProductReview({productId}){
   const checkHasPendingOrder = async()=>{
     try{
       const res = await axios.get(`${API_BASE}/orders?limit=50`, authHeader);
-      const allOders = res.data?.result?.data || [];
+      const allOders = res.data?.result?.data || res.data?.result?.orders || res.data?.result || [];
       return allOders.some((order)=>{
         const details = order.ChiTietDonHangs || [];
         return details.some((d)=>{
