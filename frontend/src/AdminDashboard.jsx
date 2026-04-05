@@ -209,7 +209,7 @@ export default function AdminOrder() {
       render: (v) => new Date(v).toLocaleDateString('vi-VN'),
     },
     {
-      title: 'Khách hàng',
+      title: 'Người nhận',
       dataIndex: 'TenNguoiNhan',
       render: (text, record) => (
         <div>
@@ -348,7 +348,6 @@ export default function AdminOrder() {
         </div>
       </Card>
 
-      {/* --- MODAL CẬP NHẬT TRẠNG THÁI --- */}
       <Modal
         title="Cập nhật trạng thái đơn hàng"
         open={updateModal}
@@ -374,7 +373,6 @@ export default function AdminOrder() {
         </Select>
       </Modal>
 
-      {/* --- MODAL CHI TIẾT ĐƠN HÀNG --- */}
       <Modal
         open={detailModal}
         onCancel={() => setDetailModal(false)}
@@ -385,7 +383,6 @@ export default function AdminOrder() {
       >
         {selectedOrder && (
           <div className={styles.detailWrap}>
-            {/* 1. THÔNG TIN KHÁCH HÀNG & GIAO HÀNG */}
             <Descriptions column={{ xxl: 2, xl: 2, lg: 2, md: 2, sm: 1, xs: 1 }} bordered size="small" className={styles.descriptions}>
               <Descriptions.Item label="Ngày đặt">
                 {new Date(selectedOrder.NgayDat).toLocaleString('vi-VN')}
