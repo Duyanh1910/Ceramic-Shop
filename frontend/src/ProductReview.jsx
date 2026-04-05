@@ -64,7 +64,7 @@ export default function ProductReview({productId}){
   }
   const CheckCanreView = async()=>{
     try{
-      const res = await axios.get(`${API_BASE}/orders/me?status=3&limit=50`,authHeader);
+      const res = await axios.get(`${API_BASE}/orders?status=3&limit=50`, authHeader);
       const completedOrders = res.data?.result?.data || [];
       let eligible = null;
 
@@ -107,7 +107,7 @@ export default function ProductReview({productId}){
   };
   const checkHasPendingOrder = async()=>{
     try{
-      const res = await axios.get(`${API_BASE}/orders/me?limit=50`,authHeader);
+      const res = await axios.get(`${API_BASE}/orders?limit=50`, authHeader);
       const allOders = res.data?.result?.data || [];
       return allOders.some((order)=>{
         const details = order.ChiTietDonHangs || [];
