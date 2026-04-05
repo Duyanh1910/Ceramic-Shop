@@ -12,9 +12,9 @@ const API_BASE = 'https://ceramic-shop-u8ak.onrender.com/api/v1';
 const RATING_LABELS = {1: 'Rất tệ', 2:'Tệ', 3:'Bình thường', 4:'Tốt', 5:'Xuất sắc'};
 
 export default function ProductReview({productId}){
-  const token = localStorage.getItem('token');
-  const isLoggedIn =!!token;
-  const authHeader={headers:{Authorization:`Bearer ${token}`}};
+  const token = localStorage.getItem('customer_token') || localStorage.getItem('token');
+  const isLoggedIn = !!token;
+  const authHeader = { headers: { Authorization: `Bearer ${token}` } };
 
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
