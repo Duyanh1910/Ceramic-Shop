@@ -168,8 +168,8 @@ export default function AdminOrder() {
     if (!editingOrder) return;
     setUpdateLoading(true);
     try {
-      await axios.put(
-        `${API_BASE}/admin/orders/${editingOrder.MaHienThi}/status`, 
+      await axios.patch(
+        `${API_BASE}/admin/orders/${editingOrder.MaHienThi}`, 
         { TrangThaiDonHang: newStatus }, 
         authHeader
       );
