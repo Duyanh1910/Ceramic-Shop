@@ -16,7 +16,6 @@ const PaymentSuccess = () => {
 
   const { status, method, orderId, amount, message } = paymentData;
 
-  // Lấy dữ liệu API
   useEffect(() => {
     const verifyPayment = async () => {
       const appTransId = searchParams.get('apptransid');
@@ -32,7 +31,6 @@ const PaymentSuccess = () => {
             `https://ceramic-shop-u8ak.onrender.com/api/v1/payment/check-status/${appTransId}`
           );
 
-          // Lấy đúng biến success/isPending từ Backend API của ZaloPay
           if (res.data.success === true) {
             setPaymentData({
               status: 'success',
@@ -90,21 +88,17 @@ const PaymentSuccess = () => {
     verifyPayment();
   }, [searchParams]);
 
-  // Tự động chuyển hướng về trang đơn hàng
   useEffect(() => {
     if (status === 'success') {
       const t = setTimeout(() => {
         window.location.href = '/orders';
-      }, 5000); // 5 giây tự chuyển hướng
+      }, 5000);
       return () => clearTimeout(t);
     }
   }, [status]);
 
-  // Format tiền tệ
   const formatCurrency = (v) =>
     new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(v || 0);
-
-  // Giao diện Đang xử lý
   if (status === 'loading') {
     return (
       <div className="loader-wrapper">
