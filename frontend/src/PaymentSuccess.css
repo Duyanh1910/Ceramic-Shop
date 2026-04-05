@@ -1,0 +1,264 @@
+/* =========================================
+   VARIABLES - THEME CAO CẤP
+========================================= */
+:root {
+  --primary: #A6246D;
+  --primary-glow: rgba(166, 36, 109, 0.4);
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  
+  --success: #10b981;
+  --success-glow: rgba(16, 185, 129, 0.3);
+  --pending: #f59e0b;
+  --pending-glow: rgba(245, 158, 11, 0.3);
+  --error: #ef4444;
+  --error-glow: rgba(239, 68, 68, 0.3);
+}
+
+/* =========================================
+   BACKGROUND & LAYOUT (Hiệu ứng kính mờ)
+========================================= */
+.wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  /* Gradient nền chuyển động nhẹ */
+  background: linear-gradient(-45deg, #fce7f3, #e0e7ff, #f3e8ff, #ffedd5);
+  background-size: 400% 400%;
+  animation: gradientBG 15s ease infinite;
+  padding: 1.5rem;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+.card {
+  width: 100%;
+  max-width: 440px;
+  /* Hiệu ứng Glassmorphism */
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 28px;
+  padding: 3rem 2.5rem;
+  text-align: center;
+  box-shadow: 
+    0 20px 40px -10px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+  animation: cardSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* =========================================
+   ANIMATED ICONS (Icon tự vẽ đường nét)
+========================================= */
+.icon-container {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto 1.5rem auto;
+  position: relative;
+  z-index: 10;
+}
+
+/* Hiệu ứng tỏa sáng xung quanh Icon */
+.icon-container::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  border-radius: 50%;
+  z-index: -1;
+  animation: pulseGlow 2s infinite alternate;
+}
+
+.icon-container.success { background: #ecfdf5; color: var(--success); }
+.icon-container.success::before { box-shadow: 0 0 30px var(--success-glow); }
+
+.icon-container.pending { background: #fffbeb; color: var(--pending); }
+.icon-container.pending::before { box-shadow: 0 0 30px var(--pending-glow); }
+
+.icon-container.error { background: #fef2f2; color: var(--error); }
+.icon-container.error::before { box-shadow: 0 0 30px var(--error-glow); }
+
+/* SVG Stroke Animation */
+.animate-draw {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: drawStroke 0.8s cubic-bezier(0.65, 0, 0.45, 1) 0.2s forwards;
+}
+
+/* =========================================
+   TYPOGRAPHY
+========================================= */
+.title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin: 0 0 0.5rem 0;
+  letter-spacing: -0.5px;
+}
+.title.success { color: var(--success); }
+.title.pending { color: var(--pending); }
+.title.error { color: var(--error); }
+
+.message {
+  color: var(--text-muted);
+  font-size: 1rem;
+  margin-bottom: 2.5rem;
+  line-height: 1.6;
+}
+
+/* =========================================
+   HÓA ĐƠN (RECEIPT TICKET)
+========================================= */
+.receipt {
+  position: relative;
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 2.5rem;
+  text-align: left;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+  border: 1px dashed #cbd5e1;
+}
+
+/* Hiệu ứng lỗ cắt của biên lai */
+.receipt::before, .receipt::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 20px; height: 20px;
+  background-color: var(--bg-color); /* Trùng màu nền để tạo cảm giác xuyên thấu */
+  border-radius: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
+}
+.receipt::before { left: -10px; border-right: 1px dashed #cbd5e1; }
+.receipt::after { right: -10px; border-left: 1px dashed #cbd5e1; }
+
+.receipt-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  font-size: 0.95rem;
+}
+
+.receipt-row:not(:last-child) {
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.receipt-label { color: var(--text-muted); font-weight: 500; }
+.receipt-value { color: var(--text-main); font-weight: 700; text-align: right; }
+
+.highlight-amount {
+  color: var(--primary);
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.tag {
+  background: linear-gradient(135deg, #e0e7ff, #ede9fe);
+  color: #4f46e5;
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+/* =========================================
+   BUTTONS CAO CẤP
+========================================= */
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.btn {
+  display: block;
+  width: 100%;
+  padding: 1rem;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 1.05rem;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn.primary {
+  background: linear-gradient(135deg, var(--primary), #d9468e);
+  color: white;
+  box-shadow: 0 10px 20px var(--primary-glow);
+}
+
+/* Hiệu ứng luồng sáng lướt qua nút */
+.btn.primary::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 50%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: all 0.5s ease;
+}
+
+.btn.primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 25px var(--primary-glow);
+}
+.btn.primary:hover::after { left: 100%; }
+
+.btn.secondary {
+  background: #f1f5f9;
+  color: var(--text-main);
+  border: 1px solid #e2e8f0;
+}
+.btn.secondary:hover { background: #e2e8f0; transform: translateY(-2px); }
+
+/* =========================================
+   LOADING SPINNER
+========================================= */
+.loader-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: var(--bg-color);
+}
+.spinner {
+  width: 60px;
+  height: 60px;
+  border: 5px solid rgba(166, 36, 109, 0.1);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 1s infinite cubic-bezier(0.55, 0.15, 0.45, 0.85);
+  margin-bottom: 1.5rem;
+}
+
+/* =========================================
+   KEYFRAMES (Hoạt ảnh)
+========================================= */
+@keyframes gradientBG {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@keyframes cardSlideUp {
+  0% { transform: translateY(40px) scale(0.95); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+@keyframes drawStroke {
+  100% { stroke-dashoffset: 0; }
+}
+@keyframes pulseGlow {
+  0% { transform: scale(0.9); opacity: 0.7; }
+  100% { transform: scale(1.1); opacity: 1; }
+}

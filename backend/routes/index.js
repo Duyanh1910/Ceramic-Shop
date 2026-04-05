@@ -20,6 +20,8 @@ import vnpayRoutes from "./payment/vnpay.route.js";
 import momoRoutes from "./payment/momo.route.js";
 import newsRoutes from "./news.route.js";
 
+import statisticsRoutes from "./admin/statistics.route.js";
+
 import jwtMiddleware from "../middlewares/jwt.middlewares.js";
 import checkRole from "../middlewares/authorize.middlewares.js";
 
@@ -53,6 +55,13 @@ router.use(
 
 router.use(
   "/admin/orders",
+  jwtMiddleware,
+  checkRole("Admin", "Staff"),
+  adminOrderRoutes,
+);
+
+router.use(
+  "/admin/statistics",
   jwtMiddleware,
   checkRole("Admin", "Staff"),
   adminOrderRoutes,
