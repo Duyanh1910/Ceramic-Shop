@@ -75,10 +75,11 @@ export default function ProductReview({ productId }) {
     try {
       const res = await axios.get(`${API_BASE}/orders?limit=50`, authHeader);
       const allOrders = res.data?.result?.data || res.data?.result?.orders || res.data?.result || [];
+      
       let eligible = null;
+      let hasReviewed = false;
 
       for (const order of allOrders) {
-        // RÀO CHẮN: Chỉ xét những đơn hàng đã giao thành công (Status = 3)
         if (order.TrangThaiDonHang !== 3) continue;
 
         const details = order.ChiTietDonHangs || [];
@@ -94,6 +95,8 @@ export default function ProductReview({ productId }) {
           if (!alreadyReviewed) {
             eligible = matchItem;
             break;
+          } else {
+            hasReviewed = true;
           }
         }
       }
@@ -105,12 +108,16 @@ export default function ProductReview({ productId }) {
       }
       else {
         setCanReview(false);
-        const hasPending = await checkHasPendingOrder(allOrders);
-        if (!hasPending) {
-          setNoReviewReason('not_purchased');
-        }
-        else {
-          setNoReviewReason('not_delivered');
+        
+        if (hasReviewed) {
+          setNoReviewReason('reviewed');
+        } else {
+          const hasPending = await checkHasPendingOrder(allOrders);
+          if (hasPending) {
+            setNoReviewReason('not_delivered');
+          } else {
+            setNoReviewReason('not_purchased');
+          }
         }
       }
     }
@@ -123,7 +130,6 @@ export default function ProductReview({ productId }) {
   const checkHasPendingOrder = async (allOrders) => {
     try {
       return allOrders.some((order) => {
-        // Chỉ xét những đơn chưa Hoàn Thành và chưa Hủy
         if (order.TrangThaiDonHang === 3 || order.TrangThaiDonHang === 4) return false;
 
         const details = order.ChiTietDonHangs || [];
@@ -182,7 +188,7 @@ export default function ProductReview({ productId }) {
     if (canReview === true) return null;
 
     const messages = {
-      not_purchased: 'Bạn cần mua sản phẩm này để có thể đánh giá',
+      not_purchased: 'Bạn cần mua sản phẩm này để có thể đánh giá.',
       not_delivered: (
         <span>
           Đơn hàng của bạn chưa ở trạng thái <Tag color="green" style={{ margin: '0 4px' }}>Hoàn thành</Tag> - chỉ có thể đánh giá sau khi nhận hàng thành công.
