@@ -11,12 +11,17 @@ export const getAllNewsService = async () => {
         attributes: ["TenNhanVien"],
       },
     ],
+    order: [["NgayTao", "DESC"]],
   });
   return news;
 };
 
 export const getNewsContentService = async (id) => {
-  const news = await NewsModel.findByPk(id, {
+  const news = await NewsModel.findOne({
+    where: {
+      MaTinTuc: id,
+      TrangThai: 1,
+    },
     include: [
       {
         model: StaffModel,
