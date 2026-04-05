@@ -5,11 +5,24 @@ export const getAllNewsService = async () => {
     where: {
       TrangThai: 1,
     },
+    include: [
+      {
+        model: StaffModel,
+        attributes: ["TenNhanVien"],
+      },
+    ],
   });
   return news;
 };
 
 export const getNewsContentService = async (id) => {
-  const news = await NewsModel.findByPk(id);
+  const news = await NewsModel.findByPk(id, {
+    include: [
+      {
+        model: StaffModel,
+        attributes: ["TenNhanVien"],
+      },
+    ],
+  });
   return news;
 };
