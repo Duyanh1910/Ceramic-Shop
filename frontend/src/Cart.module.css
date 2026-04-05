@@ -382,3 +382,23 @@
   .colTotal { flex: 100%; text-align: right; }
   .colAction { position: absolute; top: 12px; right: 14px; }
 }
+.emptyState {
+  padding: 60px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 16px;
+}
+
+.btnGoShop {
+  margin-top: 8px;
+  background: #1b437c !important;
+  border-color: #1b437c !important;
+  height: 42px;
+  padding: 0 32px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 15px;
+}
