@@ -12,7 +12,7 @@ import {
 import axios from 'axios';
 import styles from './AdminReports.module.css';
 
-const API_BASE = 'https://ceramic-shop-u8ak.onrender.com/api/v1';
+const API_BASE = 'https://ceramic-shop-u8ak.onrender.com/api/v1/admin/statistics';
 
 const COLORS = ['#1b437c', '#c48c46', '#52c41a', '#e74c3c', '#9b59b6', '#3498db'];
 
