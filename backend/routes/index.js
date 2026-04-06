@@ -64,7 +64,7 @@ router.use(
   "/admin/statistics",
   jwtMiddleware,
   checkRole("Admin", "Staff"),
-  adminOrderRoutes,
+  statisticsRoutes,
 );
 
 router.use("/categories", categoryRoutes);

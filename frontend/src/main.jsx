@@ -1,6 +1,7 @@
-import { StrictMode } from 'react'
+import { StrictMode ,useEffect } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import ReactGA from 'react-ga4';
 import { HelmetProvider } from 'react-helmet-async'
 
 import LandingPage from './LandingPage.jsx'
@@ -24,6 +25,22 @@ import PaymentSuccess from './PaymentSuccess.jsx'
 import OrderTracking from './OrderTracking.jsx'
 import SupportPage from './Supportpage.jsx'
 import NewsDetail from './NewsDetails.jsx'
+
+ReactGA.initialize("G-909W1LHHLD");
+
+const AnalyticsTracker = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+
+    ReactGA.send({
+      hitType: "pageview",
+      page: location.pathname + location.search,
+    });
+  }, [location]);
+
+  return null;
+};
 
 const PublicRoute = ({ children }) => {
   const isCustomerActive = localStorage.getItem('customer_session_active') === 'true';
@@ -78,6 +95,7 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <HelmetProvider>
       <BrowserRouter>
+      <AnalyticsTracker />
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
