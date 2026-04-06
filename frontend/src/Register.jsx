@@ -6,7 +6,7 @@ import styles from './Register.module.css';
 import { Helmet } from 'react-helmet-async';
 import {
   UserOutlined, MailOutlined, LockOutlined,
-  ArrowLeftOutlined, SafetyOutlined,
+  ArrowLeftOutlined, SafetyOutlined,ArrowRightOutlined
 } from '@ant-design/icons';
 
 const { Text, Link } = Typography;
@@ -150,7 +150,7 @@ function Register() {
               style={{ color: '#1b437c', fontWeight: 600, paddingLeft: 0 }}>
               Quay về trang chủ
             </Button>
-            <Button type="link" icon={<ArrowLeftOutlined />} onClick={() => navigate('/home')}
+            <Button type="link" icon={<ArrowRightOutlined />} onClick={() => navigate('/home')}
               style={{ color: '#1b437c', fontWeight: 600, paddingLeft: 0 }}>
               Quay về cửa hàng
             </Button>
