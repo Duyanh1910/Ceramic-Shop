@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import axios from 'axios';
 import styles from './Cart.module.css';
+import AddressSelector from './AddressSelector';
 
 const { Header, Content } = Layout;
 
@@ -474,7 +475,7 @@ function Cart() {
                         name="DiaChi"
                         rules={[{ required: true, message: 'Vui lòng nhập địa chỉ giao hàng!' }, { min: 10, message: 'Địa chỉ phải có ít nhất 10 ký tự!' }]}
                       >
-                        <Input.TextArea rows={3} className={styles.customInput} placeholder="Nhập số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố" />
+                        <AddressSelector />
                       </Form.Item>
 
                       <Form.Item 
