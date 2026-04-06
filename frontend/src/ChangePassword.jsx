@@ -67,7 +67,17 @@ export default function ChangePassword() {
     return (
       <div className={styles.pageWrapper}>
         <header className={styles.topHeader}>
-          <div className={styles.logo} onClick={() => navigate('/')}>CERAMIC-SHOP</div>
+          <div className={styles.logoBox} onClick={() => navigate('/')}>
+            <img 
+              src="https://res.cloudinary.com/dcmwz0uis/image/upload/v1774819165/IMG_20260330_041641_qwo8lc.jpg" 
+              alt="Ceramic Shop Logo" 
+              className={styles.logoImg} 
+            />
+            <div className={styles.logoTextWrap}>
+              <h1 className={styles.logoText}>CERAMIC-SHOP</h1>
+              <span className={styles.logoSub}>TINH HOA GỐM SỨ VIỆT</span>
+            </div>
+          </div>
         </header>
         <div className={styles.centerWrapper}>
           <Spin size="large" />
@@ -81,7 +91,17 @@ export default function ChangePassword() {
       <Helmet><title>Đổi mật khẩu | Ceramic Shop</title></Helmet>
 
       <header className={styles.topHeader}>
-        <div className={styles.logo} onClick={() => navigate('/')}>CERAMIC-SHOP</div>
+        <div className={styles.logoBox} onClick={() => navigate('/')}>
+          <img 
+            src="https://res.cloudinary.com/dcmwz0uis/image/upload/v1774819165/IMG_20260330_041641_qwo8lc.jpg" 
+            alt="Ceramic Shop Logo" 
+            className={styles.logoImg} 
+          />
+          <div className={styles.logoTextWrap}>
+            <h1 className={styles.logoText}>CERAMIC-SHOP</h1>
+            <span className={styles.logoSub}>TINH HOA GỐM SỨ VIỆT</span>
+          </div>
+        </div>
         <Button type="link" icon={<ArrowLeftOutlined />}
           onClick={() => navigate('/profile')} className={styles.btnBack}>
           Quay lại hồ sơ

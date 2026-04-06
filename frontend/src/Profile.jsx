@@ -48,10 +48,9 @@ function Profile() {
       localStorage.removeItem('name');
       localStorage.removeItem('role');
       localStorage.removeItem('avatar');
-      
-      ///navigate('/login'); 
     }
   };
+
   const handleAvatarChange = async (info) => {
     const file = info.file;
     if (file.size > 1024 * 1024) {
@@ -115,7 +114,17 @@ function Profile() {
       </Helmet>
 
       <Header className={styles.topHeader}>
-        <div className={styles.logo} onClick={() => navigate('/')}>CERAMIC-SHOP</div>
+        <div className={styles.logoBox} onClick={() => navigate('/')}>
+          <img 
+            src="https://res.cloudinary.com/dcmwz0uis/image/upload/v1774819165/IMG_20260330_041641_qwo8lc.jpg" 
+            alt="Ceramic Shop Logo" 
+            className={styles.logoImg} 
+          />
+          <div className={styles.logoTextWrap}>
+            <h1 className={styles.logoText}>CERAMIC-SHOP</h1>
+            <span className={styles.logoSub}>TINH HOA GỐM SỨ VIỆT</span>
+          </div>
+        </div>
         <div className={styles.headerActions}>
           <Button type="link" icon={<ArrowLeftOutlined />} onClick={() => navigate('/home')} className={styles.btnBack}>
             Quay về trang chủ
@@ -136,7 +145,7 @@ function Profile() {
                 </div>
               </div>
               <ul className={styles.sidebarMenu}>
-                <li className={styles.active}><ProfileOutlined /> Thông tin tài khoản</li>
+                <li className={styles.active}><ProfileOutlined /> Thông định tài khoản</li>
                 <li onClick={() => navigate('/change-password')}>
                   <LockOutlined /> Đổi mật khẩu
                 </li>
