@@ -20,13 +20,16 @@ function Login() {
   const [mood, setMood]                 = useState('idle');
   const navigate = useNavigate();
 
-  const handlePasswordFocus = () => setMood('idle');
+  // Xử lý biểu cảm của linh vật
+  const handlePasswordFocus = () => {
+    if (!passwordVisible) setMood('shy');
+  };
   const handlePasswordBlur  = () => setMood('idle');
   const handleUsernameFocus = () => setMood('idle');
 
   const handleLogin = async (values) => {
     setLoading(true);
-    setMood('idle');
+    setMood('idle'); // Reset tâm trạng khi bắt đầu gửi API
     try {
       const keysToRemove = [
         'customer_token', 'admin_token', 'token',
@@ -46,6 +49,7 @@ function Login() {
       const currentRole = user.role || user.Role || 'Customer';
       const token = response.data.token || null;
 
+      // Đăng nhập thành công -> Phượng hoàng vui vẻ
       setMood('happy');
 
       if (currentRole === 'Admin' || currentRole === 'Staff') {
@@ -54,18 +58,31 @@ function Login() {
         localStorage.setItem('admin_session_active', 'true');
         localStorage.setItem('role', currentRole);
         localStorage.setItem('username', currentUsername);
-        setTimeout(() => { message.success(`Đăng nhập ${currentRole} thành công!`); navigate('/admin'); }, 800);
+        
+        // Đợi 800ms để xem biểu cảm vui vẻ trước khi chuyển trang
+        setTimeout(() => { 
+          message.success(`Đăng nhập ${currentRole} thành công!`); 
+          navigate('/admin'); 
+        }, 800);
       } else {
         if (typeof saveSession === 'function') saveSession(currentUsername, 'Customer', true, token);
         localStorage.setItem('customer_token', token);
         localStorage.setItem('customer_session_active', 'true');
         localStorage.setItem('role', 'Customer');
         localStorage.setItem('username', currentUsername);
-        setTimeout(() => { message.success('Đăng nhập thành công!'); navigate('/home'); }, 800);
+        
+        // Đợi 800ms để xem biểu cảm vui vẻ trước khi chuyển trang
+        setTimeout(() => { 
+          message.success('Đăng nhập thành công!'); 
+          navigate('/home'); 
+        }, 800);
       }
     } catch (error) {
+      // Đăng nhập thất bại -> Phượng hoàng khóc
       setMood('sad');
       message.error(error.response?.data?.message || 'Đăng nhập thất bại!');
+      
+      // Reset lại biểu cảm bình thường sau 3 giây
       setTimeout(() => setMood('idle'), 3000);
     } finally {
       setLoading(false);
@@ -134,7 +151,7 @@ function Login() {
                   visible: passwordVisible,
                   onVisibleChange: (v) => {
                     setPasswordVisible(v);
-                    setMood(v ? 'shy' : 'idle');
+                    setMood(v ? 'idle' : 'shy');
                   },
                 }}
               />
