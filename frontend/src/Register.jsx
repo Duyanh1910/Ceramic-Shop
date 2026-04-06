@@ -150,9 +150,9 @@ function Register() {
               style={{ color: '#1b437c', fontWeight: 600, paddingLeft: 0 }}>
               Quay về trang chủ
             </Button>
-            <Button type="link" icon={<ArrowRightOutlined />} onClick={() => navigate('/home')}
+            <Button type="link" onClick={() => navigate('/home')}
               style={{ color: '#1b437c', fontWeight: 600, paddingLeft: 0 }}>
-              Quay về cửa hàng
+              Quay về cửa hàng <ArrowRightOutlined />
             </Button>
           </div>
 
