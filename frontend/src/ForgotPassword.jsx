@@ -147,7 +147,6 @@ function ForgotPassword() {
       <div className={styles.shape3} />
 
       <header className={styles.topHeader}>
-        {/* Khối Logo đã được đưa về đoạn code y hệt như bạn gửi */}
         <div className={styles.logoBox} onClick={() => navigate('/landing')}>
             <img 
                 src="https://res.cloudinary.com/dcmwz0uis/image/upload/v1774819165/IMG_20260330_041641_qwo8lc.jpg" 
