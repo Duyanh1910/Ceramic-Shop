@@ -9,7 +9,6 @@ import { useAutoLogout, clearSession } from './useAuth.js';
 
 const { Header, Sider, Content } = Layout;
 
-// ĐÃ SỬA: ĐƯA PRODUCT RATING RA NGOÀI HÀM HOME ĐỂ CHỐNG GIẬT LAG
 const ProductRating = ({ productId }) => {
   const [rating, setRating] = useState(0);
   const [total, setTotal] = useState(0);

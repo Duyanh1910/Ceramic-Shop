@@ -141,7 +141,6 @@ function ForgotPassword() {
     <div className={styles.pageWrapper}>
       <Helmet><title>Quên mật khẩu | Ceramic Shop</title></Helmet>
 
-      {/* Shapes Background */}
       <div className={styles.shape1} />
       <div className={styles.shape2} />
       <div className={styles.shape3} />
