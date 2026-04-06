@@ -12,7 +12,7 @@ import {
 import axios from 'axios';
 import styles from './AdminReports.module.css';
 
-const API_BASE = 'https:
+const API_BASE = 'https://ceramic-shop-u8ak.onrender.com/api/v1';
 
 const COLORS = ['#1b437c', '#c48c46', '#52c41a', '#e74c3c', '#9b59b6', '#3498db'];
 
@@ -72,6 +72,7 @@ export default function AdminReports() {
   const [chartData, setChartData] = useState([]);
   const [summary, setSummary] = useState({ revenue: 0, orders: 0, customers: 0, avgOrder: 0 });
   const [loading, setLoading] = useState(false);
+
 
   const [bestSellers, setBestSellers] = useState([]);
   const [mostViewed, setMostViewed] = useState([]);
@@ -141,6 +142,8 @@ export default function AdminReports() {
     if (mode === 'quarter') return `${QUARTERS.find((q) => q.value === quarter)?.label} - ${year}`;
     return `Năm ${year}`;
   };
+
+  
 
   const bestSellerColumns = [
     { title: '#', render: (_, __, i) => <span className={styles.rank}>{i + 1}</span>, width: 44 },
