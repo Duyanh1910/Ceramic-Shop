@@ -10,7 +10,8 @@
 .profileWrapper {
   min-height: 100vh;
   background-color: #fdfdfd;
-  background: linear-gradient(rgba(255, 255, 255, 0.8), rgb(213, 233, 255)), url('https://res.cloudinary.com/dcmwz0uis/image/upload/v1774819412/bghome_dnne19.avif') center/cover no-repeat fixed;  background-attachment: fixed;
+  background: linear-gradient(rgba(255, 255, 255, 0.8), rgb(213, 233, 255)), url('https://res.cloudinary.com/dcmwz0uis/image/upload/v1774819412/bghome_dnne19.avif') center/cover no-repeat fixed;  
+  background-attachment: fixed;
 }
 
 .topHeader {
@@ -18,15 +19,17 @@
   justify-content: space-between;
   align-items: center;
   padding: 0 50px;
-  background-color: #ffffff;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
-  height: 80px;
+  background-color: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 1000;
+  height: 75px;
+  transition: all 0.3s ease;
 }
 
-/* Cụm Logo chuẩn */
 .logoBox {
   display: flex;
   align-items: center;
@@ -38,11 +41,13 @@
   width: 60px;
   height: auto;
   object-fit: contain;
+  mix-blend-mode: multiply; 
 }
 
 .logoTextWrap {
   display: flex;
   flex-direction: column;
+  justify-content: center;
 }
 
 .logoText {
@@ -52,7 +57,7 @@
   margin: 0;
   color: #173354;
   letter-spacing: 2px;
-  line-height: 1.2;
+  line-height: 1; 
 }
 
 .logoSub {
@@ -60,6 +65,8 @@
   letter-spacing: 2px;
   color: #BB9244;
   font-weight: normal; 
+  margin-top: 4px; 
+  line-height: 1;
 }
 
 .btnBack {
