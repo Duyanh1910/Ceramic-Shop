@@ -242,8 +242,8 @@ export default function OrderTracking() {
           </div>
         </div>
         <Button type="link" icon={<ArrowLeftOutlined />}
-          onClick={() => navigate('/profile')} className={styles.btnBack}>
-          Về hồ sơ
+          onClick={() => navigate('/home')} className={styles.btnBack}>
+          Về cửa hàng
         </Button>
       </header>
 

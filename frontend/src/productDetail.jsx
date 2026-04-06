@@ -241,12 +241,18 @@ function ProductDetail() {
   const userMenu = [
     { 
       key: '1', 
-      label: 'Sửa hồ sơ', 
+      label: 'Tài khoản', 
       icon: <SettingOutlined />,
       onClick: () => navigate('/profile') 
     },
     { type: 'divider' },
-    { key: '2', danger: true, label: 'Đăng xuất', icon: <LogoutOutlined />, onClick: handleLogout },
+    {key:'2',
+      label:'Đơn hàng của tôi',
+      icon: <ShoppingOutlined />,
+      onClick: ()=> navigate('/orders')
+    },
+    {type: 'divider'},
+    { key: '3', danger: true, label: 'Đăng xuất', icon: <LogoutOutlined />, onClick: handleLogout },
   ];
 
   const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price || 0);
