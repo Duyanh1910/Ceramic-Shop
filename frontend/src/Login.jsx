@@ -93,17 +93,22 @@ function Login() {
         </div>
 
         <div className={styles.cardForm}>
-          <div style={{ marginBottom: 15 }}>
-            <Button type="link" icon={<ArrowLeftOutlined />}
-              onClick={() => navigate('/')} className={styles.backButton}>
+          <div style={{ marginBottom: 15, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Button 
+              type="link" 
+              icon={<ArrowLeftOutlined />}
+              onClick={() => navigate('/')} 
+              className={styles.backButton}
+            >
               Trang chủ
             </Button>
+
             <Button 
               type="link" 
               icon={<ArrowRightOutlined />} 
-              style={{display: "flex", alignItems: "flex-end"}} 
               onClick={() => navigate('/home')} 
-              className={styles.backButton}>
+              className={styles.backButton}
+            >
               Cửa hàng
             </Button>
           </div>
