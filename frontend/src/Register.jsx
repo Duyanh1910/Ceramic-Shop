@@ -131,13 +131,20 @@ function Register() {
   return (
     <div className={styles.registerContainer}>
       <Helmet><title>Đăng ký | Ceramic Shop</title></Helmet>
-      <div className={styles.combinedCard}>
-        <div className={`${styles.cornerPattern} ${styles.topLeft}`} />
-        <div className={`${styles.cornerPattern} ${styles.topRight}`} />
-        <div className={`${styles.cornerPattern} ${styles.bottomLeft}`} />
-        <div className={`${styles.cornerPattern} ${styles.bottomRight}`} />
 
-        <div className={styles.cardImage} />
+      {/* Thêm các shape background giống trang Login */}
+      <div className={styles.shape1} />
+      <div className={styles.shape2} />
+      <div className={styles.shape3} />
+
+      <div className={styles.combinedCard}>
+        {/* Giao diện Logo giống trang Login */}
+        <div className={styles.cardImage}>
+          <div className={styles.glowEffect} />
+          <img src="/logo.png" alt="Ceramic Shop Logo" className={styles.logoDisplayImg} />
+          <h2 className={styles.logoDisplayTitle}>CERAMIC-SHOP</h2>
+          <p className={styles.logoDisplaySub}>TINH HOA GỐM SỨ VIỆT</p>
+        </div>
 
         <div className={styles.cardForm}>
           <div style={{ marginBottom: 10 }}>
