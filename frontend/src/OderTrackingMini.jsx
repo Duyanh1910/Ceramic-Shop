@@ -7,6 +7,7 @@ import {
   EyeOutlined, CloseCircleOutlined, FileTextOutlined, CarOutlined,
   CheckCircleOutlined, ClockCircleOutlined, StopOutlined,
 } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import styles from './OrderTracking.module.css';
 
@@ -39,7 +40,8 @@ const TIMELINE_STEPS = [
   { title: 'Hoàn thành', description: 'Giao thành công' },
 ];
 
-export default function OrderTracking() {
+export default function OrderTrackingMini() {
+  const navigate = useNavigate();
   const token = localStorage.getItem('customer_token') || localStorage.getItem('token');
   
   const authHeader = { 
@@ -205,8 +207,12 @@ export default function OrderTracking() {
       {loading ? (
         <div className={styles.loadingWrap}><Spin size="large" /></div>
       ) : orders.length === 0 ? (
-        <div className={styles.emptyWrap}>
-          <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Bạn chưa có đơn hàng nào" />
+        <div className={styles.emptyWrap} style={{ padding: '40px 0' }}>
+          <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Bạn chưa có đơn hàng nào">
+             <Button type="primary" onClick={() => navigate('/')} style={{ background: '#1b437c', marginTop: 10 }}>
+                Mua sắm ngay
+             </Button>
+          </Empty>
         </div>
       ) : (
         <Table
