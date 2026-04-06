@@ -6,9 +6,6 @@ import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
 import styles from './Profile.module.css';
 
-import ChangePassword from './ChangePassword'; 
-import OrderTracking from './OrderTracking';
-
 const { Header, Content, Sider } = Layout;
 
 function Profile() {
@@ -16,8 +13,6 @@ function Profile() {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState('');
-  
-  const [activeTab, setActiveTab] = useState('profile');
 
   const CLOUDINARY_CLOUD_NAME = 'dcmwz0uis';
   const CLOUDINARY_UPLOAD_PRESET = 'the_creamy_shop';
@@ -150,115 +145,88 @@ function Profile() {
                   <span><UserOutlined /> Thành viên</span>
                 </div>
               </div>
-              
               <ul className={styles.sidebarMenu}>
-                <li 
-                  className={activeTab === 'profile' ? styles.active : ''} 
-                  onClick={() => setActiveTab('profile')}
-                >
-                  <ProfileOutlined /> Thông tin tài khoản
-                </li>
-                <li 
-                  className={activeTab === 'password' ? styles.active : ''} 
-                  onClick={() => setActiveTab('password')}
-                >
+                <li className={styles.active}><ProfileOutlined /> Thông tin tài khoản</li>
+                <li onClick={() => navigate('/change-password')}>
                   <LockOutlined /> Đổi mật khẩu
                 </li>
-                <li 
-                  className={activeTab === 'orders' ? styles.active : ''} 
-                  onClick={() => setActiveTab('orders')}
-                >
-                  <ShoppingOutlined /> Đơn hàng của tôi
-                </li>
+                <li onClick={()=>navigate('/orders')}><ShoppingOutlined /> Đơn hàng của tôi</li>
               </ul>
             </Sider>
 
             <Content className={styles.formContent}>
-              
-              {activeTab === 'profile' && (
-                <>
-                  <div className={styles.formHeader}>
-                    <h2 className={styles.formTitle}>Hồ Sơ Của Tôi</h2>
-                    <p className={styles.formSub}>Quản lý thông tin hồ sơ để bảo mật tài khoản</p>
+              <div className={styles.formHeader}>
+                <h2 className={styles.formTitle}>Hồ Sơ Của Tôi</h2>
+                <p className={styles.formSub}>Quản lý thông tin hồ sơ để bảo mật tài khoản</p>
+              </div>
+              <Divider className={styles.divider} />
+
+              <div className={styles.formBody}>
+                <div className={styles.formLeft}>
+                  <Form 
+                    form={form} 
+                    layout="vertical" 
+                    onFinish={handleUpdateProfile}
+                    className={styles.profileForm}
+                  >
+                    <Form.Item 
+                      label="Họ và Tên" 
+                      name="FullName"
+                      rules={[{ required: true, message: 'Vui lòng nhập họ tên!' }]}
+                    >
+                      <Input className={styles.customInput} />
+                    </Form.Item>
+
+                    <Form.Item label="Email" name="Email">
+                      <Input className={styles.customInput} disabled /> 
+                    </Form.Item>
+
+                    <Form.Item 
+                      label="Số điện thoại" 
+                      name="SDT"
+                      rules={[{ required: true, message: 'Vui lòng nhập số điện thoại!' }]}
+                    >
+                      <Input className={styles.customInput} />
+                    </Form.Item>
+
+                    <Form.Item label="Địa chỉ liên hệ" name="Diachi">
+                      <Input className={styles.customInput} />
+                    </Form.Item>
+
+                    <Form.Item name="Avatar" hidden>
+                      <Input /> 
+                    </Form.Item>
+
+                    <Form.Item>
+                      <Button type="primary" htmlType="submit" className={styles.btnSave} loading={loading}>
+                        LƯU THAY ĐỔI
+                      </Button>
+                    </Form.Item>
+                  </Form>
+                </div>
+
+                <div className={styles.formRight}>
+                  <div className={styles.avatarSection}>
+                    <Avatar src={avatarUrl} size={120} className={styles.avatarBig} />
+                    <Upload 
+                      showUploadList={false} 
+                      beforeUpload={() => false}
+                      onChange={handleAvatarChange}
+                      accept=".jpg,.jpeg,.png"
+                    >
+                      <Button icon={<UploadOutlined />} className={styles.btnUpload} loading={loading}>
+                        Chọn Ảnh
+                      </Button>
+                    </Upload>
+                    <p className={styles.avatarNote}>
+                      Dung lượng file tối đa 1 MB<br/>
+                      Định dạng: .JPEG, .PNG
+                    </p>
                   </div>
-                  <Divider className={styles.divider} />
-
-                  <div className={styles.formBody}>
-                    <div className={styles.formLeft}>
-                      <Form 
-                        form={form} 
-                        layout="vertical" 
-                        onFinish={handleUpdateProfile}
-                        className={styles.profileForm}
-                      >
-                        <Form.Item 
-                          label="Họ và Tên" 
-                          name="FullName"
-                          rules={[{ required: true, message: 'Vui lòng nhập họ tên!' }]}
-                        >
-                          <Input className={styles.customInput} />
-                        </Form.Item>
-
-                        <Form.Item label="Email" name="Email">
-                          <Input className={styles.customInput} disabled /> 
-                        </Form.Item>
-
-                        <Form.Item 
-                          label="Số điện thoại" 
-                          name="SDT"
-                          rules={[{ required: true, message: 'Vui lòng nhập số điện thoại!' }]}
-                        >
-                          <Input className={styles.customInput} />
-                        </Form.Item>
-
-                        <Form.Item label="Địa chỉ liên hệ" name="Diachi">
-                          <Input className={styles.customInput} />
-                        </Form.Item>
-
-                        <Form.Item name="Avatar" hidden>
-                          <Input /> 
-                        </Form.Item>
-
-                        <Form.Item>
-                          <Button type="primary" htmlType="submit" className={styles.btnSave} loading={loading}>
-                            LƯU THAY ĐỔI
-                          </Button>
-                        </Form.Item>
-                      </Form>
-                    </div>
-
-                    <div className={styles.formRight}>
-                      <div className={styles.avatarSection}>
-                        <Avatar src={avatarUrl} size={120} className={styles.avatarBig} />
-                        <Upload 
-                          showUploadList={false} 
-                          beforeUpload={() => false}
-                          onChange={handleAvatarChange}
-                          accept=".jpg,.jpeg,.png"
-                        >
-                          <Button icon={<UploadOutlined />} className={styles.btnUpload} loading={loading}>
-                            Chọn Ảnh
-                          </Button>
-                        </Upload>
-                        <p className={styles.avatarNote}>
-                          Dung lượng file tối đa 1 MB<br/>
-                          Định dạng: .JPEG, .PNG
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </>
-              )}
-
-              {activeTab === 'password' && (
-                <ChangePassword />
-              )}
-
-              {activeTab === 'orders' && (
-                <OrderTracking />
-              )}
-
+                </div>
+              </div>
             </Content>
+
           </Layout>
         </div>
       </Content>

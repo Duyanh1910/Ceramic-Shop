@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Form, Input, Button, message, Steps, Spin, Divider } from 'antd';
-import { LockOutlined, CheckCircleFilled } from '@ant-design/icons';
+import { Form, Input, Button, message, Steps, Spin } from 'antd';
+import { LockOutlined, CheckCircleFilled, ArrowLeftOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { Helmet } from 'react-helmet-async';
 import styles from './ChangePassword.module.css';
 import SetPasswordModal from './SetPasswordModal.jsx';
 
@@ -15,6 +17,7 @@ export default function ChangePassword() {
   const [isOAuthUser, setIsOAuthUser] = useState(false);
   const [oauthProvider, setOauthProvider] = useState('google');
   const [showSetPassword, setShowSetPassword] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     checkUserType();
@@ -33,6 +36,7 @@ export default function ChangePassword() {
       }
     } catch {
       message.error("Vui lòng đăng nhập để đổi mật khẩu!");
+      navigate('/login');
     } finally {
       setCheckingUser(false);
     }
@@ -47,7 +51,6 @@ export default function ChangePassword() {
         { withCredentials: true }
       );
       setSuccess(true);
-      form.resetFields();
     } catch (err) {
       message.error(err.response?.data?.message || 'Có lỗi xảy ra!');
     } finally {
@@ -61,114 +64,174 @@ export default function ChangePassword() {
   };
 
   if (checkingUser) {
-    return <div style={{ textAlign: 'center', padding: '50px 0' }}><Spin size="large" /></div>;
+    return (
+      <div className={styles.pageWrapper}>
+        <header className={styles.topHeader}>
+          <div className={styles.logoBox} onClick={() => navigate('/')}>
+            <img 
+              src="https://res.cloudinary.com/dcmwz0uis/image/upload/v1774819165/IMG_20260330_041641_qwo8lc.jpg" 
+              alt="Ceramic Shop Logo" 
+              className={styles.logoImg} 
+            />
+            <div className={styles.logoTextWrap}>
+              <h1 className={styles.logoText}>CERAMIC-SHOP</h1>
+              <span className={styles.logoSub}>TINH HOA GỐM SỨ VIỆT</span>
+            </div>
+          </div>
+        </header>
+        <div className={styles.centerWrapper}>
+          <Spin size="large" />
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div style={{ maxWidth: '600px', margin: '0 auto', width: '100%' }}>
-      {!success ? (
-        <>
-          <div style={{ marginBottom: 10 }}>
-            <h2 style={{ fontSize: '22px', fontWeight: 700, color: '#1b437c', textTransform: 'uppercase', margin: '0 0 5px 0' }}>
-              Đổi Mật Khẩu
-            </h2>
-            <p style={{ color: '#666', margin: 0, fontSize: '14px' }}>
-              Nhập mật khẩu hiện tại và mật khẩu mới để cập nhật
-            </p>
-          </div>
-          <Divider style={{ margin: '15px 0 30px 0', borderColor: '#f0f0f0' }} />
+    <div className={styles.pageWrapper}>
+      <Helmet><title>Đổi mật khẩu | Ceramic Shop</title></Helmet>
 
-          <Steps
-            className={styles.steps}
-            size="small"
-            current={0}
-            items={[
-              { title: 'Xác minh' },
-              { title: 'Mật khẩu mới' },
-              { title: 'Hoàn tất' },
-            ]}
+      <header className={styles.topHeader}>
+        <div className={styles.logoBox} onClick={() => navigate('/')}>
+          <img 
+            src="https://res.cloudinary.com/dcmwz0uis/image/upload/v1774819165/IMG_20260330_041641_qwo8lc.jpg" 
+            alt="Ceramic Shop Logo" 
+            className={styles.logoImg} 
           />
-
-          <Form form={form} layout="vertical" onFinish={handleChangePassword} className={styles.form}>
-            <Form.Item
-              label={<span style={{fontWeight: 500, color: '#555'}}>Mật khẩu hiện tại</span>}
-              name="oldPassword"
-              rules={[{ required: true, message: 'Vui lòng nhập mật khẩu hiện tại!' }]}
-            >
-              <Input.Password
-                prefix={<LockOutlined style={{ color: '#bbb' }} />}
-                style={{ borderRadius: 6, padding: '10px 15px' }}
-                placeholder="Nhập mật khẩu hiện tại"
-              />
-            </Form.Item>
-
-            <div className={styles.dividerLine} />
-
-            <Form.Item
-              label={<span style={{fontWeight: 500, color: '#555'}}>Mật khẩu mới</span>}
-              name="newPassword"
-              rules={[
-                { required: true, message: 'Vui lòng nhập mật khẩu mới!' },
-                { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự!' },
-                ({ getFieldValue }) => ({
-                  validator(_, value) {
-                    if (!value || getFieldValue('oldPassword') !== value)
-                      return Promise.resolve();
-                    return Promise.reject(new Error('Mật khẩu mới phải khác mật khẩu cũ!'));
-                  },
-                }),
-              ]}
-            >
-              <Input.Password
-                prefix={<LockOutlined style={{ color: '#bbb' }} />}
-                style={{ borderRadius: 6, padding: '10px 15px' }}
-                placeholder="Tối thiểu 6 ký tự"
-              />
-            </Form.Item>
-
-            <Form.Item
-              label={<span style={{fontWeight: 500, color: '#555'}}>Xác nhận mật khẩu mới</span>}
-              name="confirmPassword"
-              dependencies={['newPassword']}
-              rules={[
-                { required: true, message: 'Vui lòng xác nhận mật khẩu!' },
-                ({ getFieldValue }) => ({
-                  validator(_, value) {
-                    if (!value || getFieldValue('newPassword') === value)
-                      return Promise.resolve();
-                    return Promise.reject(new Error('Mật khẩu xác nhận không khớp!'));
-                  },
-                }),
-              ]}
-            >
-              <Input.Password
-                prefix={<LockOutlined style={{ color: '#bbb' }} />}
-                style={{ borderRadius: 6, padding: '10px 15px' }}
-                placeholder="Nhập lại mật khẩu mới"
-              />
-            </Form.Item>
-
-            <Button type="primary" htmlType="submit" block loading={loading} style={{ height: 45, borderRadius: 6, fontWeight: 600, background: '#1b437c', marginTop: 10 }}>
-              CẬP NHẬT MẬT KHẨU
-            </Button>
-          </Form>
-        </>
-      ) : (
-        <div className={styles.successState}>
-          <CheckCircleFilled className={styles.successIcon} />
-          <h2 style={{ fontSize: '24px', color: '#1b437c', fontWeight: 700, margin: '0 0 10px 0' }}>
-            {isOAuthUser ? 'Tạo mật khẩu thành công!' : 'Đổi mật khẩu thành công!'}
-          </h2>
-          <p style={{ color: '#666', marginBottom: '20px' }}>
-            {isOAuthUser
-              ? 'Bạn đã tạo mật khẩu cho tài khoản. Từ nay có thể đăng nhập bằng email và mật khẩu này.'
-              : 'Mật khẩu đã được cập nhật. Lần sau đăng nhập hãy sử dụng mật khẩu mới nhé.'}
-          </p>
-          <Button type="primary" onClick={() => setSuccess(false)} style={{ background: '#1b437c', borderRadius: 6 }}>
-            Quay lại
-          </Button>
+          <div className={styles.logoTextWrap}>
+            <h1 className={styles.logoText}>CERAMIC-SHOP</h1>
+            <span className={styles.logoSub}>TINH HOA GỐM SỨ VIỆT</span>
+          </div>
         </div>
-      )}
+        <Button type="link" icon={<ArrowLeftOutlined />}
+          onClick={() => navigate('/profile')} className={styles.btnBack}>
+          Quay lại hồ sơ
+        </Button>
+      </header>
+
+      <div className={styles.centerWrapper}>
+        <div className={styles.card}>
+          <div className={`${styles.corner} ${styles.tl}`} />
+          <div className={`${styles.corner} ${styles.tr}`} />
+          <div className={`${styles.corner} ${styles.bl}`} />
+          <div className={`${styles.corner} ${styles.br}`} />
+
+          {!success ? (
+            <>
+              <div className={styles.cardHeader}>
+                <div className={styles.iconWrap}>
+                  <LockOutlined className={styles.headerIcon} />
+                </div>
+                <h2 className={styles.cardTitle}>ĐỔI MẬT KHẨU</h2>
+                <p className={styles.cardSub}>Nhập mật khẩu hiện tại và mật khẩu mới để cập nhật</p>
+              </div>
+
+              <Steps
+                className={styles.steps}
+                size="small"
+                current={0}
+                items={[
+                  { title: 'Xác minh' },
+                  { title: 'Mật khẩu mới' },
+                  { title: 'Hoàn tất' },
+                ]}
+              />
+
+              <Form form={form} layout="vertical" onFinish={handleChangePassword} className={styles.form}>
+                <Form.Item
+                  label="Mật khẩu hiện tại"
+                  name="oldPassword"
+                  rules={[{ required: true, message: 'Vui lòng nhập mật khẩu hiện tại!' }]}
+                >
+                  <Input.Password
+                    prefix={<LockOutlined style={{ color: '#bbb' }} />}
+                    className={styles.customInput}
+                    placeholder="Nhập mật khẩu hiện tại"
+                  />
+                </Form.Item>
+
+                <div className={styles.dividerLine} />
+
+                <Form.Item
+                  label="Mật khẩu mới"
+                  name="newPassword"
+                  rules={[
+                    { required: true, message: 'Vui lòng nhập mật khẩu mới!' },
+                    { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự!' },
+                    ({ getFieldValue }) => ({
+                      validator(_, value) {
+                        if (!value || getFieldValue('oldPassword') !== value)
+                          return Promise.resolve();
+                        return Promise.reject(new Error('Mật khẩu mới phải khác mật khẩu cũ!'));
+                      },
+                    }),
+                  ]}
+                >
+                  <Input.Password
+                    prefix={<LockOutlined style={{ color: '#bbb' }} />}
+                    className={styles.customInput}
+                    placeholder="Tối thiểu 6 ký tự"
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  label="Xác nhận mật khẩu mới"
+                  name="confirmPassword"
+                  dependencies={['newPassword']}
+                  rules={[
+                    { required: true, message: 'Vui lòng xác nhận mật khẩu!' },
+                    ({ getFieldValue }) => ({
+                      validator(_, value) {
+                        if (!value || getFieldValue('newPassword') === value)
+                          return Promise.resolve();
+                        return Promise.reject(new Error('Mật khẩu xác nhận không khớp!'));
+                      },
+                    }),
+                  ]}
+                >
+                  <Input.Password
+                    prefix={<LockOutlined style={{ color: '#bbb' }} />}
+                    className={styles.customInput}
+                    placeholder="Nhập lại mật khẩu mới"
+                  />
+                </Form.Item>
+
+                <div className={styles.hintBox}>
+                  <span className={styles.hintTitle}>Mật khẩu mạnh cần:</span>
+                  <ul className={styles.hintList}>
+                    <li>Ít nhất 6 ký tự</li>
+                    <li>Khác với mật khẩu cũ</li>
+                    <li>Nên kết hợp chữ, số và ký tự đặc biệt</li>
+                  </ul>
+                </div>
+
+                <Button type="primary" htmlType="submit" block loading={loading} className={styles.btnSubmit}>
+                  CẬP NHẬT MẬT KHẨU
+                </Button>
+              </Form>
+            </>
+          ) : (
+            <div className={styles.successState}>
+              <CheckCircleFilled className={styles.successIcon} />
+              <h2 className={styles.successTitle}>
+                {isOAuthUser ? 'Tạo mật khẩu thành công!' : 'Đổi mật khẩu thành công!'}
+              </h2>
+              <p className={styles.successSub}>
+                {isOAuthUser
+                  ? 'Bạn đã tạo mật khẩu cho tài khoản. Từ nay có thể đăng nhập bằng email và mật khẩu này.'
+                  : 'Mật khẩu đã được cập nhật. Vui lòng sử dụng mật khẩu mới khi đăng nhập lần sau.'}
+              </p>
+              <div className={styles.successActions}>
+                <Button className={styles.btnGoProfile} onClick={() => navigate('/profile')}>
+                  Quay lại hồ sơ
+                </Button>
+                <Button className={styles.btnGoHome} type="primary" onClick={() => navigate('/')}>
+                  Về trang chủ
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
 
       <SetPasswordModal
         open={showSetPassword}
