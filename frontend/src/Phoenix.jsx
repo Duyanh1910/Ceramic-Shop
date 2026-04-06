@@ -3,272 +3,274 @@ import styles from './Phoenix.module.css';
 
 export default function Phoenix({ mood = 'idle', passwordVisible = false }) {
   const containerRef = useRef(null);
-  const [eye, setEye] = useState({ x: 0, y: 0 });
-  const [wingPhase, setWingPhase] = useState(0);
+  const [eyeOffset, setEyeOffset] = useState({ x: 0, y: 0 });
+  const [wingUp, setWingUp] = useState(false);
   const [tailPhase, setTailPhase] = useState(0);
   const [blinking, setBlinking] = useState(false);
 
-  // Thường khi hiển thị mật khẩu (passwordVisible = true) thì linh vật sẽ che mắt (shy)
   const activeMood = passwordVisible ? 'shy' : mood;
 
-  // Theo dõi chuột
-  const onMouseMove = useCallback((e) => {
-    if (!containerRef.current || activeMood === 'shy' || activeMood === 'sad') return;
-    const r = containerRef.current.getBoundingClientRect();
-    const cx = r.left + r.width * 0.5;
-    const cy = r.top + r.height * 0.36;
+  const handleMouseMove = useCallback((e) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height * 0.38;
     const dx = e.clientX - cx;
     const dy = e.clientY - cy;
-    const dist = Math.hypot(dx, dy) || 1;
-    const cap = 8; // Giới hạn di chuyển của tròng mắt
-    setEye({
-      x: (dx / dist) * Math.min(cap, dist) * 0.6,
-      y: (dy / dist) * Math.min(cap, dist) * 0.4
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const maxDist = 8;
+    const scale = Math.min(1, maxDist / Math.max(dist, 1));
+    setEyeOffset({
+      x: dx * scale * 0.45,
+      y: dy * scale * 0.3,
     });
-  }, [activeMood]);
-
-  useEffect(() => {
-    window.addEventListener('mousemove', onMouseMove);
-    return () => window.removeEventListener('mousemove', onMouseMove);
-  }, [onMouseMove]);
-
-  // Vòng lặp nhịp thở & đập cánh
-  useEffect(() => {
-    let t = 0, raf;
-    const loop = () => {
-      t += 0.02;
-      setWingPhase(Math.sin(t) * 12);
-      setTailPhase(Math.sin(t * 0.7 + 1) * 6);
-      raf = requestAnimationFrame(loop);
-    };
-    raf = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(raf);
   }, []);
 
-  // Vòng lặp chớp mắt ngẫu nhiên
   useEffect(() => {
-    const schedule = () => {
-      const delay = 2500 + Math.random() * 3000;
-      return setTimeout(() => {
-        setBlinking(true);
-        setTimeout(() => { setBlinking(false); schedule(); }, 150);
-      }, delay);
-    };
-    const t = schedule();
-    return () => clearTimeout(t);
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, [handleMouseMove]);
+
+  useEffect(() => {
+    const interval = setInterval(() => setWingUp((w) => !w), 900);
+    return () => clearInterval(interval);
   }, []);
 
-  // --- LOGIC ANIMATION DỰA TRÊN MOOD ---
-  const ex = activeMood === 'shy' || activeMood === 'sad' ? 0 : eye.x;
-  const ey = activeMood === 'shy' ? 4 : activeMood === 'sad' ? 3 : eye.y;
+  useEffect(() => {
+    let frame;
+    let t = 0;
+    const animate = () => {
+      t += 0.025;
+      setTailPhase(Math.sin(t) * 6);
+      frame = requestAnimationFrame(animate);
+    };
+    frame = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(frame);
+  }, []);
 
-  // Mắt nhắm
-  const eyeH = blinking ? 0.1 : (activeMood === 'shy' || activeMood === 'happy' ? 0.15 : 1);
-  
-  // Nhịp cơ thể lên xuống
-  const bodyDY = activeMood === 'sad' ? 8 
-    : activeMood === 'happy' ? Math.sin(wingPhase * 0.4) * 3 - 3 
-    : Math.sin(wingPhase * 0.26) * 2;
+  useEffect(() => {
+    const blink = () => {
+      setBlinking(true);
+      setTimeout(() => setBlinking(false), 150);
+    };
+    const interval = setInterval(blink, 3500 + Math.random() * 1500);
+    return () => clearInterval(interval);
+  }, []);
 
-  // Góc xoay của cánh (Nếu shy -> Cánh gập vào che mặt)
-  const wL = activeMood === 'shy' ? 65 : (activeMood === 'happy' ? wingPhase - 25 : wingPhase - 10);
-  const wR = activeMood === 'shy' ? -65 : (activeMood === 'happy' ? -wingPhase + 25 : -wingPhase + 10);
+  const ex = eyeOffset.x;
+  const ey = eyeOffset.y;
+  const eyeScaleY = blinking || activeMood === 'shy' ? 0.05 : activeMood === 'sad' ? 0.6 : 1;
 
-  // Bảng màu
-  const P = {
-    idle:  { primary: '#d98b38', secondary: '#f7b76d', body: '#1b437c', body2: '#2a5ba3', glow: '217,139,56', beak: '#ffc04d' },
-    happy: { primary: '#ffaa33', secondary: '#ffce85', body: '#1b437c', body2: '#3776d6', glow: '255,170,51', beak: '#ffd700' },
-    sad:   { primary: '#7a9ebf', secondary: '#a8c6e0', body: '#2a4266', body2: '#3b5c8c', glow: '122,158,191', beak: '#9db5cc' },
-    shy:   { primary: '#e87b9b', secondary: '#f4aebd', body: '#1b437c', body2: '#3776d6', glow: '232,123,155', beak: '#ffb3c6' },
-  }[activeMood];
+  const wingLeftRot  = activeMood === 'happy' ? -35 : wingUp ? -22 : -10;
+  const wingRightRot = activeMood === 'happy' ?  35 : wingUp ?  22 :  10;
 
-  const LABELS = {
-    idle:  '👀 Chào bạn, đăng nhập nhé...',
-    happy: '🎉 Yeah! Chào mừng trở lại!',
-    sad:   '😢 Ối! Sai thông tin rồi...',
-    shy:   '🙈 Bí mật nhé, mình không nhìn đâu!',
-  };
+  const bodyY = activeMood === 'sad' ? 4 : wingUp ? -3 : 0;
+
+  const featherColor = activeMood === 'sad' ? '#6a8fb5'
+    : activeMood === 'happy' ? '#ffb347'
+    : activeMood === 'shy'   ? '#e07b9a'
+    : '#c48c46';
+
+  const bodyColor = activeMood === 'sad' ? '#4a6fa5' : '#1b437c';
+  const glowColor = activeMood === 'sad' ? 'rgba(106,143,181,0.3)'
+    : activeMood === 'happy' ? 'rgba(255,179,71,0.4)'
+    : activeMood === 'shy'   ? 'rgba(224,123,154,0.3)'
+    : 'rgba(196,140,70,0.25)';
 
   return (
     <div ref={containerRef} className={styles.wrapper}>
-      {/* Ánh sáng nền */}
-      <div className={styles.glow}
-        style={{ background: `radial-gradient(ellipse 65% 60% at 50% 50%, rgba(${P.glow},0.3) 0%, transparent 70%)` }} 
-      />
 
-      {/* Pháo hoa khi Happy */}
+      <div className={styles.glowBg} 
+      style={{ background: `radial-gradient(circle at 50% 45%, ${glowColor} 0%, transparent 70%)` }} />
+
       {activeMood === 'happy' && (
-        <div className={styles.sparks} aria-hidden>
-          {Array.from({ length: 8 }, (_, i) => (
-            <span key={i} className={styles.spark}
-              style={{ '--i': i, '--c': i % 2 === 0 ? '#ffb347' : '#fff' }} />
+        <div className={styles.sparkles}>
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className={styles.sparkle} style={{ '--i': i }} />
           ))}
         </div>
       )}
 
-      <svg viewBox="0 0 260 340" xmlns="http://www.w3.org/2000/svg" className={styles.svg} aria-hidden>
+      <svg
+        viewBox="0 0 220 300"
+        xmlns="http://www.w3.org/2000/svg"
+        className={styles.svg}
+      >
         <defs>
-          <radialGradient id="PbodyA" cx="38%" cy="32%" r="65%">
-            <stop offset="0%" stopColor={P.body2} />
-            <stop offset="100%" stopColor={P.body} />
+          <radialGradient id="bodyGrad" cx="50%" cy="40%" r="55%">
+            <stop offset="0%" stopColor="#2d6abf" />
+            <stop offset="100%" stopColor={bodyColor} />
           </radialGradient>
-          <linearGradient id="PfeathA" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor={P.secondary} />
-            <stop offset="100%" stopColor={P.primary} />
-          </linearGradient>
-          <linearGradient id="PtailA" x1="0%" y1="0%" x2="50%" y2="100%">
-            <stop offset="0%" stopColor={P.secondary} stopOpacity="0.9" />
-            <stop offset="100%" stopColor={P.primary} stopOpacity="0.7" />
-          </linearGradient>
-          <filter id="Pshadow" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="0" dy="8" stdDeviation="8" floodColor="#000" floodOpacity="0.15" />
+          <radialGradient id="featherGrad" cx="50%" cy="30%" r="60%">
+            <stop offset="0%" stopColor="#fff" stopOpacity="0.3" />
+            <stop offset="100%" stopColor={featherColor} />
+          </radialGradient>
+          <radialGradient id="eyeGrad" cx="35%" cy="35%" r="60%">
+            <stop offset="0%" stopColor="#fff" />
+            <stop offset="100%" stopColor="#e8f0fe" />
+          </radialGradient>
+          <filter id="softShadow">
+            <feDropShadow dx="0" dy="4" stdDeviation="5" floodColor="#00000033" />
           </filter>
-          <filter id="Psoft" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="3" result="b"/>
-            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
         </defs>
 
-        {/* --- ĐUÔI --- */}
-        <g transform={`translate(130 230) rotate(${tailPhase})`} style={{ transformOrigin: '130px 230px' }}>
-          {[-30, -15, 0, 15, 30].map((rot, i) => {
-            const len = [60, 80, 95, 80, 60][i];
-            const rx = [5, 7, 9, 7, 5][i];
-            return (
-              <g key={i} transform={`rotate(${rot})`}>
-                <ellipse cx={0} cy={len / 2} rx={rx} ry={len / 2} fill="url(#PtailA)" filter="url(#Pshadow)" />
-                <path d={`M 0 5 Q ${rx} ${len/2} 0 ${len-5}`} fill="none" stroke="#fff" strokeWidth="1" opacity="0.4" />
-                <circle cx={0} cy={len - 4} r="3" fill={P.secondary} opacity="0.8" />
-              </g>
-            );
-          })}
+        <g transform={`translate(110,215) rotate(${tailPhase})`} style={{ transformOrigin: '110px 215px' }}>
+          <ellipse cx="0" cy="38" rx="8" ry="38" fill="url(#featherGrad)" opacity="0.9" />
+          <ellipse cx="-18" cy="32" rx="6" ry="32" fill={featherColor} opacity="0.75"
+            transform="rotate(-18, -18, 32)" />
+          <ellipse cx="-34" cy="22" rx="5" ry="24" fill={featherColor} opacity="0.55"
+            transform="rotate(-32, -34, 22)" />
+          <ellipse cx="18" cy="32" rx="6" ry="32" fill={featherColor} opacity="0.75"
+            transform="rotate(18, 18, 32)" />
+          <ellipse cx="34" cy="22" rx="5" ry="24" fill={featherColor} opacity="0.55"
+            transform="rotate(32, 34, 22)" />
+          <circle cx="0" cy="76" r="5" fill="#fff" opacity="0.6" filter="url(#glow)" />
+          <circle cx="-28" cy="58" r="3.5" fill="#fff" opacity="0.4" filter="url(#glow)" />
+          <circle cx="28" cy="58" r="3.5" fill="#fff" opacity="0.4" filter="url(#glow)" />
         </g>
 
-        {/* --- CƠ THỂ --- */}
-        <g style={{ transform: `translateY(${bodyDY}px)`, transition: 'transform 0.3s ease' }}>
-          
-          {/* Lông mào trên đầu (Crest) */}
-          <g transform="translate(130 60)" fill="url(#PfeathA)" filter="url(#Pshadow)">
-            <path d="M 0 0 Q -15 -35 -30 -20 Q -10 -15 0 10 Z" />
-            <path d="M 0 0 Q 0 -45 5 -40 Q 10 -20 0 10 Z" />
-            <path d="M 0 0 Q 15 -35 30 -20 Q 10 -15 0 10 Z" />
-          </g>
+        <g transform={`translate(110,155)`} style={{ transformOrigin: '110px 155px' }}>
+          <path
+            d={`M 0 0 C -45 -15 -75 ${wingLeftRot * 1.5} -65 30 C -50 55 -20 45 0 30`}
+            fill={featherColor}
+            opacity="0.85"
+            filter="url(#softShadow)"
+            style={{ transition: 'all 0.4s ease' }}
+          />
+          <path d={`M -10 5 C -40 -8 -62 ${wingLeftRot * 1.2} -55 28`}
+            fill="none" stroke="#fff" strokeWidth="1" opacity="0.4" />
+          <path d={`M -5 8 C -32 0 -50 ${wingLeftRot} -42 25`}
+            fill="none" stroke="#fff" strokeWidth="0.8" opacity="0.3" />
+        </g>
 
-          {/* Thân */}
-          <ellipse cx="130" cy="165" rx="42" ry="55" fill="url(#PbodyA)" filter="url(#Pshadow)" />
-          {/* Bụng trắng/vàng nhạt */}
-          <ellipse cx="130" cy="175" rx="26" ry="36" fill={P.secondary} opacity="0.2" filter="url(#Psoft)" />
+        <g transform={`translate(110,155)`} style={{ transformOrigin: '110px 155px' }}>
+          <path
+            d={`M 0 0 C 45 -15 75 ${wingRightRot * 1.5} 65 30 C 50 55 20 45 0 30`}
+            fill={featherColor}
+            opacity="0.85"
+            filter="url(#softShadow)"
+            style={{ transition: 'all 0.4s ease' }}
+          />
+          <path d={`M 10 5 C 40 -8 62 ${wingRightRot * 1.2} 55 28`}
+            fill="none" stroke="#fff" strokeWidth="1" opacity="0.4" />
+          <path d={`M 5 8 C 32 0 50 ${wingRightRot} 42 25`}
+            fill="none" stroke="#fff" strokeWidth="0.8" opacity="0.3" />
+        </g>
 
-          {/* Đầu */}
-          <circle cx="130" cy="100" r="38" fill="url(#PbodyA)" filter="url(#Pshadow)" />
-          
-          {/* Má hồng (Blush) */}
-          {(activeMood === 'happy' || activeMood === 'shy') && (
-            <g filter="url(#Psoft)" opacity="0.6">
-              <ellipse cx="102" cy="112" rx="10" ry="5" fill="#ff7da3" />
-              <ellipse cx="158" cy="112" rx="10" ry="5" fill="#ff7da3" />
-            </g>
-          )}
+        <g style={{ transform: `translateY(${bodyY}px)`, transition: 'transform 0.35s ease' }}>
 
-          {/* --- MẮT VÀ LÔNG MÀY --- */}
-          <g transform="translate(0, -2)">
-            {/* Lông mày */}
-            <g stroke={P.secondary} strokeWidth="3" strokeLinecap="round" opacity="0.8">
-              {activeMood === 'sad' ? (
-                <>
-                  <path d="M 102 82 L 118 76" />
-                  <path d="M 158 82 L 142 76" />
-                </>
-              ) : activeMood === 'happy' ? (
-                <>
-                  <path d="M 100 80 Q 110 74 120 80" />
-                  <path d="M 160 80 Q 150 74 140 80" />
-                </>
-              ) : activeMood === 'shy' ? (
-                <>
-                  <path d="M 102 76 L 118 82" />
-                  <path d="M 158 76 L 142 82" />
-                </>
-              ) : (
-                <>
-                  <path d="M 100 78 L 118 78" />
-                  <path d="M 160 78 L 142 78" />
-                </>
-              )}
-            </g>
+          <ellipse cx="110" cy="165" rx="38" ry="52"
+            fill="url(#bodyGrad)" filter="url(#softShadow)" />
 
-            {/* Tròng Trắng */}
-            <circle cx="110" cy="94" r="12" fill="#fff" />
-            <circle cx="150" cy="94" r="12" fill="#fff" />
+          <ellipse cx="110" cy="175" rx="22" ry="30"
+            fill="#fff" opacity="0.12" />
 
-            {/* Con ngươi (Đồng tử) */}
-            {activeMood === 'happy' ? (
-              // Mắt nhắm cười ^ ^
-              <g stroke={P.body} strokeWidth="3.5" fill="none" strokeLinecap="round">
-                <path d="M 104 96 Q 110 88 116 96" />
-                <path d="M 144 96 Q 150 88 156 96" />
-              </g>
-            ) : (
-              // Mắt thường / Buồn / Shy
-              <>
-                <ellipse cx={110 + ex} cy={94 + ey} rx="6" ry={6 * eyeH} fill={P.body} style={{ transition: 'all 0.1s' }} />
-                <ellipse cx={150 + ex} cy={94 + ey} rx="6" ry={6 * eyeH} fill={P.body} style={{ transition: 'all 0.1s' }} />
-                {eyeH > 0.5 && (
-                  <>
-                    <circle cx={108 + ex} cy={92 + ey} r="2.5" fill="#fff" />
-                    <circle cx={148 + ex} cy={92 + ey} r="2.5" fill="#fff" />
-                  </>
-                )}
-              </>
-            )}
-          </g>
+          <ellipse cx="110" cy="118" rx="16" ry="24"
+            fill="url(#bodyGrad)" />
 
-          {/* Nước mắt khi Sad */}
+          <circle cx="110" cy="96" r="32"
+            fill="url(#bodyGrad)" filter="url(#softShadow)" />
+
+          <path d="M 100 68 C 96 50 90 36 88 28 C 92 38 98 52 100 68" fill={featherColor} />
+          <path d="M 110 65 C 108 47 106 30 108 18 C 110 30 112 47 110 65" fill={featherColor} />
+          <path d="M 120 68 C 122 50 130 36 132 28 C 128 38 122 52 120 68" fill={featherColor} />
+          <circle cx="88" cy="26" r="4" fill="#fff" opacity="0.7" filter="url(#glow)" />
+          <circle cx="108" cy="16" r="4.5" fill="#fff" opacity="0.8" filter="url(#glow)" />
+          <circle cx="132" cy="26" r="4" fill="#fff" opacity="0.7" filter="url(#glow)" />
+
+          <path d="M 122 98 C 135 95 142 102 138 107 C 132 112 122 107 122 102 Z"
+            fill="#e8aa50" />
+          <path d="M 122 103 C 132 105 138 107 138 107 C 132 112 122 107 122 103 Z"
+            fill="#c48c46" opacity="0.6" />
+
           {activeMood === 'sad' && (
-            <g fill="#7dd3fc" filter="url(#Psoft)">
-              <ellipse cx="110" cy="110" rx="3" ry="6" className={styles.tear} />
-              <ellipse cx="150" cy="110" rx="3" ry="6" className={styles.tear} style={{ animationDelay: '0.4s' }} />
-            </g>
+            <>
+              <line x1="88" y1="76" x2="102" y2="80" stroke="#4a6fa5" strokeWidth="2.5" strokeLinecap="round" />
+              <line x1="118" y1="80" x2="130" y2="76" stroke="#4a6fa5" strokeWidth="2.5" strokeLinecap="round" />
+            </>
           )}
 
-          {/* --- MỎ (BEAK) --- */}
-          <g transform={`translate(130, 110) scale(${activeMood === 'happy' ? 1.1 : 1})`} style={{ transition: 'transform 0.2s' }}>
-            <path d="M -12 0 Q 0 -8 12 0 Q 0 12 -12 0 Z" fill={P.beak} filter="url(#Pshadow)" />
-            {activeMood === 'happy' ? (
-              <path d="M -8 2 Q 0 12 8 2 Q 0 8 -8 2 Z" fill="#d94b4b" /> // Lưỡi cười
-            ) : (
-              <path d="M -10 2 Q 0 6 10 2" fill="none" stroke={P.body} strokeWidth="1.5" opacity="0.3" /> // Rãnh mỏ
-            )}
+          {activeMood === 'shy' && (
+            <>
+              <path d="M 72 88 C 80 75 95 72 100 80 C 95 78 80 80 72 88 Z"
+                fill={featherColor} opacity="0.95" />
+              <path d="M 148 88 C 140 75 125 72 120 80 C 125 78 140 80 148 88 Z"
+                fill={featherColor} opacity="0.95" />
+            </>
+          )}
+
+          <g>
+            <circle cx="95" cy="90" r="10" fill="url(#eyeGrad)" />
+            <circle cx="95" cy="90" r="10" fill="none" stroke="#173354" strokeWidth="1.5" />
+            <ellipse
+              cx={95 + ex}
+              cy={90 + ey}
+              rx={4.5}
+              ry={4.5 * eyeScaleY}
+              fill="#173354"
+              style={{ transition: 'ry 0.12s ease, cx 0.05s ease, cy 0.05s ease' }}
+            />
+            <circle cx={92 + ex * 0.3} cy={87 + ey * 0.3} r="1.8" fill="#fff" opacity="0.9" />
           </g>
 
-          {/* --- CÁNH TRÁI --- */}
-          <g transform="translate(100 135)">
-            <g style={{ transform: `rotate(${wL}deg)`, transformOrigin: 'top right', transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)' }}>
-              <path d="M 0 0 C -40 -10 -80 30 -60 80 C -30 90 20 60 20 10 Z" fill="url(#PfeathA)" filter="url(#Pshadow)" />
-              <path d="M -10 10 C -40 20 -60 50 -45 75" fill="none" stroke={P.secondary} strokeWidth="2" opacity="0.5" />
-            </g>
+          <g>
+            <circle cx="125" cy="90" r="10" fill="url(#eyeGrad)" />
+            <circle cx="125" cy="90" r="10" fill="none" stroke="#173354" strokeWidth="1.5" />
+            <ellipse
+              cx={125 + ex}
+              cy={90 + ey}
+              rx={4.5}
+              ry={4.5 * eyeScaleY}
+              fill="#173354"
+              style={{ transition: 'ry 0.12s ease, cx 0.05s ease, cy 0.05s ease' }}
+            />
+            <circle cx={122 + ex * 0.3} cy={87 + ey * 0.3} r="1.8" fill="#fff" opacity="0.9" />
           </g>
 
-          {/* --- CÁNH PHẢI --- */}
-          <g transform="translate(160 135)">
-            <g style={{ transform: `rotate(${wR}deg)`, transformOrigin: 'top left', transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)' }}>
-              <path d="M 0 0 C 40 -10 80 30 60 80 C 30 90 -20 60 -20 10 Z" fill="url(#PfeathA)" filter="url(#Pshadow)" />
-              <path d="M 10 10 C 40 20 60 50 45 75" fill="none" stroke={P.secondary} strokeWidth="2" opacity="0.5" />
-            </g>
-          </g>
+          {(activeMood === 'happy' || activeMood === 'shy') && (
+            <>
+              <ellipse cx="85" cy="100" rx="8" ry="5" fill="#ffb3c6" opacity="0.5" />
+              <ellipse cx="135" cy="100" rx="8" ry="5" fill="#ffb3c6" opacity="0.5" />
+            </>
+          )}
 
-          {/* --- CHÂN --- */}
-          <g stroke={P.body} strokeWidth="4" strokeLinecap="round" opacity="0.8">
-            <path d="M 115 215 L 110 230 L 100 235 M 110 230 L 115 238 M 110 230 L 120 235" />
-            <path d="M 145 215 L 150 230 L 160 235 M 150 230 L 145 238 M 150 230 L 140 235" />
+          {activeMood === 'sad' && (
+            <>
+              <ellipse cx="88" cy="105" rx="2.5" ry="4" fill="#6ab3e8" opacity="0.7" className={styles.tear} />
+              <ellipse cx="129" cy="105" rx="2.5" ry="4" fill="#6ab3e8" opacity="0.7" className={styles.tear} />
+            </>
+          )}
+
+          {activeMood === 'happy' && (
+            <path d="M 100 110 Q 110 120 120 110" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" opacity="0.7" />
+          )}
+          {activeMood === 'sad' && (
+            <path d="M 100 116 Q 110 108 120 116" fill="none" stroke="#8ab" strokeWidth="2" strokeLinecap="round" opacity="0.6" />
+          )}
+
+          <g opacity="0.7">
+            <line x1="98" y1="215" x2="90" y2="235" stroke={bodyColor} strokeWidth="3" strokeLinecap="round" />
+            <line x1="90" y1="235" x2="82" y2="240" stroke={bodyColor} strokeWidth="2.5" strokeLinecap="round" />
+            <line x1="90" y1="235" x2="90" y2="243" stroke={bodyColor} strokeWidth="2.5" strokeLinecap="round" />
+            <line x1="90" y1="235" x2="98" y2="240" stroke={bodyColor} strokeWidth="2.5" strokeLinecap="round" />
+
+            <line x1="122" y1="215" x2="130" y2="235" stroke={bodyColor} strokeWidth="3" strokeLinecap="round" />
+            <line x1="130" y1="235" x2="122" y2="240" stroke={bodyColor} strokeWidth="2.5" strokeLinecap="round" />
+            <line x1="130" y1="235" x2="130" y2="243" stroke={bodyColor} strokeWidth="2.5" strokeLinecap="round" />
+            <line x1="130" y1="235" x2="138" y2="240" stroke={bodyColor} strokeWidth="2.5" strokeLinecap="round" />
           </g>
-          
         </g>
       </svg>
 
-      {/* Khung chat */}
-      <div className={`${styles.bubble} ${styles['bubble_' + activeMood]}`} key={activeMood}>
-        {LABELS[activeMood]}
+      <div className={styles.moodBubble}>
+        {activeMood === 'idle'   && '👀 Nhìn bạn kìa...'}
+        {activeMood === 'happy'  && '🎉 Chào mừng trở lại!'}
+        {activeMood === 'sad'    && '😢 Sai mật khẩu rồi...'}
+        {activeMood === 'shy'    && '🙈 Mình không nhìn đâu!'}
       </div>
     </div>
   );

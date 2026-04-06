@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Arsenal:wght@400;600;700&display=swap');
 
 .wrapper {
   position: relative;
@@ -8,113 +8,78 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 18px;
-  padding: 10px 0 20px;
-  overflow: visible;
+  gap: 12px;
+  padding: 20px 0;
 }
 
-.glow {
+.glowBg {
   position: absolute;
-  inset: -30px;
-  pointer-events: none;
-  transition: background 0.8s ease;
+  inset: 0;
   border-radius: 50%;
-  z-index: 0;
+  pointer-events: none;
+  transition: background 0.6s ease;
 }
 
 .svg {
-  width: 240px;
-  height: 280px;
-  z-index: 1;
+  width: 200px;
+  height: 240px;
+  filter: drop-shadow(0 8px 24px rgba(27,67,124,0.2));
   transition: filter 0.4s ease;
-  will-change: transform;
-  animation: floatBody 3.5s ease-in-out infinite;
-}
-
-@keyframes floatBody {
-  0%, 100% { transform: translateY(0px); }
-  50%       { transform: translateY(-8px); }
 }
 
 .tear {
-  animation: tearFall 1.5s cubic-bezier(0.4, 0, 1, 1) infinite;
+  animation: tearDrop 1.5s ease-in infinite;
   transform-origin: center top;
 }
 
-@keyframes tearFall {
-  0%   { transform: translateY(0px) scaleY(1);  opacity: 0.8; }
-  50%  { transform: translateY(12px)  scaleY(1.4); opacity: 1; }
-  100% { transform: translateY(24px) scaleY(0.5); opacity: 0; }
+@keyframes tearDrop {
+  0%   { transform: translateY(0); opacity: 0.7; }
+  60%  { transform: translateY(10px); opacity: 0.9; }
+  100% { transform: translateY(20px); opacity: 0; }
 }
 
-/* Hiệu ứng pháo hoa vui vẻ */
-.sparks {
+.sparkles {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: 2;
 }
 
-.spark {
+.sparkle {
   position: absolute;
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--c, #ffb347);
-  top:  calc(20% + (var(--i) * 8%));
-  left: calc(10%  + (var(--i) * 12%));
-  animation: sparkFloat 1.2s ease-in-out calc(var(--i) * 0.1s) infinite alternate;
-  box-shadow: 0 0 10px var(--c, #ffb347);
+  background: #ffb347;
+  top: calc(20% + var(--i) * 8%);
+  left: calc(10% + var(--i) * 14%);
+  animation: sparkleAnim 1.2s ease-in-out calc(var(--i) * 0.15s) infinite alternate;
 }
 
-.spark:nth-child(even) {
-  width: 6px;
-  height: 6px;
-  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); /* Hình ngôi sao */
-  border-radius: 0;
+.sparkle:nth-child(odd)  { background: #fff; width: 6px; height: 6px; }
+.sparkle:nth-child(even) { background: #c48c46; }
+
+@keyframes sparkleAnim {
+  from { transform: scale(0.4) translateY(0); opacity: 0.3; }
+  to   { transform: scale(1.2) translateY(-12px); opacity: 1; }
 }
 
-@keyframes sparkFloat {
-  from { transform: scale(0.4) translateY(0) rotate(0deg); opacity: 0; }
-  50%  { opacity: 1; }
-  to   { transform: scale(1.4) translateY(-25px) rotate(45deg); opacity: 0; }
-}
-
-/* Khung Chat */
-.bubble {
-  font-family: 'Nunito', sans-serif;
-  font-size: 14px;
-  font-weight: 800;
-  padding: 8px 22px;
+.moodBubble {
+  font-family: 'Arsenal', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #444;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(8px);
+  padding: 6px 16px;
   border-radius: 20px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+  border: 1px solid rgba(255,255,255,0.6);
   white-space: nowrap;
-  z-index: 2;
-  border: 2px solid rgba(255,255,255,0.7);
-  backdrop-filter: blur(12px);
-  box-shadow: 0 6px 16px rgba(0,0,0,0.1);
-  animation: bubblePop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-  transform-origin: center bottom;
-  position: relative;
+  transition: all 0.4s ease;
+  animation: bubbleIn 0.3s ease;
 }
 
-/* Đuôi của bong bóng chat */
-.bubble::before {
-  content: '';
-  position: absolute;
-  top: -8px;
-  left: 50%;
-  transform: translateX(-50%);
-  border-width: 0 8px 10px 8px;
-  border-style: solid;
-  border-color: transparent transparent rgba(255,255,255,0.8) transparent;
+@keyframes bubbleIn {
+  from { transform: scale(0.85) translateY(4px); opacity: 0; }
+  to   { transform: scale(1) translateY(0); opacity: 1; }
 }
-
-@keyframes bubblePop {
-  0%   { transform: scale(0.5) translateY(10px); opacity: 0; }
-  100% { transform: scale(1)   translateY(0);    opacity: 1; }
-}
-
-.bubble_idle  { background: rgba(255,255,255,0.9); color: #333; }
-.bubble_happy { background: rgba(255,240,200,0.95); color: #d06200; box-shadow: 0 6px 16px rgba(255,170,51,0.3); }
-.bubble_sad   { background: rgba(220,235,255,0.95); color: #2a5ba3; box-shadow: 0 6px 16px rgba(122,158,191,0.3); }
-.bubble_shy   { background: rgba(255,225,235,0.95); color: #b83265; box-shadow: 0 6px 16px rgba(232,123,155,0.3); }
