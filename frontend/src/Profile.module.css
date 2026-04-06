@@ -51,19 +51,21 @@
 
 .logoText {
   font-family: 'Arsenal', serif;
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 700;
-  margin: 0;
+  margin: 0 0 5px 0;
   color: #173354;
   letter-spacing: 2px;
-  line-height: 1.2;
+  line-height: 1;
 }
 
 .logoSub {
-  font-size: 10px;
-  letter-spacing: 2px;
+  font-size: 11px;
+  letter-spacing: 2.5px;
   color: #BB9244;
   font-weight: 600; 
+  margin: 0;
+  line-height: 1;
 }
 
 .btnBack {
