@@ -983,10 +983,18 @@ function Home() {
                   <div className={styles.footerCol}>
                       <h3>THÔNG TIN LIÊN HỆ</h3>
                       <ul>
-                          <li>📍 Địa chỉ: 484 Lạch Tray, Lê Chân, Hải Phòng</li>
-                          <li>📞 Hotline: 0329.835.725</li>
-                          <li>✉️ Email: theceramicshop24@gmail.com</li>
-                          <li>🕐 Giờ làm việc: 8:00 - 22:00 (Thứ 2 - Thứ 7)</li>
+                          <li>
+                              📍 Địa chỉ: <a href="https://maps.google.com/?q=484+Lạch+Tray,+Lê+Chân,+Hải+Phòng" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>484 Lạch Tray, Lê Chân, Hải Phòng</a>
+                          </li>
+                          <li>
+                              📞 Hotline: <a href="tel:0329835725" style={{ color: 'inherit', textDecoration: 'none' }}>0329.835.725</a>
+                          </li>
+                          <li>
+                              ✉️ Email: <a href="mailto:theceramicshop24@gmail.com" style={{ color: 'inherit', textDecoration: 'none' }}>theceramicshop24@gmail.com</a>
+                          </li>
+                          <li style={{ whiteSpace: 'nowrap' }}>
+                              🕐 Giờ làm việc: 8:00 - 22:00 (Thứ 2 - Thứ 7)
+                          </li>
                       </ul>
                   </div>
 
