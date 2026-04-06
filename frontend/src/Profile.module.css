@@ -38,7 +38,7 @@
 }
 
 .logoImg {
-  width: 60px;
+  width: 50px;
   height: auto;
   object-fit: contain;
   mix-blend-mode: multiply;
@@ -51,18 +51,19 @@
 
 .logoText {
   font-family: 'Arsenal', serif;
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 700;
   margin: 0;
   color: #173354;
   letter-spacing: 2px;
+  line-height: 1.2;
 }
 
 .logoSub {
-  font-size: 11px;
+  font-size: 10px;
   letter-spacing: 2px;
   color: #BB9244;
-  font-weight: normal; 
+  font-weight: 600; 
 }
 
 .btnBack {
