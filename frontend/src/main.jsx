@@ -26,7 +26,7 @@ import OrderTracking from './OrderTracking.jsx'
 import SupportPage from './Supportpage.jsx'
 import NewsDetail from './NewsDetails.jsx'
 import AdminReports from './AdminReports.jsx';
-
+import OrderTrackingMini from './OrderTracking_Mini.jsx';
 ReactGA.initialize("G-909W1LHHLD");
 
 const AnalyticsTracker = () => {
