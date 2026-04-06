@@ -25,6 +25,7 @@ import PaymentSuccess from './PaymentSuccess.jsx'
 import OrderTracking from './OrderTracking.jsx'
 import SupportPage from './Supportpage.jsx'
 import NewsDetail from './NewsDetails.jsx'
+import AdminReports from './AdminReports.jsx';
 
 ReactGA.initialize("G-909W1LHHLD");
 
@@ -136,6 +137,7 @@ createRoot(document.getElementById('root')).render(
           }>
             <Route index element={<AdminDashboard />} />
             <Route path="products" element={<AdminProducts />} />
+            <Route path="reports" element={<AdminReports />} />
             <Route path="customers" element={<AdminCustomers />} />
             <Route path="staffs" element={
               <ProtectedRoute allowedRoles={['Admin']}>

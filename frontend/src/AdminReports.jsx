@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Row, Col, Card, Select, Radio, Table, Tag, Spin, Statistic, Empty } from 'antd';
+import { Row, Col, Select, Radio, Table, Tag, Spin } from 'antd';
 import {
-  BarChartOutlined, RiseOutlined, ShoppingOutlined,
+  BarChartOutlined, RiseOutlined,
   TeamOutlined, DollarOutlined, CalendarOutlined,
+  EyeOutlined, StarOutlined, FireOutlined
 } from '@ant-design/icons';
 import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid,
@@ -11,7 +12,7 @@ import {
 import axios from 'axios';
 import styles from './AdminReports.module.css';
 
-const API_BASE = 'https://ceramic-shop-u8ak.onrender.com/api/v1';
+const API_BASE = 'https:
 
 const COLORS = ['#1b437c', '#c48c46', '#52c41a', '#e74c3c', '#9b59b6', '#3498db'];
 
@@ -62,25 +63,19 @@ function buildMockData(mode, year, month, quarter) {
   }));
 }
 
-function buildTopProducts() {
-  return [
-    { name: 'Tượng Cá chép hóa rồng', sold: 142, revenue: 120_700_000, percent: 22 },
-    { name: 'Lục bình Công đào họa tiết nổi', sold: 87, revenue: 435_000_000, percent: 18 },
-    { name: 'Tượng Thần Tài', sold: 203, revenue: 111_650_000, percent: 16 },
-    { name: 'Tượng Di Lặc', sold: 95, revenue: 64_600_000, percent: 14 },
-    { name: 'Bát hương hoa sen', sold: 176, revenue: 149_600_000, percent: 12 },
-  ];
-}
-
 export default function AdminReports() {
   const [mode, setMode] = useState('year');
   const [year, setYear] = useState(currentYear);
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [quarter, setQuarter] = useState(1);
+  
   const [chartData, setChartData] = useState([]);
-  const [topProducts, setTopProducts] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [summary, setSummary] = useState({ revenue: 0, orders: 0, customers: 0, avgOrder: 0 });
+  const [loading, setLoading] = useState(false);
+
+  const [bestSellers, setBestSellers] = useState([]);
+  const [mostViewed, setMostViewed] = useState([]);
+  const [topRatings, setTopRatings] = useState([]);
 
   const axiosConfig = { withCredentials: true };
 
@@ -91,6 +86,7 @@ export default function AdminReports() {
   const fetchData = async () => {
     setLoading(true);
     try {
+      
       const data = buildMockData(mode, year, month, quarter);
       setChartData(data);
 
@@ -104,7 +100,37 @@ export default function AdminReports() {
         avgOrder: totalOrders > 0 ? Math.floor(totalRevenue / totalOrders) : 0,
       });
 
-      setTopProducts(buildTopProducts());
+      
+      const [resBest, resView, resRate] = await Promise.all([
+        axios.get(`${API_BASE}/best-sellers`, axiosConfig).catch(() => ({ data: {} })),
+        axios.get(`${API_BASE}/most-viewed`, axiosConfig).catch(() => ({ data: {} })),
+        axios.get(`${API_BASE}/ratings`, axiosConfig).catch(() => ({ data: {} }))
+      ]);
+
+      
+      if (resBest.data?.success) {
+        const list = resBest.data.result || [];
+        const totalSold = list.reduce((sum, item) => sum + Number(item.TongDaBan), 0);
+        
+        const formattedBest = list.map(item => ({
+          ...item,
+          percent: totalSold > 0 ? Math.round((Number(item.TongDaBan) / totalSold) * 100) : 0
+        }));
+        setBestSellers(formattedBest.slice(0, 10)); 
+      }
+
+      
+      if (resView.data?.success) {
+        setMostViewed(resView.data.result.slice(0, 10)); 
+      }
+
+      
+      if (resRate.data?.success) {
+        setTopRatings(resRate.data.result.slice(0, 10)); 
+      }
+
+    } catch (error) {
+      console.error("Lỗi khi tải dữ liệu thống kê:", error);
     } finally {
       setLoading(false);
     }
@@ -116,36 +142,81 @@ export default function AdminReports() {
     return `Năm ${year}`;
   };
 
-  const productColumns = [
+  const bestSellerColumns = [
     { title: '#', render: (_, __, i) => <span className={styles.rank}>{i + 1}</span>, width: 44 },
     {
       title: 'Sản phẩm',
-      dataIndex: 'name',
+      dataIndex: 'TenSanPham',
       render: (v) => <span className={styles.productName}>{v}</span>,
     },
     {
       title: 'Đã bán',
-      dataIndex: 'sold',
-      render: (v) => <Tag color="blue">{v}</Tag>,
-    },
-    {
-      title: 'Doanh thu',
-      dataIndex: 'revenue',
-      render: (v) => <span className={styles.revenue}>{fmt(v)}</span>,
+      dataIndex: 'TongDaBan',
+      render: (v) => <Tag color="volcano"><FireOutlined /> {v} SP</Tag>,
     },
     {
       title: 'Tỉ trọng',
       dataIndex: 'percent',
       render: (v) => (
         <div className={styles.barWrap}>
-          <div className={styles.barFill} style={{ width: `${v * 4}px` }} />
+          <div className={styles.barFill} style={{ width: `${v * 3}px` }} />
           <span>{v}%</span>
         </div>
       ),
     },
   ];
 
-  const pieData = topProducts.map((p) => ({ name: p.name.split(' ').slice(0, 3).join(' '), value: p.percent }));
+  const mostViewedColumns = [
+    { title: '#', render: (_, __, i) => <span className={styles.rankView}>{i + 1}</span>, width: 44 },
+    {
+      title: 'Sản phẩm',
+      render: (record) => (
+        <div className={styles.flexCenter}>
+          {record.Thumbnail ? <img src={record.Thumbnail} alt="thumbnail" className={styles.productImage} /> : <div className={styles.noImg}></div>}
+          <div>
+            <div className={styles.productName}>{record.TenSanPham}</div>
+            <div style={{ fontSize: 11, color: '#888' }}>{record.ThuongHieu}</div>
+          </div>
+        </div>
+      )
+    },
+    {
+      title: 'Lượt xem',
+      dataIndex: 'LuotXem',
+      render: (v) => <Tag color="geekblue"><EyeOutlined /> {v}</Tag>,
+    }
+  ];
+
+  const ratingColumns = [
+    { title: '#', render: (_, __, i) => <span className={styles.rankStar}>{i + 1}</span>, width: 44 },
+    {
+      title: 'Sản phẩm',
+      render: (record) => (
+        <div className={styles.flexCenter}>
+          {record.Thumbnail ? <img src={record.Thumbnail} alt="thumbnail" className={styles.productImage} /> : <div className={styles.noImg}></div>}
+          <span className={styles.productName}>{record.TenSanPham || `Sản phẩm ID: ${record.MaSanPham}`}</span>
+        </div>
+      )
+    },
+    {
+      title: 'Điểm TB',
+      dataIndex: 'DiemTrungBinh',
+      render: (v) => <span className={styles.starText}><StarOutlined /> {Number(v).toFixed(1)}</span>,
+    },
+    {
+      title: 'Số lượt ĐG',
+      dataIndex: 'TongDanhGia',
+      render: (v) => <Tag color="green">{v}</Tag>,
+    }
+  ];
+
+  
+  const pieData = bestSellers.slice(0, 5).map((p) => ({ 
+    name: p.TenSanPham.split(' ').slice(0, 3).join(' ') + '...', 
+    value: p.percent || 1 
+  }));
+
+  
 
   return (
     <div className={styles.wrapper}>
@@ -156,38 +227,23 @@ export default function AdminReports() {
         </div>
 
         <div className={styles.filters}>
-          <Radio.Group
-            value={mode}
-            onChange={(e) => setMode(e.target.value)}
-            optionType="button"
-            buttonStyle="solid"
-            className={styles.modeGroup}
-          >
+          <Radio.Group value={mode} onChange={(e) => setMode(e.target.value)} optionType="button" buttonStyle="solid" className={styles.modeGroup}>
             <Radio.Button value="month">Tháng</Radio.Button>
             <Radio.Button value="quarter">Quý</Radio.Button>
             <Radio.Button value="year">Năm</Radio.Button>
           </Radio.Group>
-
           {mode === 'month' && (
             <Select value={month} onChange={setMonth} className={styles.filterSelect}>
-              {MONTHS.map((m) => (
-                <Select.Option key={m.value} value={m.value}>{m.label}</Select.Option>
-              ))}
+              {MONTHS.map((m) => <Select.Option key={m.value} value={m.value}>{m.label}</Select.Option>)}
             </Select>
           )}
-
           {mode === 'quarter' && (
             <Select value={quarter} onChange={setQuarter} className={styles.filterSelect}>
-              {QUARTERS.map((q) => (
-                <Select.Option key={q.value} value={q.value}>{q.label}</Select.Option>
-              ))}
+              {QUARTERS.map((q) => <Select.Option key={q.value} value={q.value}>{q.label}</Select.Option>)}
             </Select>
           )}
-
           <Select value={year} onChange={setYear} className={styles.filterSelect}>
-            {YEARS.map((y) => (
-              <Select.Option key={y} value={y}>{y}</Select.Option>
-            ))}
+            {YEARS.map((y) => <Select.Option key={y} value={y}>{y}</Select.Option>)}
           </Select>
         </div>
       </div>
@@ -205,9 +261,7 @@ export default function AdminReports() {
             ].map((card, i) => (
               <Col xs={24} sm={12} xl={6} key={i}>
                 <div className={styles.summaryCard}>
-                  <div className={styles.summaryIcon} style={{ background: card.bg, color: card.color }}>
-                    {card.icon}
-                  </div>
+                  <div className={styles.summaryIcon} style={{ background: card.bg, color: card.color }}>{card.icon}</div>
                   <div>
                     <div className={styles.summaryLabel}>{card.title}</div>
                     <div className={styles.summaryValue} style={{ color: card.color }}>{card.value}</div>
@@ -217,6 +271,7 @@ export default function AdminReports() {
             ))}
           </Row>
 
+          {/* DÒNG 2: BIỂU ĐỒ */}
           <Row gutter={[16, 16]} style={{ marginBottom: 20 }}>
             <Col xs={24} xl={16}>
               <div className={styles.chartCard}>
@@ -228,16 +283,12 @@ export default function AdminReports() {
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                     <XAxis dataKey="label" tick={{ fontSize: 12, fill: '#888' }} />
                     <YAxis tickFormatter={fmtShort} tick={{ fontSize: 12, fill: '#888' }} />
-                    <Tooltip
-                      formatter={(v) => [fmt(v), 'Doanh thu']}
-                      contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 16px rgba(0,0,0,0.1)' }}
-                    />
+                    <Tooltip formatter={(v) => [fmt(v), 'Doanh thu']} contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 16px rgba(0,0,0,0.1)' }} />
                     <Bar dataKey="revenue" fill="#1b437c" radius={[4, 4, 0, 0]} name="Doanh thu" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             </Col>
-
             <Col xs={24} xl={8}>
               <div className={styles.chartCard}>
                 <div className={styles.chartHeader}>
@@ -248,9 +299,7 @@ export default function AdminReports() {
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                     <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#888' }} />
                     <YAxis tick={{ fontSize: 11, fill: '#888' }} />
-                    <Tooltip
-                      contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 16px rgba(0,0,0,0.1)' }}
-                    />
+                    <Tooltip contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 16px rgba(0,0,0,0.1)' }} />
                     <Legend />
                     <Line type="monotone" dataKey="orders" stroke="#1b437c" strokeWidth={2} dot={false} name="Đơn hàng" />
                     <Line type="monotone" dataKey="customers" stroke="#c48c46" strokeWidth={2} dot={false} name="Khách hàng" />
@@ -260,56 +309,86 @@ export default function AdminReports() {
             </Col>
           </Row>
 
-          <Row gutter={[16, 16]}>
+          {/* DÒNG 3: BÁN CHẠY NHẤT & TỈ TRỌNG BÁN RA */}
+          <Row gutter={[16, 16]} style={{ marginBottom: 20 }}>
             <Col xs={24} xl={16}>
               <div className={styles.chartCard}>
                 <div className={styles.chartHeader}>
                   <span className={styles.chartTitle}>Top sản phẩm bán chạy</span>
                 </div>
                 <Table
-                  dataSource={topProducts}
-                  columns={productColumns}
-                  rowKey="name"
+                  dataSource={bestSellers}
+                  columns={bestSellerColumns}
+                  rowKey="MaSanPham"
                   pagination={false}
                   size="small"
                   className={styles.productTable}
                 />
               </div>
             </Col>
-
             <Col xs={24} xl={8}>
               <div className={styles.chartCard}>
                 <div className={styles.chartHeader}>
-                  <span className={styles.chartTitle}>Tỉ trọng doanh thu</span>
+                  <span className={styles.chartTitle}>Tỉ trọng số lượng bán</span>
                 </div>
-                <ResponsiveContainer width="100%" height={260}>
-                  <PieChart>
-                    <Pie
-                      data={pieData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={55}
-                      outerRadius={95}
-                      paddingAngle={3}
-                      dataKey="value"
-                      label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
-                      labelLine={false}
-                    >
-                      {pieData.map((_, i) => (
-                        <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                {pieData.length > 0 ? (
+                  <>
+                    <ResponsiveContainer width="100%" height={260}>
+                      <PieChart>
+                        <Pie
+                          data={pieData} cx="50%" cy="50%" innerRadius={55} outerRadius={95}
+                          paddingAngle={3} dataKey="value"
+                          label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`} labelLine={false}
+                        >
+                          {pieData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                        </Pie>
+                        <Tooltip formatter={(v) => [`${v}%`, 'Tỉ trọng']} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div className={styles.legend}>
+                      {pieData.map((item, i) => (
+                        <div key={i} className={styles.legendItem}>
+                          <span className={styles.legendDot} style={{ background: COLORS[i % COLORS.length] }} />
+                          <span className={styles.legendLabel}>{item.name}</span>
+                        </div>
                       ))}
-                    </Pie>
-                    <Tooltip formatter={(v) => [`${v}%`, 'Tỉ trọng']} />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className={styles.legend}>
-                  {pieData.map((item, i) => (
-                    <div key={i} className={styles.legendItem}>
-                      <span className={styles.legendDot} style={{ background: COLORS[i % COLORS.length] }} />
-                      <span className={styles.legendLabel}>{item.name}</span>
                     </div>
-                  ))}
+                  </>
+                ) : <div style={{padding: '50px 0', textAlign: 'center', color: '#999'}}>Không đủ dữ liệu vẽ biểu đồ</div>}
+              </div>
+            </Col>
+          </Row>
+
+          {/* DÒNG 4: LƯỢT XEM & ĐÁNH GIÁ */}
+          <Row gutter={[16, 16]}>
+            <Col xs={24} xl={12}>
+              <div className={styles.chartCard}>
+                <div className={styles.chartHeader}>
+                  <span className={styles.chartTitle}>Sản phẩm xem nhiều nhất</span>
                 </div>
+                <Table
+                  dataSource={mostViewed}
+                  columns={mostViewedColumns}
+                  rowKey="MaSanPham"
+                  pagination={false}
+                  size="small"
+                  className={styles.productTable}
+                />
+              </div>
+            </Col>
+            <Col xs={24} xl={12}>
+              <div className={styles.chartCard}>
+                <div className={styles.chartHeader}>
+                  <span className={styles.chartTitle}>Top đánh giá cao</span>
+                </div>
+                <Table
+                  dataSource={topRatings}
+                  columns={ratingColumns}
+                  rowKey="MaSanPham"
+                  pagination={false}
+                  size="small"
+                  className={styles.productTable}
+                />
               </div>
             </Col>
           </Row>
