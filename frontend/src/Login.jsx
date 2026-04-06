@@ -105,11 +105,10 @@ function Login() {
 
             <Button 
               type="link" 
-              icon={<ArrowRightOutlined />} 
               onClick={() => navigate('/home')} 
               className={styles.backButton}
             >
-              Cửa hàng
+              Cửa hàng <ArrowRightOutlined />
             </Button>
           </div>
 
