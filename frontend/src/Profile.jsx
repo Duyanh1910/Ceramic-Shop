@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
 import styles from './Profile.module.css';
+
 const { Header, Content, Sider } = Layout;
 
 function Profile() {
@@ -18,7 +19,7 @@ function Profile() {
 
   useEffect(() => {
     fetchUserProfile();
-  },[] ); 
+  }, []); 
 
   const fetchUserProfile = async () => {
     try {
@@ -41,7 +42,7 @@ function Profile() {
         });
       }
     } catch (error) {
-      console.error("Auth check failed:", error);
+      console.error(error);
       message.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
       
       localStorage.removeItem('username');

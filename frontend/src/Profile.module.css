@@ -41,13 +41,12 @@
   width: 60px;
   height: auto;
   object-fit: contain;
-  mix-blend-mode: multiply; 
+  mix-blend-mode: multiply;
 }
 
 .logoTextWrap {
   display: flex;
   flex-direction: column;
-  justify-content: center;
 }
 
 .logoText {
@@ -57,7 +56,6 @@
   margin: 0;
   color: #173354;
   letter-spacing: 2px;
-  line-height: 1; 
 }
 
 .logoSub {
@@ -65,8 +63,6 @@
   letter-spacing: 2px;
   color: #BB9244;
   font-weight: normal; 
-  margin-top: 4px; 
-  line-height: 1;
 }
 
 .btnBack {
