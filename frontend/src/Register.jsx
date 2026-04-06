@@ -132,13 +132,11 @@ function Register() {
     <div className={styles.registerContainer}>
       <Helmet><title>Đăng ký | Ceramic Shop</title></Helmet>
 
-      {/* Thêm các shape background giống trang Login */}
       <div className={styles.shape1} />
       <div className={styles.shape2} />
       <div className={styles.shape3} />
 
       <div className={styles.combinedCard}>
-        {/* Giao diện Logo giống trang Login */}
         <div className={styles.cardImage}>
           <div className={styles.glowEffect} />
           <img src="/logo.png" alt="Ceramic Shop Logo" className={styles.logoDisplayImg} />
@@ -151,6 +149,10 @@ function Register() {
             <Button type="link" icon={<ArrowLeftOutlined />} onClick={() => navigate('/')}
               style={{ color: '#1b437c', fontWeight: 600, paddingLeft: 0 }}>
               Quay về trang chủ
+            </Button>
+            <Button type="link" icon={<ArrowLeftOutlined />} onClick={() => navigate('/home')}
+              style={{ color: '#1b437c', fontWeight: 600, paddingLeft: 0 }}>
+              Quay về cửa hàng
             </Button>
           </div>
 
