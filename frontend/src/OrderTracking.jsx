@@ -1,16 +1,13 @@
 import { useState, useEffect } from 'react';
 import {
   Tabs, Tag, Table, Button, Empty, Spin, Modal,
-  Steps, Descriptions, message, Badge
+  Steps, Descriptions, message, Badge, Divider
 } from 'antd';
 import {
-  ShoppingOutlined, ArrowLeftOutlined, EyeOutlined,
-  CloseCircleOutlined, FileTextOutlined, CarOutlined,
+  EyeOutlined, CloseCircleOutlined, FileTextOutlined, CarOutlined,
   CheckCircleOutlined, ClockCircleOutlined, StopOutlined,
 } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Helmet } from 'react-helmet-async';
 import styles from './OrderTracking.module.css';
 
 const API_BASE = 'https://ceramic-shop-u8ak.onrender.com/api/v1';
@@ -36,14 +33,13 @@ const STATUS_CONFIG = {
 };
 
 const TIMELINE_STEPS = [
-  { title: 'Đặt hàng', description: 'Đơn hàng đã được tạo' },
-  { title: 'Xác nhận', description: 'Đang chuẩn bị hàng' },
-  { title: 'Đang giao', description: 'Đơn hàng đang trên đường' },
-  { title: 'Hoàn thành', description: 'Đã giao thành công' },
+  { title: 'Đặt hàng', description: 'Đơn hàng đã tạo' },
+  { title: 'Xác nhận', description: 'Đang chuẩn bị' },
+  { title: 'Đang giao', description: 'Đang trên đường' },
+  { title: 'Hoàn thành', description: 'Giao thành công' },
 ];
 
 export default function OrderTracking() {
-  const navigate = useNavigate();
   const token = localStorage.getItem('customer_token') || localStorage.getItem('token');
   
   const authHeader = { 
@@ -116,16 +112,10 @@ export default function OrderTracking() {
       onOk: async () => {
         setCancelLoading(true);
         try {
-          await axios.put(
-            `${API_BASE}/orders/${orderCode}/cancel`, 
-            { reason: 'Khách hàng thay đổi ý định' }, 
-            authHeader
-          );
+          await axios.put(`${API_BASE}/orders/${orderCode}/cancel`, { reason: 'Khách hàng thay đổi ý định' }, authHeader);
           message.success('Hủy đơn hàng thành công!');
           fetchOrders();
-          if (selectedOrder?.MaHienThi === orderCode) {
-            setDetailModal(false);
-          }
+          if (selectedOrder?.MaHienThi === orderCode) setDetailModal(false);
         } catch (err) {
           message.error(err.response?.data?.message || 'Không thể Hủy đơn hàng!');
         } finally {
@@ -135,26 +125,18 @@ export default function OrderTracking() {
     });
   };
 
-  const getTimelineStep = (status) => {
-    if (status === 4) return -1;
-    return status;
-  };
+  const getTimelineStep = (status) => (status === 4 ? -1 : status);
 
   const tabItems = ORDER_STATUS.map((s) => {
     const count = s.value === undefined 
       ? allOrders.length 
       : allOrders.filter(o => o.TrangThaiDonHang === s.value).length;
-      
     return {
       key: s.value === undefined ? 'all' : String(s.value),
       label: (
         <span>
           {s.label}
-          <Badge
-            count={count}
-            size="small"
-            style={{ marginLeft: 6, background: '#1b437c' }}
-          />
+          <Badge count={count} size="small" style={{ marginLeft: 6, background: '#1b437c' }} />
         </span>
       ),
     };
@@ -164,7 +146,6 @@ export default function OrderTracking() {
     {
       title: 'Mã đơn',
       dataIndex: 'MaHienThi',
-      width: 120,
       render: (v) => <span className={styles.orderId}>#{v}</span>,
     },
     {
@@ -173,27 +154,9 @@ export default function OrderTracking() {
       render: (v) => new Date(v).toLocaleDateString('vi-VN'),
     },
     {
-      title: 'Sản phẩm',
-      dataIndex: 'ChiTietDonHangs',
-      render: (items) => (
-        <span className={styles.productCount}>
-          {items?.length ?? 0} sản phẩm
-        </span>
-      ),
-    },
-    {
       title: 'Tổng tiền',
       dataIndex: 'TongThanhToan',
       render: (v) => <span className={styles.amount}>{fmt(v)}</span>,
-    },
-    {
-      title: 'Thanh toán',
-      dataIndex: 'TrangThaiThanhToan',
-      render: (v) => (
-        <Tag color={v === 1 ? 'green' : 'orange'}>
-          {v === 1 ? 'Đã thanh toán' : 'Chưa thanh toán'}
-        </Tag>
-      ),
     },
     {
       title: 'Trạng thái',
@@ -205,18 +168,13 @@ export default function OrderTracking() {
     },
     {
       title: 'Thao tác',
-      width: 140,
       render: (_, row) => (
         <div className={styles.actionCell}>
-          <Button size="small" icon={<EyeOutlined />}
-            onClick={() => fetchOrderDetail(row.MaHienThi)}
-            loading={detailLoading}
-            className={styles.btnView}>
+          <Button size="small" icon={<EyeOutlined />} onClick={() => fetchOrderDetail(row.MaHienThi)} loading={detailLoading} className={styles.btnView}>
             Chi tiết
           </Button>
           {row.TrangThaiDonHang === 0 && (
-            <Button size="small" danger icon={<CloseCircleOutlined />}
-              onClick={() => handleCancelOrder(row.MaHienThi)}>
+            <Button size="small" danger icon={<CloseCircleOutlined />} onClick={() => handleCancelOrder(row.MaHienThi)}>
               Hủy
             </Button>
           )}
@@ -226,98 +184,62 @@ export default function OrderTracking() {
   ];
 
   return (
-    <div className={styles.pageWrapper}>
-      <Helmet><title>Đơn hàng của tôi | Ceramic Shop</title></Helmet>
-
-      <header className={styles.topHeader}>
-        <div className={styles.logoBox} onClick={() => navigate('/')}>
-          <img 
-            src="https://res.cloudinary.com/dcmwz0uis/image/upload/v1774819165/IMG_20260330_041641_qwo8lc.jpg" 
-            alt="Ceramic Shop Logo" 
-            className={styles.logoImg} 
-          />
-          <div className={styles.logoTextWrap}>
-            <h1 className={styles.logoText}>CERAMIC-SHOP</h1>
-            <span className={styles.logoSub}>TINH HOA GỐM SỨ VIỆT</span>
-          </div>
-        </div>
-        <Button type="link" icon={<ArrowLeftOutlined />}
-          onClick={() => navigate('/profile')} className={styles.btnBack}>
-          Về hồ sơ
-        </Button>
-      </header>
-
-      <div className={styles.mainContent}>
-        <div className={styles.container}>
-          <div className={styles.pageHeader}>
-            <h1 className={styles.pageTitle}>
-              <ShoppingOutlined /> Đơn hàng của tôi
-            </h1>
-            <p className={styles.pageSub}>Theo dõi và quản lý tất cả đơn hàng của bạn</p>
-          </div>
-
-          <div className={styles.card}>
-            <Tabs
-              activeKey={activeTab}
-              onChange={(key) => { setActiveTab(key); setPage(1); }}
-              items={tabItems}
-              className={styles.tabs}
-            />
-
-            {loading ? (
-              <div className={styles.loadingWrap}><Spin size="large" /></div>
-            ) : orders.length === 0 ? (
-              <div className={styles.emptyWrap}>
-                <Empty
-                  image={Empty.PRESENTED_IMAGE_SIMPLE}
-                  description="Bạn chưa có đơn hàng nào"
-                >
-                  <Button type="primary" className={styles.btnShop}
-                    onClick={() => navigate('/')}>
-                    Mua sắm ngay
-                  </Button>
-                </Empty>
-              </div>
-            ) : (
-              <Table
-                dataSource={orders}
-                columns={columns}
-                rowKey="MaHienThi"
-                pagination={{
-                  current: page,
-                  pageSize: 8,
-                  total,
-                  onChange: setPage,
-                  showTotal: (t) => `Tổng ${t} đơn hàng`,
-                  showSizeChanger: false,
-                }}
-                className={styles.table}
-                size="middle"
-                scroll={{ x: 700 }}
-              />
-            )}
-          </div>
-        </div>
+    <div style={{ width: '100%' }}>
+      <div style={{ marginBottom: 10 }}>
+        <h2 style={{ fontSize: '22px', fontWeight: 700, color: '#1b437c', textTransform: 'uppercase', margin: '0 0 5px 0' }}>
+          Đơn Hàng Của Tôi
+        </h2>
+        <p style={{ color: '#666', margin: 0, fontSize: '14px' }}>
+          Theo dõi và quản lý tất cả đơn hàng của bạn
+        </p>
       </div>
+      <Divider style={{ margin: '15px 0 10px 0', borderColor: '#f0f0f0' }} />
+
+      <Tabs
+        activeKey={activeTab}
+        onChange={(key) => { setActiveTab(key); setPage(1); }}
+        items={tabItems}
+        className={styles.tabs}
+      />
+
+      {loading ? (
+        <div className={styles.loadingWrap}><Spin size="large" /></div>
+      ) : orders.length === 0 ? (
+        <div className={styles.emptyWrap}>
+          <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Bạn chưa có đơn hàng nào" />
+        </div>
+      ) : (
+        <Table
+          dataSource={orders}
+          columns={columns}
+          rowKey="MaHienThi"
+          pagination={{
+            current: page,
+            pageSize: 8,
+            total,
+            onChange: setPage,
+            showTotal: (t) => `Tổng ${t} đơn hàng`,
+            showSizeChanger: false,
+          }}
+          className={styles.table}
+          size="small"
+          scroll={{ x: 600 }}
+        />
+      )}
 
       <Modal
         open={detailModal}
         onCancel={() => setDetailModal(false)}
-        footer={null}
-        width={720}
-        centered
+        footer={null} width={720} centered
         title={
           <div className={styles.modalTitle}>
             <span>Chi tiết đơn hàng</span>
-            {selectedOrder && (
-              <span className={styles.modalOrderId}>#{selectedOrder.MaHienThi}</span>
-            )}
+            {selectedOrder && <span className={styles.modalOrderId}>#{selectedOrder.MaHienThi}</span>}
           </div>
         }
       >
         {selectedOrder && (
           <div className={styles.detailBody}>
-
             {selectedOrder.TrangThaiDonHang !== 4 ? (
               <div className={styles.timelineWrap}>
                 <Steps
@@ -339,24 +261,12 @@ export default function OrderTracking() {
             <div className={styles.detailSection}>
               <div className={styles.sectionTitle}>Thông tin giao hàng</div>
               <Descriptions column={1} size="small" className={styles.desc}>
-                <Descriptions.Item label="Người nhận">
-                  {selectedOrder.TenNguoiNhan}
-                </Descriptions.Item>
-                <Descriptions.Item label="Số điện thoại">
-                  {selectedOrder.SDT}
-                </Descriptions.Item>
-                <Descriptions.Item label="Địa chỉ">
-                  {selectedOrder.DiaChiGiaoHang}
-                </Descriptions.Item>
+                <Descriptions.Item label="Người nhận">{selectedOrder.TenNguoiNhan}</Descriptions.Item>
+                <Descriptions.Item label="Số điện thoại">{selectedOrder.SDT}</Descriptions.Item>
+                <Descriptions.Item label="Địa chỉ">{selectedOrder.DiaChiGiaoHang}</Descriptions.Item>
                 <Descriptions.Item label="Thanh toán">
-                  {selectedOrder.MaPhuongThuc === 1 ? 'Thanh toán COD' : 
-                   selectedOrder.MaPhuongThuc === 2 ? 'Chuyển khoản' : 'Ví điện tử'}
+                  {selectedOrder.MaPhuongThuc === 1 ? 'Thanh toán COD' : selectedOrder.MaPhuongThuc === 2 ? 'Chuyển khoản' : 'Ví điện tử'}
                 </Descriptions.Item>
-                {selectedOrder.GhiChu && (
-                  <Descriptions.Item label="Ghi chú">
-                    {selectedOrder.GhiChu}
-                  </Descriptions.Item>
-                )}
               </Descriptions>
             </div>
 
@@ -372,12 +282,8 @@ export default function OrderTracking() {
                       onError={(e) => { e.target.src = 'https://via.placeholder.com/60'; }}
                     />
                     <div className={styles.productInfo}>
-                      <div className={styles.productName}>
-                        {item.BienTheSanPham?.SanPham?.TenSanPham}
-                      </div>
-                      <div className={styles.productVariant}>
-                        Phân loại: {item.BienTheSanPham?.TenBienThe}
-                      </div>
+                      <div className={styles.productName}>{item.BienTheSanPham?.SanPham?.TenSanPham}</div>
+                      <div className={styles.productVariant}>Phân loại: {item.BienTheSanPham?.TenBienThe}</div>
                       <div className={styles.productMeta}>
                         <span>{fmt(item.GiaBan)} × {item.SoLuong}</span>
                         <span className={styles.productTotal}>{fmt(item.ThanhTien)}</span>
@@ -389,38 +295,18 @@ export default function OrderTracking() {
             </div>
 
             <div className={styles.summaryBox}>
-              <div className={styles.summaryRow}>
-                <span>Tiền hàng</span>
-                <span>{fmt(selectedOrder.TongTienHang)}</span>
-              </div>
-              <div className={styles.summaryRow}>
-                <span>Phí vận chuyển</span>
-                <span>{fmt(selectedOrder.TongPhiVanChuyen)}</span>
-              </div>
+              <div className={styles.summaryRow}><span>Tiền hàng</span><span>{fmt(selectedOrder.TongTienHang)}</span></div>
+              <div className={styles.summaryRow}><span>Phí vận chuyển</span><span>{fmt(selectedOrder.TongPhiVanChuyen)}</span></div>
               {selectedOrder.TongGiamGia > 0 && (
-                <div className={styles.summaryRow} style={{ color: '#52c41a' }}>
-                  <span>Giảm giá</span>
-                  <span>-{fmt(selectedOrder.TongGiamGia)}</span>
-                </div>
+                <div className={styles.summaryRow} style={{ color: '#52c41a' }}><span>Giảm giá</span><span>-{fmt(selectedOrder.TongGiamGia)}</span></div>
               )}
-              <div className={styles.summaryTotal}>
-                <span>Tổng thanh toán</span>
-                <span className={styles.totalAmount}>{fmt(selectedOrder.TongThanhToan)}</span>
-              </div>
+              <div className={styles.summaryTotal}><span>Tổng thanh toán</span><span className={styles.totalAmount}>{fmt(selectedOrder.TongThanhToan)}</span></div>
             </div>
 
-            {selectedOrder.TrangThaiDonHang === 0 &&(
-                  <Button
-                danger
-                block
-                icon={<CloseCircleOutlined />}
-                loading={cancelLoading}
-                onClick={() => handleCancelOrder(selectedOrder.MaHienThi)}
-                className={styles.btnCancel}
-              >
+            {selectedOrder.TrangThaiDonHang === 0 && (
+              <Button danger block icon={<CloseCircleOutlined />} loading={cancelLoading} onClick={() => handleCancelOrder(selectedOrder.MaHienThi)} className={styles.btnCancel}>
                 Hủy đơn hàng
               </Button>
-            
             )}
           </div>
         )}
