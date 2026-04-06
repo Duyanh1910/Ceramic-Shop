@@ -142,8 +142,25 @@ function ForgotPassword() {
     <div className={styles.pageWrapper}>
       <Helmet><title>Quên mật khẩu | Ceramic Shop</title></Helmet>
 
+      {/* Shapes Background */}
+      <div className={styles.shape1} />
+      <div className={styles.shape2} />
+      <div className={styles.shape3} />
+
       <header className={styles.topHeader}>
-        <div className={styles.logo} onClick={() => navigate('/')}>CERAMIC-SHOP</div>
+        {/* Khối Logo mới từ Landing Page */}
+        <div className={styles.logoBox} onClick={() => navigate('/landing')}>
+          <img 
+            src="https://res.cloudinary.com/dcmwz0uis/image/upload/v1774819165/IMG_20260330_041641_qwo8lc.jpg" 
+            alt="Ceramic Shop Logo" 
+            className={styles.logoImg} 
+          />
+          <div className={styles.logoTextWrap}>
+            <h1 className={styles.logoText}>CERAMIC-SHOP</h1>
+            <span className={styles.logoSub}>TINH HOA GỐM SỨ VIỆT</span>
+          </div>
+        </div>
+
         <Button
           type="link"
           icon={<ArrowLeftOutlined />}
@@ -156,11 +173,6 @@ function ForgotPassword() {
 
       <div className={styles.centerWrapper}>
         <div className={styles.card}>
-          <div className={`${styles.corner} ${styles.tl}`} />
-          <div className={`${styles.corner} ${styles.tr}`} />
-          <div className={`${styles.corner} ${styles.bl}`} />
-          <div className={`${styles.corner} ${styles.br}`} />
-
           {step <= 3 && (
             <div className={styles.stepTracker}>
               {stepLabels.map((label, i) => (
