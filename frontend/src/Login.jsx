@@ -98,8 +98,12 @@ function Login() {
               onClick={() => navigate('/')} className={styles.backButton}>
               Trang chủ
             </Button>
-            <Button type="link" icon={<ArrowRightOutlined />}
-              onClick={() => navigate('/home')} className={styles.backButton}>
+            <Button 
+              type="link" 
+              icon={<ArrowRightOutlined />} 
+              style={{display: "flex", alignItems: "flex-end"}} 
+              onClick={() => navigate('/home')} 
+              className={styles.backButton}>
               Cửa hàng
             </Button>
           </div>
