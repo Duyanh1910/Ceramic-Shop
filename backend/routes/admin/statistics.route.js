@@ -2,6 +2,7 @@ import ratingProductController from "../../controllers/statistics/rating.control
 import topSellingProducts from "../../controllers/statistics/best_seller.controller.js";
 import getTotalRevenue from "../../controllers/statistics/total_revenue.controller.js";
 import getMostViewedProducts from "../../controllers/statistics/most_viewed_product.controller.js";
+import { getOverviewStats } from "../../controllers/statistics/overview.controller.js";
 
 import express from "express";
 
@@ -10,4 +11,5 @@ router.get("/ratings", ratingProductController);
 router.get("/best-sellers", topSellingProducts);
 router.get("/most-viewed", getMostViewedProducts);
 router.get("/total-revenue", getTotalRevenue);
+router.get("/overview", getOverviewStats);
 export default router;
