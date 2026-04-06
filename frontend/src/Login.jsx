@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Button, Input, Form, message, Typography, Divider, Checkbox } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import styles from './Login.module.css';
-import { UserOutlined, LockOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import { UserOutlined, LockOutlined, ArrowLeftOutlined, ArrowRightOutlined } from '@ant-design/icons';
 import { Helmet } from 'react-helmet-async';
 import { saveSession } from './useAuth.js';
 import Phoenix from './Phoenix.jsx';
@@ -93,10 +93,23 @@ function Login() {
         </div>
 
         <div className={styles.cardForm}>
-          <div style={{ marginBottom: 15 }}>
-            <Button type="link" icon={<ArrowLeftOutlined />}
-              onClick={() => navigate('/')} className={styles.backButton}>
+          <div style={{ marginBottom: 15, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Button 
+              type="link" 
+              icon={<ArrowLeftOutlined />}
+              onClick={() => navigate('/')} 
+              className={styles.backButton}
+            >
               Trang chủ
+            </Button>
+
+            <Button 
+              type="link" 
+              icon={<ArrowRightOutlined />} 
+              onClick={() => navigate('/home')} 
+              className={styles.backButton}
+            >
+              Cửa hàng
             </Button>
           </div>
 
