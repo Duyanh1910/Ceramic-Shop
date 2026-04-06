@@ -1,8 +1,10 @@
 import { useNavigate, useParams, Navigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { ArrowLeftOutlined } from '@ant-design/icons';
+import { Button } from 'antd';
 import styles from './Supportpage.module.css';
-import {useEffect} from 'react';
+import { useEffect } from 'react';
+
 const PAGES = {
   'huong-dan-mua-hang': {
     title: 'Hướng dẫn mua hàng',
@@ -240,10 +242,28 @@ export default function SupportPage() {
       <Helmet><title>{current.title} | Ceramic Shop</title></Helmet>
 
       <header className={styles.topHeader}>
-        <div className={styles.logo} onClick={() => navigate('/')}>CERAMIC-SHOP</div>
-        <button className={styles.btnBack} onClick={() => navigate('/')}>
-          <ArrowLeftOutlined /> Quay lại
-        </button>
+        {/* Khối Logo giống trang Landing Page / Forgot Password */}
+        <div className={styles.logoBox} onClick={() => navigate('/')}>
+          <img 
+            src="https://res.cloudinary.com/dcmwz0uis/image/upload/v1774819165/IMG_20260330_041641_qwo8lc.jpg" 
+            alt="Ceramic Shop Logo" 
+            className={styles.logoImg} 
+          />
+          <div className={styles.logoTextWrap}>
+            <h1 className={styles.logoText}>CERAMIC-SHOP</h1>
+            <span className={styles.logoSub}>TINH HOA GỐM SỨ VIỆT</span>
+          </div>
+        </div>
+
+        {/* Nút Quay lại giống trang Forgot Password */}
+        <Button
+          type="link"
+          icon={<ArrowLeftOutlined />}
+          onClick={() => navigate('/')}
+          className={styles.btnBack}
+        >
+          Quay lại
+        </Button>
       </header>
 
       <div className={styles.mainContent}>
