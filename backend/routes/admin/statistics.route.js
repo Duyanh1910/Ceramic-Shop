@@ -11,5 +11,5 @@ router.get("/ratings", ratingProductController);
 router.get("/best-sellers", topSellingProducts);
 router.get("/most-viewed", getMostViewedProducts);
 router.get("/total-revenue", getTotalRevenue);
-router.get("/overview", getOverviewStats);
+router.post("/overview", getOverviewStats);
 export default router;

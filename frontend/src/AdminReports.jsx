@@ -79,7 +79,7 @@ export default function AdminReports() {
         axios.get(`${API_BASE}/best-sellers`, axiosConfig).catch(() => ({ data: {} })),
         axios.get(`${API_BASE}/most-viewed`, axiosConfig).catch(() => ({ data: {} })),
         axios.get(`${API_BASE}/ratings`, axiosConfig).catch(() => ({ data: {} })),
-        axios.get(`${API_BASE}/overview`, { startDate, endDate }, axiosConfig).catch(() => ({ data: {} }))
+        axios.post(`${API_BASE}/overview`, { startDate, endDate }, axiosConfig).catch(() => ({ data: {} }))
       ]);
 
       if (resBest.data?.success) {
