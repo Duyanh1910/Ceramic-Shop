@@ -9,5 +9,5 @@ const router = express.Router();
 router.get("/ratings", ratingProductController);
 router.get("/best-sellers", topSellingProducts);
 router.get("/most-viewed", getMostViewedProducts);
-
+router.get("/total-revenue", getTotalRevenue);
 export default router;

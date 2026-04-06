@@ -12,7 +12,7 @@ import {
 import axios from 'axios';
 import styles from './AdminReports.module.css';
 
-const API_BASE = 'https://ceramic-shop-u8ak.onrender.com/api/v1/admin/statistics';
+const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1/admin/statistics";
 
 const COLORS = ['#1b437c', '#c48c46', '#52c41a', '#e74c3c', '#9b59b6', '#3498db'];
 
@@ -35,6 +35,7 @@ const QUARTERS = [
   { label: 'Quý 3 (T7-T9)', value: 3, months: [7, 8, 9] },
   { label: 'Quý 4 (T10-T12)', value: 4, months: [10, 11, 12] },
 ];
+
 
 function buildMockData(mode, year, month, quarter) {
   if (mode === 'month') {
@@ -73,7 +74,7 @@ export default function AdminReports() {
   const [summary, setSummary] = useState({ revenue: 0, orders: 0, customers: 0, avgOrder: 0 });
   const [loading, setLoading] = useState(false);
 
-
+  
   const [bestSellers, setBestSellers] = useState([]);
   const [mostViewed, setMostViewed] = useState([]);
   const [topRatings, setTopRatings] = useState([]);
@@ -88,31 +89,37 @@ export default function AdminReports() {
     setLoading(true);
     try {
       
-      const data = buildMockData(mode, year, month, quarter);
-      setChartData(data);
+      let startDate = '';
+      let endDate = '';
 
-      const totalRevenue = data.reduce((s, d) => s + d.revenue, 0);
-      const totalOrders = data.reduce((s, d) => s + d.orders, 0);
-      const totalCustomers = data.reduce((s, d) => s + d.customers, 0);
-      setSummary({
-        revenue: totalRevenue,
-        orders: totalOrders,
-        customers: totalCustomers,
-        avgOrder: totalOrders > 0 ? Math.floor(totalRevenue / totalOrders) : 0,
-      });
+      if (mode === 'month') {
+        startDate = `${year}-${String(month).padStart(2, '0')}-01`;
+        const lastDay = new Date(year, month, 0).getDate();
+        endDate = `${year}-${String(month).padStart(2, '0')}-${lastDay}`;
+      } else if (mode === 'quarter') {
+        const startMonth = (quarter - 1) * 3 + 1;
+        const endMonth = quarter * 3;
+        startDate = `${year}-${String(startMonth).padStart(2, '0')}-01`;
+        const lastDay = new Date(year, endMonth, 0).getDate();
+        endDate = `${year}-${String(endMonth).padStart(2, '0')}-${lastDay}`;
+      } else if (mode === 'year') {
+        startDate = `${year}-01-01`;
+        endDate = `${year}-12-31`;
+      }
 
       
-      const [resBest, resView, resRate] = await Promise.all([
+      const [resBest, resView, resRate, resRevenue] = await Promise.all([
         axios.get(`${API_BASE}/best-sellers`, axiosConfig).catch(() => ({ data: {} })),
         axios.get(`${API_BASE}/most-viewed`, axiosConfig).catch(() => ({ data: {} })),
-        axios.get(`${API_BASE}/ratings`, axiosConfig).catch(() => ({ data: {} }))
+        axios.get(`${API_BASE}/ratings`, axiosConfig).catch(() => ({ data: {} })),
+        
+        axios.post(`${API_BASE}/total-revenue`, { startDate, endDate }, axiosConfig).catch(() => ({ data: {} }))
       ]);
 
       
       if (resBest.data?.success) {
         const list = resBest.data.result || [];
         const totalSold = list.reduce((sum, item) => sum + Number(item.TongDaBan), 0);
-        
         const formattedBest = list.map(item => ({
           ...item,
           percent: totalSold > 0 ? Math.round((Number(item.TongDaBan) / totalSold) * 100) : 0
@@ -121,14 +128,23 @@ export default function AdminReports() {
       }
 
       
-      if (resView.data?.success) {
-        setMostViewed(resView.data.result.slice(0, 10)); 
-      }
+      if (resView.data?.success) setMostViewed(resView.data.result.slice(0, 10));
+      if (resRate.data?.success) setTopRatings(resRate.data.result.slice(0, 10));
 
       
-      if (resRate.data?.success) {
-        setTopRatings(resRate.data.result.slice(0, 10)); 
-      }
+      const realRevenue = resRevenue.data?.success ? resRevenue.data.result : 0;
+      const data = buildMockData(mode, year, month, quarter);
+      setChartData(data);
+      const totalOrders = data.reduce((s, d) => s + d.orders, 0);
+      const totalCustomers = data.reduce((s, d) => s + d.customers, 0);
+
+      
+      setSummary({
+        revenue: realRevenue,
+        orders: totalOrders, 
+        customers: totalCustomers, 
+        avgOrder: totalOrders > 0 ? Math.floor(realRevenue / totalOrders) : 0,
+      });
 
     } catch (error) {
       console.error("Lỗi khi tải dữ liệu thống kê:", error);
@@ -213,7 +229,6 @@ export default function AdminReports() {
     }
   ];
 
-  
   const pieData = bestSellers.slice(0, 5).map((p) => ({ 
     name: p.TenSanPham.split(' ').slice(0, 3).join(' ') + '...', 
     value: p.percent || 1 
@@ -255,6 +270,7 @@ export default function AdminReports() {
         <div className={styles.loadingWrap}><Spin size="large" /></div>
       ) : (
         <>
+          {/* DÒNG 1: THẺ SUMMARY */}
           <Row gutter={[16, 16]} className={styles.summaryRow}>
             {[
               { title: 'Doanh thu', value: fmt(summary.revenue), icon: <DollarOutlined />, color: '#1b437c', bg: '#e8f0fe' },

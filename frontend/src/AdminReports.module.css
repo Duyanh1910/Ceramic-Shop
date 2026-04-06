@@ -190,3 +190,58 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* --- CÁC CLASS MỚI CHO BẢNG RATING VÀ LƯỢT XEM --- */
+
+.flexCenter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.productImage {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 1px solid #f0f0f0;
+  background-color: #fafafa;
+}
+
+.noImg {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  background-color: #f5f5f5;
+  border: 1px dashed #d9d9d9;
+}
+
+.rankView {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px; height: 24px;
+  background: #2f54eb;
+  color: #fff;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.rankStar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px; height: 24px;
+  background: #fa8c16;
+  color: #fff;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.starText {
+  color: #f59e0b;
+  font-weight: 700;
+  font-size: 14px;
+}
