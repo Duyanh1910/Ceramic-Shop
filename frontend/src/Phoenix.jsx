@@ -70,8 +70,9 @@ export default function Phoenix({ mood = 'idle', passwordVisible = false }) {
     shy:   { primary: '#e07b9a', secondary: '#f0a8bf', body: '#1b437c', body2: '#3060a8', glow: '224,123,154' },
   }[activeMood] || { primary: '#c48c46', secondary: '#e8aa6e', body: '#1b437c', body2: '#2d6abf', glow: '196,140,70' };
 
-  const wL = activeMood === 'happy' ? wingPhase - 18 : wingPhase - 8;
-  const wR = activeMood === 'happy' ? -wingPhase + 18 : -wingPhase + 8;
+  // Logic góc vung cánh: Khi "shy" cánh sẽ vung chéo 135 độ lên úp vào mặt
+  const wL = activeMood === 'shy' ? 135 : (activeMood === 'happy' ? wingPhase - 18 : wingPhase - 8);
+  const wR = activeMood === 'shy' ? -135 : (activeMood === 'happy' ? -wingPhase + 18 : -wingPhase + 8);
 
   const LABELS = {
     idle:  '👀 Nhìn bạn kìa...',
@@ -127,70 +128,44 @@ export default function Phoenix({ mood = 'idle', passwordVisible = false }) {
           </filter>
         </defs>
 
-        <g transform={`translate(130 240) rotate(${tailPhase})`}
-          style={{ transformOrigin: '130px 240px' }}>
-          {[0,-14,-26,14,26].map((ox, i) => {
-            const len  = [80, 68, 52, 68, 52][i];
-            const rot  = [0,-14,-26,14,26][i];
-            const opa  = [0.92, 0.78, 0.55, 0.78, 0.55][i];
-            const rx   = [7,5.5,4,5.5,4][i];
-            return (
-              <g key={i} transform={`rotate(${rot})`}>
-                <ellipse cx={ox} cy={len / 2} rx={rx} ry={len / 2}
-                  fill="url(#PtailA)" opacity={opa} />
-                <line x1={ox} y1={4} x2={ox} y2={len - 6}
-                  stroke={P.secondary} strokeWidth="0.8" opacity="0.5" />
-                <circle cx={ox} cy={len} r="4.5" fill="#fff" opacity="0.65"
-                  filter="url(#Pglow)" />
-              </g>
-            );
-          })}
-        </g>
-
+        {/* BAO BỌC TOÀN BỘ CON CHIM (Bao gồm cả đuôi) VÀO TRONG GROUP CHUYỂN ĐỘNG */}
         <g style={{ transform: `translateY(${bodyDY}px)`, transition: 'transform 0.3s ease' }}>
 
-          <g transform="translate(130 165)" style={{ transformOrigin: '0 0' }}>
-            <g style={{ transform: `rotate(${wL}deg)`, transformOrigin: '0 0',
-                        transition: 'transform 0.35s ease' }}>
-              <path d="M 0 0 C -28 -10 -70 8 -80 50 C -65 70 -30 62 0 38"
-                fill="url(#PfeathA)" opacity="0.9" filter="url(#Pshadow)" />
-              <path d="M -4 4 C -24 0 -55 20 -60 52" fill="none"
-                stroke={P.secondary} strokeWidth="1.2" opacity="0.45" />
-              <path d="M -8 8 C -20 6 -42 28 -45 50" fill="none"
-                stroke={P.secondary} strokeWidth="0.9" opacity="0.3" />
-              <path d="M -72 44 C -85 30 -92 18 -88 8" fill="none"
-                stroke={P.primary} strokeWidth="1.5" opacity="0.5" strokeLinecap="round" />
-              <path d="M -68 50 C -82 40 -90 32 -86 22" fill="none"
-                stroke={P.secondary} strokeWidth="1" opacity="0.35" strokeLinecap="round" />
-            </g>
+          {/* --- ĐUÔI CHIM (Nằm dưới cùng để bị thân che) --- */}
+          <g transform={`translate(130 240) rotate(${tailPhase})`}
+            style={{ transformOrigin: '130px 240px' }}>
+            {[0,-14,-26,14,26].map((ox, i) => {
+              const len  = [80, 68, 52, 68, 52][i];
+              const rot  = [0,-14,-26,14,26][i];
+              const opa  = [0.92, 0.78, 0.55, 0.78, 0.55][i];
+              const rx   = [7,5.5,4,5.5,4][i];
+              return (
+                <g key={i} transform={`rotate(${rot})`}>
+                  <ellipse cx={ox} cy={len / 2} rx={rx} ry={len / 2}
+                    fill="url(#PtailA)" opacity={opa} />
+                  <line x1={ox} y1={4} x2={ox} y2={len - 6}
+                    stroke={P.secondary} strokeWidth="0.8" opacity="0.5" />
+                  <circle cx={ox} cy={len} r="4.5" fill="#fff" opacity="0.65"
+                    filter="url(#Pglow)" />
+                </g>
+              );
+            })}
           </g>
 
-          <g transform="translate(130 165)" style={{ transformOrigin: '0 0' }}>
-            <g style={{ transform: `rotate(${wR}deg)`, transformOrigin: '0 0',
-                        transition: 'transform 0.35s ease' }}>
-              <path d="M 0 0 C 28 -10 70 8 80 50 C 65 70 30 62 0 38"
-                fill="url(#PfeathA)" opacity="0.9" filter="url(#Pshadow)" />
-              <path d="M 4 4 C 24 0 55 20 60 52" fill="none"
-                stroke={P.secondary} strokeWidth="1.2" opacity="0.45" />
-              <path d="M 8 8 C 20 6 42 28 45 50" fill="none"
-                stroke={P.secondary} strokeWidth="0.9" opacity="0.3" />
-              <path d="M 72 44 C 85 30 92 18 88 8" fill="none"
-                stroke={P.primary} strokeWidth="1.5" opacity="0.5" strokeLinecap="round" />
-              <path d="M 68 50 C 82 40 90 32 86 22" fill="none"
-                stroke={P.secondary} strokeWidth="1" opacity="0.35" strokeLinecap="round" />
-            </g>
-          </g>
-
+          {/* --- THÂN CHIM --- */}
           <ellipse cx="130" cy="170" rx="36" ry="50"
             fill="url(#PbodyA)" filter="url(#Pshadow)" />
           <ellipse cx="130" cy="178" rx="20" ry="28" fill="#fff" opacity="0.1" />
 
+          {/* Cổ nối đầu */}
           <path d="M 116 128 C 114 108 120 98 130 92 C 140 98 146 108 144 128 Z"
             fill="url(#PbodyA)" />
 
+          {/* Đầu chim */}
           <circle cx="130" cy="90" r="34" fill="url(#PbodyA)" filter="url(#Pshadow)" />
           <ellipse cx="118" cy="78" rx="14" ry="10" fill="#fff" opacity="0.08" />
 
+          {/* Lông mào trên đỉnh đầu */}
           {[
             { x: 117, cp1x: 111, cp1y: 58, cp2x: 107, cp2y: 42, ex: 105, ey: 32 },
             { x: 130, cp1x: 128, cp1y: 55, cp2x: 128, cp2y: 36, ex: 130, ey: 24 },
@@ -205,12 +180,16 @@ export default function Phoenix({ mood = 'idle', passwordVisible = false }) {
             </g>
           ))}
 
-          <path d="M 148 92 C 160 88 170 95 165 102 C 158 109 148 103 148 96 Z"
+          {/* --- MỎ CHIM (ĐÃ CĂN GIỮA VÀ ĐỐI XỨNG) --- */}
+          <path d="M 115 94 Q 127.5 87 140 94 Q 127.5 106 115 94 Z" 
             fill="#e8aa50" />
-          <path d="M 148 97 C 158 99 165 102 165 102 C 158 109 148 103 148 97 Z"
+          <path d="M 118 96 Q 127.5 104 137 96 Q 127.5 108 118 96 Z" 
             fill="#c48c46" opacity="0.7" />
-          <ellipse cx="157" cy="93" rx="2" ry="1.2" fill={P.body} opacity="0.4" />
+          {/* Lỗ mũi cute */}
+          <ellipse cx="123" cy="92" rx="1.5" ry="1" fill={P.body} opacity="0.4" />
+          <ellipse cx="132" cy="92" rx="1.5" ry="1" fill={P.body} opacity="0.4" />
 
+          {/* Lông mày nhíu lại khi buồn */}
           {activeMood === 'sad' && (
             <>
               <path d="M 106 74 C 112 70 118 72 122 76"
@@ -220,15 +199,7 @@ export default function Phoenix({ mood = 'idle', passwordVisible = false }) {
             </>
           )}
 
-          {activeMood === 'shy' && (
-            <>
-              <path d="M 88 96 C 88 78 100 70 110 76 C 104 78 94 84 88 96 Z"
-                fill={P.primary} opacity="0.95" />
-              <path d="M 172 96 C 172 78 160 70 150 76 C 156 78 166 84 172 96 Z"
-                fill={P.primary} opacity="0.95" />
-            </>
-          )}
-
+          {/* --- CẶP MẮT --- */}
           <g>
             <circle cx="112" cy="88" r="11" fill="url(#PeyeA)" />
             <circle cx="112" cy="88" r="11" fill="none" stroke={P.body} strokeWidth="1.8" />
@@ -251,6 +222,7 @@ export default function Phoenix({ mood = 'idle', passwordVisible = false }) {
             )}
           </g>
 
+          {/* Má hồng */}
           {(activeMood === 'happy' || activeMood === 'shy') && (
             <>
               <ellipse cx="100" cy="100" rx="10" ry="6" fill="#ffb3c6" opacity="0.45" filter="url(#Psoft)" />
@@ -258,6 +230,7 @@ export default function Phoenix({ mood = 'idle', passwordVisible = false }) {
             </>
           )}
 
+          {/* Nước mắt */}
           {activeMood === 'sad' && (
             <>
               <ellipse cx="106" cy="104" rx="2.5" ry="5"
@@ -267,6 +240,7 @@ export default function Phoenix({ mood = 'idle', passwordVisible = false }) {
             </>
           )}
 
+          {/* Nụ cười */}
           {activeMood === 'happy' && (
             <path d="M 118 108 Q 130 118 142 108"
               fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" opacity="0.6" />
@@ -276,6 +250,29 @@ export default function Phoenix({ mood = 'idle', passwordVisible = false }) {
               fill="none" stroke={P.secondary} strokeWidth="1.8" strokeLinecap="round" opacity="0.55" />
           )}
 
+          {/* --- CÁNH TRÁI (Lên trên cùng để che mặt) --- */}
+          <g transform="translate(100 160)" style={{ transformOrigin: '0 0' }}>
+            <g style={{ transform: `rotate(${wL}deg)`, transformOrigin: '0 0', transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)' }}>
+              <path d="M 0 0 C -28 -10 -70 8 -80 50 C -65 70 -30 62 0 35" fill="url(#PfeathA)" opacity="0.95" filter="url(#Pshadow)" />
+              <path d="M -4 4 C -24 0 -55 20 -60 52" fill="none" stroke={P.secondary} strokeWidth="1.2" opacity="0.45" />
+              <path d="M -8 8 C -20 6 -42 28 -45 50" fill="none" stroke={P.secondary} strokeWidth="0.9" opacity="0.3" />
+              <path d="M -72 44 C -85 30 -92 18 -88 8" fill="none" stroke={P.primary} strokeWidth="1.5" opacity="0.5" strokeLinecap="round" />
+              <path d="M -68 50 C -82 40 -90 32 -86 22" fill="none" stroke={P.secondary} strokeWidth="1" opacity="0.35" strokeLinecap="round" />
+            </g>
+          </g>
+
+          {/* --- CÁNH PHẢI (Lên trên cùng để che mặt) --- */}
+          <g transform="translate(160 160)" style={{ transformOrigin: '0 0' }}>
+            <g style={{ transform: `rotate(${wR}deg)`, transformOrigin: '0 0', transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)' }}>
+              <path d="M 0 0 C 28 -10 70 8 80 50 C 65 70 30 62 0 35" fill="url(#PfeathA)" opacity="0.95" filter="url(#Pshadow)" />
+              <path d="M 4 4 C 24 0 55 20 60 52" fill="none" stroke={P.secondary} strokeWidth="1.2" opacity="0.45" />
+              <path d="M 8 8 C 20 6 42 28 45 50" fill="none" stroke={P.secondary} strokeWidth="0.9" opacity="0.3" />
+              <path d="M 72 44 C 85 30 92 18 88 8" fill="none" stroke={P.primary} strokeWidth="1.5" opacity="0.5" strokeLinecap="round" />
+              <path d="M 68 50 C 82 40 90 32 86 22" fill="none" stroke={P.secondary} strokeWidth="1" opacity="0.35" strokeLinecap="round" />
+            </g>
+          </g>
+
+          {/* --- BÀN CHÂN --- */}
           <g opacity="0.65">
             {[[-12, 12], [12, -12]].map(([lx, rx], i) => (
               <g key={i} transform={`translate(${i === 0 ? 118 : 142} 218)`}>
@@ -287,6 +284,7 @@ export default function Phoenix({ mood = 'idle', passwordVisible = false }) {
             ))}
           </g>
 
+          {/* Bóng đổ dưới đùi */}
           <path d="M 116 198 C 122 192 130 190 138 192 C 132 200 128 202 130 210 C 128 204 120 202 116 198 Z"
             fill={P.secondary} opacity="0.35" />
 
@@ -301,10 +299,3 @@ export default function Phoenix({ mood = 'idle', passwordVisible = false }) {
     </div>
   );
 }
-
-const LABELS = {
-  idle:  '👀 Nhìn bạn kìa...',
-  happy: '🎉 Chào mừng trở lại!',
-  sad:   '😢 Sai mật khẩu rồi...',
-  shy:   '🙈 Mình không nhìn đâu!',
-};
