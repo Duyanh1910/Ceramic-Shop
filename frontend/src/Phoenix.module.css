@@ -1,0 +1,85 @@
+@import url('https://fonts.googleapis.com/css2?family=Arsenal:wght@400;600;700&display=swap');
+
+.wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 20px 0;
+}
+
+.glowBg {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  transition: background 0.6s ease;
+}
+
+.svg {
+  width: 200px;
+  height: 240px;
+  filter: drop-shadow(0 8px 24px rgba(27,67,124,0.2));
+  transition: filter 0.4s ease;
+}
+
+.tear {
+  animation: tearDrop 1.5s ease-in infinite;
+  transform-origin: center top;
+}
+
+@keyframes tearDrop {
+  0%   { transform: translateY(0); opacity: 0.7; }
+  60%  { transform: translateY(10px); opacity: 0.9; }
+  100% { transform: translateY(20px); opacity: 0; }
+}
+
+.sparkles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.sparkle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ffb347;
+  top: calc(20% + var(--i) * 8%);
+  left: calc(10% + var(--i) * 14%);
+  animation: sparkleAnim 1.2s ease-in-out calc(var(--i) * 0.15s) infinite alternate;
+}
+
+.sparkle:nth-child(odd)  { background: #fff; width: 6px; height: 6px; }
+.sparkle:nth-child(even) { background: #c48c46; }
+
+@keyframes sparkleAnim {
+  from { transform: scale(0.4) translateY(0); opacity: 0.3; }
+  to   { transform: scale(1.2) translateY(-12px); opacity: 1; }
+}
+
+.moodBubble {
+  font-family: 'Arsenal', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #444;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(8px);
+  padding: 6px 16px;
+  border-radius: 20px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+  border: 1px solid rgba(255,255,255,0.6);
+  white-space: nowrap;
+  transition: all 0.4s ease;
+  animation: bubbleIn 0.3s ease;
+}
+
+@keyframes bubbleIn {
+  from { transform: scale(0.85) translateY(4px); opacity: 0; }
+  to   { transform: scale(1) translateY(0); opacity: 1; }
+}

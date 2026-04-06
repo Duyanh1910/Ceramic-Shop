@@ -6,6 +6,7 @@ import styles from './Login.module.css';
 import { UserOutlined, LockOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { Helmet } from 'react-helmet-async';
 import { saveSession } from './useAuth.js';
+import Phoenix from './Phoenix.jsx';
 
 const { Text, Link } = Typography;
 
@@ -13,31 +14,39 @@ const BACKEND_URL = 'https://ceramic-shop-u8ak.onrender.com';
 const API_BASE = `${BACKEND_URL}/api/v1`;
 
 function Login() {
-  const [loading, setLoading] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
+  const [loading, setLoading]           = useState(false);
+  const [rememberMe, setRememberMe]     = useState(false);
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [mood, setMood]                 = useState('idle');
   const navigate = useNavigate();
+
+  const handlePasswordFocus = () => setMood('idle');
+  const handlePasswordBlur  = () => setMood('idle');
+  const handleUsernameFocus = () => setMood('idle');
 
   const handleLogin = async (values) => {
     setLoading(true);
+    setMood('idle');
     try {
       const keysToRemove = [
         'customer_token', 'admin_token', 'token',
         'customer_session_active', 'admin_session_active',
-        'role', 'username', 'customer_maKhachHang'
+        'role', 'username', 'customer_maKhachHang',
       ];
-      keysToRemove.forEach(k => localStorage.removeItem(k));
+      keysToRemove.forEach((k) => localStorage.removeItem(k));
 
       const response = await axios.post(
         `${API_BASE}/auth/login`,
-        { username: values.username, password: values.password, rememberMe: rememberMe },
+        { username: values.username, password: values.password, rememberMe },
         { withCredentials: true }
       );
-      
+
       const user = response.data.user || response.data.result || response.data;
       const currentUsername = user.username || values.username;
-      
-      const currentRole = user.role || user.Role || 'Customer'; 
+      const currentRole = user.role || user.Role || 'Customer';
       const token = response.data.token || null;
+
+      setMood('happy');
 
       if (currentRole === 'Admin' || currentRole === 'Staff') {
         if (typeof saveSession === 'function') saveSession(currentUsername, currentRole, true, token);
@@ -45,21 +54,19 @@ function Login() {
         localStorage.setItem('admin_session_active', 'true');
         localStorage.setItem('role', currentRole);
         localStorage.setItem('username', currentUsername);
-        
-        message.success(`Đăng nhập ${currentRole} thành công!`);
-        navigate('/admin');
+        setTimeout(() => { message.success(`Đăng nhập ${currentRole} thành công!`); navigate('/admin'); }, 800);
       } else {
         if (typeof saveSession === 'function') saveSession(currentUsername, 'Customer', true, token);
         localStorage.setItem('customer_token', token);
         localStorage.setItem('customer_session_active', 'true');
         localStorage.setItem('role', 'Customer');
         localStorage.setItem('username', currentUsername);
-        
-        message.success('Đăng nhập thành công!');
-        navigate('/home');
+        setTimeout(() => { message.success('Đăng nhập thành công!'); navigate('/home'); }, 800);
       }
     } catch (error) {
+      setMood('sad');
       message.error(error.response?.data?.message || 'Đăng nhập thất bại!');
+      setTimeout(() => setMood('idle'), 3000);
     } finally {
       setLoading(false);
     }
@@ -74,11 +81,15 @@ function Login() {
       <div className={styles.shape3} />
 
       <div className={styles.combinedCard}>
+
         <div className={styles.cardImage}>
-          <div className={styles.glowEffect} />
-          <img src="/logo.png" alt="Ceramic Shop Logo" className={styles.logoDisplayImg} />
-          <h2 className={styles.logoDisplayTitle}>CERAMIC-SHOP</h2>
-          <p className={styles.logoDisplaySub}>TINH HOA GỐM SỨ VIỆT</p>
+          <div className={styles.phoenixWrap}>
+            <Phoenix mood={mood} passwordVisible={passwordVisible} />
+          </div>
+          <div className={styles.brandFooter}>
+            <span className={styles.brandName}>CERAMIC-SHOP</span>
+            <span className={styles.brandSub}>TINH HOA GỐM SỨ VIỆT</span>
+          </div>
         </div>
 
         <div className={styles.cardForm}>
@@ -103,6 +114,7 @@ function Login() {
                 className={styles.customInput}
                 placeholder="Nhập tên đăng nhập"
                 size="large"
+                onFocus={handleUsernameFocus}
               />
             </Form.Item>
 
@@ -116,11 +128,24 @@ function Login() {
                 className={styles.customInput}
                 placeholder="Nhập mật khẩu"
                 size="large"
+                onFocus={handlePasswordFocus}
+                onBlur={handlePasswordBlur}
+                visibilityToggle={{
+                  visible: passwordVisible,
+                  onVisibleChange: (v) => {
+                    setPasswordVisible(v);
+                    setMood(v ? 'shy' : 'idle');
+                  },
+                }}
               />
             </Form.Item>
 
             <div className={styles.formOptions}>
-              <Checkbox checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} className={styles.customCheckbox}>
+              <Checkbox
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className={styles.customCheckbox}
+              >
                 Ghi nhớ đăng nhập
               </Checkbox>
               <Link onClick={() => navigate('/forgot-password')} className={styles.forgotPassword}>
@@ -128,8 +153,14 @@ function Login() {
               </Link>
             </div>
 
-            <Button className={styles.customButton} type="primary" htmlType="submit"
-              block loading={loading} size="large">
+            <Button
+              className={styles.customButton}
+              type="primary"
+              htmlType="submit"
+              block
+              loading={loading}
+              size="large"
+            >
               ĐĂNG NHẬP
             </Button>
           </Form>
@@ -154,7 +185,6 @@ function Login() {
               <GoogleIcon />
               <span className={styles.socialTextGg}>Google</span>
             </a>
-
             <a
               href={`${BACKEND_URL}/api/v1/auth/facebook?rememberMe=${rememberMe}`}
               className={`${styles.socialCircle} ${styles.fbCircle}`}

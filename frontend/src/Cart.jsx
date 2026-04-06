@@ -473,7 +473,7 @@ function Cart() {
                       <Form.Item 
                         label="Địa chỉ nhận hàng" 
                         name="DiaChi"
-                        rules={[{ required: true, message: 'Vui lòng nhập địa chỉ giao hàng!' }, { min: 10, message: 'Địa chỉ phải có ít nhất 10 ký tự!' }]}
+                        rules={[{ required: true, message: 'Vui lòng nhập địa chỉ giao hàng!' }]}
                       >
                         <AddressSelector />
                       </Form.Item>
