@@ -3,275 +3,308 @@ import styles from './Phoenix.module.css';
 
 export default function Phoenix({ mood = 'idle', passwordVisible = false }) {
   const containerRef = useRef(null);
-  const [eyeOffset, setEyeOffset] = useState({ x: 0, y: 0 });
-  const [wingUp, setWingUp] = useState(false);
+  const [eye, setEye]         = useState({ x: 0, y: 0 });
+  const [wingPhase, setWingPhase] = useState(0);
   const [tailPhase, setTailPhase] = useState(0);
-  const [blinking, setBlinking] = useState(false);
+  const [blinking, setBlinking]   = useState(false);
 
   const activeMood = passwordVisible ? 'shy' : mood;
 
-  const handleMouseMove = useCallback((e) => {
+  const onMouseMove = useCallback((e) => {
     if (!containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height * 0.38;
+    const r  = containerRef.current.getBoundingClientRect();
+    const cx = r.left + r.width  * 0.5;
+    const cy = r.top  + r.height * 0.36;
     const dx = e.clientX - cx;
     const dy = e.clientY - cy;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    const maxDist = 8;
-    const scale = Math.min(1, maxDist / Math.max(dist, 1));
-    setEyeOffset({
-      x: dx * scale * 0.45,
-      y: dy * scale * 0.3,
-    });
+    const dist = Math.hypot(dx, dy) || 1;
+    const cap  = 7;
+    setEye({ x: (dx / dist) * Math.min(cap, dist) * 0.5,
+             y: (dy / dist) * Math.min(cap, dist) * 0.3 });
   }, []);
 
   useEffect(() => {
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, [handleMouseMove]);
+    window.addEventListener('mousemove', onMouseMove);
+    return () => window.removeEventListener('mousemove', onMouseMove);
+  }, [onMouseMove]);
 
   useEffect(() => {
-    const interval = setInterval(() => setWingUp((w) => !w), 900);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    let frame;
-    let t = 0;
-    const animate = () => {
-      t += 0.025;
-      setTailPhase(Math.sin(t) * 6);
-      frame = requestAnimationFrame(animate);
+    let t = 0, raf;
+    const loop = () => {
+      t += 0.018;
+      setWingPhase(Math.sin(t) * 12);
+      setTailPhase(Math.sin(t * 0.7 + 1) * 5);
+      raf = requestAnimationFrame(loop);
     };
-    frame = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(frame);
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
   }, []);
 
   useEffect(() => {
-    const blink = () => {
-      setBlinking(true);
-      setTimeout(() => setBlinking(false), 150);
+    const schedule = () => {
+      const delay = 3000 + Math.random() * 2000;
+      return setTimeout(() => {
+        setBlinking(true);
+        setTimeout(() => { setBlinking(false); schedule(); }, 130);
+      }, delay);
     };
-    const interval = setInterval(blink, 3500 + Math.random() * 1500);
-    return () => clearInterval(interval);
+    const t = schedule();
+    return () => clearTimeout(t);
   }, []);
 
-  const ex = eyeOffset.x;
-  const ey = eyeOffset.y;
-  const eyeScaleY = blinking || activeMood === 'shy' ? 0.05 : activeMood === 'sad' ? 0.6 : 1;
+  const ex = eye.x;
+  const ey = eye.y;
 
-  const wingLeftRot  = activeMood === 'happy' ? -35 : wingUp ? -22 : -10;
-  const wingRightRot = activeMood === 'happy' ?  35 : wingUp ?  22 :  10;
+  const eyeH = blinking || activeMood === 'shy'
+    ? 0.06
+    : activeMood === 'sad' ? 0.55 : 1;
 
-  const bodyY = activeMood === 'sad' ? 4 : wingUp ? -3 : 0;
+  const bodyDY = activeMood === 'sad' ? 5
+    : activeMood === 'happy' ? Math.sin(wingPhase * 0.3) * 2 - 2
+    : Math.sin(wingPhase * 0.26) * 1.5;
 
-  const featherColor = activeMood === 'sad' ? '#6a8fb5'
-    : activeMood === 'happy' ? '#ffb347'
-    : activeMood === 'shy'   ? '#e07b9a'
-    : '#c48c46';
+  const P = {
+    idle:  { primary: '#c48c46', secondary: '#e8aa6e', body: '#1b437c', body2: '#2d6abf', glow: '196,140,70' },
+    happy: { primary: '#ffb347', secondary: '#ffd580', body: '#1b437c', body2: '#3d7fd4', glow: '255,179,71' },
+    sad:   { primary: '#6a8fb5', secondary: '#90afc8', body: '#344f7a', body2: '#4a6fa5', glow: '106,143,181' },
+    shy:   { primary: '#e07b9a', secondary: '#f0a8bf', body: '#1b437c', body2: '#3060a8', glow: '224,123,154' },
+  }[activeMood] || { primary: '#c48c46', secondary: '#e8aa6e', body: '#1b437c', body2: '#2d6abf', glow: '196,140,70' };
 
-  const bodyColor = activeMood === 'sad' ? '#4a6fa5' : '#1b437c';
-  const glowColor = activeMood === 'sad' ? 'rgba(106,143,181,0.3)'
-    : activeMood === 'happy' ? 'rgba(255,179,71,0.4)'
-    : activeMood === 'shy'   ? 'rgba(224,123,154,0.3)'
-    : 'rgba(196,140,70,0.25)';
+  const wL = activeMood === 'happy' ? wingPhase - 18 : wingPhase - 8;
+  const wR = activeMood === 'happy' ? -wingPhase + 18 : -wingPhase + 8;
+
+  const LABELS = {
+    idle:  '👀 Nhìn bạn kìa...',
+    happy: '🎉 Chào mừng trở lại!',
+    sad:   '😢 Sai mật khẩu rồi...',
+    shy:   '🙈 Mình không nhìn đâu!',
+  };
 
   return (
     <div ref={containerRef} className={styles.wrapper}>
 
-      <div className={styles.glowBg} 
-      style={{ background: `radial-gradient(circle at 50% 45%, ${glowColor} 0%, transparent 70%)` }} />
+      <div className={styles.glow}
+        style={{ background: `radial-gradient(ellipse 70% 60% at 50% 48%, rgba(${P.glow},0.28) 0%, transparent 70%)` }} />
 
       {activeMood === 'happy' && (
-        <div className={styles.sparkles}>
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className={styles.sparkle} style={{ '--i': i }} />
+        <div className={styles.sparks} aria-hidden>
+          {Array.from({ length: 8 }, (_, i) => (
+            <span key={i} className={styles.spark}
+              style={{ '--i': i, '--c': i % 3 === 0 ? '#ffb347' : i % 3 === 1 ? '#fff' : '#c48c46' }} />
           ))}
         </div>
       )}
 
-      <svg
-        viewBox="0 0 220 300"
-        xmlns="http://www.w3.org/2000/svg"
-        className={styles.svg}
-      >
+      <svg viewBox="0 0 260 340" xmlns="http://www.w3.org/2000/svg"
+        className={styles.svg} aria-hidden>
         <defs>
-          <radialGradient id="bodyGrad" cx="50%" cy="40%" r="55%">
-            <stop offset="0%" stopColor="#2d6abf" />
-            <stop offset="100%" stopColor={bodyColor} />
+          <radialGradient id="PbodyA" cx="38%" cy="32%" r="65%">
+            <stop offset="0%" stopColor={P.body2} />
+            <stop offset="100%" stopColor={P.body} />
           </radialGradient>
-          <radialGradient id="featherGrad" cx="50%" cy="30%" r="60%">
-            <stop offset="0%" stopColor="#fff" stopOpacity="0.3" />
-            <stop offset="100%" stopColor={featherColor} />
+          <radialGradient id="PeyeA" cx="30%" cy="28%" r="65%">
+            <stop offset="0%" stopColor="#ffffff" />
+            <stop offset="100%" stopColor="#ddeeff" />
           </radialGradient>
-          <radialGradient id="eyeGrad" cx="35%" cy="35%" r="60%">
-            <stop offset="0%" stopColor="#fff" />
-            <stop offset="100%" stopColor="#e8f0fe" />
-          </radialGradient>
-          <filter id="softShadow">
-            <feDropShadow dx="0" dy="4" stdDeviation="5" floodColor="#00000033" />
+          <linearGradient id="PfeathA" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor={P.secondary} />
+            <stop offset="100%" stopColor={P.primary} />
+          </linearGradient>
+          <linearGradient id="PtailA" x1="0%" y1="0%" x2="50%" y2="100%">
+            <stop offset="0%" stopColor={P.secondary} stopOpacity="0.9" />
+            <stop offset="100%" stopColor={P.primary} stopOpacity="0.6" />
+          </linearGradient>
+          <filter id="Pshadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="5" stdDeviation="6" floodColor={P.body} floodOpacity="0.25" />
           </filter>
-          <filter id="glow">
-            <feGaussianBlur stdDeviation="3" result="blur" />
-            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+          <filter id="Pglow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="4" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="Psoft" x="-10%" y="-10%" width="120%" height="120%">
+            <feGaussianBlur stdDeviation="2" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
           </filter>
         </defs>
 
-        <g transform={`translate(110,215) rotate(${tailPhase})`} style={{ transformOrigin: '110px 215px' }}>
-          <ellipse cx="0" cy="38" rx="8" ry="38" fill="url(#featherGrad)" opacity="0.9" />
-          <ellipse cx="-18" cy="32" rx="6" ry="32" fill={featherColor} opacity="0.75"
-            transform="rotate(-18, -18, 32)" />
-          <ellipse cx="-34" cy="22" rx="5" ry="24" fill={featherColor} opacity="0.55"
-            transform="rotate(-32, -34, 22)" />
-          <ellipse cx="18" cy="32" rx="6" ry="32" fill={featherColor} opacity="0.75"
-            transform="rotate(18, 18, 32)" />
-          <ellipse cx="34" cy="22" rx="5" ry="24" fill={featherColor} opacity="0.55"
-            transform="rotate(32, 34, 22)" />
-          <circle cx="0" cy="76" r="5" fill="#fff" opacity="0.6" filter="url(#glow)" />
-          <circle cx="-28" cy="58" r="3.5" fill="#fff" opacity="0.4" filter="url(#glow)" />
-          <circle cx="28" cy="58" r="3.5" fill="#fff" opacity="0.4" filter="url(#glow)" />
+        <g transform={`translate(130 240) rotate(${tailPhase})`}
+          style={{ transformOrigin: '130px 240px' }}>
+          {[0,-14,-26,14,26].map((ox, i) => {
+            const len  = [80, 68, 52, 68, 52][i];
+            const rot  = [0,-14,-26,14,26][i];
+            const opa  = [0.92, 0.78, 0.55, 0.78, 0.55][i];
+            const rx   = [7,5.5,4,5.5,4][i];
+            return (
+              <g key={i} transform={`rotate(${rot})`}>
+                <ellipse cx={ox} cy={len / 2} rx={rx} ry={len / 2}
+                  fill="url(#PtailA)" opacity={opa} />
+                <line x1={ox} y1={4} x2={ox} y2={len - 6}
+                  stroke={P.secondary} strokeWidth="0.8" opacity="0.5" />
+                <circle cx={ox} cy={len} r="4.5" fill="#fff" opacity="0.65"
+                  filter="url(#Pglow)" />
+              </g>
+            );
+          })}
         </g>
 
-        <g transform={`translate(110,155)`} style={{ transformOrigin: '110px 155px' }}>
-          <path
-            d={`M 0 0 C -45 -15 -75 ${wingLeftRot * 1.5} -65 30 C -50 55 -20 45 0 30`}
-            fill={featherColor}
-            opacity="0.85"
-            filter="url(#softShadow)"
-            style={{ transition: 'all 0.4s ease' }}
-          />
-          <path d={`M -10 5 C -40 -8 -62 ${wingLeftRot * 1.2} -55 28`}
-            fill="none" stroke="#fff" strokeWidth="1" opacity="0.4" />
-          <path d={`M -5 8 C -32 0 -50 ${wingLeftRot} -42 25`}
-            fill="none" stroke="#fff" strokeWidth="0.8" opacity="0.3" />
-        </g>
+        <g style={{ transform: `translateY(${bodyDY}px)`, transition: 'transform 0.3s ease' }}>
 
-        <g transform={`translate(110,155)`} style={{ transformOrigin: '110px 155px' }}>
-          <path
-            d={`M 0 0 C 45 -15 75 ${wingRightRot * 1.5} 65 30 C 50 55 20 45 0 30`}
-            fill={featherColor}
-            opacity="0.85"
-            filter="url(#softShadow)"
-            style={{ transition: 'all 0.4s ease' }}
-          />
-          <path d={`M 10 5 C 40 -8 62 ${wingRightRot * 1.2} 55 28`}
-            fill="none" stroke="#fff" strokeWidth="1" opacity="0.4" />
-          <path d={`M 5 8 C 32 0 50 ${wingRightRot} 42 25`}
-            fill="none" stroke="#fff" strokeWidth="0.8" opacity="0.3" />
-        </g>
+          <g transform="translate(130 165)" style={{ transformOrigin: '0 0' }}>
+            <g style={{ transform: `rotate(${wL}deg)`, transformOrigin: '0 0',
+                        transition: 'transform 0.35s ease' }}>
+              <path d="M 0 0 C -28 -10 -70 8 -80 50 C -65 70 -30 62 0 38"
+                fill="url(#PfeathA)" opacity="0.9" filter="url(#Pshadow)" />
+              <path d="M -4 4 C -24 0 -55 20 -60 52" fill="none"
+                stroke={P.secondary} strokeWidth="1.2" opacity="0.45" />
+              <path d="M -8 8 C -20 6 -42 28 -45 50" fill="none"
+                stroke={P.secondary} strokeWidth="0.9" opacity="0.3" />
+              <path d="M -72 44 C -85 30 -92 18 -88 8" fill="none"
+                stroke={P.primary} strokeWidth="1.5" opacity="0.5" strokeLinecap="round" />
+              <path d="M -68 50 C -82 40 -90 32 -86 22" fill="none"
+                stroke={P.secondary} strokeWidth="1" opacity="0.35" strokeLinecap="round" />
+            </g>
+          </g>
 
-        <g style={{ transform: `translateY(${bodyY}px)`, transition: 'transform 0.35s ease' }}>
+          <g transform="translate(130 165)" style={{ transformOrigin: '0 0' }}>
+            <g style={{ transform: `rotate(${wR}deg)`, transformOrigin: '0 0',
+                        transition: 'transform 0.35s ease' }}>
+              <path d="M 0 0 C 28 -10 70 8 80 50 C 65 70 30 62 0 38"
+                fill="url(#PfeathA)" opacity="0.9" filter="url(#Pshadow)" />
+              <path d="M 4 4 C 24 0 55 20 60 52" fill="none"
+                stroke={P.secondary} strokeWidth="1.2" opacity="0.45" />
+              <path d="M 8 8 C 20 6 42 28 45 50" fill="none"
+                stroke={P.secondary} strokeWidth="0.9" opacity="0.3" />
+              <path d="M 72 44 C 85 30 92 18 88 8" fill="none"
+                stroke={P.primary} strokeWidth="1.5" opacity="0.5" strokeLinecap="round" />
+              <path d="M 68 50 C 82 40 90 32 86 22" fill="none"
+                stroke={P.secondary} strokeWidth="1" opacity="0.35" strokeLinecap="round" />
+            </g>
+          </g>
 
-          <ellipse cx="110" cy="165" rx="38" ry="52"
-            fill="url(#bodyGrad)" filter="url(#softShadow)" />
+          <ellipse cx="130" cy="170" rx="36" ry="50"
+            fill="url(#PbodyA)" filter="url(#Pshadow)" />
+          <ellipse cx="130" cy="178" rx="20" ry="28" fill="#fff" opacity="0.1" />
 
-          <ellipse cx="110" cy="175" rx="22" ry="30"
-            fill="#fff" opacity="0.12" />
+          <path d="M 116 128 C 114 108 120 98 130 92 C 140 98 146 108 144 128 Z"
+            fill="url(#PbodyA)" />
 
-          <ellipse cx="110" cy="118" rx="16" ry="24"
-            fill="url(#bodyGrad)" />
+          <circle cx="130" cy="90" r="34" fill="url(#PbodyA)" filter="url(#Pshadow)" />
+          <ellipse cx="118" cy="78" rx="14" ry="10" fill="#fff" opacity="0.08" />
 
-          <circle cx="110" cy="96" r="32"
-            fill="url(#bodyGrad)" filter="url(#softShadow)" />
+          {[
+            { x: 117, cp1x: 111, cp1y: 58, cp2x: 107, cp2y: 42, ex: 105, ey: 32 },
+            { x: 130, cp1x: 128, cp1y: 55, cp2x: 128, cp2y: 36, ex: 130, ey: 24 },
+            { x: 143, cp1x: 149, cp1y: 58, cp2x: 153, cp2y: 42, ex: 155, ey: 32 },
+          ].map((f, i) => (
+            <g key={i}>
+              <path d={`M ${f.x} 68 C ${f.cp1x} ${f.cp1y} ${f.cp2x} ${f.cp2y} ${f.ex} ${f.ey}`}
+                fill="none" stroke="url(#PfeathA)" strokeWidth="3.5" strokeLinecap="round" />
+              <circle cx={f.ex} cy={f.ey} r="4.5" fill={P.secondary} opacity="0.9"
+                filter="url(#Pglow)" />
+              <circle cx={f.ex} cy={f.ey} r="2" fill="#fff" opacity="0.85" />
+            </g>
+          ))}
 
-          <path d="M 100 68 C 96 50 90 36 88 28 C 92 38 98 52 100 68" fill={featherColor} />
-          <path d="M 110 65 C 108 47 106 30 108 18 C 110 30 112 47 110 65" fill={featherColor} />
-          <path d="M 120 68 C 122 50 130 36 132 28 C 128 38 122 52 120 68" fill={featherColor} />
-          <circle cx="88" cy="26" r="4" fill="#fff" opacity="0.7" filter="url(#glow)" />
-          <circle cx="108" cy="16" r="4.5" fill="#fff" opacity="0.8" filter="url(#glow)" />
-          <circle cx="132" cy="26" r="4" fill="#fff" opacity="0.7" filter="url(#glow)" />
-
-          <path d="M 122 98 C 135 95 142 102 138 107 C 132 112 122 107 122 102 Z"
+          <path d="M 148 92 C 160 88 170 95 165 102 C 158 109 148 103 148 96 Z"
             fill="#e8aa50" />
-          <path d="M 122 103 C 132 105 138 107 138 107 C 132 112 122 107 122 103 Z"
-            fill="#c48c46" opacity="0.6" />
+          <path d="M 148 97 C 158 99 165 102 165 102 C 158 109 148 103 148 97 Z"
+            fill="#c48c46" opacity="0.7" />
+          <ellipse cx="157" cy="93" rx="2" ry="1.2" fill={P.body} opacity="0.4" />
 
           {activeMood === 'sad' && (
             <>
-              <line x1="88" y1="76" x2="102" y2="80" stroke="#4a6fa5" strokeWidth="2.5" strokeLinecap="round" />
-              <line x1="118" y1="80" x2="130" y2="76" stroke="#4a6fa5" strokeWidth="2.5" strokeLinecap="round" />
+              <path d="M 106 74 C 112 70 118 72 122 76"
+                fill="none" stroke={P.primary} strokeWidth="2.5" strokeLinecap="round" />
+              <path d="M 138 76 C 142 72 148 70 154 74"
+                fill="none" stroke={P.primary} strokeWidth="2.5" strokeLinecap="round" />
             </>
           )}
 
           {activeMood === 'shy' && (
             <>
-              <path d="M 72 88 C 80 75 95 72 100 80 C 95 78 80 80 72 88 Z"
-                fill={featherColor} opacity="0.95" />
-              <path d="M 148 88 C 140 75 125 72 120 80 C 125 78 140 80 148 88 Z"
-                fill={featherColor} opacity="0.95" />
+              <path d="M 88 96 C 88 78 100 70 110 76 C 104 78 94 84 88 96 Z"
+                fill={P.primary} opacity="0.95" />
+              <path d="M 172 96 C 172 78 160 70 150 76 C 156 78 166 84 172 96 Z"
+                fill={P.primary} opacity="0.95" />
             </>
           )}
 
           <g>
-            <circle cx="95" cy="90" r="10" fill="url(#eyeGrad)" />
-            <circle cx="95" cy="90" r="10" fill="none" stroke="#173354" strokeWidth="1.5" />
-            <ellipse
-              cx={95 + ex}
-              cy={90 + ey}
-              rx={4.5}
-              ry={4.5 * eyeScaleY}
-              fill="#173354"
-              style={{ transition: 'ry 0.12s ease, cx 0.05s ease, cy 0.05s ease' }}
-            />
-            <circle cx={92 + ex * 0.3} cy={87 + ey * 0.3} r="1.8" fill="#fff" opacity="0.9" />
+            <circle cx="112" cy="88" r="11" fill="url(#PeyeA)" />
+            <circle cx="112" cy="88" r="11" fill="none" stroke={P.body} strokeWidth="1.8" />
+            <ellipse cx={112 + ex} cy={88 + ey} rx="5" ry={5 * eyeH}
+              fill={P.body}
+              style={{ transition: 'ry 0.1s ease' }} />
+            {eyeH > 0.3 && (
+              <circle cx={109 + ex * 0.25} cy={85 + ey * 0.25} r="2" fill="#fff" opacity="0.95" />
+            )}
           </g>
 
           <g>
-            <circle cx="125" cy="90" r="10" fill="url(#eyeGrad)" />
-            <circle cx="125" cy="90" r="10" fill="none" stroke="#173354" strokeWidth="1.5" />
-            <ellipse
-              cx={125 + ex}
-              cy={90 + ey}
-              rx={4.5}
-              ry={4.5 * eyeScaleY}
-              fill="#173354"
-              style={{ transition: 'ry 0.12s ease, cx 0.05s ease, cy 0.05s ease' }}
-            />
-            <circle cx={122 + ex * 0.3} cy={87 + ey * 0.3} r="1.8" fill="#fff" opacity="0.9" />
+            <circle cx="143" cy="88" r="11" fill="url(#PeyeA)" />
+            <circle cx="143" cy="88" r="11" fill="none" stroke={P.body} strokeWidth="1.8" />
+            <ellipse cx={143 + ex} cy={88 + ey} rx="5" ry={5 * eyeH}
+              fill={P.body}
+              style={{ transition: 'ry 0.1s ease' }} />
+            {eyeH > 0.3 && (
+              <circle cx={140 + ex * 0.25} cy={85 + ey * 0.25} r="2" fill="#fff" opacity="0.95" />
+            )}
           </g>
 
           {(activeMood === 'happy' || activeMood === 'shy') && (
             <>
-              <ellipse cx="85" cy="100" rx="8" ry="5" fill="#ffb3c6" opacity="0.5" />
-              <ellipse cx="135" cy="100" rx="8" ry="5" fill="#ffb3c6" opacity="0.5" />
+              <ellipse cx="100" cy="100" rx="10" ry="6" fill="#ffb3c6" opacity="0.45" filter="url(#Psoft)" />
+              <ellipse cx="160" cy="100" rx="10" ry="6" fill="#ffb3c6" opacity="0.45" filter="url(#Psoft)" />
             </>
           )}
 
           {activeMood === 'sad' && (
             <>
-              <ellipse cx="88" cy="105" rx="2.5" ry="4" fill="#6ab3e8" opacity="0.7" className={styles.tear} />
-              <ellipse cx="129" cy="105" rx="2.5" ry="4" fill="#6ab3e8" opacity="0.7" className={styles.tear} />
+              <ellipse cx="106" cy="104" rx="2.5" ry="5"
+                fill="#6ab3e8" opacity="0.75" className={styles.tear} />
+              <ellipse cx="150" cy="104" rx="2.5" ry="5"
+                fill="#6ab3e8" opacity="0.75" className={styles.tear} style={{ animationDelay: '0.3s' }} />
             </>
           )}
 
           {activeMood === 'happy' && (
-            <path d="M 100 110 Q 110 120 120 110" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" opacity="0.7" />
+            <path d="M 118 108 Q 130 118 142 108"
+              fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" opacity="0.6" />
           )}
           {activeMood === 'sad' && (
-            <path d="M 100 116 Q 110 108 120 116" fill="none" stroke="#8ab" strokeWidth="2" strokeLinecap="round" opacity="0.6" />
+            <path d="M 118 113 Q 130 106 142 113"
+              fill="none" stroke={P.secondary} strokeWidth="1.8" strokeLinecap="round" opacity="0.55" />
           )}
 
-          <g opacity="0.7">
-            <line x1="98" y1="215" x2="90" y2="235" stroke={bodyColor} strokeWidth="3" strokeLinecap="round" />
-            <line x1="90" y1="235" x2="82" y2="240" stroke={bodyColor} strokeWidth="2.5" strokeLinecap="round" />
-            <line x1="90" y1="235" x2="90" y2="243" stroke={bodyColor} strokeWidth="2.5" strokeLinecap="round" />
-            <line x1="90" y1="235" x2="98" y2="240" stroke={bodyColor} strokeWidth="2.5" strokeLinecap="round" />
-
-            <line x1="122" y1="215" x2="130" y2="235" stroke={bodyColor} strokeWidth="3" strokeLinecap="round" />
-            <line x1="130" y1="235" x2="122" y2="240" stroke={bodyColor} strokeWidth="2.5" strokeLinecap="round" />
-            <line x1="130" y1="235" x2="130" y2="243" stroke={bodyColor} strokeWidth="2.5" strokeLinecap="round" />
-            <line x1="130" y1="235" x2="138" y2="240" stroke={bodyColor} strokeWidth="2.5" strokeLinecap="round" />
+          <g opacity="0.65">
+            {[[-12, 12], [12, -12]].map(([lx, rx], i) => (
+              <g key={i} transform={`translate(${i === 0 ? 118 : 142} 218)`}>
+                <line x1="0" y1="0" x2={lx} y2="24" stroke={P.body} strokeWidth="3.5" strokeLinecap="round" />
+                <line x1={lx} y1="24" x2={lx - 10} y2="30" stroke={P.body} strokeWidth="2.5" strokeLinecap="round" />
+                <line x1={lx} y1="24" x2={lx}       y2="32" stroke={P.body} strokeWidth="2.5" strokeLinecap="round" />
+                <line x1={lx} y1="24" x2={lx + 10} y2="30" stroke={P.body} strokeWidth="2.5" strokeLinecap="round" />
+              </g>
+            ))}
           </g>
+
+          <path d="M 116 198 C 122 192 130 190 138 192 C 132 200 128 202 130 210 C 128 204 120 202 116 198 Z"
+            fill={P.secondary} opacity="0.35" />
+
         </g>
       </svg>
 
-      <div className={styles.moodBubble}>
-        {activeMood === 'idle'   && '👀 Nhìn bạn kìa...'}
-        {activeMood === 'happy'  && '🎉 Chào mừng trở lại!'}
-        {activeMood === 'sad'    && '😢 Sai mật khẩu rồi...'}
-        {activeMood === 'shy'    && '🙈 Mình không nhìn đâu!'}
+      <div className={`${styles.bubble} ${styles['bubble_' + activeMood]}`}
+        key={activeMood}>
+        {LABELS[activeMood]}
       </div>
+
     </div>
   );
 }
+
+const LABELS = {
+  idle:  '👀 Nhìn bạn kìa...',
+  happy: '🎉 Chào mừng trở lại!',
+  sad:   '😢 Sai mật khẩu rồi...',
+  shy:   '🙈 Mình không nhìn đâu!',
+};
