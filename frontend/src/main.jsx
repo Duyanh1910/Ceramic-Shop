@@ -13,7 +13,6 @@ import Profile from './Profile.jsx'
 import Cart from './Cart.jsx'
 import ChatBot from './ChatBot'
 import ContactIcons from './ContactIcons.jsx'
-import ChangePassword from './ChangePassword.jsx'
 import ForgotPassword from './ForgotPassword.jsx'
 import LoginSuccess from './LoginSuccess.jsx'
 import AdminLayout from './AdminLayout.jsx'
@@ -26,7 +25,7 @@ import OrderTracking from './OrderTracking.jsx'
 import SupportPage from './Supportpage.jsx'
 import NewsDetail from './NewsDetails.jsx'
 import AdminReports from './AdminReports.jsx';
-import OrderTrackingMini from './OrderTracking_Mini.jsx';
+
 ReactGA.initialize("G-909W1LHHLD");
 
 const AnalyticsTracker = () => {
@@ -124,12 +123,7 @@ createRoot(document.getElementById('root')).render(
               <Profile />
             </ProtectedRoute>
           } />
-          <Route path="/change-password" element={
-            <ProtectedRoute allowedRoles={['Customer', 'Admin', 'Staff']}>
-              <ChangePassword />
-            </ProtectedRoute>
-          } />
-
+      
           <Route path="/admin" element={
             <ProtectedRoute allowedRoles={['Admin', 'Staff']}>
               <AdminLayout />
