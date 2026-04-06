@@ -145,7 +145,7 @@ function Profile() {
                 </div>
               </div>
               <ul className={styles.sidebarMenu}>
-                <li className={styles.active}><ProfileOutlined /> Thông định tài khoản</li>
+                <li className={styles.active}><ProfileOutlined /> Thông tin tài khoản</li>
                 <li onClick={() => navigate('/change-password')}>
                   <LockOutlined /> Đổi mật khẩu
                 </li>
