@@ -1371,6 +1371,142 @@ router.post("/webhook", async (req, res) => {
         },
       ],
     });
+  } else if (intentName === "Hoi_San_Pham_Dat_Nhat") {
+    try {
+      const sqlQuery = `
+        SELECT sp.MaSanPham, sp.TenSanPham, MAX(bt.Gia) as GiaCaoNhat, MIN(ha.DuongDan) as DuongDan
+        FROM SanPham sp
+        JOIN BienTheSanPham bt ON sp.MaSanPham = bt.MaSanPham
+        LEFT JOIN HinhAnhBienThe ha ON bt.MaBienThe = ha.MaBienThe
+        WHERE sp.TrangThai = 1 AND bt.TrangThai = 1
+        GROUP BY sp.MaSanPham, sp.TenSanPham
+        ORDER BY GiaCaoNhat DESC
+        LIMIT 3
+      `;
+
+      const [rows] = await pool.execute(sqlQuery);
+
+      if (rows.length > 0) {
+        let listRichContent = [];
+
+        rows.forEach((sp) => {
+          const giaFormat = new Intl.NumberFormat("vi-VN", {
+            style: "currency",
+            currency: "VND",
+          }).format(sp.GiaCaoNhat);
+          const linkSanPham = `${domainWeb}/product/${sp.MaSanPham}`;
+
+          listRichContent.push([
+            {
+              type: "image",
+              rawUrl: sp.DuongDan || "https://via.placeholder.com/300?text=Chua+co+hinh",
+              accessibilityText: sp.TenSanPham,
+            },
+            {
+              type: "info",
+              title: sp.TenSanPham,
+              subtitle: `Mức giá cao nhất: ${giaFormat}`,
+            },
+            {
+              type: "button",
+              icon: { type: "diamond", color: "#E91E63" },
+              text: "Xem chi tiết mẫu cao cấp",
+              link: linkSanPham,
+            },
+          ]);
+        });
+
+        return res.json({
+          fulfillmentMessages: [
+            {
+              text: {
+                text: [
+                  "Dạ, đây là những mẫu sản phẩm cao cấp và có giá trị nhất tại CeramicShop hiện nay. Rất phù hợp để làm quà biếu tặng sang trọng ạ:",
+                ],
+              },
+            },
+            { payload: { richContent: listRichContent } },
+          ],
+        });
+      } else {
+        return res.json({
+          fulfillmentText: "Dạ hiện tại hệ thống đang cập nhật giá, bạn vui lòng tham khảo theo danh mục trên website nhé ạ.",
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      return res.json({
+        fulfillmentText: "Dạ hệ thống đang tải dữ liệu, bạn chờ chút xíu nhé.",
+      });
+    }
+  } else if (intentName === "Hoi_San_Pham_Re_Nhat") {
+    try {
+      const sqlQuery = `
+        SELECT sp.MaSanPham, sp.TenSanPham, MIN(bt.Gia) as GiaThapNhat, MIN(ha.DuongDan) as DuongDan
+        FROM SanPham sp
+        JOIN BienTheSanPham bt ON sp.MaSanPham = bt.MaSanPham
+        LEFT JOIN HinhAnhBienThe ha ON bt.MaBienThe = ha.MaBienThe
+        WHERE sp.TrangThai = 1 AND bt.TrangThai = 1
+        GROUP BY sp.MaSanPham, sp.TenSanPham
+        ORDER BY GiaThapNhat ASC
+        LIMIT 3
+      `;
+
+      const [rows] = await pool.execute(sqlQuery);
+
+      if (rows.length > 0) {
+        let listRichContent = [];
+
+        rows.forEach((sp) => {
+          const giaFormat = new Intl.NumberFormat("vi-VN", {
+            style: "currency",
+            currency: "VND",
+          }).format(sp.GiaThapNhat);
+          const linkSanPham = `${domainWeb}/product/${sp.MaSanPham}`;
+
+          listRichContent.push([
+            {
+              type: "image",
+              rawUrl: sp.DuongDan || "https://via.placeholder.com/300?text=Chua+co+hinh",
+              accessibilityText: sp.TenSanPham,
+            },
+            {
+              type: "info",
+              title: sp.TenSanPham,
+              subtitle: `Giá chỉ từ: ${giaFormat}`,
+            },
+            {
+              type: "button",
+              icon: { type: "local_offer", color: "#4CAF50" },
+              text: "Xem chi tiết",
+              link: linkSanPham,
+            },
+          ]);
+        });
+
+        return res.json({
+          fulfillmentMessages: [
+            {
+              text: {
+                text: [
+                  "Dạ, shop gửi bạn những mẫu có mức giá mềm và dễ tiếp cận nhất nhưng chất lượng vẫn cực kỳ đảm bảo nhé:",
+                ],
+              },
+            },
+            { payload: { richContent: listRichContent } },
+          ],
+        });
+      } else {
+        return res.json({
+          fulfillmentText: "Dạ hiện tại hệ thống đang cập nhật giá, bạn ghé qua website để xem đầy đủ các mức giá nhé.",
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      return res.json({
+        fulfillmentText: "Dạ hệ thống đang tải dữ liệu, bạn chờ chút xíu nhé.",
+      });
+    }
   }
 
   return res.json({
