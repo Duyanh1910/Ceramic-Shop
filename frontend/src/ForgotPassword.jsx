@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Form, Input, Button, message } from 'antd';
 import { MailOutlined, LockOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
@@ -183,7 +183,7 @@ function ForgotPassword() {
         <div className={styles.cardForm}>
           <div className={styles.topActions}>
             <Button type="link" icon={<ArrowLeftOutlined />} onClick={() => navigate('/login')}
-              style={{ color: '#1b437c', fontWeight: 600, paddingLeft: 0 }} className={styles.backButton}>
+              className={styles.backButton}>
               Quay lại đăng nhập
             </Button>
           </div>
@@ -192,15 +192,17 @@ function ForgotPassword() {
             {step <= 3 && (
               <div className={styles.stepTracker}>
                 {stepLabels.map((label, i) => (
-                  <div key={i} className={`${styles.stepItem} ${i === stepLabels.length - 1 ? styles.lastStep : ''}`}>
-                    <div className={`${styles.stepDot} ${step > i + 1 ? styles.done : step === i + 1 ? styles.active : ''}`}>
-                      {step > i + 1 ? '✓' : i + 1}
+                  <React.Fragment key={i}>
+                    <div className={styles.stepItem}>
+                      <div className={`${styles.stepDot} ${step > i + 1 ? styles.done : step === i + 1 ? styles.active : ''}`}>
+                        {step > i + 1 ? '✓' : i + 1}
+                      </div>
+                      <span className={`${styles.stepLabel} ${step === i + 1 ? styles.activeLabel : ''}`}>{label}</span>
                     </div>
-                    <span className={`${styles.stepLabel} ${step === i + 1 ? styles.activeLabel : ''}`}>{label}</span>
                     {i < stepLabels.length - 1 && (
                       <div className={`${styles.stepLine} ${step > i + 1 ? styles.doneLine : ''}`} />
                     )}
-                  </div>
+                  </React.Fragment>
                 ))}
               </div>
             )}
