@@ -149,11 +149,11 @@ function Register() {
           <div style={{ marginBottom: 10 }}>
             <Button type="link" icon={<ArrowLeftOutlined />} onClick={() => navigate('/')}
               style={{ color: '#1b437c', fontWeight: 600, paddingLeft: 0 }} className={styles.backButton}>
-              <HomeFilled/> Quay về trang chủ
+              <HomeFilled/> Trang chủ
             </Button>
             <Button type="link" onClick={() => navigate('/home')}
               style={{ color: '#1b437c', fontWeight: 600, paddingLeft: 0 }} className={styles.backButton}>
-              <ShopFilled/> Quay về cửa hàng <ArrowRightOutlined />
+              <ShopFilled/> Cửa hàng <ArrowRightOutlined />
             </Button>
           </div>
 

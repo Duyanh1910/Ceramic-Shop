@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Button, Input, Form, message, Typography, Divider, Checkbox } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import styles from './Login.module.css';
-import { UserOutlined, LockOutlined, ArrowLeftOutlined, ArrowRightOutlined } from '@ant-design/icons';
+import { UserOutlined, LockOutlined, ArrowLeftOutlined, ArrowRightOutlined, HomeFilled, ShopFilled } from '@ant-design/icons';
 import { Helmet } from 'react-helmet-async';
 import { saveSession } from './useAuth.js';
 
@@ -109,7 +109,7 @@ function Login() {
               onClick={() => navigate('/')} 
               className={styles.backButton}
             >
-              Trang chủ
+              <HomeFilled/> Trang chủ
             </Button>
 
             <Button 
@@ -117,7 +117,7 @@ function Login() {
               onClick={() => navigate('/home')} 
               className={styles.backButton}
             >
-              <ShoppingFilled/> Cửa hàng <ArrowRightOutlined />
+              <ShopFilled/> Cửa hàng <ArrowRightOutlined />
             </Button>
           </div>
 
@@ -150,7 +150,7 @@ function Login() {
                 size="large"
                 visibilityToggle={{
                   visible: passwordVisible,
-                  onVisibleChange: (v) => setPasswordVisible(v), // Cập nhật state khi click vào icon mắt
+                  onVisibleChange: (v) => setPasswordVisible(v),
                 }}
               />
             </Form.Item>
