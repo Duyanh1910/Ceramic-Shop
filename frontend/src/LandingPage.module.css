@@ -8,6 +8,22 @@
     overflow-x: hidden;
 }
 
+.title{
+    text-transform: uppercase;
+    background: linear-gradient(135deg,blue,white);
+    background-clip: text;
+    color:transparent;
+    animation: animate 80s linear infinite;
+}
+@keyframes animate {
+    0%{
+        background-position: 0% 50% ;
+    }
+    100%{
+        background-position: 100% 50%;
+    }
+}
+
 .container {
     max-width: 1200px;
     margin: 0 auto;

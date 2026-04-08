@@ -264,7 +264,7 @@ function LandingPage() {
     return (
         <div className={styles.wrapper}>
             <Helmet>
-                <title>CeramicShop - Tinh Hoa Gốm Sứ Việt</title>
+                <title className={styles.title}>CeramicShop - Tinh Hoa Gốm Sứ Việt</title>
                 <meta name="description" content="Nơi tinh hoa gốm sứ giao thoa cùng phong cách sống hiện đại" />
             </Helmet>
             
