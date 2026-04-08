@@ -3,9 +3,10 @@ import axios from 'axios';
 import { Button, Input, Form, message, Typography, Divider, Checkbox } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import styles from './Login.module.css';
-import { UserOutlined, LockOutlined, HomeFilled, ShopFilled } from '@ant-design/icons';
+import { UserOutlined, LockOutlined, HomeFilled, ShopFilled, ArrowLeftOutlined, ArrowRightOutlined } from '@ant-design/icons';
 import { Helmet } from 'react-helmet-async';
 import { saveSession } from './useAuth.js';
+import Chibi from './Chibi.jsx'; 
 
 const { Text, Link } = Typography;
 
@@ -16,10 +17,14 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const [loginSuccess, setLoginSuccess] = useState(false);
+  const [loginFailed, setLoginFailed] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (values) => {
     setLoading(true);
+    setLoginFailed(false);
+    
     try {
       const keysToRemove = [
         'customer_token', 'admin_token', 'token',
@@ -39,85 +44,36 @@ function Login() {
       const currentRole = user.role || user.Role || 'Customer';
       const token = response.data.token || null;
 
+      setLoginSuccess(true);
+
       if (currentRole === 'Admin' || currentRole === 'Staff') {
         if (typeof saveSession === 'function') saveSession(currentUsername, currentRole, true, token);
         localStorage.setItem('admin_token', token);
         localStorage.setItem('admin_session_active', 'true');
         localStorage.setItem('role', currentRole);
         localStorage.setItem('username', currentUsername);
-        setTimeout(() => { message.success(`Đăng nhập ${currentRole} thành công!`); navigate('/admin'); }, 800);
+        message.success(`Đăng nhập ${currentRole} thành công!`);
+        setTimeout(() => { navigate('/admin'); }, 1500);
       } else {
         if (typeof saveSession === 'function') saveSession(currentUsername, 'Customer', true, token);
         localStorage.setItem('customer_token', token);
         localStorage.setItem('customer_session_active', 'true');
         localStorage.setItem('role', 'Customer');
         localStorage.setItem('username', currentUsername);
-        setTimeout(() => { message.success('Đăng nhập thành công!'); navigate('/home'); }, 800);
+        message.success('Đăng nhập thành công!');
+        setTimeout(() => { navigate('/home'); }, 1500);
       }
     } catch (error) {
+      setLoginFailed(true);
       message.error(error.response?.data?.message || 'Đăng nhập thất bại!');
     } finally {
       setLoading(false);
     }
   };
 
-  const modelSrc = passwordVisible ? '/Neko_glass.glb' : '/Neko_smile_1.glb';
-  const modelAnimation = passwordVisible 
-    ? 'PetChibiNeeko_KDASuperFan_Joke02cycle.Chibi_Neeko_KDASuperFan' 
-    : 'Idle_Base';
-  
-  const messageText = passwordVisible ? 'Hihi tôi không nhìn trộm mật khẩu của bạn đâu' : 'Xin chào đây là trang đăng nhập của Ceramic-Shop';
-
   return (
     <div className={styles.loginContainer}>
       <Helmet><title>Đăng nhập | Ceramic Shop</title></Helmet>
-
-      <style>{`
-        .speech-bubble {
-          position: absolute;
-          top: 20px;
-          left: 0;
-          right: 0;
-          margin: 0 auto;
-          width: fit-content;
-          max-width: 280px;
-          text-align: center;
-          background: #ffffff;
-          border-radius: 20px;
-          padding: 16px 28px;
-          color: #173354;
-          font-weight: 700;
-          font-size: 16px;
-          line-height: 1.5;
-          box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-          z-index: 10;
-          animation: floatBubble 2.5s ease-in-out infinite;
-          border: 1px solid rgba(23, 51, 84, 0.1);
-        }
-        .speech-bubble::after {
-          content: '';
-          position: absolute;
-          bottom: -12px;
-          left: 0;
-          right: 0;
-          margin: 0 auto;
-          border-width: 12px 12px 0;
-          border-style: solid;
-          border-color: #ffffff transparent transparent transparent;
-          display: block;
-          width: 0;
-        }
-        @keyframes floatBubble {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-6px); }
-        }
-        model-viewer {
-          outline: none;
-        }
-        model-viewer::part(default-progress-bar) {
-          display: none;
-        }
-      `}</style>
 
       <div className={styles.shape1} />
       <div className={styles.shape2} />
@@ -126,33 +82,11 @@ function Login() {
       <div className={styles.combinedCard}>
         <div className={styles.cardImage}>
           <div className={styles.phoenixWrap} style={{ position: 'relative', flexDirection: 'column' }}>
-            
-            <div className="speech-bubble">
-              {messageText}
-            </div>
-
-            <model-viewer 
-                src={modelSrc}
-                alt="Trợ lý Irelia 3D" 
-                autoplay 
-                animation-name={modelAnimation}
-                camera-orbit="0deg 75deg auto" 
-                field-of-view="25deg" 
-                camera-target="auto auto auto" 
-                
-                max-camera-orbit="auto auto 600%" 
-                shadow-intensity="0" 
-                interaction-prompt="none"
-                disable-zoom
-                disable-pan
-                disable-tap
-                style={{ 
-                  width: '100%', 
-                  height: '380px', 
-                  backgroundColor: 'transparent',
-                  marginTop: '40px' 
-                }}
-              ></model-viewer>
+            <Chibi 
+              passwordVisible={passwordVisible} 
+              loginSuccess={loginSuccess} 
+              loginFailed={loginFailed} 
+            />
           </div>
 
           <div className={styles.brandFooter}>
@@ -163,27 +97,24 @@ function Login() {
 
         <div className={styles.cardForm}>
           <div style={{ marginBottom: 15, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Button 
-              type="link" 
-              onClick={() => navigate('/')} 
-              className={styles.backButton}
-            >
+            <Button type="link" icon={<ArrowLeftOutlined />} onClick={() => navigate('/')}
+              style={{ color: '#1b437c', fontWeight: 600, paddingLeft: 0 }} className={styles.backButton}>
               <HomeFilled/> Trang chủ
             </Button>
-
-            <Button 
-              type="link" 
-              onClick={() => navigate('/home')} 
-              className={styles.backButton}
-            >
-               <ShopFilled/> Cửa hàng
+            <Button type="link" onClick={() => navigate('/home')}
+              style={{ color: '#1b437c', fontWeight: 600, paddingLeft: 0 }} className={styles.backButton}>
+              <ShopFilled/> Cửa hàng <ArrowRightOutlined />
             </Button>
           </div>
 
           <h2 className={styles.formTitle}>Chào mừng trở lại</h2>
           <p className={styles.formSubtitle}>Vui lòng đăng nhập để tiếp tục</p>
 
-          <Form layout="vertical" onFinish={handleLogin}>
+          <Form 
+            layout="vertical" 
+            onFinish={handleLogin}
+            onValuesChange={() => setLoginFailed(false)}
+          >
             <Form.Item
               label={<span className={styles.inputLabel}>Tên đăng nhập</span>}
               name="username"

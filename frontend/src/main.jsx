@@ -25,7 +25,7 @@ import OrderTracking from './OrderTracking.jsx'
 import SupportPage from './Supportpage.jsx'
 import NewsDetail from './NewsDetails.jsx'
 import AdminReports from './AdminReports.jsx';
-
+import Checkout from './Checkout.jsx';
 ReactGA.initialize("G-909W1LHHLD");
 
 const AnalyticsTracker = () => {
@@ -116,6 +116,8 @@ createRoot(document.getElementById('root')).render(
           
           <Route path="/cart" element={<Cart />} />
           
+          <Route path="/checkout" element={<Checkout/>}/>
+
           <Route path="/payment-result" element={<PaymentSuccess />} />
           
           <Route path="/profile" element={
