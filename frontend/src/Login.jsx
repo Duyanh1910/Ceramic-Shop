@@ -136,7 +136,7 @@ function Login() {
               /* 1. CHỈNH KÍCH THƯỚC (TO/NHỎ): 
                  - Giảm số 80% xuống (VD: 70%, 60%) -> Chibi sẽ TO RA.
                  - Tăng số 80% lên (VD: 90%, 100%) -> Chibi sẽ NHỎ ĐI. */
-              camera-orbit="0deg 75deg 80%" 
+              camera-orbit="0deg 75deg 70%" 
               
               /* - Giảm góc field-of-view (VD: 20deg) -> Càng zoom TO RA. */
               field-of-view="25deg" 
@@ -145,7 +145,7 @@ function Login() {
                  - Thay đổi con số ở giữa (0.45m).
                  - TĂNG SỐ NÀY LÊN (VD: 0.5m, 0.6m) -> Chibi sẽ tụt XUỐNG DƯỚI (hết bị mất đầu).
                  - GIẢM SỐ NÀY XUỐNG (VD: 0.3m, 0.2m) -> Chibi sẽ trồi LÊN TRÊN. */
-              camera-target="0m 0.45m 0m" 
+              camera-target="0m 0.6m 0m" 
               
               /* ========================================================= */
 
