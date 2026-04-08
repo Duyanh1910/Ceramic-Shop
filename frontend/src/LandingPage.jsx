@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
-import { AutoComplete, Input, Spin } from 'antd';
+import { AutoComplete, Input, Spin, Carousel } from 'antd';
 import { 
     ShoppingCartOutlined, 
     SearchOutlined, 
@@ -17,6 +17,30 @@ import {
 } from '@ant-design/icons';
 import styles from './LandingPage.module.css';
 import { saveSession } from './useAuth.js';
+
+const bannerSlides = [
+    {
+        id: 1,
+        image: 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?q=80&w=1920&auto=format&fit=crop',
+        title: 'TINH HOA GỐM SỨ VIỆT',
+        subtitle: 'Nơi Nghệ Thuật Giao Thoa Cùng Phong Cách Sống Hiện Đại',
+        btnText: 'KHÁM PHÁ NGAY'
+    },
+    {
+        id: 2,
+        image: 'https://res.cloudinary.com/dcmwz0uis/image/upload/v1775186648/blue-white-chinoiserie-design-497489_scgryl.jpg',
+        title: 'BỘ SƯU TẬP MỚI 2026',
+        subtitle: 'Sang Trọng, Tinh Tế & Nâng Tầm Không Gian Sống',
+        btnText: 'XEM BỘ SƯU TẬP'
+    },
+    {
+        id: 3,
+        image: 'https://res.cloudinary.com/dcmwz0uis/image/upload/v1775186597/porcelain-and-ceramics-1024x683_j22ily.jpg',
+        title: 'CHẾ TÁC THỦ CÔNG',
+        subtitle: 'Mỗi Sản Phẩm Là Một Câu Chuyện Văn Hóa Độc Bản',
+        btnText: 'TÌM HIỂU THÊM'
+    }
+];
 
 function LandingPage() {
     const navigate = useNavigate();
@@ -121,7 +145,7 @@ function LandingPage() {
             const data = response.data?.result || response.data?.data || response.data || [];
             setNewsArticles(data.slice(0, 3));
         } catch (error) {
-            console.error("Lỗi khi tải tin tức:", error);
+            console.error(error);
         } finally {
             setLoadingNews(false);
         }
@@ -339,18 +363,24 @@ function LandingPage() {
             </nav>
 
             <section id="home" className={styles.bannerSection}>
-                <img 
-                    src="https://images.unsplash.com/photo-1610701596007-11502861dcfa?q=80&w=1920&auto=format&fit=crop" 
-                    alt="Banner Gốm Sứ" 
-                    className={styles.bannerImg}
-                />
-                <div className={styles.bannerOverlay}>
-                    <div className={styles.bannerContent}>
-                        <h2 className={styles.bannerTitle}>TINH HOA GỐM SỨ VIỆT</h2>
-                        <p className={styles.bannerSubtitle}>Nơi Nghệ Thuật Giao Thoa Cùng Phong Cách Sống Hiện Đại</p>
-                        <button className={styles.btnBanner} onClick={() => navigate('/home')}>KHÁM PHÁ NGAY</button>
-                    </div>
-                </div>
+                <Carousel autoplay autoplaySpeed={4000} effect="fade" pauseOnHover={false}>
+                    {bannerSlides.map((slide) => (
+                        <div key={slide.id}>
+                            <div className={styles.slideWrapper}>
+                                <img src={slide.image} alt={slide.title} className={styles.bannerImg} />
+                                <div className={styles.bannerOverlay}>
+                                    <div className={styles.bannerContent}>
+                                        <h2 className={styles.bannerTitle}>{slide.title}</h2>
+                                        <p className={styles.bannerSubtitle}>{slide.subtitle}</p>
+                                        <button className={styles.btnBanner} onClick={() => navigate('/home')}>
+                                            {slide.btnText}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </Carousel>
             </section>
 
             <section id="about" className={styles.aboutSection}>

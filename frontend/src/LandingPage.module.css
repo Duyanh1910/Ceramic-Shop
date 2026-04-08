@@ -239,9 +239,15 @@ ul {
 
 .bannerSection {
     width: 100%;
-    height: 600px;
     overflow: hidden;
     position: relative;
+}
+
+.slideWrapper {
+    position: relative;
+    width: 100%;
+    height: 600px;
+    overflow: hidden;
 }
 
 .bannerImg {
@@ -870,4 +876,19 @@ ul {
 
 .footerLink:hover {
     color:#BB9244;
+}
+
+/* Custom styles for Ant Design Carousel dots */
+:global(.ant-carousel .slick-dots li button) {
+    background: #fff !important;
+    height: 4px !important;
+    border-radius: 2px !important;
+    opacity: 0.5 !important;
+    transition: all 0.3s ease !important;
+}
+
+:global(.ant-carousel .slick-dots li.slick-active button) {
+    background: #BB9244 !important;
+    opacity: 1 !important;
+    width: 24px !important;
 }
