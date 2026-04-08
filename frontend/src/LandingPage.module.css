@@ -206,13 +206,12 @@ ul {
     display: flex;
     justify-content: center;
     gap: 90px;
-    font-size: 64px;
 }
 
 .menuList li a {
     display: block;
     padding: 16px 0;
-    font-size: 15px;
+    font-size: 30px;
     font-weight: 600;
     color: #252a2b;
     text-transform: uppercase;
