@@ -4,13 +4,13 @@ import {
   MailOutlined,
   LockOutlined,
   ArrowLeftOutlined,
-  CheckCircleFilled,
-  SafetyOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
 import styles from './ForgotPassword.module.css';
+
+import Chibi from './Chibi.jsx';
 
 const API_BASE = 'https://ceramic-shop-u8ak.onrender.com/api/v1';
 const OTP_LENGTH = 6;
@@ -29,6 +29,11 @@ function ForgotPassword() {
   const [formPass] = Form.useForm();
   const timerRef = useRef(null);
 
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
+  const [actionSuccess, setActionSuccess] = useState(false);
+  const [actionFailed, setActionFailed] = useState(false);
+
   useEffect(() => {
     return () => clearInterval(timerRef.current);
   }, []);
@@ -45,6 +50,7 @@ function ForgotPassword() {
 
   const handleSendOTP = async (values) => {
     setLoading(true);
+    setActionFailed(false);
     try {
       await axios.post(`${API_BASE}/auth/forgot-password`, { email: values.email });
       setEmail(values.email);
@@ -52,6 +58,7 @@ function ForgotPassword() {
       startCooldown();
       message.success('OTP đã được gửi đến email của bạn!');
     } catch (err) {
+      setActionFailed(true);
       message.error(err.response?.data?.message || 'Không thể gửi OTP!');
     } finally {
       setLoading(false);
@@ -63,6 +70,7 @@ function ForgotPassword() {
     const newOtp = [...otp];
     newOtp[idx] = val.slice(-1);
     setOtp(newOtp);
+    setActionFailed(false); 
     if (val && idx < OTP_LENGTH - 1) inputRefs.current[idx + 1]?.focus();
   };
 
@@ -79,6 +87,7 @@ function ForgotPassword() {
     const newOtp = [...otp];
     [...text].forEach((c, i) => { newOtp[i] = c; });
     setOtp(newOtp);
+    setActionFailed(false); 
     inputRefs.current[Math.min(text.length, OTP_LENGTH - 1)]?.focus();
     e.preventDefault();
   };
@@ -90,11 +99,13 @@ function ForgotPassword() {
       return;
     }
     setLoading(true);
+    setActionFailed(false);
     try {
       const res = await axios.post(`${API_BASE}/auth/verify-reset-otp`, { email, otp: code });
       setResetToken(res.data.resetToken);
       setStep(3);
     } catch (err) {
+      setActionFailed(true);
       const data = err.response?.data;
       if (data?.remainingAttempts !== undefined) setRemainingAttempts(data.remainingAttempts);
       message.error(data?.message || 'OTP không hợp lệ!');
@@ -106,6 +117,7 @@ function ForgotPassword() {
   const handleResendOTP = async () => {
     if (cooldown > 0) return;
     setLoading(true);
+    setActionFailed(false);
     try {
       await axios.post(`${API_BASE}/auth/forgot-password`, { email });
       setOtp(Array(OTP_LENGTH).fill(''));
@@ -113,6 +125,7 @@ function ForgotPassword() {
       startCooldown();
       message.success('OTP mới đã được gửi!');
     } catch (err) {
+      setActionFailed(true);
       message.error(err.response?.data?.message || 'Không thể gửi lại OTP!');
     } finally {
       setLoading(false);
@@ -121,14 +134,17 @@ function ForgotPassword() {
 
   const handleResetPassword = async (values) => {
     setLoading(true);
+    setActionFailed(false);
     try {
       await axios.post(`${API_BASE}/auth/reset-password`, {
         email,
         resetToken,
         newPassword: values.newPassword,
       });
+      setActionSuccess(true);
       setStep(4);
     } catch (err) {
+      setActionFailed(true);
       message.error(err.response?.data?.message || 'Không thể đặt lại mật khẩu!');
     } finally {
       setLoading(false);
@@ -170,6 +186,23 @@ function ForgotPassword() {
 
       <div className={styles.centerWrapper}>
         <div className={styles.card}>
+          <div style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'center', marginBottom: '10px', marginTop: '-30px', zIndex: 10 }}>
+            <div style={{ width: '100%' }}>
+              <Chibi 
+                passwordVisible={passwordVisible || confirmPasswordVisible} 
+                loginSuccess={actionSuccess} 
+                loginFailed={actionFailed}
+                defaultMsg={
+                  step === 1 ? "Nhập email của bạn để tôi gửi mã khôi phục nhé!" : 
+                  step === 2 ? "Hãy kiểm tra email và nhập mã OTP vào đây nha!" : 
+                  step === 3 ? "Tạo mật khẩu mới nào. Nhớ lưu lại cẩn thận nhé!" : ""
+                }
+                successMsg="Tuyệt vời! Mật khẩu của bạn đã được đặt lại."
+                failMsg="Thông tin chưa chính xác hoặc mã OTP sai, bạn thử lại nhé!"
+              />
+            </div>
+          </div>
+
           {step <= 3 && (
             <div className={styles.stepTracker}>
               {stepLabels.map((label, i) => (
@@ -189,13 +222,9 @@ function ForgotPassword() {
           {step === 1 && (
             <div className={styles.stepContent}>
               <div className={styles.cardHeader}>
-                <div className={styles.iconWrap} style={{ background: 'linear-gradient(135deg,#1b437c,#2d6abf)' }}>
-                  <MailOutlined className={styles.headerIcon} />
-                </div>
                 <h2 className={styles.cardTitle}>QUÊN MẬT KHẨU</h2>
-                <p className={styles.cardSub}>Nhập email đã đăng ký để nhận mã OTP khôi phục mật khẩu</p>
               </div>
-              <Form layout="vertical" onFinish={handleSendOTP}>
+              <Form layout="vertical" onFinish={handleSendOTP} onValuesChange={() => setActionFailed(false)}>
                 <Form.Item
                   label="Địa chỉ email"
                   name="email"
@@ -221,9 +250,6 @@ function ForgotPassword() {
           {step === 2 && (
             <div className={styles.stepContent}>
               <div className={styles.cardHeader}>
-                <div className={styles.iconWrap} style={{ background: 'linear-gradient(135deg,#c48c46,#e6aa6e)' }}>
-                  <SafetyOutlined className={styles.headerIcon} />
-                </div>
                 <h2 className={styles.cardTitle}>NHẬP MÃ OTP</h2>
                 <p className={styles.cardSub}>
                   Mã OTP đã được gửi đến <strong>{email}</strong>.<br />
@@ -275,7 +301,7 @@ function ForgotPassword() {
                 </button>
               </div>
 
-              <button className={styles.backStep} onClick={() => setStep(1)}>
+              <button className={styles.backStep} onClick={() => { setStep(1); setActionFailed(false); }}>
                 ← Đổi email khác
               </button>
             </div>
@@ -284,13 +310,9 @@ function ForgotPassword() {
           {step === 3 && (
             <div className={styles.stepContent}>
               <div className={styles.cardHeader}>
-                <div className={styles.iconWrap} style={{ background: 'linear-gradient(135deg,#1b437c,#2d6abf)' }}>
-                  <LockOutlined className={styles.headerIcon} />
-                </div>
                 <h2 className={styles.cardTitle}>MẬT KHẨU MỚI</h2>
-                <p className={styles.cardSub}>Tạo mật khẩu mới cho tài khoản của bạn</p>
               </div>
-              <Form form={formPass} layout="vertical" onFinish={handleResetPassword}>
+              <Form form={formPass} layout="vertical" onFinish={handleResetPassword} onValuesChange={() => setActionFailed(false)}>
                 <Form.Item
                   label="Mật khẩu mới"
                   name="newPassword"
@@ -304,6 +326,10 @@ function ForgotPassword() {
                     className={styles.customInput}
                     placeholder="Tối thiểu 6 ký tự"
                     size="large"
+                    visibilityToggle={{
+                      visible: passwordVisible,
+                      onVisibleChange: setPasswordVisible,
+                    }}
                   />
                 </Form.Item>
                 <Form.Item
@@ -325,6 +351,10 @@ function ForgotPassword() {
                     className={styles.customInput}
                     placeholder="Nhập lại mật khẩu mới"
                     size="large"
+                    visibilityToggle={{
+                      visible: confirmPasswordVisible,
+                      onVisibleChange: setConfirmPasswordVisible,
+                    }}
                   />
                 </Form.Item>
                 <Button type="primary" htmlType="submit" block loading={loading} className={styles.btnPrimary}>
@@ -336,7 +366,6 @@ function ForgotPassword() {
 
           {step === 4 && (
             <div className={styles.successState}>
-              <CheckCircleFilled className={styles.successIcon} />
               <h2 className={styles.successTitle}>Khôi phục thành công!</h2>
               <p className={styles.successSub}>
                 Mật khẩu của bạn đã được đặt lại.<br />
