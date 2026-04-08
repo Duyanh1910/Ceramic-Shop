@@ -98,15 +98,12 @@ export default function Checkout() {
     else setProfileLoading(false);
   }, []);
 
-
   useEffect(() => {
     const fetchShippingFee = async () => {
-
       if (shippingMethod === 3) {
         setShippingFee(0);
         return;
       }
-
 
       if (!addressData.obj || !addressData.obj.ToDistrictID || !addressData.obj.ToWardID) {
         setShippingFee(0);
@@ -132,7 +129,6 @@ export default function Checkout() {
 
     fetchShippingFee();
   }, [shippingMethod, addressData.obj, orderItems, isLoggedIn]);
-
 
   const fetchProfile = async () => {
     setProfileLoading(true);
@@ -187,16 +183,18 @@ export default function Checkout() {
     const payload = {
         TenNguoiNhan: values.name,
         SDT: values.phone, 
-        DiaChiGiaoHang: addressData.string,
+        DiaChiGiaoHang: shippingMethod === 3 ? "Nhận tại cửa hàng" : addressData.string,
         GhiChu: values.note || '',
         MaPhuongThuc: paymentMethod,
-        
         MaPhi: shippingMethod, 
-        addressObj: addressData.obj, 
-        
+        addressObj: shippingMethod === 3 ? null : addressData.obj, 
         ListMaKhuyenMai: appliedVoucher ? [appliedVoucher.MaKhuyenMai] : [],
         
-        items: selectedItems, 
+        items: orderItems.map((i) => ({
+            MaBienThe: i.variantId,
+            SoLuong: i.quantity,
+            DonGia: i.price
+        })), 
     };
 
     let res;
@@ -204,34 +202,20 @@ export default function Checkout() {
         res = await axios.post(`${API_BASE}/orders`, payload, authHeader);
     } else {
         res = await axios.post(`${API_BASE}/orders/guest`, {
-        ...payload,
-        GuestEmail: values.email,
-        cartItems: orderItems.map((i) => ({
-            MaBienThe: i.variantId,
-            SoLuong: i.quantity,
-            GiaBan: i.price,
-            ThanhTien: i.price * i.quantity,
-        })),
+            ...payload,
+            GuestEmail: values.email,
+            cartItems: payload.items 
         });
     }
     return res.data?.result?.orderID || res.data?.result?.MaDonHang;
   };
 
-  const createMomoPayment = async (maDonHang) => {
-    const res = await axios.post(`${API_BASE}/payment/momo-create`, { maDonHang }, authHeader);
-    return res.data?.paymentUrl;
-  };
-
-  const createZaloPayPayment = async (maDonHang) => {
-    const res = await axios.post(`${API_BASE}/payment/zalo-create`, { maDonHang }, authHeader);
-    return res.data?.payUrl;
-  };
-
   const handleOrder = async (values) => {
-    if (!addressData.string || addressData.string.split(',').length < 3) {
+    if (shippingMethod !== 3 && (!addressData.string || addressData.string.split(',').length < 3)) {
       setAddressError('Vui lòng chọn đầy đủ tỉnh/huyện/xã và nhập số nhà!');
       return;
     }
+    
     setAddressError('');
     setLoading(true);
 
@@ -267,6 +251,16 @@ export default function Checkout() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const createMomoPayment = async (maDonHang) => {
+    const res = await axios.post(`${API_BASE}/payment/momo-create`, { maDonHang }, authHeader);
+    return res.data?.paymentUrl;
+  };
+
+  const createZaloPayPayment = async (maDonHang) => {
+    const res = await axios.post(`${API_BASE}/payment/zalo-create`, { maDonHang }, authHeader);
+    return res.data?.payUrl;
   };
 
   if (step === 1) {
@@ -369,20 +363,8 @@ export default function Checkout() {
                           placeholder="0987654321" maxLength={10} className={styles.input} />
                       </Form.Item>
                     </div>
-                    <div className={styles.addressBlock}>
-                      <div className={styles.addressLabel}>
-                        Địa chỉ giao hàng <span className={styles.req}>*</span>
-                      </div>
-                        <AddressSelector 
-                            onChange={(addressString, addressObj) => { 
-                                setAddressData({ string: addressString, obj: addressObj }); 
-                                setAddressError(''); 
-                            }} 
-                        />
-                      {addressError && <div className={styles.addressError}>{addressError}</div>}
-                    </div>
 
-                    <div className={styles.section}>
+                    <div className={styles.section} style={{ marginTop: 10, padding: 0, border: 'none' }}>
                         <div className={styles.sectionTitle}>🚚 Phương thức giao hàng</div>
                         <Radio.Group 
                             onChange={(e) => setShippingMethod(e.target.value)} 
@@ -394,6 +376,21 @@ export default function Checkout() {
                             <Radio value={3}>Nhận tại cửa hàng (Miễn phí)</Radio>
                         </Radio.Group>
                     </div>
+
+                    {shippingMethod !== 3 && (
+                        <div className={styles.addressBlock} style={{ marginTop: 20 }}>
+                        <div className={styles.addressLabel}>
+                            Địa chỉ giao hàng <span className={styles.req}>*</span>
+                        </div>
+                            <AddressSelector 
+                                onChange={(addressString, addressObj) => { 
+                                    setAddressData({ string: addressString, obj: addressObj }); 
+                                    setAddressError(''); 
+                                }} 
+                            />
+                        {addressError && <div className={styles.addressError}>{addressError}</div>}
+                        </div>
+                    )}
 
                     <Form.Item name="note" label="Ghi chú (không bắt buộc)" style={{ marginTop: 16 }}>
                       <Input.TextArea placeholder="Yêu cầu đặc biệt..." className={styles.input} rows={2} />
