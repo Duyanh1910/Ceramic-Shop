@@ -192,75 +192,7 @@ function Cart() {
   const totalCartPrice = selectedCartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const selectedCartQuantity = selectedCartItems.reduce((sum, item) => sum + item.quantity, 0); 
   
-  const shippingFee = 0;
   const finalTotal = selectedCartItems.length > 0 ? totalCartPrice : 0;
-
-  const handleCheckout = async (values) => {
-    if (selectedCartItems.length === 0) {
-      return message.warning("Vui lòng chọn ít nhất một sản phẩm để thanh toán!");
-    }
-
-    setSubmitting(true);
-    try {
-      if (isLoggedIn) {
-        const payload = {
-          TenNguoiNhan: values.FullName,
-          SDTGiaoHang: values.SDT,
-          DiaChiGiaoHang: values.DiaChi,
-          GhiChu: values.GhiChu || '',
-          MaPhuongThuc: Number(values.paymentMethod),
-          TongThanhToan: finalTotal,
-          items: selectedCartItems.map(item => ({
-            MaSanPham: item.id,
-            MaBienThe: item.variantId || null,
-            SoLuong: item.quantity,
-            DonGia: item.price
-          }))
-        };
-
-        await axios.post('https://ceramic-shop-u8ak.onrender.com/api/v1/orders', payload, {
-          withCredentials: true
-        });
-
-        await Promise.all(selectedCartItems.map(item => 
-          axios.delete(`https://ceramic-shop-u8ak.onrender.com/api/v1/cart/items/${item.variantId || item.id}`, {
-            withCredentials: true
-          })
-        ));
-      } else {
-        const guestPayload = {
-          TenNguoiNhan: values.FullName,
-          SDT: values.SDT,
-          DiaChiGiaoHang: values.DiaChi,
-          GhiChu: values.GhiChu || '',
-          MaPhuongThuc: Number(values.paymentMethod),
-          GuestEmail: values.Email,
-          cartItems: selectedCartItems.map(item => ({
-            MaBienThe: item.variantId,
-            SoLuong: item.quantity,
-            GiaBan: item.price,
-            ThanhTien: item.price * item.quantity
-          }))
-        };
-        
-        await axios.post('https://ceramic-shop-u8ak.onrender.com/api/v1/orders/guest', guestPayload);
-        
-        const remainingItems = cart.filter(item => !selectedItems.includes(getItemKey(item)));
-        localStorage.setItem('ceramic_cart', JSON.stringify(remainingItems));
-      }
-
-      message.success('Đặt hàng thành công!');
-      setCart(prev => prev.filter(item => !selectedItems.includes(getItemKey(item))));
-      setSelectedItems([]); 
-      form.resetFields();
-      navigate('/'); 
-    } catch (error) {
-      const errorMsg = error.response?.data?.message || 'Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại!';
-      message.error(errorMsg);
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   return (
     <Layout className={styles.cartWrapper}>

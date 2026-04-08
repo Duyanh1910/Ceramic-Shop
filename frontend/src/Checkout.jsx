@@ -55,13 +55,10 @@ export default function Checkout() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const cartItems = location.state?.selectedItems || [];
-
+  const { selectedItems = [], cartItems = [], applyVoucher = null } = location.state || {};
   const token = localStorage.getItem('token');
   const isLoggedIn = !!token;
   const authHeader = { headers: { Authorization: `Bearer ${token}` } };
-
-  const { selectedItems = [], applyVoucher = null } = location.state || {};
 
   const [form] = Form.useForm();
   const [step, setStep] = useState(0);
@@ -81,7 +78,7 @@ export default function Checkout() {
   const [addressData, setAddressData] = useState({ string: '', obj: null });
   const orderItems = cartItems.filter((i) => selectedItems.includes(i.variantId));
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const shippingFee = 30000;
+  const shippingFee = shippingMethod === 3 ? 0 : 30000;
   const discount = appliedVoucher
     ? Math.min(appliedVoucher.GiaTri, appliedVoucher.GiamToiDa ?? Infinity)
     : 0;
