@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Button, Input, Form, message, Typography, Divider, Checkbox } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import styles from './Login.module.css';
-import { UserOutlined, LockOutlined, ArrowLeftOutlined, ArrowRightOutlined, ShoppingFilled } from '@ant-design/icons';
+import { UserOutlined, LockOutlined, ArrowLeftOutlined, ArrowRightOutlined, ShopFilled, HomeFilled } from '@ant-design/icons';
 import { Helmet } from 'react-helmet-async';
 import { saveSession } from './useAuth.js';
 
@@ -97,7 +97,6 @@ function Login() {
               style={{ width: '100%', height: '350px', backgroundColor: 'transparent' }}
             ></model-viewer>
             
-            {/* Khung Text hiển thị */}
             <div style={{
                 marginTop: '-30px', 
                 fontWeight: '600',
@@ -128,7 +127,7 @@ function Login() {
               onClick={() => navigate('/')} 
               className={styles.backButton}
             >
-              Trang chủ
+              <HomeFilled/> Trang chủ
             </Button>
 
             <Button 
@@ -136,7 +135,7 @@ function Login() {
               onClick={() => navigate('/home')} 
               className={styles.backButton}
             >
-              <ShoppingFilled/> Cửa hàng <ArrowRightOutlined />
+              <ShopFilled/> Cửa hàng <ArrowRightOutlined />
             </Button>
           </div>
 
