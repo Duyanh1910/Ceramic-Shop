@@ -188,7 +188,22 @@ export const verifyAndUpdateCallback = async (zaloPayBody) => {
       { TrangThaiThanhToan: 1 },
       { where: { MaDonHang: giaoDich.MaDonHang }, transaction: t },
     );
-
+    const order = await OrderModel.findOne({
+      where: { MaDonHang: giaoDich.MaDonHang },
+      include: [
+        {
+          model: CustomerModel,
+          include: [
+            {
+              model: AccountModel,
+              attributes: ["Email"],
+            },
+          ],
+        },
+      ],
+      transaction: t,
+    });
+    sendEmailInvoiceService(order.KhachHang.TaiKhoan.Email, order.MaHienThi);
     console.log("✅ Đã update trạng thái đơn hàng thành Đã Thanh Toán");
   });
 
@@ -248,8 +263,10 @@ export const queryZaloPayTransaction = async (app_trans_id) => {
             ],
             transaction: t,
           });
-          await sendEmailInvoiceService(order.KhachHang.TaiKhoan.Email,order.MaHienThi);
-          console.log("✅ Đã update DB qua lệnh Query chủ động!");
+          sendEmailInvoiceService(
+            order.KhachHang.TaiKhoan.Email,
+            order.MaHienThi,
+          );
         }
       });
     }

@@ -330,74 +330,28 @@ export const updateProductInfoService = async (
       throw new ErrorHandler("Không tồn tại danh mục này!", 400);
     }
     const countChild = await CategoryModel.count({
-      where: {
-        ParentID: categoryID,
-      },
+      where: { ParentID: categoryID },
     });
     if (countChild > 0) {
       throw new ErrorHandler("Chỉ được thêm sản phẩm vào danh mục con!", 400);
     }
-    await ProductModel.update(
+
+    await existProduct.update(
       {
         MaDanhMuc: categoryID,
         TenSanPham: productName,
         Thumbnail: thumbnail,
         ThuongHieu: brand,
-        LuotXem: 0,
+        LuotXem: existProduct.LuotXem,
         MoTa: description,
         TrangThai: status,
       },
-      {
-        transaction: transaction,
-      },
+      { transaction: transaction },
     );
-    ((existProduct.MaDanhMuc = categoryID),
-      (existProduct.TenSanPham = productName),
-      (existProduct.Thumbnail = thumbnail),
-      (existProduct.ThuongHieu = brand),
-      (existProduct.MoTa = description),
-      (existProduct.TrangThai = status ?? 1));
-    existProduct.save();
+
     for (const item of BienThe) {
       if (item.MaBienThe) {
-        const variants = await VariantModel.update(
-          {
-            MaSanPham: product.MaSanPham,
-            TenBienThe: item.TenBienThe,
-            Gia: item.Gia,
-            SoLuong: item.SoLuong,
-            TrangThai: item.TrangThai,
-            MoTa: item.MoTa,
-          },
-          {
-            where: {
-              MaBienThe: item.MaBienThe,
-            },
-          },
-          {
-            transaction: transaction,
-          },
-        );
-        if (item.images && item.images.length > 0) {
-          const images = item.images.map((img) => ({
-            MaBienThe: variants.MaBienThe,
-            DuongDan: img,
-          }));
-          await VariantImageModel.bulkCreate(images, {
-            transaction: transaction,
-          });
-        }
-        if (item.attributes && item.attributes.length > 0) {
-          const attributes = item.attributes.map((atrri) => ({
-            MaBienThe: variants.MaBienThe,
-            MaGiaTri: atrri,
-          }));
-          await VariantAttributeModel.bulkCreate(attributes, {
-            transaction: transaction,
-          });
-        }
-      } else {
-        const variants = await VariantModel.create(
+        await VariantModel.update(
           {
             MaSanPham: existProduct.MaSanPham,
             TenBienThe: item.TenBienThe,
@@ -407,12 +361,45 @@ export const updateProductInfoService = async (
             MoTa: item.MoTa,
           },
           {
+            where: { MaBienThe: item.MaBienThe },
             transaction: transaction,
           },
         );
+
         if (item.images && item.images.length > 0) {
           const images = item.images.map((img) => ({
-            MaBienThe: variants.MaBienThe,
+            MaBienThe: item.MaBienThe,
+            DuongDan: img,
+          }));
+          await VariantImageModel.bulkCreate(images, {
+            transaction: transaction,
+          });
+        }
+
+        if (item.attributes && item.attributes.length > 0) {
+          const attributes = item.attributes.map((atrri) => ({
+            MaBienThe: item.MaBienThe,
+            MaGiaTri: atrri,
+          }));
+          await VariantAttributeModel.bulkCreate(attributes, {
+            transaction: transaction,
+          });
+        }
+      } else {
+        const newVariant = await VariantModel.create(
+          {
+            MaSanPham: existProduct.MaSanPham,
+            TenBienThe: item.TenBienThe,
+            Gia: item.Gia,
+            SoLuong: item.SoLuong,
+            TrangThai: item.TrangThai,
+            MoTa: item.MoTa,
+          },
+          { transaction: transaction },
+        );
+        if (item.images && item.images.length > 0) {
+          const images = item.images.map((img) => ({
+            MaBienThe: newVariant.MaBienThe,
             DuongDan: img,
           }));
           await VariantImageModel.bulkCreate(images, {
@@ -421,7 +408,7 @@ export const updateProductInfoService = async (
         }
         if (item.attributes && item.attributes.length > 0) {
           const attributes = item.attributes.map((atrri) => ({
-            MaBienThe: variants.MaBienThe,
+            MaBienThe: newVariant.MaBienThe,
             MaGiaTri: atrri,
           }));
           await VariantAttributeModel.bulkCreate(attributes, {
@@ -431,12 +418,12 @@ export const updateProductInfoService = async (
       }
     }
     await transaction.commit();
-    return product;
+    return existProduct;
   } catch (err) {
     await transaction.rollback();
     if (err.statusCode) throw err;
     console.error(err);
-    throw new ErrorHandler("Lỗi server! Không thể thêm mới sản phẩm!", 500);
+    throw new ErrorHandler("Lỗi server! Không thể cập nhật sản phẩm!", 500);
   }
 };
 
@@ -452,6 +439,7 @@ export const deleteVariantImageService = async (imageID, variantID) => {
         MaBienThe: variantID,
         MaHinhAnh: imageID,
       },
+      transaction,
     });
     await transaction.commit();
   } catch (err) {

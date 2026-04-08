@@ -163,7 +163,7 @@ export const verifyAndUpdateIpn = async (momoData) => {
           ],
           transaction: t,
         });
-        await sendEmailInvoiceService(
+        sendEmailInvoiceService(
           order.KhachHang.TaiKhoan.Email,
           order.MaHienThi,
         );

@@ -157,7 +157,7 @@ export const sendEmailInvoiceService = async (email, orderCode) => {
         },
         {
           model: CustomerModel,
-          attributes: ["TenKhachHang", "Email"],
+          attributes: ["TenKhachHang"],
         },
       ],
     });

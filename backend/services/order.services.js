@@ -395,8 +395,10 @@ export const cancelOrderService = async (idAccount, orderCode, reason) => {
         transaction,
       });
     }
-    if (order.OrderPromotionModels && order.OrderPromotionModels.length > 0) {
-      for (const promo of order.OrderPromotionModels) {
+    const promos =
+      order.OrderPromotionModels || order.ChiTietKhuyenMaiDonHangs || [];
+    if (promos.length > 0) {
+      for (const promo of promos) {
         await PromotionWalletModel.update(
           { TrangThaiSuDung: 0 },
           {
