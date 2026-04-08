@@ -197,20 +197,25 @@ export const sendEmailInvoiceService = async (email, orderCode) => {
     let mailSubject = `[The Ceramic Shop] Xác nhận đơn hàng #${orderCode}`;
     let title = "Cảm ơn bạn đã đặt hàng tại The Ceramic Shop!";
 
-    const orderItemsHtml = order.OrderDetails.map(
-      (item) => `
-      <tr>
-        <td style="padding: 12px; border-bottom: 1px solid #eeeeee; color: #333333;">
-          <strong>${item.Variant?.Product?.TenSanPham || "Sản phẩm"}</strong> <br/>
-          <span style="color: #7f8c8d; font-size: 13px;">Phân loại: ${item.Variant?.TenBienThe || "Mặc định"}</span>
-          ${item.GhiChu ? `<br/><span style="color: #e67e22; font-size: 12px;">* ${item.GhiChu}</span>` : ""}
-        </td>
-        <td style="padding: 12px; border-bottom: 1px solid #eeeeee; text-align: center; color: #333333;">${item.SoLuong || 1}</td>
-        <td style="padding: 12px; border-bottom: 1px solid #eeeeee; text-align: right; color: #333333;">${formatCurrency(item.GiaBan || item.GiaTien)}</td>
-        <td style="padding: 12px; border-bottom: 1px solid #eeeeee; text-align: right; color: #333333;"><b>${formatCurrency(item.ThanhTien)}</b></td>
-      </tr>
-    `,
-    ).join("");
+    const chiTietDonHangs =
+      order.ChiTietDonHangs || order.OrderDetailModels || [];
+
+    const orderItemsHtml = chiTietDonHangs
+      .map(
+        (item) => `
+  <tr>
+    <td style="padding: 12px; border-bottom: 1px solid #eeeeee; color: #333333;">
+      <strong>${item.Variant?.Product?.TenSanPham || item.BienTheSanPham?.SanPham?.TenSanPham || "Sản phẩm"}</strong> <br/>
+      <span style="color: #7f8c8d; font-size: 13px;">Phân loại: ${item.Variant?.TenBienThe || item.BienTheSanPham?.TenBienThe || "Mặc định"}</span>
+      ${item.GhiChu ? `<br/><span style="color: #e67e22; font-size: 12px;">* ${item.GhiChu}</span>` : ""}
+    </td>
+    <td style="padding: 12px; border-bottom: 1px solid #eeeeee; text-align: center; color: #333333;">${item.SoLuong || 1}</td>
+    <td style="padding: 12px; border-bottom: 1px solid #eeeeee; text-align: right; color: #333333;">${formatCurrency(item.GiaBan || item.GiaTien)}</td>
+    <td style="padding: 12px; border-bottom: 1px solid #eeeeee; text-align: right; color: #333333;"><b>${formatCurrency(item.ThanhTien)}</b></td>
+  </tr>
+`,
+      )
+      .join("");
 
     const htmlContent = `
     <!DOCTYPE html>

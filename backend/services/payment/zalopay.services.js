@@ -5,7 +5,9 @@ import ErrorHandler from "../../utils/error_handler.js";
 import {
   OrderModel,
   PaymentTransactionModel,
+  CustomerModel,
   sequelize,
+  AccountModel,
 } from "../../models/index.js";
 
 const ZALOPAY_CONFIG = {

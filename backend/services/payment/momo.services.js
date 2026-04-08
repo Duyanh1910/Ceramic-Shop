@@ -8,7 +8,6 @@ import {
   sequelize,
   AccountModel,
 } from "../../models/index.js";
-import { AccessDeniedError } from "sequelize";
 import { sendEmailInvoiceService } from "../email.services.js";
 
 // Lấy config từ biến môi trường
