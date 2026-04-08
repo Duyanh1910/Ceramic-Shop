@@ -1,8 +1,12 @@
 import express from "express";
-import { addNewProductController } from "../../controllers/admin/product/adminProduct.controller.js";
+import {
+  addNewProductController,
+  deleteVariantImage,
+} from "../../controllers/admin/product/adminProduct.controller.js";
 
 const router = express.Router();
 router.post("/", addNewProductController);
-//router.post("/:id", getCustomerInfo);
+router.delete("/variant/image", deleteVariantImage);
+
 
 export default router;
