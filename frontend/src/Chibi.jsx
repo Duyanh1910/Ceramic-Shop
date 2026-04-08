@@ -8,7 +8,7 @@ function Chibi({ passwordVisible }) {
     : 'Idle_Base';
   
   const messageText = passwordVisible 
-    ? 'Hihi tôi không nhìn trộm mật khẩu của bạn đâu' 
+    ? 'Mật khẩu của bạn an toàn đối với tôi' 
     : 'Xin chào đây là trang đăng nhập của Ceramic-Shop';
 
   return (
