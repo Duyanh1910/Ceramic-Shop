@@ -132,7 +132,7 @@ function Login() {
               field-of-view="25deg" 
               
               /* Nếu chibi VẪN CHƯA XUỐNG ĐỦ sâu, hãy tăng '1.2m' lên '1.5m' hoặc '2.0m' */
-              camera-target="0m 1.2m 0m" 
+              camera-target="0m 1.5m 0m" 
               
               max-camera-orbit="auto auto 600%" 
               shadow-intensity="0" 
@@ -145,7 +145,7 @@ function Login() {
                 height: '340px', 
                 backgroundColor: 'transparent',
                 /* Nếu đụng bong bóng chat, hãy tăng '40px' lên '50px' hoặc '60px' để đẩy toàn bộ khung xuống */
-                marginTop: '40px' 
+                marginTop: '60px' 
               }}
             ></model-viewer>
           </div>
