@@ -24,21 +24,24 @@ const bannerSlides = [
         image: 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?q=80&w=1920&auto=format&fit=crop',
         title: 'TINH HOA GỐM SỨ VIỆT',
         subtitle: 'Nơi Nghệ Thuật Giao Thoa Cùng Phong Cách Sống Hiện Đại',
-        btnText: 'KHÁM PHÁ NGAY'
+        btnText: 'KHÁM PHÁ NGAY',
+        link: '/home'
     },
     {
         id: 2,
         image: 'https://res.cloudinary.com/dcmwz0uis/image/upload/v1775186648/blue-white-chinoiserie-design-497489_scgryl.jpg',
-        title: 'BỘ SƯU TẬP MỚI 2026',
-        subtitle: 'Sang Trọng, Tinh Tế & Nâng Tầm Không Gian Sống',
-        btnText: 'XEM BỘ SƯU TẬP'
+        title: 'QUÀ TẶNG TRÀ ĐẠO',
+        subtitle: 'Gửi gắm tâm ý qua từng tác phẩm gốm sứ thủ công',
+        btnText: 'TÌM BỘ ẤM TRÀ',
+        link: '/home?search=b%E1%BB%99%20%E1%BA%A5m%20tr%C3%A0'
     },
     {
         id: 3,
         image: 'https://res.cloudinary.com/dcmwz0uis/image/upload/v1775186597/porcelain-and-ceramics-1024x683_j22ily.jpg',
-        title: 'CHẾ TÁC THỦ CÔNG',
-        subtitle: 'Mỗi Sản Phẩm Là Một Câu Chuyện Văn Hóa Độc Bản',
-        btnText: 'TÌM HIỂU THÊM'
+        title: 'GỐM SỨ PHONG THỦY',
+        subtitle: 'Kiến tạo vượng khí - Tặng mã PHONGTHUY100 giảm ngay 100K',
+        btnText: 'THỈNH VẬT PHẨM',
+        link: '/home?category=4'
     }
 ];
 
@@ -372,7 +375,7 @@ function LandingPage() {
                                     <div className={styles.bannerContent}>
                                         <h2 className={styles.bannerTitle}>{slide.title}</h2>
                                         <p className={styles.bannerSubtitle}>{slide.subtitle}</p>
-                                        <button className={styles.btnBanner} onClick={() => navigate('/home')}>
+                                        <button className={styles.btnBanner} onClick={() => navigate(slide.link)}>
                                             {slide.btnText}
                                         </button>
                                     </div>

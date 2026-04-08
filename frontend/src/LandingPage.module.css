@@ -878,7 +878,6 @@ ul {
     color:#BB9244;
 }
 
-/* Custom styles for Ant Design Carousel dots */
 :global(.ant-carousel .slick-dots li button) {
     background: #fff !important;
     height: 4px !important;
