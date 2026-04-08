@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Button, Input, Form, message, Typography, Divider, Checkbox } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import styles from './Login.module.css';
-import { UserOutlined, LockOutlined, ArrowLeftOutlined, ArrowRightOutlined, HomeFilled, ShopFilled } from '@ant-design/icons';
+import { UserOutlined, LockOutlined, ArrowLeftOutlined, ArrowRightOutlined, ShoppingFilled } from '@ant-design/icons';
 import { Helmet } from 'react-helmet-async';
 import { saveSession } from './useAuth.js';
 
@@ -65,6 +65,8 @@ function Login() {
   const modelAnimation = passwordVisible 
     ? 'PetChibiNeeko_KDASuperFan_Joke02cycle.Chibi_Neeko_KDASuperFan' 
     : 'Idle_Base';
+  
+  const messageText = passwordVisible ? 'hihi tôi không nhìn trộm đâu' : 't đang nhìn bạn';
 
   return (
     <div className={styles.loginContainer}>
@@ -77,24 +79,41 @@ function Login() {
       <div className={styles.combinedCard}>
 
         <div className={styles.cardImage}>
-          <div className={styles.phoenixWrap}>
+          <div className={styles.phoenixWrap} style={{ flexDirection: 'column' }}>
             <model-viewer 
               src={modelSrc}
               alt="Trợ lý Irelia 3D" 
               autoplay 
               animation-name={modelAnimation}
-              camera-orbit="0deg 75deg 270%"
+              camera-orbit="0deg 75deg 120%" 
               max-camera-orbit="auto auto 600%" 
-              field-of-view="45deg" 
+              field-of-view="35deg" 
               camera-target="0m 0.22m 0m" 
               shadow-intensity="0" 
               interaction-prompt="none"
               disable-zoom
               disable-pan
               disable-tap
-              style={{ width: '100%', height: '250px', backgroundColor: 'transparent' }}
+              style={{ width: '100%', height: '350px', backgroundColor: 'transparent' }}
             ></model-viewer>
+            
+            {/* Khung Text hiển thị */}
+            <div style={{
+                marginTop: '-30px', 
+                fontWeight: '600',
+                color: '#173354',
+                backgroundColor: 'rgba(255, 255, 255, 0.4)',
+                padding: '6px 18px',
+                borderRadius: '20px',
+                fontSize: '14px',
+                zIndex: 2,
+                backdropFilter: 'blur(4px)',
+                border: '1px solid rgba(255,255,255,0.5)'
+            }}>
+                {messageText}
+            </div>
           </div>
+
           <div className={styles.brandFooter}>
             <span className={styles.brandName}>CERAMIC-SHOP</span>
             <span className={styles.brandSub}>TINH HOA GỐM SỨ VIỆT</span>
@@ -109,7 +128,7 @@ function Login() {
               onClick={() => navigate('/')} 
               className={styles.backButton}
             >
-              <HomeFilled/> Trang chủ
+              Trang chủ
             </Button>
 
             <Button 
@@ -117,7 +136,7 @@ function Login() {
               onClick={() => navigate('/home')} 
               className={styles.backButton}
             >
-              <ShopFilled/> Cửa hàng <ArrowRightOutlined />
+              <ShoppingFilled/> Cửa hàng <ArrowRightOutlined />
             </Button>
           </div>
 
