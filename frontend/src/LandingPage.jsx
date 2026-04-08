@@ -13,7 +13,8 @@ import {
     CheckCircleOutlined,
     SafetyOutlined,
     TrophyOutlined,
-    CustomerServiceOutlined
+    CustomerServiceOutlined,
+    ShoppingFilled
 } from '@ant-design/icons';
 import styles from './LandingPage.module.css';
 import { saveSession } from './useAuth.js';
@@ -346,7 +347,7 @@ function LandingPage() {
                                 <UserOutlined />
                             </div>
                             <div className={styles.iconItem} onClick={() => navigate('/home')}>
-                                <ShoppingCartOutlined />
+                                <ShoppingFilled />
                                 <span><b> Mua ngay</b></span>
                             </div>
                         </div>

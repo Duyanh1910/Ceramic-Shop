@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Button, Input, Form, message, Typography, Divider, Checkbox } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import styles from './Login.module.css';
-import { UserOutlined, LockOutlined, ArrowLeftOutlined, ArrowRightOutlined } from '@ant-design/icons';
+import { UserOutlined, LockOutlined, ArrowLeftOutlined, ArrowRightOutlined, ShoppingFilled, HomeFilled } from '@ant-design/icons';
 import { Helmet } from 'react-helmet-async';
 import { saveSession } from './useAuth.js';
 import Phoenix from './Phoenix.jsx';
@@ -100,6 +100,7 @@ function Login() {
               onClick={() => navigate('/')} 
               className={styles.backButton}
             >
+              <HomeFilled/>
               Trang chủ
             </Button>
 
