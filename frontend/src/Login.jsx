@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Button, Input, Form, message, Typography, Divider, Checkbox } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import styles from './Login.module.css';
-import { UserOutlined, LockOutlined, HomeFilled, ShopFilled } from '@ant-design/icons';
+import { UserOutlined, LockOutlined, HomeFilled, ShopFilled,ArrowLeftOutlined,ArrowRightOutlined } from '@ant-design/icons';
 import { Helmet } from 'react-helmet-async';
 import { saveSession } from './useAuth.js';
 import Chibi from './Chibi.jsx'; 
