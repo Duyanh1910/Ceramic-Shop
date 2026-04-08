@@ -75,14 +75,20 @@ function Login() {
       <style>{`
         .speech-bubble {
           position: absolute;
-          top: 30px;
-          right: 15px;
+          top: 20px;
+          left: 0;
+          right: 0;
+          margin: 0 auto;
+          width: fit-content;
+          max-width: 280px;
+          text-align: center;
           background: #ffffff;
-          border-radius: 16px;
-          padding: 12px 18px;
+          border-radius: 20px;
+          padding: 16px 28px;
           color: #173354;
           font-weight: 700;
-          font-size: 13px;
+          font-size: 16px;
+          line-height: 1.5;
           box-shadow: 0 8px 24px rgba(0,0,0,0.12);
           z-index: 10;
           animation: floatBubble 2.5s ease-in-out infinite;
@@ -91,9 +97,11 @@ function Login() {
         .speech-bubble::after {
           content: '';
           position: absolute;
-          bottom: -10px;
-          left: 24px;
-          border-width: 10px 10px 0;
+          bottom: -12px;
+          left: 0;
+          right: 0;
+          margin: 0 auto;
+          border-width: 12px 12px 0;
           border-style: solid;
           border-color: #ffffff transparent transparent transparent;
           display: block;
@@ -128,14 +136,8 @@ function Login() {
                 alt="Trợ lý Irelia 3D" 
                 autoplay 
                 animation-name={modelAnimation}
-                
-                /* 1. Đổi 70% thành auto (hoặc 100% - 120%) để camera lùi ra xa, lấy trọn vẹn model */
                 camera-orbit="0deg 75deg auto" 
-                
-                /* Có thể tăng nhẹ góc nhìn nếu cần, nhưng tạm giữ 25deg nếu bạn thích phong cách này */
                 field-of-view="25deg" 
-                
-                /* 2. Đưa target về auto hoặc 0m 1m 0m. Đặt 2m đôi khi làm tâm camera bị lệch so với khung */
                 camera-target="auto auto auto" 
                 
                 max-camera-orbit="auto auto 600%" 
@@ -146,10 +148,8 @@ function Login() {
                 disable-tap
                 style={{ 
                   width: '100%', 
-                  /* 3. Tăng nhẹ chiều cao thẻ để khung chứa (canvas) rộng rãi hơn theo chiều dọc */
                   height: '380px', 
                   backgroundColor: 'transparent',
-                  /* Giữ nguyên hoặc giảm nhẹ để không đụng speech-bubble */
                   marginTop: '40px' 
                 }}
               ></model-viewer>
