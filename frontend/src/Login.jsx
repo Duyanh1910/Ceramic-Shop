@@ -81,17 +81,22 @@ function Login() {
 
       <div className={styles.combinedCard}>
         <div className={styles.cardImage}>
-          <div className={styles.phoenixWrap} style={{ position: 'relative', flexDirection: 'column' }}>
+          <div className={styles.glowEffect} />
+          
+          <div style={{ position: 'relative', flexDirection: 'column', width: '100%', display: 'flex', alignItems: 'center', zIndex: 1 }}>
             <Chibi 
               passwordVisible={passwordVisible} 
               loginSuccess={loginSuccess} 
               loginFailed={loginFailed} 
+              defaultMsg="Xin chào đây là trang đăng nhập của Ceramic-Shop"
+              successMsg="Đăng nhập thành công! Đang chuyển hướng..."
+              failMsg="Thông tin chưa chính xác, hãy thử lại nhé!"
             />
           </div>
 
-          <div className={styles.brandFooter}>
-            <span className={styles.brandName}>CERAMIC-SHOP</span>
-            <span className={styles.brandSub}>TINH HOA GỐM SỨ VIỆT</span>
+          <div style={{ marginTop: '10px', zIndex: 1, position: 'relative' }}>
+            <h2 className={styles.logoDisplayTitle}>CERAMIC-SHOP</h2>
+            <p className={styles.logoDisplaySub}>TINH HOA GỐM SỨ VIỆT</p>
           </div>
         </div>
 
