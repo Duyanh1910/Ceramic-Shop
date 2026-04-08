@@ -205,7 +205,8 @@ ul {
 .menuList {
     display: flex;
     justify-content: center;
-    gap: 45px;
+    gap: 90px;
+    font-size: large;
 }
 
 .menuList li a {
