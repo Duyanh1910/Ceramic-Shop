@@ -128,34 +128,25 @@ function Login() {
               alt="Trợ lý Irelia 3D" 
               autoplay 
               animation-name={modelAnimation}
-              
-              /* =========================================================
-                 KHU VỰC CĂN CHỈNH KÍCH THƯỚC VÀ VỊ TRÍ CHIBI
-                 ========================================================= */
-                 
-              /* 1. CHỈNH KÍCH THƯỚC (TO/NHỎ): 
-                 - Giảm số 80% xuống (VD: 70%, 60%) -> Chibi sẽ TO RA.
-                 - Tăng số 80% lên (VD: 90%, 100%) -> Chibi sẽ NHỎ ĐI. */
               camera-orbit="0deg 75deg 70%" 
-              
-              /* - Giảm góc field-of-view (VD: 20deg) -> Càng zoom TO RA. */
               field-of-view="25deg" 
               
-              /* 2. CHỈNH VỊ TRÍ (LÊN/XUỐNG): 
-                 - Thay đổi con số ở giữa (0.45m).
-                 - TĂNG SỐ NÀY LÊN (VD: 0.5m, 0.6m) -> Chibi sẽ tụt XUỐNG DƯỚI (hết bị mất đầu).
-                 - GIẢM SỐ NÀY XUỐNG (VD: 0.3m, 0.2m) -> Chibi sẽ trồi LÊN TRÊN. */
-              camera-target="0m 0.6m 0m" 
+              /* Nếu chibi VẪN CHƯA XUỐNG ĐỦ sâu, hãy tăng '1.2m' lên '1.5m' hoặc '2.0m' */
+              camera-target="0m 1.2m 0m" 
               
-              /* ========================================================= */
-
               max-camera-orbit="auto auto 600%" 
               shadow-intensity="0" 
               interaction-prompt="none"
               disable-zoom
               disable-pan
               disable-tap
-              style={{ width: '100%', height: '380px', backgroundColor: 'transparent' }}
+              style={{ 
+                width: '100%', 
+                height: '340px', 
+                backgroundColor: 'transparent',
+                /* Nếu đụng bong bóng chat, hãy tăng '40px' lên '50px' hoặc '60px' để đẩy toàn bộ khung xuống */
+                marginTop: '40px' 
+              }}
             ></model-viewer>
           </div>
 
