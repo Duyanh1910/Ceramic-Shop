@@ -34,17 +34,18 @@ function LandingPage() {
     const [loadingNews, setLoadingNews] = useState(false);
 
     const [isChecking, setIsChecking] = useState(false);
-    const [apiCategories, setApiCategories]=useState([]);
+    const [apiCategories, setApiCategories] = useState([]);
+
     useEffect(() => {
-        const fetchCats = async()=>{
-            try{
+        const fetchCats = async () => {
+            try {
                 const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/categories');
                 const all = res.data?.result || [];
-                setApiCategories(all.filter(c=>!c.ParentID));
-            }catch{}
+                setApiCategories(all.filter(c => !c.ParentID));
+            } catch {}
         };
         fetchCats();
-    },[]);
+    }, []);
 
     useEffect(() => {
         const checkOAuth = async () => {
@@ -69,7 +70,6 @@ function LandingPage() {
                     saveSession(username, role, true, token);
                 }
             } catch (err) {
-
             }
         };
         
@@ -126,6 +126,7 @@ function LandingPage() {
             setLoadingNews(false);
         }
     };
+
     const fetchProducts = async () => {
         setLoading(true);
         try {
@@ -198,36 +199,25 @@ function LandingPage() {
         "Đồ phong thủy": "https://res.cloudinary.com/dcmwz0uis/image/upload/v1773818260/thum-removebg-preview_f0xndm.png" ,
         "Đồ trang trí": "https://res.cloudinary.com/dcmwz0uis/image/upload/v1773823016/mtmt_ayvor6.webp" ,
     };
+
     const categories = apiCategories.length > 0
-    ? apiCategories.map(c=>({
-        id:c.MaDanhMuc,
-        name:c.TenDanhMuc,
+    ? apiCategories.map(c => ({
+        id: c.MaDanhMuc,
+        name: c.TenDanhMuc,
         img: CATEGORY_IMGS[c.TenDanhMuc]
     }))
-    : Object.entries(CATEGORY_IMGS).map(([name,img])=>({id:null,name,img}))
-    // const newsArticles = [
-    //     {
-    //         id: 1,
-    //         title: "Ra mắt bộ sưu tập Gốm Sứ Xuân 2026",
-    //         excerpt: "Khám phá những thiết kế độc đáo lấy cảm hứng từ hoa đào, mai vàng và các biểu tượng may mắn của năm mới.",
-    //         image: "https://images.unsplash.com/photo-1578500494198-246f612d3b3d?w=400&h=250&fit=crop",
-    //         date: "15/01/2026"
-    //     },
-    //     {
-    //         id: 2,
-    //         title: "Bí quyết chọn bộ ấm trà phù hợp",
-    //         excerpt: "Hướng dẫn chi tiết cách lựa chọn ấm trà tử sa, sứ cao cấp phù hợp với từng loại trà và phong cách thưởng thức.",
-    //         image: "https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?w=400&h=250&fit=crop",
-    //         date: "10/01/2026"
-    //     },
-    //     {
-    //         id: 3,
-    //         title: "Nghệ thuật Bát Tràng - Di sản nghìn năm",
-    //         excerpt: "Tìm hiểu về lịch sử và quy trình làm gốm truyền thống tại làng nghề Bát Tràng nổi tiếng.",
-    //         image: "https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=400&h=250&fit=crop",
-    //         date: "05/01/2026"
-    //     }
-    // ];
+    : Object.entries(CATEGORY_IMGS).map(([name, img]) => ({ id: null, name, img }));
+
+    const handleOrderTracking = (e) => {
+        e.preventDefault();
+        const isCustomer = localStorage.getItem('customer_session_active') === 'true';
+        
+        if (isCustomer) {
+            navigate('/orders');
+        } else {
+            alert('Vui lòng đăng nhập hệ thống để xem danh sách đơn hàng của bạn!');
+        }
+    };
 
     if (isChecking) {
         return (
@@ -253,9 +243,25 @@ function LandingPage() {
             <div className={styles.topbar}>
                 <div className={styles.container}>
                     <div className={styles.topbarInner}>
-                        <a href="#"><EnvironmentOutlined /> Hệ thống cửa hàng</a>
-                        <span className={styles.divider}>|</span>
-                        <a href="#"><PhoneOutlined /> Hotline: <strong>0329835725</strong></a>
+                        <div className={styles.topbarLeft}>
+                            <span className={styles.topbarPromo}>
+                                🛡️ Bao bể vỡ - Cam kết 1 đổi 1 toàn quốc | 🎁 Nhập mã GOMSU10 - Giảm ngay 10%
+                            </span>
+                        </div>
+
+                        <div className={styles.topbarRight}>
+                            <a href="#" onClick={handleOrderTracking}>
+                                Tra cứu đơn hàng
+                            </a>
+                            <span className={styles.divider}>|</span>
+                            <a href="https://maps.google.com/?q=484+Lạch+Tray,+Lê+Chân,+Hải+Phòng" target="_blank" rel="noopener noreferrer">
+                                <EnvironmentOutlined /> 484 Lạch Tray, Hải Phòng
+                            </a>
+                            <span className={styles.divider}>|</span>
+                            <a href="tel:0329835725">
+                                <PhoneOutlined /> Hotline: <strong>0329835725</strong>
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -543,11 +549,11 @@ function LandingPage() {
                         <div className={styles.footerCol}>
                             <h3>HỖ TRỢ KHÁCH HÀNG</h3>
                             <ul>
-                                <li><span className={styles.footerLink} onClick={()=>navigate('/support/huong-dan-mua-hang')}>Hướng dẫn mua hàng</span></li>
-                                <li><span className={styles.footerLink} onClick={()=>navigate('/support/chinh-sach-thanh-toan')}>Chính sách thanh toán</span></li>
-                                <li><span className={styles.footerLink} onClick={()=>navigate('/support/chinh-sach-giao-hang')}>Chính sách giao hàng</span></li>
-                                <li><span className={styles.footerLink} onClick={()=>navigate('/support/chinh-sach-doi-tra')}>Chính sách đổi trả</span></li>
-                                <li><span className={styles.footerLink} onClick={()=>navigate('/support/chinh-sach-bao-hanh')}>Chính sách bảo hành</span></li>
+                                <li><span className={styles.footerLink} onClick={() => navigate('/support/huong-dan-mua-hang')}>Hướng dẫn mua hàng</span></li>
+                                <li><span className={styles.footerLink} onClick={() => navigate('/support/chinh-sach-thanh-toan')}>Chính sách thanh toán</span></li>
+                                <li><span className={styles.footerLink} onClick={() => navigate('/support/chinh-sach-giao-hang')}>Chính sách giao hàng</span></li>
+                                <li><span className={styles.footerLink} onClick={() => navigate('/support/chinh-sach-doi-tra')}>Chính sách đổi trả</span></li>
+                                <li><span className={styles.footerLink} onClick={() => navigate('/support/chinh-sach-bao-hanh')}>Chính sách bảo hành</span></li>
                             </ul>
                         </div>
                         
@@ -594,7 +600,6 @@ function LandingPage() {
                     <p>© 2026 Bản quyền thuộc về CeramicShop. Bảo lưu mọi quyền.</p>
                 </div>
             </footer>
-
         </div>
     );
 }

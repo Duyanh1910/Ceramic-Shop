@@ -35,13 +35,36 @@ ul {
 
 .topbarInner {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     align-items: center;
     font-size: 13px;
     color: #666;
 }
 
-.topbarInner a:hover {
+.topbarLeft {
+    display: flex;
+    align-items: center;
+}
+
+.topbarPromo {
+    font-weight: 500;
+    color: #173354;
+    letter-spacing: 0.3px;
+}
+
+.topbarRight {
+    display: flex;
+    align-items: center;
+}
+
+.topbarRight a {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: color 0.3s ease;
+}
+
+.topbarRight a:hover {
     color: #BB9244;
 }
 
@@ -786,6 +809,15 @@ ul {
 }
 
 @media (max-width: 768px) {
+    .topbarInner {
+        flex-direction: column;
+        gap: 8px;
+        justify-content: center;
+        text-align: center;
+    }
+    .topbarPromo {
+        font-size: 11px;
+    }
     .aboutContent { grid-template-columns: 1fr; gap: 30px; }
     .visionMission { grid-template-columns: 1fr; }
     .productGrid { grid-template-columns: repeat(2, 1fr); gap: 20px; }
@@ -825,11 +857,12 @@ ul {
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2) !important;
     padding: 5px !important;
 }
-.footerLink{
+
+.footerLink {
     cursor: pointer;
     transition: color 0.3s;
-
 }
-.footerLink:hover{
+
+.footerLink:hover {
     color:#BB9244;
 }
