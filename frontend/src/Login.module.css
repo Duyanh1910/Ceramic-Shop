@@ -76,7 +76,6 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Card */
 .combinedCard {
   display: flex;
   width: 100%;
@@ -99,60 +98,51 @@
   display: none;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  padding: 28px 20px 24px;
-  background: linear-gradient(160deg, rgba(27,67,124,0.08) 0%, rgba(196,140,70,0.06) 100%);
-  border-right: 1px solid rgba(255,255,255,0.55);
+  justify-content: center;
+  padding: 40px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.2) 100%);
+  border-right: 1px solid rgba(255, 255, 255, 0.6);
   position: relative;
   overflow: hidden;
+  text-align: center;
 }
 
 @media (min-width: 768px) {
   .cardImage { display: flex; }
 }
 
-.cardImage::before {
-  content: '';
+.glowEffect {
   position: absolute;
-  width: 260px;
-  height: 260px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(196,140,70,0.12) 0%, transparent 70%);
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 70%);
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -55%);
-  pointer-events: none;
+  transform: translate(-50%, -50%);
+  z-index: 0;
+  border-radius: 50%;
 }
 
-.phoenixWrap {
-  width: 100%;
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.brandFooter {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-}
-
-.brandName {
+.logoDisplayTitle {
   font-family: 'Arsenal', serif;
-  font-size: 22px;
+  font-size: 38px;
   font-weight: 700;
   color: #173354;
+  margin: 0;
   letter-spacing: 2px;
+  position: relative;
+  z-index: 1;
 }
 
-.brandSub {
-  font-size: 11px;
+.logoDisplaySub {
+  font-size: 14px;
   letter-spacing: 3px;
   color: #BB9244;
   text-transform: uppercase;
+  margin-top: 8px;
   font-weight: 600;
+  position: relative;
+  z-index: 1;
 }
 
 .cardForm {
