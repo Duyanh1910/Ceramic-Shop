@@ -18,10 +18,13 @@ function Login() {
   const [rememberMe, setRememberMe] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [loginSuccess, setLoginSuccess] = useState(false);
+  const [loginFailed, setLoginFailed] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (values) => {
     setLoading(true);
+    setLoginFailed(false);
+    
     try {
       const keysToRemove = [
         'customer_token', 'admin_token', 'token',
@@ -61,6 +64,7 @@ function Login() {
         setTimeout(() => { navigate('/home'); }, 1500);
       }
     } catch (error) {
+      setLoginFailed(true);
       message.error(error.response?.data?.message || 'Đăng nhập thất bại!');
     } finally {
       setLoading(false);
@@ -78,7 +82,11 @@ function Login() {
       <div className={styles.combinedCard}>
         <div className={styles.cardImage}>
           <div className={styles.phoenixWrap} style={{ position: 'relative', flexDirection: 'column' }}>
-            <Chibi passwordVisible={passwordVisible} loginSuccess={loginSuccess} />
+            <Chibi 
+              passwordVisible={passwordVisible} 
+              loginSuccess={loginSuccess} 
+              loginFailed={loginFailed} 
+            />
           </div>
 
           <div className={styles.brandFooter}>
@@ -102,7 +110,11 @@ function Login() {
           <h2 className={styles.formTitle}>Chào mừng trở lại</h2>
           <p className={styles.formSubtitle}>Vui lòng đăng nhập để tiếp tục</p>
 
-          <Form layout="vertical" onFinish={handleLogin}>
+          <Form 
+            layout="vertical" 
+            onFinish={handleLogin}
+            onValuesChange={() => setLoginFailed(false)}
+          >
             <Form.Item
               label={<span className={styles.inputLabel}>Tên đăng nhập</span>}
               name="username"
