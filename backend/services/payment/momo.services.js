@@ -6,7 +6,10 @@ import {
   PaymentTransactionModel,
   CustomerModel,
   sequelize,
+  AccountModel,
 } from "../../models/index.js";
+import { AccessDeniedError } from "sequelize";
+import { sendEmailInvoiceService } from "../email.services.js";
 
 // Lấy config từ biến môi trường
 const MOMO_CONFIG = {
@@ -144,12 +147,29 @@ export const verifyAndUpdateIpn = async (momoData) => {
         { TrangThaiThanhToan: 1 },
         { where: { MaDonHang: giaoDich.MaDonHang }, transaction: t },
       );
-    try{
-
-    }
-    catch(err){
-      //co
-    }
+      try {
+        const order = await OrderModel.findOne({
+          where: { MaDonHang: giaoDich.MaDonHang },
+          include: [
+            {
+              model: CustomerModel,
+              include: [
+                {
+                  model: AccountModel,
+                  attributes: ["Email"],
+                },
+              ],
+            },
+          ],
+          transaction: t,
+        });
+        await sendEmailInvoiceService(
+          order.KhachHang.TaiKhoan.Email,
+          order.MaHienThi,
+        );
+      } catch (err) {
+        throw new Error("Lỗi server!");
+      }
     }
   });
 };
