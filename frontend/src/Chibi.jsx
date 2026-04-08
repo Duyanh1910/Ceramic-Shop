@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './Chibi.css';
 
-function Chibi({ passwordVisible, loginSuccess, loginFailed }) {
+function Chibi({ passwordVisible, loginSuccess, loginFailed, defaultMsg, successMsg, failMsg }) {
   const [smileStep, setSmileStep] = useState(0);
 
   useEffect(() => {
@@ -39,16 +39,16 @@ function Chibi({ passwordVisible, loginSuccess, loginFailed }) {
 
   let modelSrc = '/Neko_basic.glb';
   let modelAnimation = 'Idle_Base';
-  let messageText = 'Xin chào đây là trang đăng nhập của Ceramic-Shop';
+  let messageText = defaultMsg || 'Xin chào đây là trang đăng nhập của Ceramic-Shop';
 
   if (loginSuccess) {
     modelSrc = smileStep === 2 ? '/Neko_smile_2.glb' : '/Neko_smile_1.glb';
     modelAnimation = 'PetChibiNeeko_KDASuperFan_Joke01cycle.Chibi_Neeko_KDASuperFan';
-    messageText = 'Đăng nhập thành công! Đang chuyển hướng...';
+    messageText = successMsg || 'Đăng nhập thành công! Đang chuyển hướng...';
   } else if (loginFailed) {
     modelSrc = '/Neko_dame.glb';
     modelAnimation = 'Damage_Hurt';
-    messageText = 'Thông tin chưa chính xác, hãy thử lại nhé!';
+    messageText = failMsg || 'Thông tin chưa chính xác, hãy thử lại nhé!';
   } else if (passwordVisible) {
     modelSrc = '/Neko_glass.glb';
     modelAnimation = 'PetChibiNeeko_KDASuperFan_Joke02cycle.Chibi_Neeko_KDASuperFan';

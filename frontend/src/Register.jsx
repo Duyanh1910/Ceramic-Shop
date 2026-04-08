@@ -6,9 +6,10 @@ import styles from './Register.module.css';
 import { Helmet } from 'react-helmet-async';
 import {
   UserOutlined, MailOutlined, LockOutlined,
-  ArrowLeftOutlined, SafetyOutlined,ArrowRightOutlined,
+  ArrowLeftOutlined, SafetyOutlined, ArrowRightOutlined,
   HomeFilled, ShopFilled
 } from '@ant-design/icons';
+import Chibi from './Chibi.jsx';
 
 const { Text, Link } = Typography;
 const API_BASE = 'https://ceramic-shop-u8ak.onrender.com/api/v1';
@@ -27,6 +28,11 @@ function Register() {
   const timerRef = useRef(null);
   const navigate = useNavigate();
 
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
+  const [actionSuccess, setActionSuccess] = useState(false);
+  const [actionFailed, setActionFailed] = useState(false);
+
   useEffect(() => () => clearInterval(timerRef.current), []);
 
   const startCooldown = () => {
@@ -41,6 +47,7 @@ function Register() {
 
   const handleSendOTP = async (values) => {
     setLoading(true);
+    setActionFailed(false);
     try {
       await axios.post(`${API_BASE}/auth/sendVerifyEmail`, {
         username: values.username,
@@ -52,6 +59,7 @@ function Register() {
       startCooldown();
       message.success('OTP đã được gửi đến email của bạn!');
     } catch (err) {
+      setActionFailed(true);
       message.error(err.response?.data?.message || 'Tên đăng nhập hoặc email đã được sử dụng!');
     } finally {
       setLoading(false);
@@ -63,6 +71,7 @@ function Register() {
     const next = [...otp];
     next[idx] = val.slice(-1);
     setOtp(next);
+    setActionFailed(false); 
     if (val && idx < OTP_LENGTH - 1) inputRefs.current[idx + 1]?.focus();
   };
 
@@ -78,6 +87,7 @@ function Register() {
     const next = [...otp];
     [...text].forEach((c, i) => { next[i] = c; });
     setOtp(next);
+    setActionFailed(false);
     inputRefs.current[Math.min(text.length, OTP_LENGTH - 1)]?.focus();
     e.preventDefault();
   };
@@ -86,10 +96,12 @@ function Register() {
     const code = otp.join('');
     if (code.length < OTP_LENGTH) { message.warning('Vui lòng nhập đủ 6 chữ số!'); return; }
     setLoading(true);
+    setActionFailed(false);
     try {
       await axios.post(`${API_BASE}/auth/VerifyEmail`, { email: formData.email, otp: code });
       await handleRegister();
     } catch (err) {
+      setActionFailed(true);
       const data = err.response?.data;
       if (data?.remainingAttempts !== undefined) setRemainingAttempts(data.remainingAttempts);
       message.error(data?.message || 'OTP không hợp lệ!');
@@ -105,8 +117,10 @@ function Register() {
         email: formData.email,
         password: formData.password,
       });
+      setActionSuccess(true);
       setStep(3);
     } catch (err) {
+      setActionFailed(true);
       message.error(err.response?.data?.message || 'Đăng ký thất bại!');
     }
   };
@@ -114,6 +128,7 @@ function Register() {
   const handleResendOTP = async () => {
     if (cooldown > 0) return;
     setLoading(true);
+    setActionFailed(false);
     try {
       await axios.post(`${API_BASE}/auth/sendVerifyEmail`, { email: formData.email });
       setOtp(Array(OTP_LENGTH).fill(''));
@@ -121,6 +136,7 @@ function Register() {
       startCooldown();
       message.success('OTP mới đã được gửi!');
     } catch (err) {
+      setActionFailed(true);
       message.error(err.response?.data?.message || 'Không thể gửi lại OTP!');
     } finally {
       setLoading(false);
@@ -140,9 +156,21 @@ function Register() {
       <div className={styles.combinedCard}>
         <div className={styles.cardImage}>
           <div className={styles.glowEffect} />
-          <img src="/logo.png" alt="Ceramic Shop Logo" className={styles.logoDisplayImg} />
-          <h2 className={styles.logoDisplayTitle}>CERAMIC-SHOP</h2>
-          <p className={styles.logoDisplaySub}>TINH HOA GỐM SỨ VIỆT</p>
+          <div style={{ position: 'relative', flexDirection: 'column', width: '100%', display: 'flex', alignItems: 'center', zIndex: 1 }}>
+            <Chibi 
+              passwordVisible={passwordVisible || confirmPasswordVisible} 
+              loginSuccess={actionSuccess} 
+              loginFailed={actionFailed}
+              defaultMsg="Xin chào đây là trang đăng ký của Ceramic-Shop"
+              successMsg="Đăng ký thành công! Hãy đăng nhập để tiếp tục."
+              failMsg="Thông tin chưa chính xác hoặc OTP sai, hãy thử lại nhé!"
+            />
+          </div>
+
+          <div style={{ marginTop: '10px', zIndex: 1, position: 'relative' }}>
+            <h2 className={styles.logoDisplayTitle}>CERAMIC-SHOP</h2>
+            <p className={styles.logoDisplaySub}>TINH HOA GỐM SỨ VIỆT</p>
+          </div>
         </div>
 
         <div className={styles.cardForm}>
@@ -176,7 +204,12 @@ function Register() {
           {step === 1 && (
             <div className={styles.stepContent}>
               <h2 className={styles.formTitle}>ĐĂNG KÝ</h2>
-              <Form form={form} layout="vertical" onFinish={handleSendOTP}>
+              <Form 
+                form={form} 
+                layout="vertical" 
+                onFinish={handleSendOTP}
+                onValuesChange={() => setActionFailed(false)} 
+              >
                 <Form.Item
                   label={<span style={{ fontWeight: 500 }}>Tên đăng nhập</span>}
                   name="username"
@@ -210,7 +243,12 @@ function Register() {
                   style={{ marginBottom: 14 }}
                 >
                   <Input.Password prefix={<LockOutlined style={{ color: '#bfbfbf' }} />}
-                    className={styles.customInput} placeholder="Tối thiểu 6 ký tự" />
+                    className={styles.customInput} placeholder="Tối thiểu 6 ký tự" 
+                    visibilityToggle={{
+                      visible: passwordVisible,
+                      onVisibleChange: setPasswordVisible,
+                    }}
+                  />
                 </Form.Item>
 
                 <Form.Item
@@ -229,7 +267,12 @@ function Register() {
                   style={{ marginBottom: 14 }}
                 >
                   <Input.Password prefix={<LockOutlined style={{ color: '#bfbfbf' }} />}
-                    className={styles.customInput} placeholder="Nhập lại mật khẩu" />
+                    className={styles.customInput} placeholder="Nhập lại mật khẩu" 
+                    visibilityToggle={{
+                      visible: confirmPasswordVisible,
+                      onVisibleChange: setConfirmPasswordVisible,
+                    }}
+                  />
                 </Form.Item>
 
                 <div style={{ marginBottom: 20, textAlign: 'right' }}>
@@ -288,7 +331,7 @@ function Register() {
                 </button>
               </div>
 
-              <button className={styles.backStep} onClick={() => setStep(1)}>
+              <button className={styles.backStep} onClick={() => { setStep(1); setActionFailed(false); }}>
                 ← Sửa thông tin
               </button>
             </div>
