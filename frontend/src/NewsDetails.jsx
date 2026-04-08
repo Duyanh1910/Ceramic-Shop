@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Layout, Spin, Breadcrumb, Typography, Button, Result, Tag, Tooltip ,message} from 'antd';
+import { Layout, Spin, Breadcrumb, Typography, Button, Result, Tag, Tooltip, message } from 'antd';
 import { 
   HomeOutlined, 
   CalendarOutlined, 
@@ -15,7 +15,6 @@ import styles from './NewsDetails.module.css';
 
 const { Header, Content } = Layout;
 const { Title } = Typography;
-
 
 function NewsDetail() {
   const { id } = useParams();
@@ -46,6 +45,7 @@ function NewsDetail() {
         message.error('Không thể sao chép liên kết. Vui lòng thử lại!');
       });
   };
+
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [id]);
@@ -110,7 +110,15 @@ function NewsDetail() {
       <Header className={styles.simpleHeader}>
         <div className={styles.headerContainer}>
           <div className={styles.logoBox} onClick={() => navigate('/landing')}>
-            <h1 className={styles.logoText}>CERAMIC-SHOP</h1>
+            <img 
+                src="https://res.cloudinary.com/dcmwz0uis/image/upload/v1774819165/IMG_20260330_041641_qwo8lc.jpg" 
+                alt="Ceramic Shop Logo" 
+                className={styles.logoImg} 
+            />
+            <div className={styles.logoTextWrap}>
+                <h1 className={styles.logoText}>CERAMIC-SHOP</h1>
+                <span className={styles.logoSub}>TINH HOA GỐM SỨ VIỆT</span>
+            </div>
           </div>
           <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)} className={styles.btnBack}>
             Quay lại
@@ -184,7 +192,7 @@ function NewsDetail() {
                         shape="circle" 
                         icon={<FacebookOutlined />} 
                         className={styles.shareBtn} 
-                        onClick={handleShareFacebook} // GẮN Ở ĐÂY
+                        onClick={handleShareFacebook}
                       />
                     </Tooltip>
                     
