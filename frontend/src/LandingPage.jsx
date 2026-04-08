@@ -409,7 +409,7 @@ function LandingPage() {
                             </p>
                         </div>
                         <div className={styles.aboutImage}>
-                            <img src="https://images.unsplash.com/photo-1578500494198-246f612d3b3d?w=600&h=400&fit=crop" alt="Gốm sứ thủ công" />
+                            <img src="https://res.cloudinary.com/dcmwz0uis/image/upload/v1775634050/pottery-decorative-ceramics-lookbooks_dezeen_2364_col_3-2048x1151_trj563.jpg" alt="Gốm sứ thủ công" />
                         </div>
                     </div>
 

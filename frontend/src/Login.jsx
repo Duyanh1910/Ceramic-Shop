@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Button, Input, Form, message, Typography, Divider, Checkbox } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import styles from './Login.module.css';
-import { UserOutlined, LockOutlined, ArrowLeftOutlined, ArrowRightOutlined, ShoppingFilled, HomeFilled, ShopFilled } from '@ant-design/icons';
+import { UserOutlined, LockOutlined, HomeFilled, ShopFilled } from '@ant-design/icons';
 import { Helmet } from 'react-helmet-async';
 import { saveSession } from './useAuth.js';
 
@@ -131,7 +131,7 @@ function Login() {
               camera-orbit="0deg 80deg 80%" 
               max-camera-orbit="auto auto 600%" 
               field-of-view="25deg" 
-              camera-target="0m 0.22m 0m" 
+              camera-target="0m 0.35m 0m" 
               shadow-intensity="0" 
               interaction-prompt="none"
               disable-zoom
