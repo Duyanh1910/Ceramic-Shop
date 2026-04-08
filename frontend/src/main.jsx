@@ -26,6 +26,7 @@ import SupportPage from './Supportpage.jsx'
 import NewsDetail from './NewsDetails.jsx'
 import AdminReports from './AdminReports.jsx';
 import Checkout from './Checkout.jsx';
+import PaymentResult from './PaymentResult.jsx';
 ReactGA.initialize("G-909W1LHHLD");
 
 const AnalyticsTracker = () => {
@@ -151,6 +152,7 @@ createRoot(document.getElementById('root')).render(
             </ProtectedRoute>
           }/>
           <Route path="/support/:slug" element={<SupportPage/>}/>
+          <Route path="/payment-result" element={<PaymentResult />} />
         </Routes>
         
         <ConditionalContactIcons />

@@ -1,0 +1,230 @@
+@import url('https://fonts.googleapis.com/css2?family=Arsenal:wght@400;600;700&display=swap');
+
+:global(body) { margin: 0 !important; padding: 0 !important; font-family: 'Arsenal', sans-serif !important; }
+
+.pageWrapper {
+  min-height: 100vh;
+  background: linear-gradient(160deg, #f0f4ff 0%, #e8f0fe 40%, #d5e9ff 100%);
+  background-attachment: fixed;
+  display: flex;
+  flex-direction: column;
+}
+
+.topHeader {
+  display: flex;
+  align-items: center;
+  padding: 0 50px;
+  background: rgba(255,255,255,0.97);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  height: 75px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo {
+  font-family: 'Arsenal', serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: #1b437c;
+  letter-spacing: 1px;
+  cursor: pointer;
+}
+
+.centerWrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04);
+  padding: 48px 44px;
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+  animation: fadeUp 0.5s ease;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Icon circle */
+.iconCircle {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+}
+
+.successCircle {
+  background: linear-gradient(135deg, #52c41a, #73d13d);
+  box-shadow: 0 8px 24px rgba(82,196,26,0.35);
+  animation: popIn 0.5s 0.2s both;
+}
+
+.failCircle {
+  background: linear-gradient(135deg, #ff4d4f, #f5222d);
+  box-shadow: 0 8px 24px rgba(255,77,79,0.35);
+  animation: popIn 0.5s 0.2s both;
+}
+
+@keyframes popIn {
+  from { transform: scale(0.6); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+.title {
+  font-family: 'Arsenal', serif;
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 10px;
+}
+
+.successTitle { color: #1b437c; }
+.failTitle    { color: #cf1322; }
+
+.subtitle {
+  font-size: 15px;
+  color: #666;
+  line-height: 1.7;
+  margin: 0 0 24px;
+}
+
+/* Detail box */
+.detailBox {
+  background: #f7f9fc;
+  border: 1px solid #e8eef8;
+  border-radius: 12px;
+  padding: 18px 20px;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  color: #555;
+  padding: 6px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.detailRow:last-child { border-bottom: none; }
+
+.methodBadge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.methodLogo {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+.orderId {
+  font-family: monospace;
+  font-size: 13px;
+  color: #333;
+  word-break: break-all;
+  text-align: right;
+  max-width: 60%;
+}
+
+.amountRow {
+  padding-top: 12px !important;
+  border-top: 1.5px solid #e0e8f4 !important;
+  border-bottom: none !important;
+  margin-top: 4px;
+}
+
+.amountSuccess { font-size: 20px; color: #52c41a; font-weight: 700; }
+.amountFail    { font-size: 20px; color: #cf1322; font-weight: 700; }
+
+/* Fail guide */
+.failGuide {
+  background: #fff8e6;
+  border: 1px solid #ffd591;
+  border-left: 4px solid #c48c46;
+  border-radius: 4px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  text-align: left;
+  font-size: 14px;
+  color: #7c4e00;
+}
+
+.failGuide p { margin: 0 0 8px; font-weight: 600; }
+
+.failGuide ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.failGuide li { margin-bottom: 4px; }
+
+/* Actions */
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.btnOrders {
+  height: 48px !important;
+  border-radius: 10px !important;
+  background: #1b437c !important;
+  border-color: #1b437c !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+}
+
+.btnOrders:hover {
+  background: #13325c !important;
+  border-color: #13325c !important;
+}
+
+.btnRetry {
+  height: 44px !important;
+  border-radius: 10px !important;
+  border: 1.5px solid #e74c3c !important;
+  color: #e74c3c !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+}
+
+.btnRetry:hover {
+  background: #fff1f0 !important;
+}
+
+.btnHome {
+  height: 44px !important;
+  border-radius: 10px !important;
+  border: 1.5px solid #e0e0e0 !important;
+  color: #555 !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+}
+
+.btnHome:hover {
+  border-color: #1b437c !important;
+  color: #1b437c !important;
+}
+
+@media (max-width: 520px) {
+  .card { padding: 36px 24px; }
+  .topHeader { padding: 0 16px; }
+}
