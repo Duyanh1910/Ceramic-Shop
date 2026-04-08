@@ -30,7 +30,6 @@ export default function Checkout() {
 
   const { selectedItems = [], cartItems = [], applyVoucher = null } = location.state || {};
   const token = localStorage.getItem('token');
-  const isLoggedIn = !!token;
   const authHeader = { headers: { Authorization: `Bearer ${token}` } };
 
   const [form] = Form.useForm();
@@ -60,16 +59,15 @@ export default function Checkout() {
   const selectedPayment = PAYMENT_METHODS.find((m) => m.id === paymentMethod);
 
   useEffect(() => {
-    if (cartItems.length === 0) {
-      message.warning('Bạn chưa chọn sản phẩm nào để thanh toán!');
+    if (!token || cartItems.length === 0) {
       navigate('/cart');
     }
-  }, [cartItems, navigate]);
+  }, [token, cartItems, navigate]);
 
   useEffect(() => {
     if (orderItems.length === 0) navigate('/cart');
-    if (isLoggedIn) { fetchProfile(); fetchMyVouchers(); }
-    else setProfileLoading(false);
+    fetchProfile(); 
+    fetchMyVouchers();
   }, []);
 
   useEffect(() => {
@@ -89,19 +87,19 @@ export default function Checkout() {
           MaPhi: shippingMethod,
           addressObj: addressData.obj,
           items: orderItems.map(i => ({ MaBienThe: i.variantId, soLuong: i.quantity, DonGia: i.price }))
-        }, isLoggedIn ? authHeader : {});
+        }, authHeader);
 
         setShippingFee(res.data?.data?.total || 0);
       } catch (err) {
         console.warn("Lỗi tính phí:", err);
-        setShippingFee(30000);
+        setShippingFee(30000); 
       } finally {
         setCalculatingFee(false);
       }
     };
 
     fetchShippingFee();
-  }, [shippingMethod, JSON.stringify(addressData.obj), JSON.stringify(orderItems), isLoggedIn]);
+  }, [shippingMethod, JSON.stringify(addressData.obj), JSON.stringify(orderItems)]);
 
   const fetchProfile = async () => {
     setProfileLoading(true);
@@ -112,8 +110,7 @@ export default function Checkout() {
       if (userData) {
         form.setFieldsValue({ 
             name: profile?.TenKhachHang || userData?.username || '', 
-            phone: profile?.SDT || '',
-            email: userData?.email || userData?.Email || profile?.Email || ''
+            phone: profile?.SDT || ''
         });
       }
     } catch {}
@@ -167,23 +164,10 @@ export default function Checkout() {
         MaPhi: shippingMethod, 
         addressObj: shippingMethod === 3 ? null : addressData.obj, 
         ListMaKhuyenMai: appliedVoucher ? [appliedVoucher.MaKhuyenMai] : [],
-        items: orderItems.map((i) => ({
-            MaBienThe: i.variantId,
-            SoLuong: i.quantity,
-            DonGia: i.price
-        })), 
+        items: selectedItems, 
     };
 
-    let res;
-    if (isLoggedIn) {
-        res = await axios.post(`${API_BASE}/orders`, payload, authHeader);
-    } else {
-        res = await axios.post(`${API_BASE}/orders/guest`, {
-            ...payload,
-            GuestEmail: values.email,
-            cartItems: payload.items 
-        });
-    }
+    const res = await axios.post(`${API_BASE}/orders`, payload, authHeader);
     return res.data?.result?.orderID || res.data?.result?.MaDonHang;
   };
 
@@ -269,11 +253,9 @@ export default function Checkout() {
             )}
 
             <div className={styles.successActions}>
-              {isLoggedIn && (
-                <Button className={styles.btnOrders} onClick={() => navigate('/orders')}>
-                  Theo dõi đơn hàng
-                </Button>
-              )}
+              <Button className={styles.btnOrders} onClick={() => navigate('/orders')}>
+                Theo dõi đơn hàng
+              </Button>
               <Button type="primary" className={styles.btnHome} onClick={() => navigate('/')}>
                 Về trang chủ
               </Button>
@@ -318,12 +300,6 @@ export default function Checkout() {
 
                   <div className={styles.section}>
                     <div className={styles.sectionTitle}><UserOutlined /> Thông tin người nhận</div>
-                    
-                    <Form.Item name="email" label="Email nhận thông báo"
-                        rules={[{ required: true, message: 'Vui lòng nhập email!' }, { type: 'email', message: 'Email không đúng!' }]}>
-                        <Input prefix={<span style={{ color: '#bbb' }}>@</span>}
-                          placeholder="example@email.com" className={styles.input} />
-                    </Form.Item>
                     
                     <div className={styles.formRow}>
                       <Form.Item name="name" label="Họ tên người nhận"

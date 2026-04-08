@@ -117,7 +117,11 @@ createRoot(document.getElementById('root')).render(
           
           <Route path="/cart" element={<Cart />} />
           
-          <Route path="/checkout" element={<Checkout/>}/>
+          <Route path="/checkout" element={
+            <ProtectedRoute allowedRoles={['Customer', 'Admin', 'Staff']}>
+              <Checkout />
+            </ProtectedRoute>
+          }/>
 
           <Route path="/payment-result" element={<PaymentSuccess />} />
           

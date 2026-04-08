@@ -384,6 +384,9 @@ function Cart() {
                       if (selectedCartItems.length === 0) {
                         return message.warning("Vui lòng chọn ít nhất một sản phẩm!");
                       }
+                      if (!isLoggedIn) {
+                        return setLoginModal(true); 
+                      }
                       navigate('/checkout', { 
                         state: { 
                           selectedItems: selectedItems.map(key => parseInt(key.split('-')[1] || key.split('-')[0])),
