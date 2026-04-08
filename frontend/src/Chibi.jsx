@@ -5,6 +5,27 @@ function Chibi({ passwordVisible, loginSuccess, loginFailed }) {
   const [smileStep, setSmileStep] = useState(0);
 
   useEffect(() => {
+    const preloads = [
+      '/Neko_smile_1.glb',
+      '/Neko_smile_2.glb',
+      '/Neko_dame.glb',
+      '/Neko_glass.glb'
+    ];
+    
+    preloads.forEach((src) => {
+      let link = document.querySelector(`link[href="${src}"]`);
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'preload';
+        link.href = src;
+        link.as = 'fetch';
+        link.crossOrigin = 'anonymous';
+        document.head.appendChild(link);
+      }
+    });
+  }, []);
+
+  useEffect(() => {
     if (loginSuccess) {
       setSmileStep(1);
       const timer = setTimeout(() => {
