@@ -61,7 +61,7 @@ function Login() {
         localStorage.setItem('role', 'Customer');
         localStorage.setItem('username', currentUsername);
         message.success('Đăng nhập thành công!');
-        setTimeout(() => { navigate('/home'); }, 1500);
+        setTimeout(() => { navigate('/home'); }, 2000);
       }
     } catch (error) {
       setLoginFailed(true);
