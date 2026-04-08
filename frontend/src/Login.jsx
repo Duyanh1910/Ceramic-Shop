@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Button, Input, Form, message, Typography, Divider, Checkbox } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import styles from './Login.module.css';
-import { UserOutlined, LockOutlined, HomeFilled, ShopFilled,ArrowLeftOutlined,ArrowRightOutlined } from '@ant-design/icons';
+import { UserOutlined, LockOutlined, HomeFilled, ShopFilled, ArrowLeftOutlined, ArrowRightOutlined } from '@ant-design/icons';
 import { Helmet } from 'react-helmet-async';
 import { saveSession } from './useAuth.js';
 import Chibi from './Chibi.jsx'; 
@@ -17,6 +17,7 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const [loginSuccess, setLoginSuccess] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (values) => {
@@ -40,20 +41,24 @@ function Login() {
       const currentRole = user.role || user.Role || 'Customer';
       const token = response.data.token || null;
 
+      setLoginSuccess(true);
+
       if (currentRole === 'Admin' || currentRole === 'Staff') {
         if (typeof saveSession === 'function') saveSession(currentUsername, currentRole, true, token);
         localStorage.setItem('admin_token', token);
         localStorage.setItem('admin_session_active', 'true');
         localStorage.setItem('role', currentRole);
         localStorage.setItem('username', currentUsername);
-        setTimeout(() => { message.success(`Đăng nhập ${currentRole} thành công!`); navigate('/admin'); }, 800);
+        message.success(`Đăng nhập ${currentRole} thành công!`);
+        setTimeout(() => { navigate('/admin'); }, 1500);
       } else {
         if (typeof saveSession === 'function') saveSession(currentUsername, 'Customer', true, token);
         localStorage.setItem('customer_token', token);
         localStorage.setItem('customer_session_active', 'true');
         localStorage.setItem('role', 'Customer');
         localStorage.setItem('username', currentUsername);
-        setTimeout(() => { message.success('Đăng nhập thành công!'); navigate('/home'); }, 800);
+        message.success('Đăng nhập thành công!');
+        setTimeout(() => { navigate('/home'); }, 1500);
       }
     } catch (error) {
       message.error(error.response?.data?.message || 'Đăng nhập thất bại!');
@@ -73,7 +78,7 @@ function Login() {
       <div className={styles.combinedCard}>
         <div className={styles.cardImage}>
           <div className={styles.phoenixWrap} style={{ position: 'relative', flexDirection: 'column' }}>
-            <Chibi passwordVisible={passwordVisible} />
+            <Chibi passwordVisible={passwordVisible} loginSuccess={loginSuccess} />
           </div>
 
           <div className={styles.brandFooter}>

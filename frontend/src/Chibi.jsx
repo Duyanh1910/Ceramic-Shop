@@ -1,15 +1,34 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './Chibi.css';
 
-function Chibi({ passwordVisible }) {
-  const modelSrc = passwordVisible ? '/Neko_glass.glb' : '/Neko_smile_1.glb';
-  const modelAnimation = passwordVisible 
-    ? 'PetChibiNeeko_KDASuperFan_Joke02cycle.Chibi_Neeko_KDASuperFan' 
-    : 'Idle_Base';
-  
-  const messageText = passwordVisible 
-    ? 'Mật khẩu của bạn an toàn đối với tôi' 
-    : 'Xin chào đây là trang đăng nhập của Ceramic-Shop';
+function Chibi({ passwordVisible, loginSuccess }) {
+  const [smileStep, setSmileStep] = useState(0);
+
+  useEffect(() => {
+    if (loginSuccess) {
+      setSmileStep(1);
+      const timer = setTimeout(() => {
+        setSmileStep(2);
+      }, 100);
+      return () => clearTimeout(timer);
+    } else {
+      setSmileStep(0);
+    }
+  }, [loginSuccess]);
+
+  let modelSrc = '/Neko_basic.glb';
+  let modelAnimation = 'Idle_Base';
+  let messageText = 'Xin chào đây là trang đăng nhập của Ceramic-Shop';
+
+  if (loginSuccess) {
+    modelSrc = smileStep === 2 ? '/Neko_smile_2.glb' : '/Neko_smile_1.glb';
+    modelAnimation = 'PetChibiNeeko_KDASuperFan_Joke01cycle.Chibi_Neeko_KDASuperFan';
+    messageText = 'Đăng nhập thành công! Đang chuyển hướng...';
+  } else if (passwordVisible) {
+    modelSrc = '/Neko_glass.glb';
+    modelAnimation = 'PetChibiNeeko_KDASuperFan_Joke02cycle.Chibi_Neeko_KDASuperFan';
+    messageText = 'Mật khẩu của bạn an toàn đối với tôi';
+  }
 
   return (
     <>
