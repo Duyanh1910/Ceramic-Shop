@@ -28,9 +28,8 @@ ul {
 }
 
 .topbar {
-    background-color: #f5f5f5;
-    padding: 8px 0;
-    border-bottom: 1px solid #ebebeb;
+    background-color: #173354;
+    padding: 10px 0;
 }
 
 .topbarInner {
@@ -38,7 +37,7 @@ ul {
     justify-content: space-between;
     align-items: center;
     font-size: 13px;
-    color: #666;
+    color: #e0e0e0;
 }
 
 .topbarLeft {
@@ -48,8 +47,13 @@ ul {
 
 .topbarPromo {
     font-weight: 500;
-    color: #173354;
+    color: #ffffff;
     letter-spacing: 0.3px;
+}
+
+.topbarPromo strong {
+    color: #BB9244;
+    font-size: 14px;
 }
 
 .topbarRight {
@@ -60,7 +64,8 @@ ul {
 .topbarRight a {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 5px;
+    color: #e0e0e0;
     transition: color 0.3s ease;
 }
 
@@ -70,7 +75,7 @@ ul {
 
 .divider {
     margin: 0 15px;
-    color: #ccc;
+    color: #4a6382;
 }
 
 .mainHeader {

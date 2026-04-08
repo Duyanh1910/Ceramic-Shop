@@ -216,6 +216,7 @@ function LandingPage() {
             navigate('/orders');
         } else {
             alert('Vui lòng đăng nhập hệ thống để xem danh sách đơn hàng của bạn!');
+            navigate('/login');
         }
     };
 
@@ -245,7 +246,7 @@ function LandingPage() {
                     <div className={styles.topbarInner}>
                         <div className={styles.topbarLeft}>
                             <span className={styles.topbarPromo}>
-                                🛡️ Bao bể vỡ - Cam kết 1 đổi 1 toàn quốc | 🎁 Nhập mã GOMSU10 - Giảm ngay 10%
+                                🛡️ Bao bể vỡ - Cam kết 1 đổi 1 toàn quốc | 🎁 Nhập mã <strong>GOMSU10</strong> - Giảm ngay 10%
                             </span>
                         </div>
 
@@ -254,8 +255,8 @@ function LandingPage() {
                                 Tra cứu đơn hàng
                             </a>
                             <span className={styles.divider}>|</span>
-                            <a href="https://maps.google.com/?q=484+Lạch+Tray,+Lê+Chân,+Hải+Phòng" target="_blank" rel="noopener noreferrer">
-                                <EnvironmentOutlined /> 484 Lạch Tray, Hải Phòng
+                            <a href="https://maps.google.com/?q=484+Lạch+Tray,+Hải+Phòng" target="_blank" rel="noopener noreferrer">
+                                <EnvironmentOutlined /> Hệ thống cửa hàng
                             </a>
                             <span className={styles.divider}>|</span>
                             <a href="tel:0329835725">
