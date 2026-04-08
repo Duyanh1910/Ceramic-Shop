@@ -94,14 +94,14 @@ export default function Checkout() {
         setShippingFee(res.data?.data?.total || 0);
       } catch (err) {
         console.warn("Lỗi tính phí:", err);
-        setShippingFee(30000); // Mặc định nếu GHN bị lỗi
+        setShippingFee(30000);
       } finally {
         setCalculatingFee(false);
       }
     };
 
     fetchShippingFee();
-  }, [shippingMethod, addressData.obj, orderItems, isLoggedIn]);
+  }, [shippingMethod, JSON.stringify(addressData.obj), JSON.stringify(orderItems), isLoggedIn]);
 
   const fetchProfile = async () => {
     setProfileLoading(true);
