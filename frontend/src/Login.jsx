@@ -124,30 +124,35 @@ function Login() {
             </div>
 
             <model-viewer 
-              src={modelSrc}
-              alt="Trợ lý Irelia 3D" 
-              autoplay 
-              animation-name={modelAnimation}
-              camera-orbit="0deg 75deg 70%" 
-              field-of-view="25deg" 
-              
-              /* Nếu chibi VẪN CHƯA XUỐNG ĐỦ sâu, hãy tăng '1.2m' lên '1.5m' hoặc '2.0m' */
-              camera-target="0m 2m 0m" 
-              
-              max-camera-orbit="auto auto 600%" 
-              shadow-intensity="0" 
-              interaction-prompt="none"
-              disable-zoom
-              disable-pan
-              disable-tap
-              style={{ 
-                width: '100%', 
-                height: '340px', 
-                backgroundColor: 'transparent',
-                /* Nếu đụng bong bóng chat, hãy tăng '40px' lên '50px' hoặc '60px' để đẩy toàn bộ khung xuống */
-                marginTop: '60px' 
-              }}
-            ></model-viewer>
+                src={modelSrc}
+                alt="Trợ lý Irelia 3D" 
+                autoplay 
+                animation-name={modelAnimation}
+                
+                /* 1. Đổi 70% thành auto (hoặc 100% - 120%) để camera lùi ra xa, lấy trọn vẹn model */
+                camera-orbit="0deg 75deg auto" 
+                
+                /* Có thể tăng nhẹ góc nhìn nếu cần, nhưng tạm giữ 25deg nếu bạn thích phong cách này */
+                field-of-view="25deg" 
+                
+                /* 2. Đưa target về auto hoặc 0m 1m 0m. Đặt 2m đôi khi làm tâm camera bị lệch so với khung */
+                camera-target="auto auto auto" 
+                
+                max-camera-orbit="auto auto 600%" 
+                shadow-intensity="0" 
+                interaction-prompt="none"
+                disable-zoom
+                disable-pan
+                disable-tap
+                style={{ 
+                  width: '100%', 
+                  /* 3. Tăng nhẹ chiều cao thẻ để khung chứa (canvas) rộng rãi hơn theo chiều dọc */
+                  height: '380px', 
+                  backgroundColor: 'transparent',
+                  /* Giữ nguyên hoặc giảm nhẹ để không đụng speech-bubble */
+                  marginTop: '40px' 
+                }}
+              ></model-viewer>
           </div>
 
           <div className={styles.brandFooter}>
