@@ -3,10 +3,9 @@ import axios from 'axios';
 import { Button, Input, Form, message, Typography, Divider, Checkbox } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import styles from './Login.module.css';
-import { UserOutlined, LockOutlined, ArrowLeftOutlined, ArrowRightOutlined, ShoppingFilled, HomeFilled } from '@ant-design/icons';
+import { UserOutlined, LockOutlined, ArrowLeftOutlined, ArrowRightOutlined } from '@ant-design/icons';
 import { Helmet } from 'react-helmet-async';
 import { saveSession } from './useAuth.js';
-import Phoenix from './Phoenix.jsx';
 
 const { Text, Link } = Typography;
 
@@ -17,16 +16,10 @@ function Login() {
   const [loading, setLoading]           = useState(false);
   const [rememberMe, setRememberMe]     = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const [mood, setMood]                 = useState('idle');
   const navigate = useNavigate();
-
-  const handlePasswordFocus = () => setMood('idle');
-  const handlePasswordBlur  = () => setMood('idle');
-  const handleUsernameFocus = () => setMood('idle');
 
   const handleLogin = async (values) => {
     setLoading(true);
-    setMood('idle');
     try {
       const keysToRemove = [
         'customer_token', 'admin_token', 'token',
@@ -46,8 +39,6 @@ function Login() {
       const currentRole = user.role || user.Role || 'Customer';
       const token = response.data.token || null;
 
-      setMood('happy');
-
       if (currentRole === 'Admin' || currentRole === 'Staff') {
         if (typeof saveSession === 'function') saveSession(currentUsername, currentRole, true, token);
         localStorage.setItem('admin_token', token);
@@ -64,13 +55,16 @@ function Login() {
         setTimeout(() => { message.success('Đăng nhập thành công!'); navigate('/home'); }, 800);
       }
     } catch (error) {
-      setMood('sad');
       message.error(error.response?.data?.message || 'Đăng nhập thất bại!');
-      setTimeout(() => setMood('idle'), 3000);
     } finally {
       setLoading(false);
     }
   };
+
+  const modelSrc = passwordVisible ? '/Neko_glass.glb' : '/Neko_smile_1.glb';
+  const modelAnimation = passwordVisible 
+    ? 'PetChibiNeeko_KDASuperFan_Joke02cycle.Chibi_Neeko_KDASuperFan' 
+    : 'Idle_Base';
 
   return (
     <div className={styles.loginContainer}>
@@ -84,7 +78,22 @@ function Login() {
 
         <div className={styles.cardImage}>
           <div className={styles.phoenixWrap}>
-            <Phoenix mood={mood} passwordVisible={passwordVisible} />
+            <model-viewer 
+              src={modelSrc}
+              alt="Trợ lý Irelia 3D" 
+              autoplay 
+              animation-name={modelAnimation}
+              camera-orbit="0deg 75deg 270%"
+              max-camera-orbit="auto auto 600%" 
+              field-of-view="45deg" 
+              camera-target="0m 0.22m 0m" 
+              shadow-intensity="0" 
+              interaction-prompt="none"
+              disable-zoom
+              disable-pan
+              disable-tap
+              style={{ width: '100%', height: '250px', backgroundColor: 'transparent' }}
+            ></model-viewer>
           </div>
           <div className={styles.brandFooter}>
             <span className={styles.brandName}>CERAMIC-SHOP</span>
@@ -100,7 +109,6 @@ function Login() {
               onClick={() => navigate('/')} 
               className={styles.backButton}
             >
-              <HomeFilled/>
               Trang chủ
             </Button>
 
@@ -127,7 +135,6 @@ function Login() {
                 className={styles.customInput}
                 placeholder="Nhập tên đăng nhập"
                 size="large"
-                onFocus={handleUsernameFocus}
               />
             </Form.Item>
 
@@ -141,14 +148,9 @@ function Login() {
                 className={styles.customInput}
                 placeholder="Nhập mật khẩu"
                 size="large"
-                onFocus={handlePasswordFocus}
-                onBlur={handlePasswordBlur}
                 visibilityToggle={{
                   visible: passwordVisible,
-                  onVisibleChange: (v) => {
-                    setPasswordVisible(v);
-                    setMood(v ? 'shy' : 'idle');
-                  },
+                  onVisibleChange: (v) => setPasswordVisible(v), // Cập nhật state khi click vào icon mắt
                 }}
               />
             </Form.Item>
