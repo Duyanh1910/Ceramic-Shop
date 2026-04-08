@@ -18,36 +18,10 @@ const API_BASE = 'https://ceramic-shop-u8ak.onrender.com/api/v1';
 const fmt = (p) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(p ?? 0);
 
 const PAYMENT_METHODS = [
-  {
-    id: 1,
-    icon: '💵',
-    name: 'Thanh toán khi nhận hàng (COD)',
-    desc: 'Trả tiền mặt khi nhận được hàng',
-    gateway: null,
-  },
-  {
-    id: 2,
-    icon: '🏦',
-    name: 'Chuyển khoản ngân hàng',
-    desc: 'Chuyển khoản trước — đơn xử lý sau khi xác nhận',
-    gateway: null,
-  },
-  {
-    id: 3,
-    icon: null,
-    name: 'MoMo',
-    desc: 'Thanh toán qua ví MoMo — chuyển hướng tới cổng thanh toán',
-    gateway: 'momo',
-    logo: 'https://upload.wikimedia.org/wikipedia/vi/f/fe/MoMo_Logo.png',
-  },
-  {
-    id: 4,
-    icon: null,
-    name: 'ZaloPay',
-    desc: 'Thanh toán qua ZaloPay — chuyển hướng tới cổng thanh toán',
-    gateway: 'zalopay',
-    logo: 'https://cdn.haitrieu.com/wp-content/uploads/2022/10/Logo-ZaloPay-Square.png',
-  },
+  { id: 1, icon: '💵', name: 'Thanh toán khi nhận hàng (COD)', desc: 'Trả tiền mặt khi nhận được hàng', gateway: null },
+  { id: 2, icon: '🏦', name: 'Chuyển khoản ngân hàng', desc: 'Chuyển khoản trước — đơn xử lý sau khi xác nhận', gateway: null },
+  { id: 3, icon: null, name: 'MoMo', desc: 'Thanh toán qua ví MoMo — chuyển hướng tới cổng thanh toán', gateway: 'momo', logo: 'https://upload.wikimedia.org/wikipedia/vi/f/fe/MoMo_Logo.png' },
+  { id: 4, icon: null, name: 'ZaloPay', desc: 'Thanh toán qua ZaloPay — chuyển hướng tới cổng thanh toán', gateway: 'zalopay', logo: 'https://cdn.haitrieu.com/wp-content/uploads/2022/10/Logo-ZaloPay-Square.png' },
 ];
 
 export default function Checkout() {
@@ -104,7 +78,6 @@ export default function Checkout() {
         setShippingFee(0);
         return;
       }
-
       if (!addressData.obj || !addressData.obj.ToDistrictID || !addressData.obj.ToWardID) {
         setShippingFee(0);
         return;
@@ -115,13 +88,13 @@ export default function Checkout() {
         const res = await axios.post(`${API_BASE}/orders/calculate-fee`, {
           MaPhi: shippingMethod,
           addressObj: addressData.obj,
-          items: orderItems.map(i => ({ MaBienThe: i.variantId, soLuong: i.quantity }))
+          items: orderItems.map(i => ({ MaBienThe: i.variantId, soLuong: i.quantity, DonGia: i.price }))
         }, isLoggedIn ? authHeader : {});
 
-        setShippingFee(res.data?.data?.total || 30000);
+        setShippingFee(res.data?.data?.total || 0);
       } catch (err) {
-        console.warn("Chưa có API tính phí hoặc lỗi:", err);
-        setShippingFee(30000);
+        console.warn("Lỗi tính phí:", err);
+        setShippingFee(30000); // Mặc định nếu GHN bị lỗi
       } finally {
         setCalculatingFee(false);
       }
@@ -134,9 +107,14 @@ export default function Checkout() {
     setProfileLoading(true);
     try {
       const res = await axios.get(`${API_BASE}/auth/me`, authHeader);
-      const profile = res.data.user?.profile;
-      if (profile) {
-        form.setFieldsValue({ name: profile.TenKhachHang, phone: profile.SDT });
+      const userData = res.data.user || res.data.result;
+      const profile = userData?.profile || userData;
+      if (userData) {
+        form.setFieldsValue({ 
+            name: profile?.TenKhachHang || userData?.username || '', 
+            phone: profile?.SDT || '',
+            email: userData?.email || userData?.Email || profile?.Email || ''
+        });
       }
     } catch {}
     finally { setProfileLoading(false); }
@@ -189,7 +167,6 @@ export default function Checkout() {
         MaPhi: shippingMethod, 
         addressObj: shippingMethod === 3 ? null : addressData.obj, 
         ListMaKhuyenMai: appliedVoucher ? [appliedVoucher.MaKhuyenMai] : [],
-        
         items: orderItems.map((i) => ({
             MaBienThe: i.variantId,
             SoLuong: i.quantity,
@@ -341,13 +318,13 @@ export default function Checkout() {
 
                   <div className={styles.section}>
                     <div className={styles.sectionTitle}><UserOutlined /> Thông tin người nhận</div>
-                    {!isLoggedIn && (
-                      <Form.Item name="email" label="Email nhận thông báo"
+                    
+                    <Form.Item name="email" label="Email nhận thông báo"
                         rules={[{ required: true, message: 'Vui lòng nhập email!' }, { type: 'email', message: 'Email không đúng!' }]}>
                         <Input prefix={<span style={{ color: '#bbb' }}>@</span>}
                           placeholder="example@email.com" className={styles.input} />
-                      </Form.Item>
-                    )}
+                    </Form.Item>
+                    
                     <div className={styles.formRow}>
                       <Form.Item name="name" label="Họ tên người nhận"
                         rules={[{ required: true, message: 'Vui lòng nhập họ tên!' }]}>

@@ -4,7 +4,7 @@ import {
   getMyOrderInfoService,
   cancelOrderService,
 } from "../services/order.services.js";
-
+import calculateShippingFee from "../utils/orders/calculate_shipping_fee.js";
 export const createOrder = async (req, res, next) => {
   try {
     const idAccount = req.user.id;
@@ -66,6 +66,24 @@ export const cancelOrder = async (req, res, next) => {
       success: true,
       message: "Đã hủy đơn hàng thành công và hoàn lại các ưu đãi!",
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const calculateFee = async (req, res, next) => {
+  try {
+    const { items, addressObj, MaPhi } = req.body;
+    
+    if (!items || !addressObj || !MaPhi) {
+      return res.status(400).json({ success: false, message: "Thiếu dữ liệu tính phí" });
+    }
+
+    const totalProductFee = items.reduce((sum, item) => sum + (item.soLuong * item.DonGia), 0);
+    
+    const feeResult = await calculateShippingFee(items, addressObj, MaPhi, totalProductFee);
+    
+    return res.status(200).json(feeResult);
   } catch (error) {
     next(error);
   }
