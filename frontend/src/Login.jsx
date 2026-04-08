@@ -66,7 +66,7 @@ function Login() {
     ? 'PetChibiNeeko_KDASuperFan_Joke02cycle.Chibi_Neeko_KDASuperFan' 
     : 'Idle_Base';
   
-  const messageText = passwordVisible ? 'Hihi tôi không nhìn trộm đâu' : 'T đang nhìn bạn';
+  const messageText = passwordVisible ? 'Hihi tôi không nhìn trộm mật khẩu của bạn đâu' : 'Xin chào đây là trang đăng nhập của Ceramic-Shop';
 
   return (
     <div className={styles.loginContainer}>
@@ -128,10 +128,28 @@ function Login() {
               alt="Trợ lý Irelia 3D" 
               autoplay 
               animation-name={modelAnimation}
-              camera-orbit="0deg 75deg 105%" 
-              max-camera-orbit="auto auto 600%" 
-              field-of-view="30deg" 
+              
+              /* =========================================================
+                 KHU VỰC CĂN CHỈNH KÍCH THƯỚC VÀ VỊ TRÍ CHIBI
+                 ========================================================= */
+                 
+              /* 1. CHỈNH KÍCH THƯỚC (TO/NHỎ): 
+                 - Giảm số 80% xuống (VD: 70%, 60%) -> Chibi sẽ TO RA.
+                 - Tăng số 80% lên (VD: 90%, 100%) -> Chibi sẽ NHỎ ĐI. */
+              camera-orbit="0deg 75deg 80%" 
+              
+              /* - Giảm góc field-of-view (VD: 20deg) -> Càng zoom TO RA. */
+              field-of-view="25deg" 
+              
+              /* 2. CHỈNH VỊ TRÍ (LÊN/XUỐNG): 
+                 - Thay đổi con số ở giữa (0.45m).
+                 - TĂNG SỐ NÀY LÊN (VD: 0.5m, 0.6m) -> Chibi sẽ tụt XUỐNG DƯỚI (hết bị mất đầu).
+                 - GIẢM SỐ NÀY XUỐNG (VD: 0.3m, 0.2m) -> Chibi sẽ trồi LÊN TRÊN. */
               camera-target="0m 0.45m 0m" 
+              
+              /* ========================================================= */
+
+              max-camera-orbit="auto auto 600%" 
               shadow-intensity="0" 
               interaction-prompt="none"
               disable-zoom
