@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Button, Input, Form, message, Typography, Divider, Checkbox } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import styles from './Login.module.css';
-import { UserOutlined, LockOutlined, ArrowLeftOutlined, ArrowRightOutlined, ShoppingFilled } from '@ant-design/icons';
+import { UserOutlined, LockOutlined, ArrowLeftOutlined, ArrowRightOutlined, ShoppingFilled, HomeFilled, ShopFilled } from '@ant-design/icons';
 import { Helmet } from 'react-helmet-async';
 import { saveSession } from './useAuth.js';
 
@@ -103,6 +103,12 @@ function Login() {
           0%, 100% { transform: translateY(0); }
           50% { transform: translateY(-6px); }
         }
+        model-viewer {
+          outline: none;
+        }
+        model-viewer::part(default-progress-bar) {
+          display: none;
+        }
       `}</style>
 
       <div className={styles.shape1} />
@@ -145,11 +151,10 @@ function Login() {
           <div style={{ marginBottom: 15, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Button 
               type="link" 
-              icon={<ArrowLeftOutlined />}
               onClick={() => navigate('/')} 
               className={styles.backButton}
             >
-              <HomeFilled/>Trang chủ
+              <HomeFilled/> Trang chủ
             </Button>
 
             <Button 
@@ -157,7 +162,7 @@ function Login() {
               onClick={() => navigate('/home')} 
               className={styles.backButton}
             >
-               <ShopFilled/> Cửa hàng <ArrowRightOutlined />
+               <ShopFilled/> Cửa hàng
             </Button>
           </div>
 
