@@ -28,13 +28,39 @@
   height: 100%;
 }
 
+.logoBox {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  cursor: pointer;
+}
+
+.logoImg {
+  width: 60px;
+  height: auto;
+  object-fit: contain;
+}
+
+.logoTextWrap {
+  display: flex;
+  flex-direction: column;
+}
+
 .logoText {
   font-family: 'Arsenal', serif;
-  font-size: 22px;
+  font-size: 28px;
   font-weight: 700;
-  color: #1b437c;
   margin: 0;
+  color: #173354;
   letter-spacing: 2px;
+  line-height: 1.2;
+}
+
+.logoSub {
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: #BB9244;
+  font-weight: normal; 
 }
 
 .btnBack {
@@ -71,7 +97,6 @@
   color: #BB9244 !important;
   font-weight: 600;
 }
-
 
 .articleWrapper {
   max-width: 900px;
@@ -154,7 +179,6 @@
   line-height: 1.9;
   color: #2d3748;
 }
-
 
 :global(.htmlContent p:first-of-type::first-letter) {
   float: left;
