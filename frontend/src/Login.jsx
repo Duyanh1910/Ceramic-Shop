@@ -132,7 +132,7 @@ function Login() {
               field-of-view="25deg" 
               
               /* Nếu chibi VẪN CHƯA XUỐNG ĐỦ sâu, hãy tăng '1.2m' lên '1.5m' hoặc '2.0m' */
-              camera-target="0m 1.5m 0m" 
+              camera-target="0m 2m 0m" 
               
               max-camera-orbit="auto auto 600%" 
               shadow-intensity="0" 
