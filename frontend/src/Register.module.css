@@ -432,3 +432,20 @@
   .cardForm { padding: 28px 20px; }
   .otpCell { width: 38px; height: 46px; font-size: 18px; }
 }
+
+.backButton {
+  color: #173354 !important;
+  font-weight: 600 !important;
+  padding-left: 0 !important;
+  font-size: 14px !important;
+  transition: transform 0.3s, color 0.2s;
+}
+.backButton:hover { transform: translateX(-5px); color: #BB9244 !important; }
+
+.formTitle {
+  color: #173354;
+  font-family: 'Arsenal', serif;
+  font-weight: 700;
+  font-size: 30px;
+  margin: 0 0 5px;
+}

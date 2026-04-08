@@ -109,7 +109,7 @@ function Login() {
               onClick={() => navigate('/home')} 
               className={styles.backButton}
             >
-              Cửa hàng <ArrowRightOutlined />
+              <ShoppingFilled/> Cửa hàng <ArrowRightOutlined />
             </Button>
           </div>
 
