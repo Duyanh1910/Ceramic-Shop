@@ -248,7 +248,7 @@ export const queryZaloPayTransaction = async (app_trans_id) => {
             ],
             transaction: t,
           });
-          await sendEmailInvoiceService(order.KhachHang.TaiKhoan.Email);
+          await sendEmailInvoiceService(order.KhachHang.TaiKhoan.Email,order.MaHienThi);
           console.log("✅ Đã update DB qua lệnh Query chủ động!");
         }
       });
