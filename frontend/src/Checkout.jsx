@@ -54,11 +54,14 @@ const PAYMENT_METHODS = [
 export default function Checkout() {
   const navigate = useNavigate();
   const location = useLocation();
+
+  const cartItems = location.state?.selectedItems || [];
+
   const token = localStorage.getItem('token');
   const isLoggedIn = !!token;
   const authHeader = { headers: { Authorization: `Bearer ${token}` } };
 
-  const { selectedItems = [], cartItems = [], applyVoucher = null } = location.state || {};
+  const { selectedItems = [], applyVoucher = null } = location.state || {};
 
   const [form] = Form.useForm();
   const [step, setStep] = useState(0);
@@ -74,14 +77,24 @@ export default function Checkout() {
   const [orderId, setOrderId] = useState(null);
   const [redirectingModal, setRedirectingModal] = useState(false);
 
+  const [shippingMethod, setShippingMethod] = useState(1); 
+  const [addressData, setAddressData] = useState({ string: '', obj: null });
   const orderItems = cartItems.filter((i) => selectedItems.includes(i.variantId));
-  const subtotal = orderItems.reduce((s, i) => s + i.price * i.quantity, 0);
+  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const shippingFee = 30000;
   const discount = appliedVoucher
     ? Math.min(appliedVoucher.GiaTri, appliedVoucher.GiamToiDa ?? Infinity)
     : 0;
-  const total = Math.max(0, subtotal - discount);
+  const total = Math.max(0, subtotal - discount + shippingFee);
 
   const selectedPayment = PAYMENT_METHODS.find((m) => m.id === paymentMethod);
+
+  useEffect(() => {
+    if (cartItems.length === 0) {
+      message.warning('Bạn chưa chọn sản phẩm nào để thanh toán!');
+      navigate('/cart');
+    }
+  }, [cartItems, navigate]);
 
   useEffect(() => {
     if (orderItems.length === 0) navigate('/cart');
@@ -140,31 +153,37 @@ export default function Checkout() {
 
   const createOrder = async (values) => {
     const payload = {
-      TenNguoiNhan: values.name,
-      SDT: values.phone,
-      DiaChiGiaoHang: addressValue,
-      GhiChu: values.note || '',
-      MaPhuongThuc: paymentMethod,
-      selectedItems,
-      ListMaKhuyenMai: appliedVoucher ? [appliedVoucher.MaKhuyenMai] : [],
+        TenNguoiNhan: values.name,
+        SDT: values.phone, 
+        DiaChiGiaoHang: addressData.string,
+        GhiChu: values.note || '',
+        MaPhuongThuc: paymentMethod,
+        
+        MaPhi: shippingMethod, 
+        addressObj: addressData.obj, 
+        
+        ListMaKhuyenMai: appliedVoucher ? [appliedVoucher.MaKhuyenMai] : [],
+        
+        items: selectedItems, 
     };
+
     let res;
     if (isLoggedIn) {
-      res = await axios.post(`${API_BASE}/orders`, payload, authHeader);
+        res = await axios.post(`${API_BASE}/orders`, payload, authHeader);
     } else {
-      res = await axios.post(`${API_BASE}/orders/guest`, {
+        res = await axios.post(`${API_BASE}/orders/guest`, {
         ...payload,
         GuestEmail: values.email,
         cartItems: orderItems.map((i) => ({
-          MaBienThe: i.variantId,
-          SoLuong: i.quantity,
-          GiaBan: i.price,
-          ThanhTien: i.price * i.quantity,
+            MaBienThe: i.variantId,
+            SoLuong: i.quantity,
+            GiaBan: i.price,
+            ThanhTien: i.price * i.quantity,
         })),
-      });
+        });
     }
-    return res.data?.result?.MaDonHang;
-  };
+    return res.data?.result?.orderID || res.data?.result?.MaDonHang;
+    };
 
   const createMomoPayment = async (maDonHang) => {
     const res = await axios.post(
@@ -336,9 +355,28 @@ export default function Checkout() {
                       <div className={styles.addressLabel}>
                         Địa chỉ giao hàng <span className={styles.req}>*</span>
                       </div>
-                      <AddressSelector onChange={(val) => { setAddressValue(val); setAddressError(''); }} />
+                        <AddressSelector 
+                            onChange={(addressString, addressObj) => { 
+                                setAddressData({ string: addressString, obj: addressObj }); 
+                                setAddressError(''); 
+                            }} 
+                        />
                       {addressError && <div className={styles.addressError}>{addressError}</div>}
                     </div>
+
+                    <div className={styles.section}>
+                        <div className={styles.sectionTitle}>🚚 Phương thức giao hàng</div>
+                        <Radio.Group 
+                            onChange={(e) => setShippingMethod(e.target.value)} 
+                            value={shippingMethod}
+                            style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}
+                        >
+                            <Radio value={1}>Giao hàng nhanh (GHN)</Radio>
+                            <Radio value={2}>Giao hỏa tốc (Chỉ áp dụng nội thành Hải Phòng)</Radio>
+                            <Radio value={3}>Nhận tại cửa hàng (Miễn phí)</Radio>
+                        </Radio.Group>
+                    </div>
+
                     <Form.Item name="note" label="Ghi chú (không bắt buộc)" style={{ marginTop: 16 }}>
                       <Input.TextArea placeholder="Yêu cầu đặc biệt..." className={styles.input} rows={2} />
                     </Form.Item>

@@ -443,79 +443,27 @@ function Cart() {
                     <span>{formatPrice(finalTotal)}</span>
                   </div>
 
-                  <div className={styles.formSection} style={{ marginTop: '30px' }}>
-                    <div style={{ fontSize: '16px', fontWeight: 700, color: '#333', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <ShoppingOutlined /> Thông tin đặt hàng
-                    </div>
-                    <Form form={form} layout="vertical" onFinish={handleCheckout} scrollToFirstError>
-                      {!isLoggedIn && (
-                        <Form.Item 
-                          label="Email nhận thông báo" 
-                          name="Email"
-                          rules={[
-                            { required: true, message: 'Vui lòng nhập email!' },
-                            { type: 'email', message: 'Email không đúng định dạng!' }
-                          ]}
-                        >
-                          <Input className={styles.customInput} placeholder="example@email.com" />
-                        </Form.Item>
-                      )}
+                  <Button 
+                    type="primary" 
+                    size="large"
+                    block
+                    disabled={selectedCartItems.length === 0}
+                    onClick={() => {
+                      if (selectedCartItems.length === 0) {
+                        return message.warning("Vui lòng chọn ít nhất một sản phẩm!");
+                      }
+                      navigate('/checkout', { 
+                        state: { 
+                          selectedItems: selectedItems.map(key => parseInt(key.split('-')[1] || key.split('-')[0])),
+                          cartItems: selectedCartItems
+                        } 
+                      });
+                    }}
+                    style={{ background: '#1b437c', marginTop: '20px' }}
+                  >
+                    TIẾN HÀNH THANH TOÁN ({formatPrice(finalTotal)})
+                  </Button>
 
-                      <Form.Item 
-                        label="Họ và tên người nhận" 
-                        name="FullName"
-                        rules={[{ required: true, message: 'Vui lòng nhập tên người nhận!' }, { min: 2, message: 'Tên quá ngắn!' }]}
-                      >
-                        <Input prefix={<UserOutlined style={{ color: '#bbb' }} />} className={styles.customInput} placeholder="Nhập họ tên đầy đủ" />
-                      </Form.Item>
-
-                      <Form.Item 
-                        label="Số điện thoại" 
-                        name="SDT"
-                        rules={[
-                          { required: true, message: 'Vui lòng nhập số điện thoại!' },
-                          { pattern: /^0\d{9}$/, message: 'Số điện thoại không hợp lệ (gồm 10 số, bắt đầu bằng 0)!' }
-                        ]}
-                      >
-                        <Input prefix={<PhoneOutlined style={{ color: '#bbb' }} />} className={styles.customInput} placeholder="0987654321" maxLength={10} />
-                      </Form.Item>
-
-                      <Form.Item 
-                        label="Địa chỉ nhận hàng" 
-                        name="DiaChi"
-                        rules={[{ required: true, message: 'Vui lòng nhập địa chỉ giao hàng!' }]}
-                      >
-                        <AddressSelector />
-                      </Form.Item>
-
-                      <Form.Item 
-                        name="paymentMethod"
-                        label="Phương thức thanh toán"
-                        rules={[{ required: true, message: 'Vui lòng chọn phương thức thanh toán!' }]}
-                      >
-                        <Select placeholder="Chọn phương thức" className={styles.customSelect} size="large">
-                          <Select.Option value="1">💵 Thanh toán khi nhận hàng (COD)</Select.Option>
-                          <Select.Option value="2">🏦 Chuyển khoản ngân hàng</Select.Option>
-                          <Select.Option value="3">💳 Ví điện tử (MoMo / ZaloPay)</Select.Option>
-                        </Select>
-                      </Form.Item>
-
-                      <Form.Item label="Ghi chú đơn hàng" name="GhiChu">
-                        <Input.TextArea rows={2} className={styles.customInput} placeholder="Lưu ý cho người giao hàng (nếu có)" />
-                      </Form.Item>
-
-                      <Button 
-                        type="primary" 
-                        htmlType="submit" 
-                        className={styles.btnSubmitOrder} 
-                        loading={submitting}
-                        disabled={selectedCartItems.length === 0}
-                        block
-                      >
-                        {selectedCartItems.length === 0 ? 'Chọn sản phẩm để đặt hàng' : `ĐẶT HÀNG • ${formatPrice(finalTotal)}`}
-                      </Button>
-                    </Form>
-                  </div>
                 </div>
               </Col>
             </Row>

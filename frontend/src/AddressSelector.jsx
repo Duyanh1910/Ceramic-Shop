@@ -30,8 +30,16 @@ export default function AddressSelector({ onChange, disabled = false }) {
 
     useEffect(() => {
         const parts = [detail.trim(), wardName, districtName, provinceName].filter(Boolean);
-        if (onChange) onChange(parts.join(', ') || '');
-    }, [provinceName, districtName, wardName, detail]);
+        const addressString = parts.join(', ') || '';
+        
+        const addressObj = {
+            ToProvinceID: provinceId,
+            ToDistrictID: districtId,
+            ToWardID: wardId
+        };
+
+        if (onChange) onChange(addressString, addressObj);
+    }, [provinceId, districtId, wardId, provinceName, districtName, wardName, detail]);
 
     const fetchProvinces = async () => {
         setLoadingP(true);
