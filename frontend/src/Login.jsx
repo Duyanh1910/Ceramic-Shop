@@ -128,10 +128,10 @@ function Login() {
               alt="Trợ lý Irelia 3D" 
               autoplay 
               animation-name={modelAnimation}
-              camera-orbit="0deg 80deg 80%" 
+              camera-orbit="0deg 75deg 105%" 
               max-camera-orbit="auto auto 600%" 
-              field-of-view="25deg" 
-              camera-target="0m 0.35m 0m" 
+              field-of-view="30deg" 
+              camera-target="0m 0.45m 0m" 
               shadow-intensity="0" 
               interaction-prompt="none"
               disable-zoom
