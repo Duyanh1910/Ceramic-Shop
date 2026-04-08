@@ -367,7 +367,7 @@ function LandingPage() {
             </nav>
 
             <section id="home" className={styles.bannerSection}>
-                <Carousel autoplay autoplaySpeed={4000} effect="fade" pauseOnHover={false}>
+                <Carousel autoplay autoplaySpeed={4000} pauseOnHover={false} draggable={true} swipeToSlide={true}>
                     {bannerSlides.map((slide) => (
                         <div key={slide.id}>
                             <div className={styles.slideWrapper}>
