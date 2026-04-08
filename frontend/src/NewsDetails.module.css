@@ -44,16 +44,18 @@
 .logoTextWrap {
   display: flex;
   flex-direction: column;
+  justify-content: center;
 }
 
 .logoText {
   font-family: 'Arsenal', serif;
   font-size: 28px;
   font-weight: 700;
-  margin: 0;
+  margin: 0 !important;
+  padding: 0 !important;
   color: #173354;
   letter-spacing: 2px;
-  line-height: 1.2;
+  line-height: 1 !important;
 }
 
 .logoSub {
@@ -61,6 +63,9 @@
   letter-spacing: 2px;
   color: #BB9244;
   font-weight: normal; 
+  margin: 4px 0 0 0 !important;
+  padding: 0 !important;
+  line-height: 1.2 !important;
 }
 
 .btnBack {
