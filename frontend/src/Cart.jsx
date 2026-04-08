@@ -192,8 +192,8 @@ function Cart() {
   const totalCartPrice = selectedCartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const selectedCartQuantity = selectedCartItems.reduce((sum, item) => sum + item.quantity, 0); 
   
-  const shippingFee = selectedCartItems.length > 0 ? 30000 : 0; 
-  const finalTotal = selectedCartItems.length > 0 ? totalCartPrice + shippingFee : 0;
+  const shippingFee = 0;
+  const finalTotal = selectedCartItems.length > 0 ? totalCartPrice : 0;
 
   const handleCheckout = async (values) => {
     if (selectedCartItems.length === 0) {
@@ -435,7 +435,7 @@ function Cart() {
                   </div>
                   <div className={styles.summaryRow}>
                     <span>Phí giao hàng:</span>
-                    <span>{formatPrice(shippingFee)}</span>
+                    <span style={{ color: '#888', fontSize: 13 }}>Tính khi thanh toán</span>
                   </div>
                   <Divider style={{ margin: '15px 0' }} />
                   <div className={styles.summaryRow} style={{ fontSize: '20px', fontWeight: 700, color: '#d0021b' }}>
