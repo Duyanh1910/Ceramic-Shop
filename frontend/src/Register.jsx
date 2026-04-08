@@ -146,7 +146,7 @@ function Register() {
         </div>
 
         <div className={styles.cardForm}>
-          <div style={{ marginBottom: 10 }}>
+          <div style={{ marginBottom: 15, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Button type="link" icon={<ArrowLeftOutlined />} onClick={() => navigate('/')}
               style={{ color: '#1b437c', fontWeight: 600, paddingLeft: 0 }} className={styles.backButton}>
               <HomeFilled/> Trang chủ
