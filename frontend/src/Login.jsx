@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Button, Input, Form, message, Typography, Divider, Checkbox } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import styles from './Login.module.css';
-import { UserOutlined, LockOutlined, ArrowLeftOutlined, ArrowRightOutlined, ShopFilled, HomeFilled } from '@ant-design/icons';
+import { UserOutlined, LockOutlined, ArrowLeftOutlined, ArrowRightOutlined, ShoppingFilled } from '@ant-design/icons';
 import { Helmet } from 'react-helmet-async';
 import { saveSession } from './useAuth.js';
 
@@ -13,8 +13,8 @@ const BACKEND_URL = 'https://ceramic-shop-u8ak.onrender.com';
 const API_BASE = `${BACKEND_URL}/api/v1`;
 
 function Login() {
-  const [loading, setLoading]           = useState(false);
-  const [rememberMe, setRememberMe]     = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
   const navigate = useNavigate();
 
@@ -66,51 +66,73 @@ function Login() {
     ? 'PetChibiNeeko_KDASuperFan_Joke02cycle.Chibi_Neeko_KDASuperFan' 
     : 'Idle_Base';
   
-  const messageText = passwordVisible ? 'hihi tôi không nhìn trộm đâu' : 't đang nhìn bạn';
+  const messageText = passwordVisible ? 'Hihi tôi không nhìn trộm đâu' : 'T đang nhìn bạn';
 
   return (
     <div className={styles.loginContainer}>
       <Helmet><title>Đăng nhập | Ceramic Shop</title></Helmet>
+
+      <style>{`
+        .speech-bubble {
+          position: absolute;
+          top: 30px;
+          right: 15px;
+          background: #ffffff;
+          border-radius: 16px;
+          padding: 12px 18px;
+          color: #173354;
+          font-weight: 700;
+          font-size: 13px;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+          z-index: 10;
+          animation: floatBubble 2.5s ease-in-out infinite;
+          border: 1px solid rgba(23, 51, 84, 0.1);
+        }
+        .speech-bubble::after {
+          content: '';
+          position: absolute;
+          bottom: -10px;
+          left: 24px;
+          border-width: 10px 10px 0;
+          border-style: solid;
+          border-color: #ffffff transparent transparent transparent;
+          display: block;
+          width: 0;
+        }
+        @keyframes floatBubble {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-6px); }
+        }
+      `}</style>
 
       <div className={styles.shape1} />
       <div className={styles.shape2} />
       <div className={styles.shape3} />
 
       <div className={styles.combinedCard}>
-
         <div className={styles.cardImage}>
-          <div className={styles.phoenixWrap} style={{ flexDirection: 'column' }}>
+          <div className={styles.phoenixWrap} style={{ position: 'relative', flexDirection: 'column' }}>
+            
+            <div className="speech-bubble">
+              {messageText}
+            </div>
+
             <model-viewer 
               src={modelSrc}
               alt="Trợ lý Irelia 3D" 
               autoplay 
               animation-name={modelAnimation}
-              camera-orbit="0deg 75deg 120%" 
+              camera-orbit="0deg 80deg 80%" 
               max-camera-orbit="auto auto 600%" 
-              field-of-view="35deg" 
+              field-of-view="25deg" 
               camera-target="0m 0.22m 0m" 
               shadow-intensity="0" 
               interaction-prompt="none"
               disable-zoom
               disable-pan
               disable-tap
-              style={{ width: '100%', height: '350px', backgroundColor: 'transparent' }}
+              style={{ width: '100%', height: '380px', backgroundColor: 'transparent' }}
             ></model-viewer>
-            
-            <div style={{
-                marginTop: '-30px', 
-                fontWeight: '600',
-                color: '#173354',
-                backgroundColor: 'rgba(255, 255, 255, 0.4)',
-                padding: '6px 18px',
-                borderRadius: '20px',
-                fontSize: '14px',
-                zIndex: 2,
-                backdropFilter: 'blur(4px)',
-                border: '1px solid rgba(255,255,255,0.5)'
-            }}>
-                {messageText}
-            </div>
           </div>
 
           <div className={styles.brandFooter}>
@@ -127,7 +149,7 @@ function Login() {
               onClick={() => navigate('/')} 
               className={styles.backButton}
             >
-              <HomeFilled/> Trang chủ
+              <HomeFilled/>Trang chủ
             </Button>
 
             <Button 
@@ -135,7 +157,7 @@ function Login() {
               onClick={() => navigate('/home')} 
               className={styles.backButton}
             >
-              <ShopFilled/> Cửa hàng <ArrowRightOutlined />
+               <ShopFilled/> Cửa hàng <ArrowRightOutlined />
             </Button>
           </div>
 
@@ -213,7 +235,6 @@ function Login() {
             <a
               href={`${BACKEND_URL}/api/v1/auth/google?rememberMe=${rememberMe}`}
               className={`${styles.socialCircle} ${styles.ggCircle}`}
-              title="Đăng nhập với Google"
             >
               <GoogleIcon />
               <span className={styles.socialTextGg}>Google</span>
@@ -221,7 +242,6 @@ function Login() {
             <a
               href={`${BACKEND_URL}/api/v1/auth/facebook?rememberMe=${rememberMe}`}
               className={`${styles.socialCircle} ${styles.fbCircle}`}
-              title="Đăng nhập với Facebook"
             >
               <FacebookIcon />
               <span className={styles.socialTextFb}>Facebook</span>
