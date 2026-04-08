@@ -1,15 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import { Form, Input, Button, message } from 'antd';
-import {
-  MailOutlined,
-  LockOutlined,
-  ArrowLeftOutlined,
-} from '@ant-design/icons';
+import { MailOutlined, LockOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
 import styles from './ForgotPassword.module.css';
-
 import Chibi from './Chibi.jsx';
 
 const API_BASE = 'https://ceramic-shop-u8ak.onrender.com/api/v1';
@@ -154,53 +149,43 @@ function ForgotPassword() {
   const stepLabels = ['Nhập email', 'Xác minh OTP', 'Mật khẩu mới'];
 
   return (
-    <div className={styles.pageWrapper}>
+    <div className={styles.forgotContainer}>
       <Helmet><title>Quên mật khẩu | Ceramic Shop</title></Helmet>
 
       <div className={styles.shape1} />
       <div className={styles.shape2} />
       <div className={styles.shape3} />
 
-      <header className={styles.topHeader}>
-        <div className={styles.logoBox} onClick={() => navigate('/landing')}>
-            <img 
-                src="https://res.cloudinary.com/dcmwz0uis/image/upload/v1774819165/IMG_20260330_041641_qwo8lc.jpg" 
-                alt="Ceramic Shop Logo" 
-                className={styles.logoImg} 
+      <div className={styles.combinedCard}>
+        <div className={styles.cardImage}>
+          <div className={styles.glowEffect} />
+          <div style={{ position: 'relative', flexDirection: 'column', width: '100%', display: 'flex', alignItems: 'center', zIndex: 1 }}>
+            <Chibi 
+              passwordVisible={passwordVisible || confirmPasswordVisible} 
+              loginSuccess={actionSuccess} 
+              loginFailed={actionFailed}
+              defaultMsg={
+                step === 1 ? "Nhập email của bạn để tôi gửi mã khôi phục nhé!" : 
+                step === 2 ? "Hãy kiểm tra email và nhập mã OTP vào đây nha!" : 
+                step === 3 ? "Tạo mật khẩu mới nào. Nhớ lưu lại cẩn thận nhé!" : ""
+              }
+              successMsg="Tuyệt vời! Mật khẩu của bạn đã được đặt lại."
+              failMsg="Thông tin chưa chính xác hoặc mã OTP sai, bạn thử lại nhé!"
             />
-            <div className={styles.logoTextWrap}>
-                <h1 className={styles.logoText}>CERAMIC-SHOP</h1>
-                <span className={styles.logoSub}>TINH HOA GỐM SỨ VIỆT</span>
-            </div>
+          </div>
+
+          <div style={{ marginTop: '10px', zIndex: 1, position: 'relative' }}>
+            <h2 className={styles.logoDisplayTitle}>CERAMIC-SHOP</h2>
+            <p className={styles.logoDisplaySub}>TINH HOA GỐM SỨ VIỆT</p>
+          </div>
         </div>
 
-        <Button
-          type="link"
-          icon={<ArrowLeftOutlined />}
-          onClick={() => navigate('/login')}
-          className={styles.btnBack}
-        >
-          Quay lại đăng nhập
-        </Button>
-      </header>
-
-      <div className={styles.centerWrapper}>
-        <div className={styles.card}>
-          <div style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'center', marginBottom: '10px', marginTop: '-30px', zIndex: 10 }}>
-            <div style={{ width: '100%' }}>
-              <Chibi 
-                passwordVisible={passwordVisible || confirmPasswordVisible} 
-                loginSuccess={actionSuccess} 
-                loginFailed={actionFailed}
-                defaultMsg={
-                  step === 1 ? "Nhập email của bạn để tôi gửi mã khôi phục nhé!" : 
-                  step === 2 ? "Hãy kiểm tra email và nhập mã OTP vào đây nha!" : 
-                  step === 3 ? "Tạo mật khẩu mới nào. Nhớ lưu lại cẩn thận nhé!" : ""
-                }
-                successMsg="Tuyệt vời! Mật khẩu của bạn đã được đặt lại."
-                failMsg="Thông tin chưa chính xác hoặc mã OTP sai, bạn thử lại nhé!"
-              />
-            </div>
+        <div className={styles.cardForm}>
+          <div style={{ marginBottom: 15, display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
+            <Button type="link" icon={<ArrowLeftOutlined />} onClick={() => navigate('/login')}
+              style={{ color: '#1b437c', fontWeight: 600, paddingLeft: 0 }} className={styles.backButton}>
+              Quay lại đăng nhập
+            </Button>
           </div>
 
           {step <= 3 && (
@@ -221,26 +206,24 @@ function ForgotPassword() {
 
           {step === 1 && (
             <div className={styles.stepContent}>
-              <div className={styles.cardHeader}>
-                <h2 className={styles.cardTitle}>QUÊN MẬT KHẨU</h2>
-              </div>
+              <h2 className={styles.formTitle}>QUÊN MẬT KHẨU</h2>
               <Form layout="vertical" onFinish={handleSendOTP} onValuesChange={() => setActionFailed(false)}>
                 <Form.Item
-                  label="Địa chỉ email"
+                  label={<span style={{ fontWeight: 500 }}>Địa chỉ email</span>}
                   name="email"
                   rules={[
                     { required: true, message: 'Vui lòng nhập email!' },
                     { type: 'email', message: 'Email không đúng định dạng!' },
                   ]}
+                  style={{ marginBottom: 14 }}
                 >
                   <Input
-                    prefix={<MailOutlined className={styles.inputIcon} />}
+                    prefix={<MailOutlined style={{ color: '#bfbfbf' }} />}
                     className={styles.customInput}
                     placeholder="example@email.com"
-                    size="large"
                   />
                 </Form.Item>
-                <Button type="primary" htmlType="submit" block loading={loading} className={styles.btnPrimary}>
+                <Button type="primary" htmlType="submit" block loading={loading} className={styles.customButton} style={{ marginTop: '10px' }}>
                   GỬI MÃ OTP
                 </Button>
               </Form>
@@ -249,11 +232,11 @@ function ForgotPassword() {
 
           {step === 2 && (
             <div className={styles.stepContent}>
-              <div className={styles.cardHeader}>
-                <h2 className={styles.cardTitle}>NHẬP MÃ OTP</h2>
-                <p className={styles.cardSub}>
-                  Mã OTP đã được gửi đến <strong>{email}</strong>.<br />
-                  Có hiệu lực trong 5 phút.
+              <div className={styles.otpHeader}>
+                <h2 className={styles.formTitle} style={{ marginBottom: 6 }}>NHẬP MÃ OTP</h2>
+                <p className={styles.otpSub}>
+                  Mã OTP đã được gửi đến<br />
+                  <strong>{email}</strong>
                 </p>
               </div>
 
@@ -284,7 +267,7 @@ function ForgotPassword() {
                 block
                 loading={loading}
                 onClick={handleVerifyOTP}
-                className={styles.btnPrimary}
+                className={styles.customButton}
                 style={{ marginTop: 8 }}
               >
                 XÁC NHẬN OTP
@@ -309,23 +292,21 @@ function ForgotPassword() {
 
           {step === 3 && (
             <div className={styles.stepContent}>
-              <div className={styles.cardHeader}>
-                <h2 className={styles.cardTitle}>MẬT KHẨU MỚI</h2>
-              </div>
+              <h2 className={styles.formTitle}>MẬT KHẨU MỚI</h2>
               <Form form={formPass} layout="vertical" onFinish={handleResetPassword} onValuesChange={() => setActionFailed(false)}>
                 <Form.Item
-                  label="Mật khẩu mới"
+                  label={<span style={{ fontWeight: 500 }}>Mật khẩu mới</span>}
                   name="newPassword"
                   rules={[
                     { required: true, message: 'Vui lòng nhập mật khẩu mới!' },
                     { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự!' },
                   ]}
+                  style={{ marginBottom: 14 }}
                 >
                   <Input.Password
-                    prefix={<LockOutlined className={styles.inputIcon} />}
+                    prefix={<LockOutlined style={{ color: '#bfbfbf' }} />}
                     className={styles.customInput}
                     placeholder="Tối thiểu 6 ký tự"
-                    size="large"
                     visibilityToggle={{
                       visible: passwordVisible,
                       onVisibleChange: setPasswordVisible,
@@ -333,7 +314,7 @@ function ForgotPassword() {
                   />
                 </Form.Item>
                 <Form.Item
-                  label="Xác nhận mật khẩu"
+                  label={<span style={{ fontWeight: 500 }}>Xác nhận mật khẩu</span>}
                   name="confirmPassword"
                   dependencies={['newPassword']}
                   rules={[
@@ -345,19 +326,19 @@ function ForgotPassword() {
                       },
                     }),
                   ]}
+                  style={{ marginBottom: 14 }}
                 >
                   <Input.Password
-                    prefix={<LockOutlined className={styles.inputIcon} />}
+                    prefix={<LockOutlined style={{ color: '#bfbfbf' }} />}
                     className={styles.customInput}
                     placeholder="Nhập lại mật khẩu mới"
-                    size="large"
                     visibilityToggle={{
                       visible: confirmPasswordVisible,
                       onVisibleChange: setConfirmPasswordVisible,
                     }}
                   />
                 </Form.Item>
-                <Button type="primary" htmlType="submit" block loading={loading} className={styles.btnPrimary}>
+                <Button type="primary" htmlType="submit" block loading={loading} className={styles.customButton} style={{ marginTop: '10px' }}>
                   ĐẶT LẠI MẬT KHẨU
                 </Button>
               </Form>
@@ -366,6 +347,13 @@ function ForgotPassword() {
 
           {step === 4 && (
             <div className={styles.successState}>
+              <div className={styles.successCheckWrap}>
+                <svg viewBox="0 0 52 52" className={styles.successCheck}>
+                  <circle cx="26" cy="26" r="25" fill="none" stroke="#52c41a" strokeWidth="2" />
+                  <path fill="none" stroke="#52c41a" strokeWidth="3" strokeLinecap="round"
+                    strokeLinejoin="round" d="M14 27l8 8 16-16" />
+                </svg>
+              </div>
               <h2 className={styles.successTitle}>Khôi phục thành công!</h2>
               <p className={styles.successSub}>
                 Mật khẩu của bạn đã được đặt lại.<br />
@@ -374,7 +362,7 @@ function ForgotPassword() {
               <Button
                 type="primary"
                 block
-                className={styles.btnPrimary}
+                className={styles.customButton}
                 onClick={() => navigate('/login')}
               >
                 ĐI ĐẾN ĐĂNG NHẬP
