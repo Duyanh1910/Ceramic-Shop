@@ -6,8 +6,7 @@ import {
 import {
   ArrowLeftOutlined, UserOutlined, PhoneOutlined,
   TagOutlined, CheckCircleFilled, ShoppingOutlined,
-  CreditCardOutlined, SafetyOutlined, BankOutlined,
-  WalletOutlined,
+  CreditCardOutlined, SafetyOutlined
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
@@ -65,7 +64,6 @@ export default function Checkout() {
   const [loading, setLoading] = useState(false);
   const [profileLoading, setProfileLoading] = useState(true);
   const [paymentMethod, setPaymentMethod] = useState(1);
-  const [addressValue, setAddressValue] = useState('');
   const [addressError, setAddressError] = useState('');
   const [voucherInput, setVoucherInput] = useState(applyVoucher?.TenKhuyenMai || '');
   const [appliedVoucher, setAppliedVoucher] = useState(applyVoucher || null);
@@ -76,12 +74,13 @@ export default function Checkout() {
 
   const [shippingMethod, setShippingMethod] = useState(1); 
   const [addressData, setAddressData] = useState({ string: '', obj: null });
+  
+  const [shippingFee, setShippingFee] = useState(0);
+  const [calculatingFee, setCalculatingFee] = useState(false);
+
   const orderItems = cartItems.filter((i) => selectedItems.includes(i.variantId));
-  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const shippingFee = shippingMethod === 3 ? 0 : 30000;
-  const discount = appliedVoucher
-    ? Math.min(appliedVoucher.GiaTri, appliedVoucher.GiamToiDa ?? Infinity)
-    : 0;
+  const subtotal = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const discount = appliedVoucher ? Math.min(appliedVoucher.GiaTri, appliedVoucher.GiamToiDa ?? Infinity) : 0;
   const total = Math.max(0, subtotal - discount + shippingFee);
 
   const selectedPayment = PAYMENT_METHODS.find((m) => m.id === paymentMethod);
@@ -98,6 +97,42 @@ export default function Checkout() {
     if (isLoggedIn) { fetchProfile(); fetchMyVouchers(); }
     else setProfileLoading(false);
   }, []);
+
+
+  useEffect(() => {
+    const fetchShippingFee = async () => {
+
+      if (shippingMethod === 3) {
+        setShippingFee(0);
+        return;
+      }
+
+
+      if (!addressData.obj || !addressData.obj.ToDistrictID || !addressData.obj.ToWardID) {
+        setShippingFee(0);
+        return;
+      }
+
+      setCalculatingFee(true);
+      try {
+        const res = await axios.post(`${API_BASE}/orders/calculate-fee`, {
+          MaPhi: shippingMethod,
+          addressObj: addressData.obj,
+          items: orderItems.map(i => ({ MaBienThe: i.variantId, soLuong: i.quantity }))
+        }, isLoggedIn ? authHeader : {});
+
+        setShippingFee(res.data?.data?.total || 30000);
+      } catch (err) {
+        console.warn("Chưa có API tính phí hoặc lỗi:", err);
+        setShippingFee(30000);
+      } finally {
+        setCalculatingFee(false);
+      }
+    };
+
+    fetchShippingFee();
+  }, [shippingMethod, addressData.obj, orderItems, isLoggedIn]);
+
 
   const fetchProfile = async () => {
     setProfileLoading(true);
@@ -180,28 +215,20 @@ export default function Checkout() {
         });
     }
     return res.data?.result?.orderID || res.data?.result?.MaDonHang;
-    };
+  };
 
   const createMomoPayment = async (maDonHang) => {
-    const res = await axios.post(
-      `${API_BASE}/payment/momo-create`,
-      { maDonHang },
-      authHeader
-    );
+    const res = await axios.post(`${API_BASE}/payment/momo-create`, { maDonHang }, authHeader);
     return res.data?.paymentUrl;
   };
 
   const createZaloPayPayment = async (maDonHang) => {
-    const res = await axios.post(
-      `${API_BASE}/payment/zalo-create`,
-      { maDonHang },
-      authHeader
-    );
+    const res = await axios.post(`${API_BASE}/payment/zalo-create`, { maDonHang }, authHeader);
     return res.data?.payUrl;
   };
 
   const handleOrder = async (values) => {
-    if (!addressValue || addressValue.split(',').length < 3) {
+    if (!addressData.string || addressData.string.split(',').length < 3) {
       setAddressError('Vui lòng chọn đầy đủ tỉnh/huyện/xã và nhập số nhà!');
       return;
     }
@@ -221,22 +248,16 @@ export default function Checkout() {
       if (paymentMethod === 3) {
         setRedirectingModal(true);
         const payUrl = await createMomoPayment(newOrderId);
-        if (payUrl) {
-          window.location.href = payUrl;
-        } else {
-          throw new Error('Không nhận được link thanh toán MoMo');
-        }
+        if (payUrl) window.location.href = payUrl;
+        else throw new Error('Không nhận được link thanh toán MoMo');
         return;
       }
 
       if (paymentMethod === 4) {
         setRedirectingModal(true);
         const payUrl = await createZaloPayPayment(newOrderId);
-        if (payUrl) {
-          window.location.href = payUrl;
-        } else {
-          throw new Error('Không nhận được link thanh toán ZaloPay');
-        }
+        if (payUrl) window.location.href = payUrl;
+        else throw new Error('Không nhận được link thanh toán ZaloPay');
         return;
       }
 
@@ -456,7 +477,7 @@ export default function Checkout() {
                     )}
                   </div>
 
-                  <Button type="primary" htmlType="submit" block loading={loading}
+                  <Button type="primary" htmlType="submit" block loading={loading || calculatingFee}
                     className={styles.btnOrder} size="large">
                     <SafetyOutlined />
                     {selectedPayment?.gateway
@@ -494,10 +515,19 @@ export default function Checkout() {
                   </div>
                   <Divider style={{ margin: '14px 0' }} />
                   <div className={styles.summaryRow}><span>Tạm tính</span><span>{fmt(subtotal)}</span></div>
+                  
                   <div className={styles.summaryRow}>
                     <span>Phí vận chuyển</span>
-                    <span style={{ color: '#888', fontSize: 13 }}>Tính khi xác nhận</span>
+                    <span>
+                      {calculatingFee 
+                        ? <Spin size="small" /> 
+                        : shippingMethod === 3 
+                          ? <span style={{ color: '#52c41a' }}>Miễn phí</span> 
+                          : fmt(shippingFee)
+                      }
+                    </span>
                   </div>
+
                   {appliedVoucher && (
                     <div className={styles.summaryRow} style={{ color: '#52c41a' }}>
                       <span>Giảm giá</span><span>-{fmt(discount)}</span>
@@ -518,7 +548,7 @@ export default function Checkout() {
         </div>
       </div>
 
-\      <Modal
+      <Modal
         open={redirectingModal}
         footer={null}
         closable={false}
