@@ -6,6 +6,7 @@ import styles from './Login.module.css';
 import { UserOutlined, LockOutlined, HomeFilled, ShopFilled } from '@ant-design/icons';
 import { Helmet } from 'react-helmet-async';
 import { saveSession } from './useAuth.js';
+import Chibi from './Chibi.jsx'; 
 
 const { Text, Link } = Typography;
 
@@ -61,63 +62,9 @@ function Login() {
     }
   };
 
-  const modelSrc = passwordVisible ? '/Neko_glass.glb' : '/Neko_smile_1.glb';
-  const modelAnimation = passwordVisible 
-    ? 'PetChibiNeeko_KDASuperFan_Joke02cycle.Chibi_Neeko_KDASuperFan' 
-    : 'Idle_Base';
-  
-  const messageText = passwordVisible ? 'Hihi tôi không nhìn trộm mật khẩu của bạn đâu' : 'Xin chào đây là trang đăng nhập của Ceramic-Shop';
-
   return (
     <div className={styles.loginContainer}>
       <Helmet><title>Đăng nhập | Ceramic Shop</title></Helmet>
-
-      <style>{`
-        .speech-bubble {
-          position: absolute;
-          top: 20px;
-          left: 0;
-          right: 0;
-          margin: 0 auto;
-          width: fit-content;
-          max-width: 280px;
-          text-align: center;
-          background: #ffffff;
-          border-radius: 20px;
-          padding: 16px 28px;
-          color: #173354;
-          font-weight: 700;
-          font-size: 16px;
-          line-height: 1.5;
-          box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-          z-index: 10;
-          animation: floatBubble 2.5s ease-in-out infinite;
-          border: 1px solid rgba(23, 51, 84, 0.1);
-        }
-        .speech-bubble::after {
-          content: '';
-          position: absolute;
-          bottom: -12px;
-          left: 0;
-          right: 0;
-          margin: 0 auto;
-          border-width: 12px 12px 0;
-          border-style: solid;
-          border-color: #ffffff transparent transparent transparent;
-          display: block;
-          width: 0;
-        }
-        @keyframes floatBubble {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-6px); }
-        }
-        model-viewer {
-          outline: none;
-        }
-        model-viewer::part(default-progress-bar) {
-          display: none;
-        }
-      `}</style>
 
       <div className={styles.shape1} />
       <div className={styles.shape2} />
@@ -126,33 +73,7 @@ function Login() {
       <div className={styles.combinedCard}>
         <div className={styles.cardImage}>
           <div className={styles.phoenixWrap} style={{ position: 'relative', flexDirection: 'column' }}>
-            
-            <div className="speech-bubble">
-              {messageText}
-            </div>
-
-            <model-viewer 
-                src={modelSrc}
-                alt="Trợ lý Irelia 3D" 
-                autoplay 
-                animation-name={modelAnimation}
-                camera-orbit="0deg 75deg auto" 
-                field-of-view="25deg" 
-                camera-target="auto auto auto" 
-                
-                max-camera-orbit="auto auto 600%" 
-                shadow-intensity="0" 
-                interaction-prompt="none"
-                disable-zoom
-                disable-pan
-                disable-tap
-                style={{ 
-                  width: '100%', 
-                  height: '380px', 
-                  backgroundColor: 'transparent',
-                  marginTop: '40px' 
-                }}
-              ></model-viewer>
+            <Chibi passwordVisible={passwordVisible} />
           </div>
 
           <div className={styles.brandFooter}>
