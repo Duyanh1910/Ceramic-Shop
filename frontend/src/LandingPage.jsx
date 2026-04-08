@@ -29,15 +29,15 @@ const bannerSlides = [
     },
     {
         id: 2,
-        image: 'https://res.cloudinary.com/dcmwz0uis/image/upload/v1775186648/blue-white-chinoiserie-design-497489_scgryl.jpg',
+        image: 'https://res.cloudinary.com/dcmwz0uis/image/upload/v1775186597/porcelain-and-ceramics-1024x683_j22ily.jpg',
         title: 'QUÀ TẶNG TRÀ ĐẠO',
         subtitle: 'Gửi gắm tâm ý qua từng tác phẩm gốm sứ thủ công',
         btnText: 'TÌM BỘ ẤM TRÀ',
-        link: '/home?search=b%E1%BB%99%20%E1%BA%A5m%20tr%C3%A0'
+        link: '/home?search=bộ ấm trà'
     },
     {
         id: 3,
-        image: 'https://res.cloudinary.com/dcmwz0uis/image/upload/v1775186597/porcelain-and-ceramics-1024x683_j22ily.jpg',
+        image: 'https://res.cloudinary.com/dcmwz0uis/image/upload/v1775186648/blue-white-chinoiserie-design-497489_scgryl.jpg',
         title: 'GỐM SỨ PHONG THỦY',
         subtitle: 'Kiến tạo vượng khí - Tặng mã PHONGTHUY100 giảm ngay 100K',
         btnText: 'THỈNH VẬT PHẨM',
@@ -212,10 +212,9 @@ function LandingPage() {
         }
     };
 
-    const executeSearch = (val) => {
-        const keyword = val || searchKw;
-        if (keyword.trim()) {
-            navigate(`/home?search=${encodeURIComponent(keyword)}`); 
+    const executeSearch = () => {
+        if (searchKw && searchKw.trim()) {
+            navigate(`/home?search=${searchKw.trim()}`); 
         }
     };
 
@@ -316,7 +315,9 @@ function LandingPage() {
                                 options={searchKw ? searchOptions : []}
                                 onSelect={(val) => { 
                                     setSearchKw(val); 
-                                    executeSearch(val);
+                                    if (val && val.trim()) {
+                                        navigate(`/home?search=${val.trim()}`);
+                                    }
                                 }}
                                 onChange={handleSearchInput}
                                 value={searchKw}
@@ -325,16 +326,16 @@ function LandingPage() {
                             >
                                 <Input 
                                     ref={inputRef}
-                                    placeholder="Tìm kiếm sản phẩm..." 
+                                    placeholder="Tìm kiếm ấm trà, bình hoa..." 
                                     className={styles.searchInput}
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter') {
                                             e.preventDefault();
                                             e.stopPropagation();
-                                            executeSearch(searchKw); 
+                                            executeSearch(); 
                                         }
                                     }}
-                                    prefix={<SearchOutlined className={styles.iconSearch} onClick={() => executeSearch(searchKw)} />}
+                                    suffix={<SearchOutlined style={{ color: '#1b437c', cursor: 'pointer', fontSize: '18px', paddingRight: '8px' }} onClick={executeSearch} />}
                                     variant="borderless"
                                 />
                             </AutoComplete>
