@@ -37,11 +37,7 @@ const generateOrderCode = () => {
 };
 
 export const checkOutService = async (idAccount, orderData, selectedItems) => {
-  if (
-    !selectedItems ||
-    !Array.isArray(selectedItems) ||
-    selectedItems.length === 0
-  ) {
+  if (!selectedItems) {
     throw new ErrorHandler("Vui lòng chọn ít nhất 1 sản phẩm!", 400);
   }
 
@@ -89,7 +85,7 @@ export const checkOutService = async (idAccount, orderData, selectedItems) => {
     });
 
     const cartItems = cart?.CartInfoModels || cart?.ChiTietGioHangs;
-    if (!cartItems || cartItems.length !== selectedItems.length) {
+    if (!cartItems) {
       throw new ErrorHandler(
         "Sản phẩm không hợp lệ, không đủ số lượng hoặc đã bị xóa khỏi giỏ!",
         400,
@@ -276,7 +272,7 @@ export const getMyOrderService = async (idAccount) => {
         include: [
           {
             model: VariantModel,
-            attributes: ["TenBienThe", "Gia", "MaSanPham"], 
+            attributes: ["TenBienThe", "Gia", "MaSanPham"],
             include: [
               {
                 model: VariantImageModel,
@@ -319,6 +315,12 @@ export const getMyOrderInfoService = async (idAccount, orderCode) => {
           through: { attributes: ["SoTienChietKhau"] },
         },
         { model: ShippingTypeModel },
+        {
+          model: PaymentMethodModel,
+        },
+        {
+          model: PaymentTransactionModel,
+        },
       ],
     });
 

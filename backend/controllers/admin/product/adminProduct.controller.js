@@ -1,4 +1,7 @@
-import { addNewProductService } from "../../../services/product.service.js";
+import {
+  addNewProductService,
+  deleteVariantImageService,
+} from "../../../services/product.service.js";
 import ErrorHandler from "../../../utils/error_handler.js";
 import { checkValidate, validateVariants } from "../../../utils/helpers.js";
 
@@ -42,6 +45,30 @@ export const addNewProductController = async (req, res, next) => {
     });
   } catch (err) {
     console.error(err);
+    next(err);
+  }
+};
+
+export const deleteVariantImage = async (req, res, next) => {
+  try {
+    const { variantID, imageID } = req.body;
+    if (!variantID || !Number(variantID)) {
+      return next(new ErrorHandler("Mã biến thể không hợp lệ!", 400));
+    }
+    if (!imageID || !Array.isArray(imageID)) {
+      return next(new ErrorHandler("Mã hình ảnh không hợp lệ!", 400));
+    }
+    for (const item of imageID) {
+      if (!Number.isInteger(item)) {
+        return next(new ErrorHandler("Mã hình ảnh không hợp lệ!", 400));
+      }
+    }
+    const result = await deleteVariantImageService(imageID, variantID);
+    return res.status(204).json({
+      success: true,
+      message: "Xóa hình ảnh của biến thể thành công!",
+    });
+  } catch (err) {
     next(err);
   }
 };

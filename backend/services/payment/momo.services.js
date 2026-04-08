@@ -4,6 +4,7 @@ import ErrorHandler from "../../utils/error_handler.js";
 import {
   OrderModel,
   PaymentTransactionModel,
+  CustomerModel,
   sequelize,
 } from "../../models/index.js";
 
@@ -143,6 +144,12 @@ export const verifyAndUpdateIpn = async (momoData) => {
         { TrangThaiThanhToan: 1 },
         { where: { MaDonHang: giaoDich.MaDonHang }, transaction: t },
       );
+    try{
+
+    }
+    catch(err){
+      //co
+    }
     }
   });
 };
