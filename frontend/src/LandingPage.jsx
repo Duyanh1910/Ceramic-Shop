@@ -63,6 +63,8 @@ function LandingPage() {
 
     const [isChecking, setIsChecking] = useState(false);
     const [apiCategories, setApiCategories] = useState([]);
+    
+    const [autoPlayCategories, setAutoPlayCategories] = useState(true);
 
     useEffect(() => {
         const fetchCats = async () => {
@@ -468,25 +470,44 @@ function LandingPage() {
             <section id="categories" className={styles.categorySectionDark}>
                 <div className={styles.container}>
                     <div className={styles.sectionHeadingDark}>
-                        <h2>DANH MỤC <span>SẢN PHẨM</span></h2>
+                        <h2>DANH MỤC SẢN PHẨM</h2>
                         <p>Khám phá các dòng sản phẩm gốm sứ tinh hoa</p>
                     </div>
                     
-                    <div className={styles.marqueeContainer}>
-                        <div className={styles.marqueeTrack}>
-                            {[...categories, ...categories, ...categories].map((cat, idx) => (
-                                <div 
-                                    key={idx} 
-                                    className={styles.marqueeItem} 
-                                    onClick={() => cat.id ? navigate(`/home?category=${cat.id}`) : navigate(`/home`)}
-                                >
-                                    <div className={styles.marqueeImgWrap}>
-                                        <img src={cat.img} alt={cat.name} />
+                    <div 
+                        className={styles.carouselContainer}
+                        onMouseDown={() => setAutoPlayCategories(false)}
+                        onTouchStart={() => setAutoPlayCategories(false)}
+                    >
+                        <Carousel 
+                            autoplay={autoPlayCategories} 
+                            autoplaySpeed={2500} 
+                            draggable={true} 
+                            swipeToSlide={true}
+                            slidesToShow={4}
+                            slidesToScroll={1}
+                            dots={false}
+                            infinite={true}
+                            responsive={[
+                                { breakpoint: 1024, settings: { slidesToShow: 3 } },
+                                { breakpoint: 768, settings: { slidesToShow: 2 } },
+                                { breakpoint: 576, settings: { slidesToShow: 1 } }
+                            ]}
+                        >
+                            {categories.map((cat, idx) => (
+                                <div key={idx} className={styles.carouselItemWrapper}>
+                                    <div 
+                                        className={styles.marqueeItem} 
+                                        onClick={() => cat.id ? navigate(`/home?category=${cat.id}`) : navigate(`/home`)}
+                                    >
+                                        <div className={styles.marqueeImgWrap}>
+                                            <img src={cat.img} alt={cat.name} />
+                                        </div>
+                                        <h3 className={styles.marqueeText}>{cat.name}</h3>
                                     </div>
-                                    <h3 className={styles.marqueeText}>{cat.name}</h3>
                                 </div>
                             ))}
-                        </div>
+                        </Carousel>
                     </div>
                 </div>
             </section>
@@ -627,7 +648,7 @@ function LandingPage() {
 
                         <div className={styles.footerCol}>
                             <h3>ĐĂNG KÝ NHẬN TIN</h3>
-                            <p className={styles.footerText}>Nhận thông tin về sản phẩm mới và các chương trình khuyến mãi.</p>
+                            <p className={styles.footerText}>Nhận thông vị về sản phẩm mới và các chương trình khuyến mãi.</p>
                             <div className={styles.subscribeBox}>
                                 <input type="email" placeholder="Nhập email của bạn..." />
                                 <button>ĐĂNG KÝ</button>

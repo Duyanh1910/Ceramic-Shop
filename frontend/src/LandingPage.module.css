@@ -463,6 +463,10 @@ ul {
     line-height: 1.6;
 }
 
+/* =========================================
+   GIAO DIỆN DANH MỤC NỀN TỐI (MARQUEE CAROUSEL)
+========================================= */
+
 .categorySectionDark {
     background-color: #0a0a0a;
     padding: 80px 0;
@@ -493,7 +497,8 @@ ul {
     font-size: 18px;
 }
 
-.marqueeContainer {
+/* Vùng chứa Carousel mới */
+.carouselContainer {
     width: 100vw;
     position: relative;
     left: 50%;
@@ -502,10 +507,16 @@ ul {
     margin-right: -50vw;
     overflow: hidden;
     padding: 20px 0;
+    cursor: grab;
 }
 
-.marqueeContainer::before,
-.marqueeContainer::after {
+.carouselContainer:active {
+    cursor: grabbing;
+}
+
+/* Tạo lớp mờ ở 2 bên mép màn hình */
+.carouselContainer::before,
+.carouselContainer::after {
     content: '';
     position: absolute;
     top: 0;
@@ -515,38 +526,24 @@ ul {
     pointer-events: none;
 }
 
-.marqueeContainer::before {
+.carouselContainer::before {
     left: 0;
     background: linear-gradient(to right, #0a0a0a, transparent);
 }
 
-.marqueeContainer::after {
+.carouselContainer::after {
     right: 0;
     background: linear-gradient(to left, #0a0a0a, transparent);
 }
 
-.marqueeTrack {
-    display: flex;
-    gap: 30px;
-    width: max-content;
-    animation: scrollMarquee 30s linear infinite;
+/* Tạo khoảng cách giữa các thẻ sản phẩm trong slider */
+.carouselItemWrapper {
+    padding: 0 15px; 
 }
 
-.marqueeTrack:hover {
-    animation-play-state: paused;
-}
-
-@keyframes scrollMarquee {
-    0% {
-        transform: translateX(0);
-    }
-    100% {
-        transform: translateX(calc(-100% / 3)); 
-    }
-}
-
+/* Card Sản phẩm - rộng 100% để phủ kín slide do ant carousel cấp phát */
 .marqueeItem {
-    width: 320px;
+    width: 100%; 
     cursor: pointer;
     background-color: #1a1a1a;
     border-radius: 24px;
@@ -598,6 +595,8 @@ ul {
 .marqueeItem:hover .marqueeText {
     color: #00bcd4;
 }
+
+/* ========================================= */
 
 .productSection {
     background-color: #fff;
@@ -936,7 +935,7 @@ ul {
     .headerFlex { flex-wrap: wrap; justify-content: center; gap: 15px; }
     .searchBox { max-width: 100%; margin-bottom: 10px; }
     .footerGrid { grid-template-columns: 1fr; }
-    .marqueeItem { width: 240px; padding: 15px; }
+    .marqueeItem { padding: 15px; } /* width is handled by carousel now */
     .marqueeImgWrap { height: 260px; }
     .sectionHeadingDark h2 { font-size: 28px; }
 }
