@@ -93,12 +93,12 @@ export default function Checkout() {
           items: orderItems.map(i => ({ 
               MaSanPham: i.id, 
               MaBienThe: i.variantId, 
-              soLuong: i.quantity, 
+              SoLuong: i.quantity, 
               DonGia: i.price 
           }))
         }, authHeader);
-
-        setShippingFee(res.data?.data?.total || 0);
+        const calculatedFee = res.data?.feeResult?.data?.total || res.data?.data?.total || 0;
+        setShippingFee(calculatedFee);
       } catch (err) {
         console.warn("Lỗi tính phí:", err);
         setShippingFee(30000); 
