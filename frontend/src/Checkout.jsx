@@ -113,15 +113,23 @@ export default function Checkout() {
             phone: profile?.SDT || ''
         });
       }
-    } catch {}
-    finally { setProfileLoading(false); }
+    } catch (err) {
+      if (err.response && err.response.status === 401) {
+        message.warning("Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại!");
+        localStorage.removeItem('token');
+        navigate('/login');
+      }
+    } finally { 
+      setProfileLoading(false); 
+    }
   };
 
   const fetchMyVouchers = async () => {
     try {
       const res = await axios.get(`${API_BASE}/vouchers/me`, authHeader);
       setMyVouchers(res.data?.vouchers || []);
-    } catch {}
+    } catch (err) {
+    }
   };
 
   const handleApplyVoucher = async () => {
