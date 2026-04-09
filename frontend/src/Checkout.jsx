@@ -186,7 +186,7 @@ export default function Checkout() {
     };
 
     const res = await axios.post(`${API_BASE}/orders`, payload, authHeader);
-    return res.data?.result?.orderID || res.data?.result?.MaDonHang;
+    return res.data?.result?.data?.orderID || res.data?.result?.orderID || res.data?.result?.MaDonHang;
   };
 
   const handleOrder = async (values) => {
