@@ -502,6 +502,13 @@ ul {
     margin: 0; 
 }
 
+.instructionText {
+    font-size: 14px;
+    color: #888;
+    font-style: italic;
+    margin-top: 8px;
+}
+
 .marqueeContainer {
     width: 100vw;
     position: relative;
