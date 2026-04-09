@@ -149,6 +149,11 @@ createRoot(document.getElementById('root')).render(
                 <AdminStaffs />
               </ProtectedRoute>
             } />
+            <Route path="promotions" element={
+            <ProtectedRoute allowedRoles={['Admin']}>
+              <AdminPromotions />
+            </ProtectedRoute>
+          } />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />
@@ -161,11 +166,7 @@ createRoot(document.getElementById('root')).render(
           }/>
           <Route path="/support/:slug" element={<SupportPage/>}/>
           <Route path="/payment-result" element={<PaymentResult />} />
-          <Route path="promotions" element={
-            <ProtectedRoute allowedRoles={['Admin']}>
-              <AdminPromotions />
-            </ProtectedRoute>
-          } />
+          
 
         </Routes>
         <ConditionalContactIcons />
