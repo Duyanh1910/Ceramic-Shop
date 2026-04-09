@@ -579,7 +579,7 @@ ul {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding-bottom: 70px;
+    padding-bottom: 95px;
 }
 
 .marqueeImgWrap::after {
@@ -609,7 +609,7 @@ ul {
 
 .marqueeTextWrap {
     position: absolute;
-    bottom: 25px;
+    bottom: 45px;
     left: 0;
     right: 0;
     background-color: transparent;
