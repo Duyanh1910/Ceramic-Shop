@@ -107,7 +107,7 @@ export default function Checkout() {
 
         const summaryData = res.data?.result || res.data?.data || res.data;
         
-        const fee = summaryData?.shippingFee ?? summaryData?.TongPhiVanChuyen ?? 0;
+        const fee = summaryData?.shippingInfo?.fee ?? summaryData?.shippingFee ?? summaryData?.TongPhiVanChuyen ?? 0;
         
         console.log("✅ Phí ship từ Summary:", fee);
         setShippingFee(Number(fee));
