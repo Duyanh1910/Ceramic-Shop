@@ -552,7 +552,7 @@ function LandingPage() {
                     <div className={styles.sectionHeadingDark}>
                         <h2>DANH MỤC SẢN PHẨM</h2>
                         <p>Khám phá các dòng sản phẩm gốm sứ tinh hoa</p>
-                        <p className={styles.instructionText}>* Nhấp đúp (Double-click) để khám phá danh mục</p>
+                        <p className={styles.instructionText}>* Nhấp đúp để khám phá danh mục</p>
                     </div>
                     
                     <div className={styles.marqueeContainer}>
