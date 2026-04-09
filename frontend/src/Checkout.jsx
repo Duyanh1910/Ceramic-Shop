@@ -29,8 +29,7 @@ export default function Checkout() {
   const location = useLocation();
 
   const { selectedItems = [], cartItems = [], applyVoucher = null } = location.state || {};
-  const token = localStorage.getItem('customer_token')
-           || localStorage.getItem('admin_token');
+  const token = localStorage.getItem('customer_token') || localStorage.getItem('admin_token');
   const authHeader = { 
     headers: { Authorization: `Bearer ${token}` },
     withCredentials: true 
@@ -55,8 +54,17 @@ export default function Checkout() {
   const [shippingFee, setShippingFee] = useState(0);
   const [calculatingFee, setCalculatingFee] = useState(false);
 
-  const orderItems = cartItems.filter((i) => selectedItems.includes(i.variantId));
-  const subtotal = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const orderItems = cartItems.filter((i) => {
+    const vId = i.variantId || i.MaBienThe || i.id;
+    return selectedItems.includes(vId);
+  });
+
+  const subtotal = orderItems.reduce((sum, item) => {
+    const price = item.price || item.DonGia || item.GiaBan || 0;
+    const qty = item.quantity || item.SoLuong || 1;
+    return sum + price * qty;
+  }, 0);
+
   const discount = appliedVoucher ? Math.min(appliedVoucher.GiaTri, appliedVoucher.GiamToiDa ?? Infinity) : 0;
   const total = Math.max(0, subtotal - discount + shippingFee);
 
@@ -92,10 +100,10 @@ export default function Checkout() {
           MaPhi: shippingMethod,
           addressObj: addressData.obj,
           items: orderItems.map(i => ({ 
-              MaSanPham: i.id, 
-              MaBienThe: i.variantId, 
-              SoLuong: i.quantity, 
-              DonGia: i.price 
+              MaSanPham: i.id || i.MaSanPham || i.productId, 
+              MaBienThe: i.variantId || i.MaBienThe || i.id, 
+              SoLuong: i.quantity || i.SoLuong || 1, 
+              DonGia: i.price || i.DonGia || 0 
           }))
         };
 
@@ -494,18 +502,18 @@ export default function Checkout() {
                   <div className={styles.summaryTitle}>Đơn hàng ({orderItems.length} sản phẩm)</div>
                   <div className={styles.productList}>
                     {orderItems.map((item) => (
-                      <div key={item.variantId} className={styles.productItem}>
+                      <div key={item.variantId || item.MaBienThe} className={styles.productItem}>
                         <div className={styles.productImgWrap}>
-                          <img src={item.image || 'https://via.placeholder.com/56'} alt={item.name}
+                          <img src={item.image || item.Thumbnail || 'https://via.placeholder.com/56'} alt={item.name || item.TenSanPham}
                             className={styles.productImg}
                             onError={(e) => { e.target.src = 'https://via.placeholder.com/56'; }} />
-                          <span className={styles.qtyBadge}>{item.quantity}</span>
+                          <span className={styles.qtyBadge}>{item.quantity || item.SoLuong}</span>
                         </div>
                         <div className={styles.productInfo}>
-                          <div className={styles.productName}>{item.name}</div>
-                          {item.variantName && <div className={styles.productVariant}>{item.variantName}</div>}
+                          <div className={styles.productName}>{item.name || item.TenSanPham}</div>
+                          {(item.variantName || item.TenBienThe) && <div className={styles.productVariant}>{item.variantName || item.TenBienThe}</div>}
                         </div>
-                        <div className={styles.productPrice}>{fmt(item.price * item.quantity)}</div>
+                        <div className={styles.productPrice}>{fmt((item.price || item.DonGia || 0) * (item.quantity || item.SoLuong || 1))}</div>
                       </div>
                     ))}
                   </div>
