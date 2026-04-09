@@ -465,25 +465,28 @@ function LandingPage() {
                 </div>
             </section>
 
-            <section id="categories" className={styles.categorySection}>
+            <section id="categories" className={styles.categorySectionDark}>
                 <div className={styles.container}>
-                    <div className={styles.sectionHeading}>
-                        <h2>DANH MỤC SẢN PHẨM</h2>
+                    <div className={styles.sectionHeadingDark}>
+                        <h2>DANH MỤC <span>SẢN PHẨM</span></h2>
+                        <p>Khám phá các dòng sản phẩm gốm sứ tinh hoa</p>
                     </div>
                     
-                    <div className={styles.categoryGrid}>
-                        {categories.map((cat, idx) => (
-                            <div 
-                                key={idx} 
-                                className={styles.categoryItem} 
-                                onClick={() => cat.id ? navigate(`/home?category=${cat.id}`) : navigate(`/home`)}
-                            >
-                                <div className={styles.categoryImgWrap}>
-                                    <img src={cat.img} alt={cat.name} />
+                    <div className={styles.marqueeContainer}>
+                        <div className={styles.marqueeTrack}>
+                            {[...categories, ...categories, ...categories].map((cat, idx) => (
+                                <div 
+                                    key={idx} 
+                                    className={styles.marqueeItem} 
+                                    onClick={() => cat.id ? navigate(`/home?category=${cat.id}`) : navigate(`/home`)}
+                                >
+                                    <div className={styles.marqueeImgWrap}>
+                                        <img src={cat.img} alt={cat.name} />
+                                    </div>
+                                    <h3 className={styles.marqueeText}>{cat.name}</h3>
                                 </div>
-                                <h3>{cat.name}</h3>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
                 </div>
             </section>

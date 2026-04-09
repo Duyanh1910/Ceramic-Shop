@@ -463,66 +463,140 @@ ul {
     line-height: 1.6;
 }
 
-.categorySection {
-    padding: 60px 0;
-}
-
-.categoryGrid {
-    display: flex;
-    justify-content: center;
-    gap: 40px;
-    flex-wrap: wrap;
-    margin-bottom: 60px;
-}
-
-.categoryItem {
-    text-align: center;
-    cursor: pointer;
-    width: 180px;
-    transition: transform 0.3s ease;
-}
-
-.categoryItem:hover {
-    transform: translateY(-5px);
-}
-
-.categoryImgWrap {
-    width: 160px;
-    height: 160px;
-    border-radius: 50%;
+.categorySectionDark {
+    background-color: #0a0a0a;
+    padding: 80px 0;
     overflow: hidden;
-    margin: 0 auto 15px;
-    border: 2px solid #eaeaea;
-    transition: all 0.3s ease;
 }
 
-.categoryItem:hover .categoryImgWrap {
-    border-color: #BB9244;
-    box-shadow: 0 5px 20px rgba(187, 146, 68, 0.3);
+.sectionHeadingDark {
+    text-align: center;
+    margin-bottom: 50px;
 }
 
-.categoryImgWrap img {
-    width: 100%;
+.sectionHeadingDark h2 {
+    font-size: 42px;
+    font-weight: 700;
+    color: #ffffff;
+    text-transform: uppercase;
+    margin: 0 0 10px;
+    font-family: 'Arsenal', sans-serif;
+}
+
+.sectionHeadingDark h2 span {
+    color: #00bcd4; 
+    font-style: italic;
+}
+
+.sectionHeadingDark p {
+    color: #a0a0a0;
+    font-size: 18px;
+}
+
+.marqueeContainer {
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+    overflow: hidden;
+    padding: 20px 0;
+}
+
+.marqueeContainer::before,
+.marqueeContainer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    width: 150px;
     height: 100%;
-    object-fit: cover;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.marqueeContainer::before {
+    left: 0;
+    background: linear-gradient(to right, #0a0a0a, transparent);
+}
+
+.marqueeContainer::after {
+    right: 0;
+    background: linear-gradient(to left, #0a0a0a, transparent);
+}
+
+.marqueeTrack {
+    display: flex;
+    gap: 30px;
+    width: max-content;
+    animation: scrollMarquee 30s linear infinite;
+}
+
+.marqueeTrack:hover {
+    animation-play-state: paused;
+}
+
+@keyframes scrollMarquee {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(calc(-100% / 3)); 
+    }
+}
+
+.marqueeItem {
+    width: 320px;
+    cursor: pointer;
+    background-color: #1a1a1a;
+    border-radius: 24px;
+    padding: 20px;
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.marqueeItem:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(0, 188, 212, 0.15);
+}
+
+.marqueeImgWrap {
+    width: 100%;
+    height: 380px; 
+    border-radius: 16px;
+    overflow: hidden;
+    background-color: #fdfdfd;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.marqueeImgWrap img {
+    width: 90%;
+    height: 90%;
+    object-fit: contain;
     transition: transform 0.5s ease;
 }
 
-.categoryItem:hover .categoryImgWrap img {
+.marqueeItem:hover .marqueeImgWrap img {
     transform: scale(1.1);
 }
 
-.categoryItem h3 {
-    font-size: 16px;
-    font-weight: 600;
-    color: #333;
+.marqueeText {
+    font-size: 22px;
+    font-weight: 700;
+    color: #ffffff;
     margin: 0;
     text-transform: uppercase;
+    text-align: center;
     transition: color 0.3s;
 }
 
-.categoryItem:hover h3 {
-    color: #BB9244;
+.marqueeItem:hover .marqueeText {
+    color: #00bcd4;
 }
 
 .productSection {
@@ -858,14 +932,15 @@ ul {
 
 @media (max-width: 576px) {
     .productGrid { grid-template-columns: repeat(2, 1fr); gap: 15px; }
-    .categoryGrid { gap: 20px; }
-    .categoryItem { width: 120px; }
-    .categoryImgWrap { width: 100px; height: 100px; }
     .topbar { display: none; }
     .headerFlex { flex-wrap: wrap; justify-content: center; gap: 15px; }
     .searchBox { max-width: 100%; margin-bottom: 10px; }
     .footerGrid { grid-template-columns: 1fr; }
+    .marqueeItem { width: 240px; padding: 15px; }
+    .marqueeImgWrap { height: 260px; }
+    .sectionHeadingDark h2 { font-size: 28px; }
 }
+
 .searchAutoComplete {
     width: 100%;
 }

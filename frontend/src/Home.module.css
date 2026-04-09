@@ -890,7 +890,6 @@
   border-top: 1px solid #f0f0f0;
 }
 
-/* FOOTER CSS TỪ LANDING PAGE */
 .container {
   max-width: 1200px;
   margin: 0 auto;
@@ -1038,6 +1037,8 @@
   height: 36px !important;
   line-height: 36px !important;
   margin-bottom: 2px !important;
+  text-transform: uppercase;
+  font-weight: bold
 }
 
 .childMenuItem::before {
