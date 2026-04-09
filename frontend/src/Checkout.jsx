@@ -29,7 +29,8 @@ export default function Checkout() {
   const location = useLocation();
 
   const { selectedItems = [], cartItems = [], applyVoucher = null } = location.state || {};
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('customer_token')
+           || localStorage.getItem('admin_token');
   const authHeader = { 
     headers: { Authorization: `Bearer ${token}` },
     withCredentials: true 
@@ -193,7 +194,10 @@ export default function Checkout() {
       setAddressError('Vui lòng chọn đầy đủ tỉnh/huyện/xã và nhập số nhà!');
       return;
     }
-    
+    if (shippingMethod === 2 && addressData.string && !addressData.string.toLowerCase().includes('hải phòng')) {
+      message.error('Giao hỏa tốc chỉ áp dụng trong khu vực nội thành Hải Phòng!');
+      return;
+    }
     setAddressError('');
     setLoading(true);
 

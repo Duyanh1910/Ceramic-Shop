@@ -51,7 +51,8 @@ export default function PaymentResult() {
   const navigate = useNavigate();
   const { success, method, methodLogo, orderId, amount, errorMessage } = parsePaymentParams(searchParams);
 
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('customer_token')
+           || localStorage.getItem('admin_token');
 
   return (
     <div className={styles.pageWrapper}>
@@ -66,7 +67,6 @@ export default function PaymentResult() {
       <div className={styles.centerWrapper}>
         <div className={styles.card}>
 
-          {/* Icon trạng thái */}
           <div className={`${styles.iconCircle} ${success ? styles.successCircle : styles.failCircle}`}>
             {success ? (
               <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
