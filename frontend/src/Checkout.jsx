@@ -182,7 +182,11 @@ export default function Checkout() {
         addressObj: shippingMethod === 3 ? null : addressData.obj, 
         ListMaKhuyenMai: appliedVoucher ? [appliedVoucher.MaKhuyenMai] : [],
         
-        items: selectedItems,
+        items: orderItems.map((i) => ({
+            MaBienThe: i.variantId,
+            SoLuong: i.quantity,
+            DonGia: i.price
+        })), 
     };
 
     const res = await axios.post(`${API_BASE}/orders`, payload, authHeader);
