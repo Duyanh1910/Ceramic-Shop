@@ -677,6 +677,15 @@ Thông tin liên hệ:
         });
       }
     } else {
+      if (
+        newStatus == ORDER_STATUS.COMPLETED &&
+        order.TrangThaiThanhToan === 1
+      ) {
+        throw new ErrorHandler(
+          "Không thể thay đổi trạng thái đơn hàng do đơn hàng chưa thanh toán!",
+          400,
+        );
+      }
       order.TrangThaiDonHang = newStatus;
       await order.save({
         transaction,
