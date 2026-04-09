@@ -108,7 +108,27 @@ export default function AdminLayout() {
           )}
         </div>
       </Sider>
+
       <Layout>
+        <Header className={styles.header}>
+          <Button
+            type="text"
+            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+            onClick={() => setCollapsed(!collapsed)}
+            className={styles.collapseBtn}
+          />
+          <div className={styles.headerRight}>
+            <Dropdown menu={userMenu} placement="bottomRight" arrow>
+              <div className={styles.userInfo}>
+                <Avatar className={styles.avatar}>{username?.[0]?.toUpperCase()}</Avatar>
+                <div className={styles.userMeta}>
+                  <span className={styles.userName}>{username}</span>
+                  <span className={styles.userRole}>{role}</span>
+                </div>
+              </div>
+            </Dropdown>
+          </div>
+        </Header>
         <Content className={styles.content}>
           <Outlet />
         </Content>
