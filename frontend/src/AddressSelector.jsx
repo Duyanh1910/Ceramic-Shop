@@ -91,8 +91,8 @@ export default function AddressSelector({ onChange, disabled = false }) {
           <label className={styles.label}>Tỉnh / Thành phố <span className={styles.req}>*</span></label>
           <Select showSearch placeholder={loadingP ? 'Đang tải...' : 'Chọn tỉnh/thành'}
             options={provinces} onChange={handleProvince} filterOption={filterOpt}
-            loading={loadingP} disabled={disabled || loadingP} className={styles.select} />
-            value={selectedProvince?.id ?? undefined}
+            loading={loadingP} disabled={disabled || loadingP} className={styles.select} 
+            value={selectedProvince?.id ?? undefined} />
         </div>
 
         <div className={styles.field}>
