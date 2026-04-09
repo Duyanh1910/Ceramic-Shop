@@ -30,7 +30,10 @@ export default function Checkout() {
 
   const { selectedItems = [], cartItems = [], applyVoucher = null } = location.state || {};
   const token = localStorage.getItem('token');
-  const authHeader = { headers: { Authorization: `Bearer ${token}` } };
+  const authHeader = { 
+    headers: { Authorization: `Bearer ${token}` },
+    withCredentials: true 
+  };
 
   const [form] = Form.useForm();
   const [step, setStep] = useState(0);
