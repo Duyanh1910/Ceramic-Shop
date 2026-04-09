@@ -102,7 +102,8 @@ export default function Checkout() {
             addressObj: addressData.obj,  
             ListMaKhuyenMai: appliedVoucher ? [appliedVoucher.MaKhuyenMai] : [],
         };
-        const res = await axios.get(`${API_BASE}/cart/summary`, payload, authHeader);
+
+        const res = await axios.post(`${API_BASE}/cart/summary`, payload, authHeader);
 
         const summaryData = res.data?.result || res.data?.data || res.data;
         
@@ -113,6 +114,10 @@ export default function Checkout() {
 
       } catch (err) {
         console.error('Lỗi tính Summary:', err.response?.data?.message || err.message);
+        if (err.response?.status === 401) {
+            message.error("Phiên đăng nhập hết hạn, vui lòng đăng nhập lại!");
+            navigate('/login');
+        }
         setShippingFee(0);
       } finally {
         setCalculatingFee(false);

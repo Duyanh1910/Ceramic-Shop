@@ -10,7 +10,7 @@ import {
 
 const router = express.Router();
 router.get("/", getCartController);
-router.get("/summary", getCartSummary);
+router.post("/summary", getCartSummary);
 router.post("/items", addCartItemsController);
 router.patch("/items/:id", updateCartItemsController);
 router.delete("/items/:id", deleteCartItemsController);
