@@ -36,8 +36,12 @@ const generateOrderCode = () => {
   return `DH${dateStr}${randomStr}`;
 };
 
-export const checkOutService = async (idAccount, orderData, selectedItems) => {
-  if (!selectedItems) {
+export const checkOutService = async (
+  idAccount,
+  orderData,
+  selectedVariantIds,
+) => {
+  if (!selectedVariantIds || selectedVariantIds.length === 0) {
     throw new ErrorHandler("Vui lòng chọn ít nhất 1 sản phẩm!", 400);
   }
 
@@ -60,13 +64,12 @@ export const checkOutService = async (idAccount, orderData, selectedItems) => {
     });
     if (!customer)
       throw new ErrorHandler("Không tìm thấy khách hàng này!", 404);
-
     const cart = await CartModel.findOne({
       where: { MaKhachHang: customer.MaKhachHang },
       include: [
         {
           model: CartInfoModel,
-          where: { MaBienThe: { [Op.in]: selectedItems } },
+          where: { MaBienThe: { [Op.in]: selectedVariantIds } },
           include: [
             {
               model: VariantModel,
@@ -85,7 +88,7 @@ export const checkOutService = async (idAccount, orderData, selectedItems) => {
     });
 
     const cartItems = cart?.CartInfoModels || cart?.ChiTietGioHangs;
-    if (!cartItems) {
+    if (!cartItems || cartItems.length === 0) {
       throw new ErrorHandler(
         "Sản phẩm không hợp lệ, không đủ số lượng hoặc đã bị xóa khỏi giỏ!",
         400,
@@ -93,7 +96,7 @@ export const checkOutService = async (idAccount, orderData, selectedItems) => {
     }
 
     let totalProductPrice = 0;
-    const shippingItemsFormat = [];
+    const trustedItems = [];
 
     for (const item of cartItems) {
       const variant = item.BienTheSanPham;
@@ -105,11 +108,18 @@ export const checkOutService = async (idAccount, orderData, selectedItems) => {
         );
       }
 
-      totalProductPrice += Number(variant.Gia) * item.SoLuong;
-      shippingItemsFormat.push({
+      const donGia = Number(variant.Gia);
+      totalProductPrice += donGia * item.SoLuong;
+
+      trustedItems.push({
         MaBienThe: variant.MaBienThe,
         soLuong: item.SoLuong,
-        KhoiLuong: variant.KhoiLuong,
+        donGia: donGia,
+        MaDanhMuc: variant.SanPham?.MaDanhMuc,
+        KhoiLuong: Number(variant.KhoiLuong || 0.5),
+        ChieuDai: Number(variant.ChieuDai || 0),
+        ChieuRong: Number(variant.ChieuRong || 0),
+        ChieuCao: Number(variant.ChieuCao || 0),
       });
     }
 
@@ -118,7 +128,7 @@ export const checkOutService = async (idAccount, orderData, selectedItems) => {
 
     if (addressObj && MaPhi) {
       const shipResult = await calculateShippingFee(
-        shippingItemsFormat,
+        trustedItems,
         addressObj,
         MaPhi,
         totalProductPrice,
@@ -132,9 +142,10 @@ export const checkOutService = async (idAccount, orderData, selectedItems) => {
       customer.MaKhachHang,
       totalProductPrice,
       totalShippingFee,
-      cartItems,
+      trustedItems,
       MaPhi,
     );
+
     const totalPayment =
       totalProductPrice + totalShippingFee - discountResult.totalDiscount;
 
@@ -183,11 +194,13 @@ export const checkOutService = async (idAccount, orderData, selectedItems) => {
         MaThamChieu: newOrder.MaDonHang,
         GhiChu: `Khách hàng đặt mua đơn ${newOrder.MaHienThi}`,
       });
+
       await VariantModel.update(
         { SoLuong: variant.SoLuong - quantity },
         { where: { MaBienThe: variant.MaBienThe }, transaction },
       );
     }
+
     await OrderDetailModel.bulkCreate(orderDetails, { transaction });
     await InventoryHistoryModel.bulkCreate(inventoryHistories, { transaction });
 
@@ -199,6 +212,7 @@ export const checkOutService = async (idAccount, orderData, selectedItems) => {
           p.LoaiVoucher === 1
             ? discountResult.orderDiscount
             : discountResult.shippingDiscount;
+
         orderPromotions.push({
           MaDonHang: newOrder.MaDonHang,
           MaKhuyenMai: p.MaKhuyenMai,
@@ -228,7 +242,7 @@ export const checkOutService = async (idAccount, orderData, selectedItems) => {
     await CartInfoModel.destroy({
       where: {
         MaGioHang: cart.MaGioHang,
-        MaBienThe: { [Op.in]: selectedItems },
+        MaBienThe: { [Op.in]: selectedVariantIds },
       },
       transaction,
     });

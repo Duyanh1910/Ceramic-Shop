@@ -7,6 +7,9 @@ import {
   VariantImageModel,
 } from "../models/index.js";
 import ErrorHandler from "../utils/error_handler.js";
+import calculateOrderDiscount from "../utils/orders/calculate_order_discount.js";
+import calculateProduct from "../utils/orders/calculate_product_fee.js";
+import calculateShippingFee from "../utils/orders/calculate_shipping_fee.js";
 
 export const getCartService = async (id) => {
   try {
@@ -269,4 +272,96 @@ export const deleteCartService = async (idAccount) => {
       500,
     );
   }
+};
+
+export const calculateSummaryService = async (idAccount, payload) => {
+  const { selectedVariantIds, MaPhi, addressObj, ListMaKhuyenMai } = payload;
+
+  if (!selectedVariantIds || selectedVariantIds.length === 0) {
+    return {
+      success: true,
+      data: {
+        totalProductPrice: 0,
+        shippingFee: 0,
+        discount: { totalDiscount: 0, orderDiscount: 0, shippingDiscount: 0 },
+        finalPayment: 0,
+      },
+    };
+  }
+
+  const customer = await CustomerModel.findOne({
+    where: { MaTaiKhoan: idAccount },
+  });
+  if (!customer) throw new ErrorHandler("Không tìm thấy khách hàng!", 404);
+
+  const productResult = await calculateProduct(
+    customer.MaKhachHang,
+    selectedVariantIds,
+  );
+  const trustedItems = productResult.items;
+  const totalProductPrice = productResult.total;
+
+  let shippingFee = 0;
+  let shippingDetails = null;
+
+  if (MaPhi && (Number(MaPhi) === 3 || addressObj)) {
+    const shipResult = await calculateShippingFee(
+      trustedItems,
+      addressObj,
+      MaPhi,
+      totalProductPrice,
+    );
+    shippingFee = shipResult.data.total;
+    shippingDetails = shipResult.data.ghnDetails;
+  }
+
+  let discountResult = {
+    totalDiscount: 0,
+    orderDiscount: 0,
+    shippingDiscount: 0,
+    validPromotions: [],
+  };
+
+  if (
+    ListMaKhuyenMai &&
+    Array.isArray(ListMaKhuyenMai) &&
+    ListMaKhuyenMai.length > 0
+  ) {
+    discountResult = await calculateOrderDiscount(
+      ListMaKhuyenMai,
+      customer.MaKhachHang,
+      totalProductPrice,
+      shippingFee,
+      trustedItems,
+      MaPhi,
+    );
+  }
+
+  const finalPayment =
+    totalProductPrice + shippingFee - discountResult.totalDiscount;
+
+  return {
+    success: true,
+    data: {
+      totalProductPrice,
+      shippingInfo: {
+        fee: shippingFee,
+        details: shippingDetails,
+      },
+      discountInfo: {
+        totalDiscount: discountResult.totalDiscount,
+        orderDiscount: discountResult.orderDiscount,
+        shippingDiscount: discountResult.shippingDiscount,
+        appliedVouchers: discountResult.validPromotions.map((p) => p.MaCode),
+      },
+      finalPayment: finalPayment > 0 ? finalPayment : 0,
+
+      itemsDetails: trustedItems.map((item) => ({
+        MaBienThe: item.MaBienThe,
+        soLuong: item.soLuong,
+        donGia: item.donGia,
+        thanhTien: item.donGia * item.soLuong,
+      })),
+    },
+  };
 };

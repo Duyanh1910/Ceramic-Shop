@@ -1,18 +1,19 @@
 import axios from "axios";
 import { VariantModel, SystemModel } from "../../models/index.js";
+import { Op } from "sequelize";
 import ErrorHandler from "../error_handler.js";
 
-const calculateShippingFee = async (items, address, MaPhi, totalProductFee) => {
+const calculateShippingFee = async (
+  cartItems,
+  address,
+  MaPhi,
+  totalProductFee,
+) => {
   try {
     if (Number(MaPhi) === 3) {
       return {
         success: true,
-        data: {
-          baseCost: 0,
-          surcharge: 0,
-          total: 0,
-          ghnDetails: null,
-        },
+        data: { baseCost: 0, surcharge: 0, total: 0, ghnDetails: null },
       };
     }
 
@@ -22,15 +23,23 @@ const calculateShippingFee = async (items, address, MaPhi, totalProductFee) => {
       return acc;
     }, {});
 
+    const variantIds = cartItems.map((item) => item.id || item.MaBienThe);
+    const variantsFromDB = await VariantModel.findAll({
+      where: { MaBienThe: { [Op.in]: variantIds } },
+    });
+
+    const variantMap = {};
+    variantsFromDB.forEach((v) => (variantMap[v.MaBienThe] = v));
+
     let totalWeight = 0;
     let totalSurcharge = 0;
 
-    for (const item of items) {
-      const variant = await VariantModel.findByPk(item.MaBienThe);
+    for (const item of cartItems) {
+      const variant = variantMap[item.id || item.MaBienThe];
       if (!variant) continue;
 
-      const weight = item.KhoiLuong || 0.5;
-      const quantity = item.soLuong;
+      const quantity = Number(item.soLuong || item.SoLuong);
+      const weight = Number(variant.KhoiLuong || 0.5);
       totalWeight += weight * 1000 * quantity;
 
       const length = Number(variant.ChieuDai || 0);
@@ -41,46 +50,40 @@ const calculateShippingFee = async (items, address, MaPhi, totalProductFee) => {
       const volume = length * width * height;
 
       let itemSurcharge = 0;
-      if (maxLength >= 100) {
+      if (maxLength >= 100)
         itemSurcharge = config["PHU_PHI_DONG_THUNG_3"] || 500000.0;
-      } else if (maxLength >= 60) {
+      else if (maxLength >= 60)
         itemSurcharge = config["PHU_PHI_DONG_THUNG_2"] || 150000.0;
-      } else if (maxLength >= 40) {
+      else if (maxLength >= 40)
         itemSurcharge = config["PHU_PHI_DONG_THUNG_1"] || 50000.0;
-      } else {
-        if (volume >= 20000) {
+      else {
+        if (volume >= 20000)
           itemSurcharge = config["PHU_PHI_BOC_XOP_3"] || 30000.0;
-        } else if (volume >= 5000) {
+        else if (volume >= 5000)
           itemSurcharge = config["PHU_PHI_BOC_XOP_2"] || 15000.0;
-        } else {
-          itemSurcharge = config["PHU_PHI_BOC_XOP_1"] || 5000.0;
-        }
+        else itemSurcharge = config["PHU_PHI_BOC_XOP_1"] || 5000.0;
       }
       totalSurcharge += itemSurcharge * quantity;
     }
 
     const totalInsuranceValue =
       totalProductFee > 5000000 ? 5000000 : totalProductFee;
-
     let baseShippingCost = 0;
     let ghnDetails = null;
 
     if (Number(MaPhi) === 2) {
-      if (address.ToProvinceID !== 31) {
+      if (address.ToProvinceID !== 31)
         throw new ErrorHandler(
-          "Giao hỏa tốc chỉ áp dụng trong khu vực nội thành!",
+          "Giao hỏa tốc chỉ áp dụng trong nội thành!",
+          400,
         );
-      }
-
       const baseExpressFee = 40000;
       const freeWeightLimit = 3000;
       let extraWeightFee = 0;
-
       if (totalWeight > freeWeightLimit) {
-        const extraWeight = totalWeight - freeWeightLimit;
-        extraWeightFee = Math.ceil(extraWeight / 1000) * 10000;
+        extraWeightFee =
+          Math.ceil((totalWeight - freeWeightLimit) / 1000) * 10000;
       }
-
       baseShippingCost = baseExpressFee + extraWeightFee;
     } else if (Number(MaPhi) === 1) {
       const ghnAPI = await axios.post(
@@ -102,25 +105,24 @@ const calculateShippingFee = async (items, address, MaPhi, totalProductFee) => {
           },
         },
       );
-
       baseShippingCost = ghnAPI.data.data.total;
       ghnDetails = ghnAPI.data.data;
     } else {
       throw new ErrorHandler("Loại phí vận chuyển không hợp lệ");
     }
+
     return {
       success: true,
       data: {
         baseCost: baseShippingCost,
         surcharge: totalSurcharge,
         total: baseShippingCost + totalSurcharge,
-        ghnDetails: ghnDetails,
+        ghnDetails,
       },
     };
   } catch (err) {
-    console.error(err.response?.data || err.message);
     if (err.statusCode) throw err;
-    throw new ErrorHandler("Lỗi server! Không thể tính phí vận chuyển");
+    throw new ErrorHandler("Lỗi server! Không thể tính phí vận chuyển", 500);
   }
 };
 

@@ -5,6 +5,7 @@ import {
   updateCartItemsService,
   deleteCartItemsService,
   deleteCartService,
+  calculateSummaryService,
 } from "../services/cart.services.js";
 export const getCartController = async (req, res, next) => {
   try {
@@ -110,5 +111,16 @@ export const deleteCartController = async (req, res, next) => {
     });
   } catch (err) {
     next(err);
+  }
+};
+
+export const getCartSummary = async (req, res, next) => {
+  try {
+    console.log(req.body);
+    const idAccount = req.user.id;
+    const result = await calculateSummaryService(idAccount, req.body);
+    return res.status(200).json(result);
+  } catch (error) {
+    next(error);
   }
 };
