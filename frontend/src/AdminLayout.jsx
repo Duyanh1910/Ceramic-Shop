@@ -61,7 +61,7 @@ export default function AdminLayout() {
 
   const userMenu = {
     items: [
-      { key: 'profile', icon: <UserOutlined />, label: 'Sửa hồ sơ' },
+      { key: 'adminprofile', icon: <UserOutlined />, label: 'Tài khoản' },
       { type: 'divider' },
       { key: 'logout', icon: <LogoutOutlined />, label: 'Đăng xuất', danger: true },
     ],

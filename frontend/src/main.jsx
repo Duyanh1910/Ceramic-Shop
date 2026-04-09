@@ -27,6 +27,7 @@ import NewsDetail from './NewsDetails.jsx'
 import AdminReports from './AdminReports.jsx';
 import Checkout from './Checkout.jsx';
 import PaymentResult from './PaymentResult.jsx';
+import AdminProfile from './AdminProfile.jsx';
 ReactGA.initialize("G-909W1LHHLD");
 
 const AnalyticsTracker = () => {
@@ -138,6 +139,7 @@ createRoot(document.getElementById('root')).render(
           }>
             <Route index element={<AdminDashboard />} />
             <Route path="products" element={<AdminProducts />} />
+            <Route path="adminprofile" element={<AdminProfile />} />
             <Route path="reports" element={<AdminReports />} />
             <Route path="customers" element={<AdminCustomers />} />
             <Route path="staffs" element={
