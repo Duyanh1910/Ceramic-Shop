@@ -80,6 +80,7 @@ export default function Checkout() {
         setShippingFee(0);
         return;
       }
+      
       if (!addressData.obj || !addressData.obj.ToDistrictID || !addressData.obj.ToWardID) {
         setShippingFee(0);
         return;
@@ -87,21 +88,34 @@ export default function Checkout() {
 
       setCalculatingFee(true);
       try {
-        const res = await axios.post(`${API_BASE}/orders/calculate-fee`, {
+        const payload = {
           MaPhi: shippingMethod,
           addressObj: addressData.obj,
           items: orderItems.map(i => ({ 
               MaSanPham: i.id, 
               MaBienThe: i.variantId, 
-              soLuong: i.quantity, 
+              SoLuong: i.quantity, 
               DonGia: i.price 
           }))
-        }, authHeader);
+        };
 
-        setShippingFee(res.data?.data?.total || 0);
+        const res = await axios.post(`${API_BASE}/orders/calculate-fee`, payload, authHeader);
+      
+        let finalFee = 0;
+        if (res.data?.feeResult?.data?.total) {
+            finalFee = res.data.feeResult.data.total;
+        } else if (res.data?.data?.total) {
+            finalFee = res.data.data.total;
+        } else if (res.data?.feeResult?.total) {
+            finalFee = res.data.feeResult.total;
+        }
+        
+        console.log("✅ Phí ship bóc tách được:", finalFee);
+        setShippingFee(finalFee);
+
       } catch (err) {
-        console.warn("Lỗi tính phí:", err);
-        setShippingFee(30000); 
+        console.error("❌ Lỗi tính phí:", err);
+        setShippingFee(0); 
       } finally {
         setCalculatingFee(false);
       }
@@ -173,16 +187,17 @@ export default function Checkout() {
 
   const createOrder = async (values) => {
     const payload = {
-        TenNguoiNhan: values.name,
-        SDT: values.phone, 
-        DiaChiGiaoHang: shippingMethod === 3 ? "Nhận tại cửa hàng" : addressData.string,
-        GhiChu: values.note || '',
-        MaPhuongThuc: paymentMethod,
-        MaPhi: shippingMethod, 
-        addressObj: shippingMethod === 3 ? null : addressData.obj, 
-        ListMaKhuyenMai: appliedVoucher ? [appliedVoucher.MaKhuyenMai] : [],
-        
-        items: selectedItems, 
+        orderData: {
+            TenNguoiNhan: values.name,
+            SDT: values.phone, 
+            DiaChiGiaoHang: shippingMethod === 3 ? "Nhận tại cửa hàng" : addressData.string,
+            GhiChu: values.note || '',
+            MaPhuongThuc: paymentMethod,
+            MaPhi: shippingMethod, 
+            addressObj: shippingMethod === 3 ? null : addressData.obj, 
+            ListMaKhuyenMai: appliedVoucher ? [appliedVoucher.MaKhuyenMai] : [],
+        },
+        selectedVariantIds: selectedItems, 
     };
 
     const res = await axios.post(`${API_BASE}/orders`, payload, authHeader);
