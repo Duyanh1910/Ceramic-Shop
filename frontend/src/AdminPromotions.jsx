@@ -8,7 +8,7 @@ import {
   PlusOutlined, EditOutlined, DeleteOutlined, TagOutlined,
   SearchOutlined, ReloadOutlined, GiftOutlined, TruckOutlined,
   CheckCircleOutlined, ClockCircleOutlined, StopOutlined,
-  CopyOutlined, FilterOutlined,
+  CopyOutlined, FilterOutlined, TagsOutlined
 } from '@ant-design/icons';
 import axios from 'axios';
 import dayjs from 'dayjs';
