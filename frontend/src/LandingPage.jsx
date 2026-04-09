@@ -64,17 +64,15 @@ function LandingPage() {
     const [isChecking, setIsChecking] = useState(false);
     const [apiCategories, setApiCategories] = useState([]);
 
-    // === BẮT ĐẦU: LOGIC CUSTOM DRAG & MARQUEE CHO DANH MỤC ===
     const trackRef = useRef(null);
     const [isAutoPlaying, setIsAutoPlaying] = useState(true);
     const isDragging = useRef(false);
-    const isDragMoved = useRef(false); // Biến kiểm tra xem có đang kéo thực sự không để khóa click
+    const isDragMoved = useRef(false);
     const startX = useRef(0);
     const scrollLeftRef = useRef(0);
     const reqRef = useRef();
     const exactScroll = useRef(0);
 
-    // Xử lý tự động trượt chậm mượt
     useEffect(() => {
         if (!isAutoPlaying) return;
         const track = trackRef.current;
@@ -86,7 +84,7 @@ function LandingPage() {
 
         const scroll = () => {
             if (track && track.children.length > 0) {
-                exactScroll.current += 0.5; // Tốc độ trượt (có thể chỉnh nhỏ lại để chậm hơn)
+                exactScroll.current += 0.5;
                 track.scrollLeft = Math.floor(exactScroll.current);
 
                 const setWidth = track.scrollWidth / 3;
@@ -102,7 +100,7 @@ function LandingPage() {
     }, [isAutoPlaying, apiCategories]);
 
     const handleDragStart = (e) => {
-        setIsAutoPlaying(false); // Dừng vĩnh viễn khi chạm vào
+        setIsAutoPlaying(false);
         isDragging.current = true;
         isDragMoved.current = false;
         const track = trackRef.current;
@@ -123,7 +121,6 @@ function LandingPage() {
         const x = pageX - track.offsetLeft;
         const walk = (x - startX.current) * 1.5; 
         
-        // Nếu kéo quá 5px, đánh dấu là thao tác drag chứ không phải click nhầm
         if (Math.abs(walk) > 5) {
             isDragMoved.current = true;
         }
@@ -131,7 +128,6 @@ function LandingPage() {
         let newScroll = scrollLeftRef.current - walk;
         const setWidth = track.scrollWidth / 3;
 
-        // Vòng lặp kéo 2 chiều vô cực
         if (newScroll >= setWidth * 2) {
             scrollLeftRef.current -= setWidth;
             newScroll -= setWidth;
@@ -141,14 +137,13 @@ function LandingPage() {
         }
         
         track.scrollLeft = newScroll;
-        exactScroll.current = newScroll; // Đồng bộ lại vị trí cho biến tự trượt (nếu có bật lại)
+        exactScroll.current = newScroll;
     };
 
     const handleDragEnd = () => {
         isDragging.current = false;
         if (trackRef.current) trackRef.current.style.cursor = 'grab';
     };
-    // === KẾT THÚC: LOGIC CUSTOM DRAG & MARQUEE ===
 
     useEffect(() => {
         const fetchCats = async () => {
@@ -576,7 +571,6 @@ function LandingPage() {
                                     key={idx} 
                                     className={styles.marqueeItem} 
                                     onDoubleClick={(e) => {
-                                        // Khóa nhảy trang nếu đang thao tác kéo
                                         if (isDragMoved.current) {
                                             e.preventDefault();
                                             return;
@@ -586,8 +580,11 @@ function LandingPage() {
                                 >
                                     <div className={styles.marqueeImgWrap}>
                                         <img src={cat.img} alt={cat.name} draggable="false" />
+                                        <div className={styles.marqueeTextWrap}>
+                                            <h3 className={styles.marqueeText}>{cat.name}</h3>
+                                            <span className={styles.marqueeSubText}>Khám phá chi tiết</span>
+                                        </div>
                                     </div>
-                                    <h3 className={styles.marqueeText}>{cat.name}</h3>
                                 </div>
                             ))}
                         </div>
