@@ -182,11 +182,11 @@ export default function Checkout() {
         addressObj: shippingMethod === 3 ? null : addressData.obj, 
         ListMaKhuyenMai: appliedVoucher ? [appliedVoucher.MaKhuyenMai] : [],
         
-        items: selectedItems,
+        items: selectedItems, 
     };
 
     const res = await axios.post(`${API_BASE}/orders`, payload, authHeader);
-    return res.data?.result?.orderID || res.data?.result?.MaDonHang;
+    return res.data?.result?.data?.orderID || res.data?.result?.orderID || res.data?.result?.MaDonHang;
   };
 
   const handleOrder = async (values) => {
@@ -338,17 +338,27 @@ export default function Checkout() {
                       </Form.Item>
                     </div>
 
-                    <div className={styles.section} style={{ marginTop: 10, padding: 0, border: 'none' }}>
+                    <div style={{ marginTop: 18, paddingTop: 18, borderTop: '1.5px solid #f0f4f8' }}>
                         <div className={styles.sectionTitle}>🚚 Phương thức giao hàng</div>
-                        <Radio.Group 
-                            onChange={(e) => setShippingMethod(e.target.value)} 
-                            value={shippingMethod}
-                            style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}
-                        >
-                            <Radio value={1}>Giao hàng nhanh (GHN)</Radio>
-                            <Radio value={2}>Giao hỏa tốc (Chỉ áp dụng nội thành Hải Phòng)</Radio>
-                            <Radio value={3}>Nhận tại cửa hàng (Miễn phí)</Radio>
-                        </Radio.Group>
+                        <div className={styles.shippingOptions}>
+                            {[
+                                { value: 1, icon: '📦', label: 'Giao hàng nhanh (GHN)', desc: 'Toàn quốc · 2-5 ngày' },
+                                { value: 2, icon: '⚡', label: 'Giao hỏa tốc', desc: 'Chỉ nội thành Hải Phòng · Trong ngày' },
+                                { value: 3, icon: '🏪', label: 'Nhận tại cửa hàng', desc: 'Miễn phí · Theo giờ mở cửa' },
+                            ].map((opt) => (
+                                <div key={opt.value}
+                                    className={`${styles.shippingOption} ${shippingMethod === opt.value ? styles.shippingActive : ''}`}
+                                    onClick={() => setShippingMethod(opt.value)}
+                                >
+                                    <Radio checked={shippingMethod === opt.value} />
+                                    <span className={styles.shippingIcon}>{opt.icon}</span>
+                                    <div>
+                                        <div className={styles.shippingName}>{opt.label}</div>
+                                        <div className={styles.shippingDesc}>{opt.desc}</div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
 
                     {shippingMethod !== 3 && (

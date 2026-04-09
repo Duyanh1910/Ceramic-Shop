@@ -6,7 +6,20 @@
   min-height: 100vh;
   background: #f0f4f8;
 }
-
+:global(.ant-steps-item-process .ant-steps-item-icon) {
+  background: #1b437c !important;
+  border-color: #1b437c !important;
+}
+:global(.ant-steps-item-finish .ant-steps-item-icon) {
+  background: transparent !important;
+  border-color: #1b437c !important;
+}
+:global(.ant-steps-item-finish .ant-steps-item-icon .ant-steps-icon) {
+  color: #1b437c !important;
+}
+:global(.ant-steps-item-finish > .ant-steps-item-container > .ant-steps-item-tail::after) {
+  background-color: #1b437c !important;
+}
 .topHeader {
   display: flex;
   justify-content: space-between;

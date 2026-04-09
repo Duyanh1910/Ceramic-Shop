@@ -638,20 +638,20 @@ function Home() {
 
         parents.forEach(p => {
           menuItems.push({
-            key:p.MaDanhMuc.toString(),
-            label:p.TenDanhMuc,
-            className:styles.parentMenuItem,
+            key: p.MaDanhMuc.toString(),
+            label: p.TenDanhMuc,
+            className: styles.parentMenuItem,
           });
           
-           const mappedChildren = catData.filter(c => c.ParentID === p.MaDanhMuc);
-           
-           mappedChildren.forEach(c=>{
+          const mappedChildren = catData.filter(c => c.ParentID === p.MaDanhMuc);
+          
+          mappedChildren.forEach(c => {
             menuItems.push({
-              key:c.MaDanhMuc.toString(),
-              label:c.TenDanhMuc,
-              className:styles.childMenuItem,
-            })
-           })
+              key: c.MaDanhMuc.toString(),
+              label: c.TenDanhMuc,
+              className: styles.childMenuItem,
+            });
+          });
         });
         
         setCategories(menuItems);
@@ -955,9 +955,8 @@ function Home() {
             </Spin>
           </div>
 
-          {/* ĐÃ SỬA: PAGE SIZE 12 VÀ TỔNG TOTAL * 12 */}
-          {totalPages > 1 && (
-            <div className={styles.paginationBox}>
+          <div className={styles.paginationBox}>
+            {totalPages > 1 && (
               <Pagination 
                 current={currentPage} 
                 total={totalPages * 12} 
@@ -965,8 +964,8 @@ function Home() {
                 onChange={(page) => setCurrentPage(page)} 
                 showSizeChanger={false} 
               />
-            </div>
-          )}
+            )}
+          </div>
         </Content>
       </Layout>
 
