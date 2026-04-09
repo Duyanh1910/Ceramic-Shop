@@ -89,7 +89,12 @@ export default function Checkout() {
         const res = await axios.post(`${API_BASE}/orders/calculate-fee`, {
           MaPhi: shippingMethod,
           addressObj: addressData.obj,
-          items: orderItems.map(i => ({ MaBienThe: i.variantId, soLuong: i.quantity, DonGia: i.price }))
+          items: orderItems.map(i => ({ 
+              MaSanPham: i.id, 
+              MaBienThe: i.variantId, 
+              soLuong: i.quantity, 
+              DonGia: i.price 
+          }))
         }, authHeader);
 
         setShippingFee(res.data?.data?.total || 0);
@@ -175,8 +180,10 @@ export default function Checkout() {
         MaPhi: shippingMethod, 
         addressObj: shippingMethod === 3 ? null : addressData.obj, 
         ListMaKhuyenMai: appliedVoucher ? [appliedVoucher.MaKhuyenMai] : [],
+        
         items: orderItems.map((i) => ({
-            MaBienThe: i.variantId,
+            MaSanPham: i.id,
+            MaBienThe: i.variantId || null,
             SoLuong: i.quantity,
             DonGia: i.price
         })), 
