@@ -88,6 +88,7 @@ export default function Checkout() {
         setShippingFee(0);
         return;
       }
+      
       if (!addressData.obj?.ToDistrictID || !addressData.obj?.ToWardID) {
         setShippingFee(0);
         return;
@@ -96,20 +97,30 @@ export default function Checkout() {
       setCalculatingFee(true);
       try {
         const payload = {
-            selectedVariantIds: selectedItems, 
-            MaPhi: shippingMethod,
-            addressObj: addressData.obj,
-            ListMaKhuyenMai: appliedVoucher ? [appliedVoucher.MaKhuyenMai] : [],
+          MaPhi: shippingMethod,
+          addressObj: addressData.obj,
+          items: orderItems.map(i => ({ 
+              idBienThe: i.variantId || i.MaBienThe || i.id,
+              soLuong: i.quantity || i.SoLuong,
+              donGia: i.price || i.DonGia,
+              
+              MaSanPham: i.id || i.productId,
+              MaBienThe: i.variantId || i.MaBienThe || i.id,
+              SoLuong: i.quantity || i.SoLuong 
+          }))
         };
 
-        const res = await axios.post(`${API_BASE}/cart/summary`, payload, authHeader);
+        // 🎯 ĐỔI SANG POST VÀ GỌI ĐÚNG ROUTE /calculate-fee
+        const res = await axios.post(`${API_BASE}/orders/calculate-fee`, payload, authHeader);
         
-        const summary = res.data?.result || res.data?.data || res.data;
-        const fee = summary?.shippingFee ?? summary?.TongPhiVanChuyen ?? summary?.total ?? 0;
+        // Bóc tách dữ liệu từ feeResult.data.total mà Backend trả về
+        const fee = res.data?.feeResult?.data?.total || res.data?.data?.total || 0;
+        
+        console.log("✅ Phí ship chính xác (bao gồm bảo hiểm):", fee);
         setShippingFee(Number(fee));
 
       } catch (err) {
-        console.error('Lỗi tính phí ship:', err.response?.data?.message || err.message);
+        console.error('Lỗi tính phí ship:', err.response?.data || err.message);
         setShippingFee(0);
       } finally {
         setCalculatingFee(false);
@@ -117,6 +128,7 @@ export default function Checkout() {
     };
 
     fetchShippingFee();
+    // Lắng nghe sự thay đổi của phương thức giao hàng, địa chỉ và danh sách hàng
   }, [shippingMethod, JSON.stringify(addressData.obj), JSON.stringify(orderItems)]);
 
   const fetchProfile = async () => {
