@@ -83,7 +83,7 @@ export default function Checkout() {
   }, []);
 
   useEffect(() => {
-    const fetchShippingFee = async () => {
+    const fetchOrderSummary = async () => {
       if (shippingMethod === 3) {
         setShippingFee(0);
         return;
@@ -97,38 +97,30 @@ export default function Checkout() {
       setCalculatingFee(true);
       try {
         const payload = {
-            MaPhi: shippingMethod,
-            addressObj: addressData.obj,
-            items: orderItems.map(i => ({ 
-                idBienThe: i.variantId || i.MaBienThe || i.id,
-                soLuong: i.quantity || i.SoLuong,
-                donGia: i.price || i.DonGia,
-                MaBienThe: i.variantId || i.MaBienThe || i.id,
-                SoLuong: i.quantity || i.SoLuong
-            }))
+            selectedVariantIds: selectedItems,
+            MaPhi: shippingMethod,            
+            addressObj: addressData.obj,  
+            ListMaKhuyenMai: appliedVoucher ? [appliedVoucher.MaKhuyenMai] : [],
         };
+        const res = await axios.get(`${API_BASE}/cart/summary`, payload, authHeader);
 
-        const res = await axios.post(`${API_BASE}/orders/calculate-fee`, payload, authHeader);
+        const summaryData = res.data?.result || res.data?.data || res.data;
         
-        const result = res.data?.feeResult?.data || res.data?.data;
-        const totalFee = result?.total || 0;
+        const fee = summaryData?.shippingFee ?? summaryData?.TongPhiVanChuyen ?? 0;
         
-        console.log("✅ Phí ship tính toán được:", totalFee);
-        setShippingFee(Number(totalFee));
+        console.log("✅ Phí ship từ Summary:", fee);
+        setShippingFee(Number(fee));
 
       } catch (err) {
-        console.error('Lỗi tính phí ship:', err.response?.data || err.message);
-        if (err.response?.status === 400) {
-           message.warning(err.response.data.message);
-        }
+        console.error('Lỗi tính Summary:', err.response?.data?.message || err.message);
         setShippingFee(0);
       } finally {
         setCalculatingFee(false);
       }
     };
 
-    fetchShippingFee();
-  }, [shippingMethod, JSON.stringify(addressData.obj), JSON.stringify(orderItems)]);
+    fetchOrderSummary();
+  }, [shippingMethod, JSON.stringify(addressData.obj), JSON.stringify(orderItems), appliedVoucher]);
 
   const fetchProfile = async () => {
     setProfileLoading(true);
