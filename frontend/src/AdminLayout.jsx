@@ -34,7 +34,7 @@ export default function AdminLayout() {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
 
-  const rawRole = localStorage.getItem('role') || '';
+  const rawRole = localStorage.getItem('admin_role') || localStorage.getItem('role') || '';
   const roleString = rawRole.trim().toLowerCase();
 
   useEffect(() => {
@@ -46,7 +46,7 @@ export default function AdminLayout() {
 
   const isAdmin = roleString === 'admin';
   const role = isAdmin ? 'Admin' : 'Staff';
-  const username = localStorage.getItem('username') || 'Tài khoản';
+  const username = localStorage.getItem('admin_username') || localStorage.getItem('username') || 'Tài khoản';
   const menuItems = isAdmin ? ADMIN_MENU : STAFF_MENU;
   const handleLogout = async () => {
     try {
@@ -61,13 +61,13 @@ export default function AdminLayout() {
 
   const userMenu = {
     items: [
-      { key: 'profile', icon: <UserOutlined />, label: 'Sửa hồ sơ' },
+      { key: 'adminprofile', icon: <UserOutlined />, label: 'Tài khoản' },
       { type: 'divider' },
       { key: 'logout', icon: <LogoutOutlined />, label: 'Đăng xuất', danger: true },
     ],
     onClick: ({ key }) => {
       if (key === 'logout') handleLogout();
-      if (key === 'profile') navigate('/profile');
+      if (key === 'adminprofile') navigate('/admin/adminprofile');
     },
   };
 

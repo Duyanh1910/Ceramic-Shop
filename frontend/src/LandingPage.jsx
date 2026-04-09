@@ -14,7 +14,11 @@ import {
     SafetyOutlined,
     TrophyOutlined,
     CustomerServiceOutlined,
-    ShoppingFilled
+    ShoppingFilled,
+    AppstoreOutlined,
+    LaptopOutlined,
+    TruckOutlined,
+    HeartOutlined
 } from '@ant-design/icons';
 import styles from './LandingPage.module.css';
 import { saveSession } from './useAuth.js';
@@ -63,8 +67,114 @@ function LandingPage() {
 
     const [isChecking, setIsChecking] = useState(false);
     const [apiCategories, setApiCategories] = useState([]);
+
+    const trackRef = useRef(null);
+    const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+    const isDragging = useRef(false);
+    const isDragMoved = useRef(false);
+    const startX = useRef(0);
+    const scrollLeftRef = useRef(0);
+    const reqRef = useRef();
+    const exactScroll = useRef(0);
     
-    const [autoPlayCategories, setAutoPlayCategories] = useState(true);
+    const featureRefs = useRef([]);
+    const vmRefs = useRef([]);
+
+    useEffect(() => {
+        if (!isAutoPlaying) return;
+        const track = trackRef.current;
+        if (!track) return;
+
+        setTimeout(() => {
+            if(track) exactScroll.current = track.scrollLeft;
+        }, 100);
+
+        const scroll = () => {
+            if (track && track.children.length > 0) {
+                exactScroll.current += 0.5;
+                track.scrollLeft = Math.floor(exactScroll.current);
+
+                const setWidth = track.scrollWidth / 3;
+                if (track.scrollLeft >= setWidth * 2) {
+                    exactScroll.current -= setWidth;
+                    track.scrollLeft = Math.floor(exactScroll.current);
+                }
+            }
+            reqRef.current = requestAnimationFrame(scroll);
+        };
+        reqRef.current = requestAnimationFrame(scroll);
+        return () => cancelAnimationFrame(reqRef.current);
+    }, [isAutoPlaying, apiCategories]);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add(styles.animateIn);
+                    }
+                });
+            },
+            { threshold: 0.1, rootMargin: "0px 0px -50px 0px" }
+        );
+
+        featureRefs.current.forEach((ref) => {
+            if (ref) observer.observe(ref);
+        });
+
+        vmRefs.current.forEach((ref) => {
+            if (ref) observer.observe(ref);
+        });
+
+        return () => observer.disconnect();
+    }, []);
+
+    const handleDragStart = (e) => {
+        setIsAutoPlaying(false);
+        isDragging.current = true;
+        isDragMoved.current = false;
+        const track = trackRef.current;
+        if (!track) return;
+        
+        const pageX = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX;
+        startX.current = pageX - track.offsetLeft;
+        scrollLeftRef.current = track.scrollLeft;
+        track.style.cursor = 'grabbing';
+    };
+
+    const handleDragMove = (e) => {
+        if (!isDragging.current) return;
+        const track = trackRef.current;
+        if (!track) return;
+
+        const pageX = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX;
+        const x = pageX - track.offsetLeft;
+        const walk = (x - startX.current) * 1.5; 
+        
+        if (Math.abs(walk) > 5) {
+            isDragMoved.current = true;
+        }
+
+        let newScroll = scrollLeftRef.current - walk;
+        const setWidth = track.scrollWidth / 3;
+
+        if (newScroll >= setWidth * 2) {
+            scrollLeftRef.current -= setWidth;
+            newScroll -= setWidth;
+        } else if (newScroll <= 0) {
+            scrollLeftRef.current += setWidth;
+            newScroll += setWidth;
+        }
+        
+        track.scrollLeft = newScroll;
+        exactScroll.current = newScroll;
+    };
+
+    const handleDragEnd = () => {
+        isDragging.current = false;
+        if (trackRef.current) trackRef.current.style.cursor = 'grab';
+        setIsAutoPlaying(true);
+    };
 
     useEffect(() => {
         const fetchCats = async () => {
@@ -416,53 +526,69 @@ function LandingPage() {
                     </div>
 
                     <div className={styles.visionMission}>
-                        <div className={styles.vmCard}>
-                            <div className={styles.vmIcon}>
-                                <TrophyOutlined />
+                        <div className={`${styles.vmCard} ${styles.hiddenStart}`} ref={(el) => (vmRefs.current[0] = el)} style={{ transitionDelay: '0s' }}>
+                            <div className={styles.iconWrapper} style={{ backgroundColor: '#009bb6' }}>
+                                <TrophyOutlined className={styles.featureIcon} />
                             </div>
                             <h3>TẦM NHÌN</h3>
-                            <p>Xây dựng CeramicShop trở thành địa chỉ mua sắm gốm sứ trực tuyến thân thiện và đáng tin cậy, 
-                            kết hợp hài hòa giữa nét đẹp truyền thống và công nghệ hiện đại.</p>
+                            <p>Xây dựng CeramicShop trở thành địa chỉ mua sắm gốm sứ trực tuyến thân thiện và đáng tin cậy, kết hợp hài hòa giữa nét đẹp truyền thống và công nghệ hiện đại.</p>
                         </div>
-                        <div className={styles.vmCard}>
-                            <div className={styles.vmIcon}>
-                                <SafetyOutlined />
+                        <div className={`${styles.vmCard} ${styles.hiddenStart}`} ref={(el) => (vmRefs.current[1] = el)} style={{ transitionDelay: '0.15s' }}>
+                            <div className={styles.iconWrapper} style={{ backgroundColor: '#eeb406' }}>
+                                <SafetyOutlined className={styles.featureIcon} />
                             </div>
                             <h3>SỨ MỆNH</h3>
-                            <p>Kiến tạo sự ấm cúng và an yên cho mọi gia đình thông qua những sản phẩm gốm sứ chất lượng, 
-                            không ngừng cải thiện dịch vụ và tôn vinh nét đẹp văn hóa Việt.</p>
+                            <p>Kiến tạo sự ấm cúng và an yên cho mọi gia đình thông qua những sản phẩm gốm sứ chất lượng, không ngừng cải thiện dịch vụ và tôn vinh nét đẹp văn hóa Việt.</p>
                         </div>
-                        <div className={styles.vmCard}>
-                            <div className={styles.vmIcon}>
-                                <CustomerServiceOutlined />
+                        <div className={`${styles.vmCard} ${styles.hiddenStart}`} ref={(el) => (vmRefs.current[2] = el)} style={{ transitionDelay: '0.3s' }}>
+                            <div className={styles.iconWrapper} style={{ backgroundColor: '#009bb6' }}>
+                                <HeartOutlined className={styles.featureIcon} />
                             </div>
                             <h3>GIÁ TRỊ KHÁCH HÀNG</h3>
-                            <p>Sản phẩm mang giá trị văn hóa và nghệ thuật sâu sắc. Mối quan hệ bền vững với sự uy tín, 
-                            minh bạch. Thương hiệu chuyên nghiệp, tận tâm trong từng chi tiết.</p>
+                            <p>Sản phẩm mang giá trị văn hóa và nghệ thuật sâu sắc. Mối quan hệ bền vững với sự uy tín, minh bạch. Thương hiệu chuyên nghiệp, tận tâm trong từng chi tiết.</p>
                         </div>
                     </div>
 
                     <div className={styles.features}>
-                        <div className={styles.featureItem}>
-                            <CheckCircleOutlined className={styles.featureIcon} />
-                            <h4>Chất Lượng Cao Cấp</h4>
-                            <p>Men sứ cao cấp, độ bền bỉ và an toàn tuyệt đối cho sức khỏe</p>
-                        </div>
-                        <div className={styles.featureItem}>
-                            <CheckCircleOutlined className={styles.featureIcon} />
-                            <h4>Đa Dạng Sản Phẩm</h4>
-                            <p>Từ sứ gia dụng, bộ trà cụ đến vật phẩm phong thủy và đồ thờ</p>
-                        </div>
-                        <div className={styles.featureItem}>
-                            <CheckCircleOutlined className={styles.featureIcon} />
-                            <h4>Công Nghệ Hiện Đại</h4>
-                            <p>Trợ lý ảo tận tâm và giải pháp thanh toán an toàn</p>
-                        </div>
-                        <div className={styles.featureItem}>
-                            <CheckCircleOutlined className={styles.featureIcon} />
-                            <h4>Giao Hàng Toàn Quốc</h4>
-                            <p>Đóng gói chuyên nghiệp, bảo hành và đổi trả dễ dàng</p>
-                        </div>
+                        {[
+                            { 
+                                title: "Chất Lượng Cao Cấp", 
+                                desc: "Men sứ cao cấp, độ bền bỉ và an toàn tuyệt đối cho sức khỏe", 
+                                icon: <SafetyOutlined className={styles.featureIcon} />,
+                                color: "#009bb6" 
+                            },
+                            { 
+                                title: "Đa Dạng Sản Phẩm", 
+                                desc: "Từ sứ gia dụng, bộ trà cụ đến vật phẩm phong thủy và đồ thờ", 
+                                icon: <AppstoreOutlined className={styles.featureIcon} />,
+                                color: "#eeb406" 
+                            },
+                            { 
+                                title: "Công Nghệ Hiện Đại", 
+                                desc: "Trợ lý ảo tận tâm và giải pháp thanh toán an toàn", 
+                                icon: <LaptopOutlined className={styles.featureIcon} />,
+                                color: "#009bb6" 
+                            },
+                            { 
+                                title: "Giao Hàng Toàn Quốc", 
+                                desc: "Đóng gói chuyên nghiệp, bảo hành và đổi trả dễ dàng", 
+                                icon: <TruckOutlined className={styles.featureIcon} />,
+                                color: "#eeb406" 
+                            }
+                        ].map((item, index) => (
+                            <div 
+                                key={index}
+                                className={`${styles.featureItem} ${styles.hiddenStart}`}
+                                ref={(el) => (featureRefs.current[index] = el)}
+                                style={{ transitionDelay: `${index * 0.15}s` }} 
+                            >
+                                <div className={styles.iconWrapper} style={{ backgroundColor: item.color }}>
+                                    {item.icon}
+                                </div>
+                                <h4>{item.title}</h4>
+                                <p>{item.desc}</p>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </section>
@@ -472,42 +598,43 @@ function LandingPage() {
                     <div className={styles.sectionHeadingDark}>
                         <h2>DANH MỤC SẢN PHẨM</h2>
                         <p>Khám phá các dòng sản phẩm gốm sứ tinh hoa</p>
+                        <p className={styles.instructionText}>* Nhấp đúp để khám phá danh mục</p>
                     </div>
                     
-                    <div 
-                        className={styles.carouselContainer}
-                        onMouseDown={() => setAutoPlayCategories(false)}
-                        onTouchStart={() => setAutoPlayCategories(false)}
-                    >
-                        <Carousel 
-                            autoplay={autoPlayCategories} 
-                            autoplaySpeed={2500} 
-                            draggable={true} 
-                            swipeToSlide={true}
-                            slidesToShow={4}
-                            slidesToScroll={1}
-                            dots={false}
-                            infinite={true}
-                            responsive={[
-                                { breakpoint: 1024, settings: { slidesToShow: 3 } },
-                                { breakpoint: 768, settings: { slidesToShow: 2 } },
-                                { breakpoint: 576, settings: { slidesToShow: 1 } }
-                            ]}
+                    <div className={styles.marqueeContainer}>
+                        <div 
+                            className={styles.marqueeTrack}
+                            ref={trackRef}
+                            onMouseDown={handleDragStart}
+                            onMouseMove={handleDragMove}
+                            onMouseUp={handleDragEnd}
+                            onMouseLeave={handleDragEnd}
+                            onTouchStart={handleDragStart}
+                            onTouchMove={handleDragMove}
+                            onTouchEnd={handleDragEnd}
                         >
-                            {categories.map((cat, idx) => (
-                                <div key={idx} className={styles.carouselItemWrapper}>
-                                    <div 
-                                        className={styles.marqueeItem} 
-                                        onClick={() => cat.id ? navigate(`/home?category=${cat.id}`) : navigate(`/home`)}
-                                    >
-                                        <div className={styles.marqueeImgWrap}>
-                                            <img src={cat.img} alt={cat.name} />
+                            {[...categories, ...categories, ...categories].map((cat, idx) => (
+                                <div 
+                                    key={idx} 
+                                    className={styles.marqueeItem} 
+                                    onDoubleClick={(e) => {
+                                        if (isDragMoved.current) {
+                                            e.preventDefault();
+                                            return;
+                                        }
+                                        cat.id ? navigate(`/home?category=${cat.id}`) : navigate(`/home`);
+                                    }}
+                                >
+                                    <div className={styles.marqueeImgWrap}>
+                                        <img src={cat.img} alt={cat.name} draggable="false" />
+                                        <div className={styles.marqueeTextWrap}>
+                                            <h3 className={styles.marqueeText}>{cat.name}</h3>
+                                            <span className={styles.marqueeSubText}>Khám phá chi tiết</span>
                                         </div>
-                                        <h3 className={styles.marqueeText}>{cat.name}</h3>
                                     </div>
                                 </div>
                             ))}
-                        </Carousel>
+                        </div>
                     </div>
                 </div>
             </section>

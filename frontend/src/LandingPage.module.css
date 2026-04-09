@@ -397,23 +397,20 @@ ul {
 }
 
 .vmCard {
-    background: white;
-    padding: 40px 30px;
-    border-radius: 8px;
     text-align: center;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    transition: all 0.3s ease;
+    padding: 40px 30px;
+    background: white;
+    border-radius: 40px; 
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05); 
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.5s ease;
+    position: relative;
+    overflow: hidden;
 }
 
 .vmCard:hover {
+    box-shadow: 0 15px 40px rgba(0, 155, 182, 0.15);
     transform: translateY(-5px);
-    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-}
-
-.vmIcon {
-    font-size: 48px;
-    color: #BB9244;
-    margin-bottom: 20px;
 }
 
 .vmCard h3 {
@@ -433,44 +430,73 @@ ul {
 .features {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 25px;
+    gap: 30px;
+    margin-top: 40px;
 }
 
 .featureItem {
-    text-align: center;
-    padding: 30px 20px;
+    text-align: center; 
+    padding: 40px 30px;
     background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 15px rgba(0,0,0,0.06);
+    border-radius: 40px; 
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05); 
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.5s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.featureItem:hover {
+    box-shadow: 0 15px 40px rgba(0, 155, 182, 0.15); 
+    transform: translateY(-5px);
+}
+
+.iconWrapper {
+    width: 65px;
+    height: 65px;
+    border-radius: 20px; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 25px auto;
 }
 
 .featureIcon {
-    font-size: 36px;
-    color: #52c41a;
-    margin-bottom: 15px;
+    font-size: 32px;
+    color: #ffffff; 
 }
 
 .featureItem h4 {
-    font-size: 16px;
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 10px;
+    font-size: 20px;
+    font-weight: 800;
+    color: #173354;
+    margin-bottom: 15px;
 }
 
 .featureItem p {
-    font-size: 14px;
+    font-size: 15px;
     color: #666;
     line-height: 1.6;
 }
 
-/* =========================================
-   GIAO DIỆN DANH MỤC NỀN TỐI (MARQUEE CAROUSEL)
-========================================= */
+.hiddenStart {
+    opacity: 0;
+    transform: translateY(40px) scale(0.95); 
+    transition: opacity 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
+                transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.animateIn {
+    opacity: 1 !important;
+    transform: translateY(0) scale(1) !important; 
+}
 
 .categorySectionDark {
-    background-color: #0a0a0a;
+    background-color: #F9F6F0;
     padding: 80px 0;
     overflow: hidden;
+    border-top: 1px solid #f0ebe1;
+    border-bottom: 1px solid #f0ebe1;
 }
 
 .sectionHeadingDark {
@@ -479,26 +505,39 @@ ul {
 }
 
 .sectionHeadingDark h2 {
-    font-size: 42px;
+    font-size: 36px;
     font-weight: 700;
-    color: #ffffff;
+    color: #173354;
     text-transform: uppercase;
-    margin: 0 0 10px;
+    margin: 0 0 15px;
     font-family: 'Arsenal', sans-serif;
+    position: relative;
+    display: inline-block;
 }
 
-.sectionHeadingDark h2 span {
-    color: #00bcd4; 
+.sectionHeadingDark h2::after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 3px;
+    background: #BB9244;
+    margin: 15px auto 0;
+}
+
+.sectionHeadingDark p { 
+    color: #666; 
+    font-size: 16px; 
+    margin: 0; 
+}
+
+.instructionText {
+    font-size: 14px;
+    color: #888;
     font-style: italic;
+    margin-top: 8px;
 }
 
-.sectionHeadingDark p {
-    color: #a0a0a0;
-    font-size: 18px;
-}
-
-/* Vùng chứa Carousel mới */
-.carouselContainer {
+.marqueeContainer {
     width: 100vw;
     position: relative;
     left: 50%;
@@ -506,17 +545,10 @@ ul {
     margin-left: -50vw;
     margin-right: -50vw;
     overflow: hidden;
-    padding: 20px 0;
-    cursor: grab;
 }
 
-.carouselContainer:active {
-    cursor: grabbing;
-}
-
-/* Tạo lớp mờ ở 2 bên mép màn hình */
-.carouselContainer::before,
-.carouselContainer::after {
+.marqueeContainer::before,
+.marqueeContainer::after {
     content: '';
     position: absolute;
     top: 0;
@@ -526,77 +558,133 @@ ul {
     pointer-events: none;
 }
 
-.carouselContainer::before {
-    left: 0;
-    background: linear-gradient(to right, #0a0a0a, transparent);
+.marqueeContainer::before { 
+    left: 0; 
+    background: linear-gradient(to right, #F9F6F0, transparent); 
 }
 
-.carouselContainer::after {
-    right: 0;
-    background: linear-gradient(to left, #0a0a0a, transparent);
+.marqueeContainer::after { 
+    right: 0; 
+    background: linear-gradient(to left, #F9F6F0, transparent); 
 }
 
-/* Tạo khoảng cách giữa các thẻ sản phẩm trong slider */
-.carouselItemWrapper {
-    padding: 0 15px; 
-}
-
-/* Card Sản phẩm - rộng 100% để phủ kín slide do ant carousel cấp phát */
-.marqueeItem {
-    width: 100%; 
-    cursor: pointer;
-    background-color: #1a1a1a;
-    border-radius: 24px;
-    padding: 20px;
-    transition: transform 0.4s ease, box-shadow 0.4s ease;
+.marqueeTrack {
     display: flex;
-    flex-direction: column;
-    align-items: center;
+    gap: 30px;
+    padding: 20px 0 40px 0;
+    overflow-x: auto;
+    scroll-behavior: auto;
+    cursor: grab;
+    user-select: none;
+    -ms-overflow-style: none;
+    scrollbar-width: none; 
+}
+
+.marqueeTrack::-webkit-scrollbar {
+    display: none;
+}
+
+.marqueeItem {
+    flex: 0 0 auto;
+    width: 300px; 
+    height: 420px;
+    background-color: #ffffff;
+    border-radius: 150px 150px 16px 16px; 
+    padding: 0;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: 0 10px 20px rgba(23, 51, 84, 0.05);
+    border: 1px solid #f0ebe1;
 }
 
 .marqueeItem:hover {
     transform: translateY(-10px);
-    box-shadow: 0 15px 30px rgba(0, 188, 212, 0.15);
+    box-shadow: 0 15px 35px rgba(187, 146, 68, 0.15);
+    border-color: rgba(187, 146, 68, 0.3);
 }
 
 .marqueeImgWrap {
-    width: 100%;
-    height: 380px; 
-    border-radius: 16px;
-    overflow: hidden;
-    background-color: #fdfdfd;
-    margin-bottom: 20px;
+   width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
     display: flex;
     align-items: center;
     justify-content: center;
+    box-sizing: border-box; 
+    padding-bottom: 90px;
+}
+
+.marqueeImgWrap::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 50%;
+    background: linear-gradient(to top, rgba(255,255,255,1) 10%, rgba(255,255,255,0));
+    pointer-events: none;
+    z-index: 1;
 }
 
 .marqueeImgWrap img {
-    width: 90%;
-    height: 90%;
+    width: 80%;
+    height: 80%;
     object-fit: contain;
-    transition: transform 0.5s ease;
+    transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    -webkit-user-drag: none;
+    pointer-events: none;
 }
 
 .marqueeItem:hover .marqueeImgWrap img {
-    transform: scale(1.1);
+    transform: scale(1.1) translateY(-10px);
+}
+
+.marqueeTextWrap {
+    position: absolute;
+    bottom: 35px;
+    left: 0;
+    right: 0;
+    background-color: transparent;
+    padding: 0 20px;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
 }
 
 .marqueeText {
     font-size: 22px;
     font-weight: 700;
-    color: #ffffff;
-    margin: 0;
+    color: #173354;
+    margin: 0 0 6px 0;
     text-transform: uppercase;
-    text-align: center;
     transition: color 0.3s;
 }
 
 .marqueeItem:hover .marqueeText {
-    color: #00bcd4;
+    color: #BB9244;
 }
 
-/* ========================================= */
+.marqueeSubText {
+    font-size: 13px;
+    font-weight: 600;
+    color: #BB9244;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.4s ease;
+}
+
+.marqueeItem:hover .marqueeSubText {
+    opacity: 1;
+    transform: translateY(0);
+}
 
 .productSection {
     background-color: #fff;
@@ -935,8 +1023,8 @@ ul {
     .headerFlex { flex-wrap: wrap; justify-content: center; gap: 15px; }
     .searchBox { max-width: 100%; margin-bottom: 10px; }
     .footerGrid { grid-template-columns: 1fr; }
-    .marqueeItem { padding: 15px; } /* width is handled by carousel now */
-    .marqueeImgWrap { height: 260px; }
+    .marqueeItem { width: 260px; height: 350px; }
+    .marqueeTextWrap { bottom: 15px; left: 0; right: 0; padding: 0 10px; }
     .sectionHeadingDark h2 { font-size: 28px; }
 }
 
