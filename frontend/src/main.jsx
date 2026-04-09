@@ -28,6 +28,7 @@ import AdminReports from './AdminReports.jsx';
 import Checkout from './Checkout.jsx';
 import PaymentResult from './PaymentResult.jsx';
 import AdminProfile from './AdminProfile.jsx';
+import AdminPromotions from './AdminPromotions.jsx';
 ReactGA.initialize("G-909W1LHHLD");
 
 const AnalyticsTracker = () => {
@@ -136,6 +137,7 @@ createRoot(document.getElementById('root')).render(
             <ProtectedRoute allowedRoles={['Admin', 'Staff']}>
               <AdminLayout />
             </ProtectedRoute>
+            
           }>
             <Route index element={<AdminDashboard />} />
             <Route path="products" element={<AdminProducts />} />
@@ -159,8 +161,13 @@ createRoot(document.getElementById('root')).render(
           }/>
           <Route path="/support/:slug" element={<SupportPage/>}/>
           <Route path="/payment-result" element={<PaymentResult />} />
+          <Route path="promotions" element={
+            <ProtectedRoute allowedRoles={['Admin']}>
+              <AdminPromotions />
+            </ProtectedRoute>
+          } />
+
         </Routes>
-        
         <ConditionalContactIcons />
         <ConditionalChatBot />
       </BrowserRouter>
