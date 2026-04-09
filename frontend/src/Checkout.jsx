@@ -62,7 +62,7 @@ export default function Checkout() {
   const selectedPayment = PAYMENT_METHODS.find((m) => m.id === paymentMethod);
 
   useEffect(() => {
-    if (!token || cartItems.length === 0) {
+    if (cartItems.length === 0) {
       navigate('/cart');
     }
   }, [token, cartItems, navigate]);
