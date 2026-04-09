@@ -75,7 +75,7 @@ export const ORDER_STATUS = {
 export const updateOrderStatus = async (req, res, next) => {
   try {
     const orderCode = req.params.orderCode;
-    const { newStatus, note } = req.body;
+    const { newStatus, note, newPaymentStatus } = req.body;
     if (!orderCode) {
       return next(
         new ErrorHandler("Dữ liệu mã đơn hàng đầu vào ko hợp lệ!", 400),
@@ -87,6 +87,7 @@ export const updateOrderStatus = async (req, res, next) => {
     const result = await adminUpdateOrderStatusService(
       orderCode,
       newStatus,
+      newPaymentStatus,
       note,
     );
     res.status(200).json({
