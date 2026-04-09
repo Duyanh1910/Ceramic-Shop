@@ -4,7 +4,7 @@ import { UserOutlined, ArrowLeftOutlined, UploadOutlined, ProfileOutlined, LockO
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
-import styles from './AdminProfile.module.css';
+import styles from './Profile.module.css';
 
 import ChangePassword from './ChangePassword'; 
 
