@@ -80,6 +80,7 @@ export default function Checkout() {
         setShippingFee(0);
         return;
       }
+      
       if (!addressData.obj || !addressData.obj.ToDistrictID || !addressData.obj.ToWardID) {
         setShippingFee(0);
         return;
@@ -87,7 +88,7 @@ export default function Checkout() {
 
       setCalculatingFee(true);
       try {
-        const res = await axios.post(`${API_BASE}/orders/calculate-fee`, {
+        const payload = {
           MaPhi: shippingMethod,
           addressObj: addressData.obj,
           items: orderItems.map(i => ({ 
@@ -96,12 +97,25 @@ export default function Checkout() {
               SoLuong: i.quantity, 
               DonGia: i.price 
           }))
-        }, authHeader);
-        const calculatedFee = res.data?.feeResult?.data?.total || res.data?.data?.total || 0;
-        setShippingFee(calculatedFee);
+        };
+
+        const res = await axios.post(`${API_BASE}/orders/calculate-fee`, payload, authHeader);
+      
+        let finalFee = 0;
+        if (res.data?.feeResult?.data?.total) {
+            finalFee = res.data.feeResult.data.total;
+        } else if (res.data?.data?.total) {
+            finalFee = res.data.data.total;
+        } else if (res.data?.feeResult?.total) {
+            finalFee = res.data.feeResult.total;
+        }
+        
+        console.log("✅ Phí ship bóc tách được:", finalFee);
+        setShippingFee(finalFee);
+
       } catch (err) {
-        console.warn("Lỗi tính phí:", err);
-        setShippingFee(30000); 
+        console.error("❌ Lỗi tính phí:", err);
+        setShippingFee(0); 
       } finally {
         setCalculatingFee(false);
       }
