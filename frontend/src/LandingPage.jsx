@@ -17,7 +17,8 @@ import {
     ShoppingFilled,
     AppstoreOutlined,
     LaptopOutlined,
-    TruckOutlined
+    TruckOutlined,
+    HeartOutlined
 } from '@ant-design/icons';
 import styles from './LandingPage.module.css';
 import { saveSession } from './useAuth.js';
@@ -541,7 +542,7 @@ function LandingPage() {
                         </div>
                         <div className={`${styles.vmCard} ${styles.hiddenStart}`} ref={(el) => (vmRefs.current[2] = el)} style={{ transitionDelay: '0.3s' }}>
                             <div className={styles.iconWrapper} style={{ backgroundColor: '#009bb6' }}>
-                                <CustomerServiceOutlined className={styles.featureIcon} />
+                                <HeartOutlined className={styles.featureIcon} />
                             </div>
                             <h3>GIÁ TRỊ KHÁCH HÀNG</h3>
                             <p>Sản phẩm mang giá trị văn hóa và nghệ thuật sâu sắc. Mối quan hệ bền vững với sự uy tín, minh bạch. Thương hiệu chuyên nghiệp, tận tâm trong từng chi tiết.</p>
