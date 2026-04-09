@@ -637,21 +637,18 @@ function Home() {
         const parents = catData.filter(c => !c.ParentID);
 
         parents.forEach(p => {
-          menuItems.push({
-            key:p.MaDanhMuc.toString(),
-            label:p.TenDanhMuc,
-            className:styles.parentMenuItem,
-          });
+          const mappedChildren = catData.filter(c => c.ParentID === p.MaDanhMuc);
           
-           const mappedChildren = catData.filter(c => c.ParentID === p.MaDanhMuc);
-           
-           mappedChildren.forEach(c=>{
-            menuItems.push({
-              key:c.MaDanhMuc.toString(),
-              label:c.TenDanhMuc,
-              className:styles.childMenuItem,
-            })
-           })
+          menuItems.push({
+            key: `parent-${p.MaDanhMuc}`,
+            label: p.TenDanhMuc,
+            className: styles.parentMenuItem,
+            children: mappedChildren.length > 0 ? mappedChildren.map(c => ({
+              key: c.MaDanhMuc.toString(),
+              label: c.TenDanhMuc,
+              className: styles.childMenuItem,
+            })) : null
+          });
         });
         
         setCategories(menuItems);
@@ -955,9 +952,8 @@ function Home() {
             </Spin>
           </div>
 
-          {/* ĐÃ SỬA: PAGE SIZE 12 VÀ TỔNG TOTAL * 12 */}
-          {totalPages > 1 && (
-            <div className={styles.paginationBox}>
+          <div className={styles.paginationBox}>
+            {totalPages > 1 && (
               <Pagination 
                 current={currentPage} 
                 total={totalPages * 12} 
@@ -965,8 +961,8 @@ function Home() {
                 onChange={(page) => setCurrentPage(page)} 
                 showSizeChanger={false} 
               />
-            </div>
-          )}
+            )}
+          </div>
         </Content>
       </Layout>
 

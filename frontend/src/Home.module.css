@@ -464,7 +464,7 @@
 }
 
 .allProductsMenu {
-  background-color: #8C5A4A !important; 
+  background-color: #1b437c !important; 
   color: white !important;
   font-weight: bold;
   border-radius: 8px !important;
@@ -472,6 +472,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 4px 10px rgba(27, 67, 124, 0.2);
+}
+
+.allProductsMenu:hover {
+  background-color: #13325c !important;
 }
 
 :global(.ant-menu-item-group-title) {
@@ -486,35 +491,30 @@
 }
 
 :global(.ant-menu-item) {
-  color: #555 !important;
-  background-color: #fafafa !important; 
+  color: #333 !important;
+  background-color: transparent !important;
   border-radius: 8px !important;
-  margin: 0 15px 6px 15px !important;
+  margin: 0 15px 4px 15px !important;
   width: calc(100% - 30px) !important;
   padding-left: 20px !important; 
   height: 40px !important;
   line-height: 40px !important;
+  transition: all 0.3s ease;
 }
 
 :global(.ant-menu-item::before) {
-  content: "- ";
-  color: #ccc;
-  margin-right: 6px;
+  content: none !important;
 }
 
 :global(.ant-menu-item:hover) {
-  background-color: #f0f0f0 !important;
+  background-color: rgba(27, 67, 124, 0.05) !important;
   color: #14325e !important;
 }
 
 :global(.ant-menu-item-selected) {
-  background-color: #f4efea !important; 
-  color: #14325e !important; 
+  background-color: rgba(196, 140, 70, 0.1) !important;
+  color: #c48c46 !important; 
   font-weight: 600;
-}
-
-:global(.ant-menu-item-selected::before) {
-  color: #14325e !important;
 }
 
 .contentHeader {
@@ -1017,32 +1017,38 @@
   color: #888;
   margin-top: 2px;
 }
-.parentMenuItem{
+
+.parentMenuItem {
   font-weight: 700 !important;
-  color:#1b437c !important;
+  color: #1b437c !important;
   font-size: 15px !important;
   background-color: transparent !important;
   margin-top: 10px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
-.parentMenuItem::before{
+
+.parentMenuItem::before {
   content: none !important;
 }
-.childMenuItem{
+
+.childMenuItem {
   padding-left: 40px !important;
   font-size: 14px !important;
   height: 36px !important;
   line-height: 36px !important;
   margin-bottom: 2px !important;
 }
-.childMenuItem::before{
-  color: #c48c46 !important;
-  font-weight: bold;
+
+.childMenuItem::before {
+  content: none !important;
 }
-.footerLink{
+
+.footerLink {
     cursor: pointer;
     transition: color 0.3s;
-
 }
-.footerLink:hover{
-    color:#BB9244;
+
+.footerLink:hover {
+    color: #BB9244;
 }
