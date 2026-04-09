@@ -63,8 +63,92 @@ function LandingPage() {
 
     const [isChecking, setIsChecking] = useState(false);
     const [apiCategories, setApiCategories] = useState([]);
-    
-    const [autoPlayCategories, setAutoPlayCategories] = useState(true);
+
+    // === BẮT ĐẦU: LOGIC CUSTOM DRAG & MARQUEE CHO DANH MỤC ===
+    const trackRef = useRef(null);
+    const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+    const isDragging = useRef(false);
+    const isDragMoved = useRef(false); // Biến kiểm tra xem có đang kéo thực sự không để khóa click
+    const startX = useRef(0);
+    const scrollLeftRef = useRef(0);
+    const reqRef = useRef();
+    const exactScroll = useRef(0);
+
+    // Xử lý tự động trượt chậm mượt
+    useEffect(() => {
+        if (!isAutoPlaying) return;
+        const track = trackRef.current;
+        if (!track) return;
+
+        setTimeout(() => {
+            if(track) exactScroll.current = track.scrollLeft;
+        }, 100);
+
+        const scroll = () => {
+            if (track && track.children.length > 0) {
+                exactScroll.current += 0.5; // Tốc độ trượt (có thể chỉnh nhỏ lại để chậm hơn)
+                track.scrollLeft = Math.floor(exactScroll.current);
+
+                const setWidth = track.scrollWidth / 3;
+                if (track.scrollLeft >= setWidth * 2) {
+                    exactScroll.current -= setWidth;
+                    track.scrollLeft = Math.floor(exactScroll.current);
+                }
+            }
+            reqRef.current = requestAnimationFrame(scroll);
+        };
+        reqRef.current = requestAnimationFrame(scroll);
+        return () => cancelAnimationFrame(reqRef.current);
+    }, [isAutoPlaying, apiCategories]);
+
+    const handleDragStart = (e) => {
+        setIsAutoPlaying(false); // Dừng vĩnh viễn khi chạm vào
+        isDragging.current = true;
+        isDragMoved.current = false;
+        const track = trackRef.current;
+        if (!track) return;
+        
+        const pageX = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX;
+        startX.current = pageX - track.offsetLeft;
+        scrollLeftRef.current = track.scrollLeft;
+        track.style.cursor = 'grabbing';
+    };
+
+    const handleDragMove = (e) => {
+        if (!isDragging.current) return;
+        const track = trackRef.current;
+        if (!track) return;
+
+        const pageX = e.type.includes('mouse') ? e.pageX : e.touches[0].pageX;
+        const x = pageX - track.offsetLeft;
+        const walk = (x - startX.current) * 1.5; 
+        
+        // Nếu kéo quá 5px, đánh dấu là thao tác drag chứ không phải click nhầm
+        if (Math.abs(walk) > 5) {
+            isDragMoved.current = true;
+        }
+
+        let newScroll = scrollLeftRef.current - walk;
+        const setWidth = track.scrollWidth / 3;
+
+        // Vòng lặp kéo 2 chiều vô cực
+        if (newScroll >= setWidth * 2) {
+            scrollLeftRef.current -= setWidth;
+            newScroll -= setWidth;
+        } else if (newScroll <= 0) {
+            scrollLeftRef.current += setWidth;
+            newScroll += setWidth;
+        }
+        
+        track.scrollLeft = newScroll;
+        exactScroll.current = newScroll; // Đồng bộ lại vị trí cho biến tự trượt (nếu có bật lại)
+    };
+
+    const handleDragEnd = () => {
+        isDragging.current = false;
+        if (trackRef.current) trackRef.current.style.cursor = 'grab';
+    };
+    // === KẾT THÚC: LOGIC CUSTOM DRAG & MARQUEE ===
 
     useEffect(() => {
         const fetchCats = async () => {
@@ -472,42 +556,41 @@ function LandingPage() {
                     <div className={styles.sectionHeadingDark}>
                         <h2>DANH MỤC SẢN PHẨM</h2>
                         <p>Khám phá các dòng sản phẩm gốm sứ tinh hoa</p>
+                        <p style={{ fontSize: '14px', color: '#888', marginTop: '10px', fontStyle: 'italic' }}>* Nhấp đúp (Double-click) để mở danh mục</p>
                     </div>
                     
-                    <div 
-                        className={styles.carouselContainer}
-                        onMouseDown={() => setAutoPlayCategories(false)}
-                        onTouchStart={() => setAutoPlayCategories(false)}
-                    >
-                        <Carousel 
-                            autoplay={autoPlayCategories} 
-                            autoplaySpeed={2500} 
-                            draggable={true} 
-                            swipeToSlide={true}
-                            slidesToShow={4}
-                            slidesToScroll={1}
-                            dots={false}
-                            infinite={true}
-                            responsive={[
-                                { breakpoint: 1024, settings: { slidesToShow: 3 } },
-                                { breakpoint: 768, settings: { slidesToShow: 2 } },
-                                { breakpoint: 576, settings: { slidesToShow: 1 } }
-                            ]}
+                    <div className={styles.marqueeContainer}>
+                        <div 
+                            className={styles.marqueeTrack}
+                            ref={trackRef}
+                            onMouseDown={handleDragStart}
+                            onMouseMove={handleDragMove}
+                            onMouseUp={handleDragEnd}
+                            onMouseLeave={handleDragEnd}
+                            onTouchStart={handleDragStart}
+                            onTouchMove={handleDragMove}
+                            onTouchEnd={handleDragEnd}
                         >
-                            {categories.map((cat, idx) => (
-                                <div key={idx} className={styles.carouselItemWrapper}>
-                                    <div 
-                                        className={styles.marqueeItem} 
-                                        onClick={() => cat.id ? navigate(`/home?category=${cat.id}`) : navigate(`/home`)}
-                                    >
-                                        <div className={styles.marqueeImgWrap}>
-                                            <img src={cat.img} alt={cat.name} />
-                                        </div>
-                                        <h3 className={styles.marqueeText}>{cat.name}</h3>
+                            {[...categories, ...categories, ...categories].map((cat, idx) => (
+                                <div 
+                                    key={idx} 
+                                    className={styles.marqueeItem} 
+                                    onDoubleClick={(e) => {
+                                        // Khóa nhảy trang nếu đang thao tác kéo
+                                        if (isDragMoved.current) {
+                                            e.preventDefault();
+                                            return;
+                                        }
+                                        cat.id ? navigate(`/home?category=${cat.id}`) : navigate(`/home`);
+                                    }}
+                                >
+                                    <div className={styles.marqueeImgWrap}>
+                                        <img src={cat.img} alt={cat.name} draggable="false" />
                                     </div>
+                                    <h3 className={styles.marqueeText}>{cat.name}</h3>
                                 </div>
                             ))}
-                        </Carousel>
+                        </div>
                     </div>
                 </div>
             </section>

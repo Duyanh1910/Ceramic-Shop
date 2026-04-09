@@ -464,7 +464,7 @@ ul {
 }
 
 /* =========================================
-   GIAO DIỆN DANH MỤC NỀN TỐI (MARQUEE CAROUSEL)
+   GIAO DIỆN DANH MỤC NỀN TỐI (DRAG & MARQUEE)
 ========================================= */
 
 .categorySectionDark {
@@ -475,7 +475,7 @@ ul {
 
 .sectionHeadingDark {
     text-align: center;
-    margin-bottom: 50px;
+    margin-bottom: 40px;
 }
 
 .sectionHeadingDark h2 {
@@ -487,18 +487,10 @@ ul {
     font-family: 'Arsenal', sans-serif;
 }
 
-.sectionHeadingDark h2 span {
-    color: #00bcd4; 
-    font-style: italic;
-}
+.sectionHeadingDark h2 span { color: #00bcd4; font-style: italic; }
+.sectionHeadingDark p { color: #a0a0a0; font-size: 18px; margin: 0; }
 
-.sectionHeadingDark p {
-    color: #a0a0a0;
-    font-size: 18px;
-}
-
-/* Vùng chứa Carousel mới */
-.carouselContainer {
+.marqueeContainer {
     width: 100vw;
     position: relative;
     left: 50%;
@@ -506,17 +498,11 @@ ul {
     margin-left: -50vw;
     margin-right: -50vw;
     overflow: hidden;
-    padding: 20px 0;
-    cursor: grab;
 }
 
-.carouselContainer:active {
-    cursor: grabbing;
-}
-
-/* Tạo lớp mờ ở 2 bên mép màn hình */
-.carouselContainer::before,
-.carouselContainer::after {
+/* Gradient 2 bên */
+.marqueeContainer::before,
+.marqueeContainer::after {
     content: '';
     position: absolute;
     top: 0;
@@ -525,37 +511,41 @@ ul {
     z-index: 2;
     pointer-events: none;
 }
+.marqueeContainer::before { left: 0; background: linear-gradient(to right, #0a0a0a, transparent); }
+.marqueeContainer::after { right: 0; background: linear-gradient(to left, #0a0a0a, transparent); }
 
-.carouselContainer::before {
-    left: 0;
-    background: linear-gradient(to right, #0a0a0a, transparent);
+/* Vùng Track tự động trượt + cho phép kéo */
+.marqueeTrack {
+    display: flex;
+    gap: 30px;
+    padding: 20px 0;
+    overflow-x: auto;
+    scroll-behavior: auto;
+    cursor: grab;
+    user-select: none;
+    
+    /* Ẩn thanh scrollbar */
+    -ms-overflow-style: none;
+    scrollbar-width: none; 
+}
+.marqueeTrack::-webkit-scrollbar {
+    display: none;
 }
 
-.carouselContainer::after {
-    right: 0;
-    background: linear-gradient(to left, #0a0a0a, transparent);
-}
-
-/* Tạo khoảng cách giữa các thẻ sản phẩm trong slider */
-.carouselItemWrapper {
-    padding: 0 15px; 
-}
-
-/* Card Sản phẩm - rộng 100% để phủ kín slide do ant carousel cấp phát */
+/* KHẮC PHỤC LỖI THẺ BỊ CO LẠI BẰNG flex: 0 0 auto VÀ width cố định */
 .marqueeItem {
-    width: 100%; 
-    cursor: pointer;
+    flex: 0 0 auto;
+    width: 320px;
     background-color: #1a1a1a;
     border-radius: 24px;
     padding: 20px;
-    transition: transform 0.4s ease, box-shadow 0.4s ease;
+    transition: box-shadow 0.4s ease;
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
 .marqueeItem:hover {
-    transform: translateY(-10px);
     box-shadow: 0 15px 30px rgba(0, 188, 212, 0.15);
 }
 
@@ -576,6 +566,9 @@ ul {
     height: 90%;
     object-fit: contain;
     transition: transform 0.5s ease;
+    user-drag: none;
+    -webkit-user-drag: none;
+    pointer-events: none; /* KHÓA KÉO ẢNH TRÌNH DUYỆT */
 }
 
 .marqueeItem:hover .marqueeImgWrap img {
@@ -935,7 +928,7 @@ ul {
     .headerFlex { flex-wrap: wrap; justify-content: center; gap: 15px; }
     .searchBox { max-width: 100%; margin-bottom: 10px; }
     .footerGrid { grid-template-columns: 1fr; }
-    .marqueeItem { padding: 15px; } /* width is handled by carousel now */
+    .marqueeItem { width: 240px; padding: 15px; }
     .marqueeImgWrap { height: 260px; }
     .sectionHeadingDark h2 { font-size: 28px; }
 }
