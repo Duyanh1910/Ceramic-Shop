@@ -464,27 +464,43 @@ ul {
 }
 
 .categorySectionDark {
-    background-color: #0a0a0a;
+    background-color: #F9F6F0;
     padding: 80px 0;
     overflow: hidden;
+    border-top: 1px solid #f0ebe1;
+    border-bottom: 1px solid #f0ebe1;
 }
 
 .sectionHeadingDark {
     text-align: center;
-    margin-bottom: 40px;
+    margin-bottom: 50px;
 }
 
 .sectionHeadingDark h2 {
-    font-size: 42px;
+    font-size: 36px;
     font-weight: 700;
-    color: #ffffff;
+    color: #173354;
     text-transform: uppercase;
-    margin: 0 0 10px;
+    margin: 0 0 15px;
     font-family: 'Arsenal', sans-serif;
+    position: relative;
+    display: inline-block;
 }
 
-.sectionHeadingDark h2 span { color: #00bcd4; font-style: italic; }
-.sectionHeadingDark p { color: #a0a0a0; font-size: 18px; margin: 0; }
+.sectionHeadingDark h2::after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 3px;
+    background: #BB9244;
+    margin: 15px auto 0;
+}
+
+.sectionHeadingDark p { 
+    color: #666; 
+    font-size: 16px; 
+    margin: 0; 
+}
 
 .marqueeContainer {
     width: 100vw;
@@ -506,13 +522,21 @@ ul {
     z-index: 2;
     pointer-events: none;
 }
-.marqueeContainer::before { left: 0; background: linear-gradient(to right, #0a0a0a, transparent); }
-.marqueeContainer::after { right: 0; background: linear-gradient(to left, #0a0a0a, transparent); }
+
+.marqueeContainer::before { 
+    left: 0; 
+    background: linear-gradient(to right, #F9F6F0, transparent); 
+}
+
+.marqueeContainer::after { 
+    right: 0; 
+    background: linear-gradient(to left, #F9F6F0, transparent); 
+}
 
 .marqueeTrack {
     display: flex;
     gap: 30px;
-    padding: 20px 0;
+    padding: 20px 0 40px 0;
     overflow-x: auto;
     scroll-behavior: auto;
     cursor: grab;
@@ -520,26 +544,30 @@ ul {
     -ms-overflow-style: none;
     scrollbar-width: none; 
 }
+
 .marqueeTrack::-webkit-scrollbar {
     display: none;
 }
 
 .marqueeItem {
     flex: 0 0 auto;
-    width: 320px;
+    width: 300px; 
     height: 420px;
-    background-color: #fdfdfd;
-    border-radius: 24px;
+    background-color: #ffffff;
+    border-radius: 150px 150px 16px 16px; 
     padding: 0;
-    transition: box-shadow 0.4s ease, transform 0.4s ease;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     position: relative;
     overflow: hidden;
     cursor: pointer;
+    box-shadow: 0 10px 20px rgba(23, 51, 84, 0.05);
+    border: 1px solid #f0ebe1;
 }
 
 .marqueeItem:hover {
     transform: translateY(-10px);
-    box-shadow: 0 15px 30px rgba(0, 188, 212, 0.2);
+    box-shadow: 0 15px 35px rgba(187, 146, 68, 0.15);
+    border-color: rgba(187, 146, 68, 0.3);
 }
 
 .marqueeImgWrap {
@@ -551,6 +579,7 @@ ul {
     display: flex;
     align-items: center;
     justify-content: center;
+    padding-bottom: 70px;
 }
 
 .marqueeImgWrap::after {
@@ -559,60 +588,66 @@ ul {
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 60%;
-    background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+    height: 50%;
+    background: linear-gradient(to top, rgba(255,255,255,1) 10%, rgba(255,255,255,0));
     pointer-events: none;
     z-index: 1;
 }
 
 .marqueeImgWrap img {
-    width: 85%;
-    height: 85%;
+    width: 80%;
+    height: 80%;
     object-fit: contain;
-    transition: transform 0.5s ease;
+    transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     -webkit-user-drag: none;
     pointer-events: none;
-    margin-bottom: 30px;
 }
 
 .marqueeItem:hover .marqueeImgWrap img {
-    transform: scale(1.08);
+    transform: scale(1.1) translateY(-10px);
 }
 
 .marqueeTextWrap {
     position: absolute;
-    bottom: 15px;
-    left: 15px;
-    right: 15px;
-    background-color: #1c1c1c;
-    border-radius: 18px;
-    padding: 16px 20px;
+    bottom: 25px;
+    left: 0;
+    right: 0;
+    background-color: transparent;
+    padding: 0 20px;
     z-index: 2;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+    align-items: center;
+    text-align: center;
 }
 
 .marqueeText {
-    font-size: 20px;
+    font-size: 22px;
     font-weight: 700;
-    color: #ffffff;
-    margin: 0 0 4px 0;
-    text-transform: capitalize;
+    color: #173354;
+    margin: 0 0 6px 0;
+    text-transform: uppercase;
     transition: color 0.3s;
 }
 
 .marqueeItem:hover .marqueeText {
-    color: #00bcd4;
+    color: #BB9244;
 }
 
 .marqueeSubText {
-    font-size: 11px;
-    font-weight: 700;
-    color: #00bcd4;
+    font-size: 13px;
+    font-weight: 600;
+    color: #BB9244;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 1px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.4s ease;
+}
+
+.marqueeItem:hover .marqueeSubText {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .productSection {
@@ -953,7 +988,7 @@ ul {
     .searchBox { max-width: 100%; margin-bottom: 10px; }
     .footerGrid { grid-template-columns: 1fr; }
     .marqueeItem { width: 260px; height: 350px; }
-    .marqueeTextWrap { bottom: 10px; left: 10px; right: 10px; padding: 12px; }
+    .marqueeTextWrap { bottom: 15px; left: 0; right: 0; padding: 0 10px; }
     .sectionHeadingDark h2 { font-size: 28px; }
 }
 
