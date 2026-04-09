@@ -14,7 +14,10 @@ import {
     SafetyOutlined,
     TrophyOutlined,
     CustomerServiceOutlined,
-    ShoppingFilled
+    ShoppingFilled,
+    AppstoreOutlined,
+    LaptopOutlined,
+    TruckOutlined
 } from '@ant-design/icons';
 import styles from './LandingPage.module.css';
 import { saveSession } from './useAuth.js';
@@ -72,6 +75,8 @@ function LandingPage() {
     const scrollLeftRef = useRef(0);
     const reqRef = useRef();
     const exactScroll = useRef(0);
+    
+    const featureRefs = useRef([]);
 
     useEffect(() => {
         if (!isAutoPlaying) return;
@@ -98,6 +103,25 @@ function LandingPage() {
         reqRef.current = requestAnimationFrame(scroll);
         return () => cancelAnimationFrame(reqRef.current);
     }, [isAutoPlaying, apiCategories]);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add(styles.animateIn);
+                    }
+                });
+            },
+            { threshold: 0.1, rootMargin: "0px 0px -50px 0px" }
+        );
+
+        featureRefs.current.forEach((ref) => {
+            if (ref) observer.observe(ref);
+        });
+
+        return () => observer.disconnect();
+    }, []);
 
     const handleDragStart = (e) => {
         setIsAutoPlaying(false);
@@ -523,26 +547,45 @@ function LandingPage() {
                     </div>
 
                     <div className={styles.features}>
-                        <div className={styles.featureItem}>
-                            <CheckCircleOutlined className={styles.featureIcon} />
-                            <h4>Chất Lượng Cao Cấp</h4>
-                            <p>Men sứ cao cấp, độ bền bỉ và an toàn tuyệt đối cho sức khỏe</p>
-                        </div>
-                        <div className={styles.featureItem}>
-                            <CheckCircleOutlined className={styles.featureIcon} />
-                            <h4>Đa Dạng Sản Phẩm</h4>
-                            <p>Từ sứ gia dụng, bộ trà cụ đến vật phẩm phong thủy và đồ thờ</p>
-                        </div>
-                        <div className={styles.featureItem}>
-                            <CheckCircleOutlined className={styles.featureIcon} />
-                            <h4>Công Nghệ Hiện Đại</h4>
-                            <p>Trợ lý ảo tận tâm và giải pháp thanh toán an toàn</p>
-                        </div>
-                        <div className={styles.featureItem}>
-                            <CheckCircleOutlined className={styles.featureIcon} />
-                            <h4>Giao Hàng Toàn Quốc</h4>
-                            <p>Đóng gói chuyên nghiệp, bảo hành và đổi trả dễ dàng</p>
-                        </div>
+                        {[
+                            { 
+                                title: "Chất Lượng Cao Cấp", 
+                                desc: "Men sứ cao cấp, độ bền bỉ và an toàn tuyệt đối cho sức khỏe", 
+                                icon: <SafetyOutlined className={styles.featureIcon} />,
+                                color: "#009bb6" 
+                            },
+                            { 
+                                title: "Đa Dạng Sản Phẩm", 
+                                desc: "Từ sứ gia dụng, bộ trà cụ đến vật phẩm phong thủy và đồ thờ", 
+                                icon: <AppstoreOutlined className={styles.featureIcon} />,
+                                color: "#eeb406" 
+                            },
+                            { 
+                                title: "Công Nghệ Hiện Đại", 
+                                desc: "Trợ lý ảo tận tâm và giải pháp thanh toán an toàn", 
+                                icon: <LaptopOutlined className={styles.featureIcon} />,
+                                color: "#009bb6" 
+                            },
+                            { 
+                                title: "Giao Hàng Toàn Quốc", 
+                                desc: "Đóng gói chuyên nghiệp, bảo hành và đổi trả dễ dàng", 
+                                icon: <TruckOutlined className={styles.featureIcon} />,
+                                color: "#eeb406" 
+                            }
+                        ].map((item, index) => (
+                            <div 
+                                key={index}
+                                className={`${styles.featureItem} ${styles.hiddenStart}`}
+                                ref={(el) => (featureRefs.current[index] = el)}
+                                style={{ transitionDelay: `${index * 0.15}s` }} 
+                            >
+                                <div className={styles.iconWrapper} style={{ backgroundColor: item.color }}>
+                                    {item.icon}
+                                </div>
+                                <h4>{item.title}</h4>
+                                <p>{item.desc}</p>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </section>
