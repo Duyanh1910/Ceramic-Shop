@@ -34,7 +34,7 @@ export default function AdminLayout() {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
 
-  const rawRole = localStorage.getItem('role') || '';
+  const rawRole = localStorage.getItem('admin_role') || localStorage.getItem('role') || '';
   const roleString = rawRole.trim().toLowerCase();
 
   useEffect(() => {
@@ -46,7 +46,7 @@ export default function AdminLayout() {
 
   const isAdmin = roleString === 'admin';
   const role = isAdmin ? 'Admin' : 'Staff';
-  const username = localStorage.getItem('username') || 'Tài khoản';
+  const username = localStorage.getItem('admin_username') || localStorage.getItem('username') || 'Tài khoản';
   const menuItems = isAdmin ? ADMIN_MENU : STAFF_MENU;
   const handleLogout = async () => {
     try {
@@ -67,7 +67,7 @@ export default function AdminLayout() {
     ],
     onClick: ({ key }) => {
       if (key === 'logout') handleLogout();
-      if (key === 'profile') navigate('/profile');
+      if (key === 'adminprofile') navigate('/admin/adminprofile');
     },
   };
 
@@ -108,27 +108,7 @@ export default function AdminLayout() {
           )}
         </div>
       </Sider>
-
       <Layout>
-        <Header className={styles.header}>
-          <Button
-            type="text"
-            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-            onClick={() => setCollapsed(!collapsed)}
-            className={styles.collapseBtn}
-          />
-          <div className={styles.headerRight}>
-            <Dropdown menu={userMenu} placement="bottomRight" arrow>
-              <div className={styles.userInfo}>
-                <Avatar className={styles.avatar}>{username?.[0]?.toUpperCase()}</Avatar>
-                <div className={styles.userMeta}>
-                  <span className={styles.userName}>{username}</span>
-                  <span className={styles.userRole}>{role}</span>
-                </div>
-              </div>
-            </Dropdown>
-          </div>
-        </Header>
         <Content className={styles.content}>
           <Outlet />
         </Content>
