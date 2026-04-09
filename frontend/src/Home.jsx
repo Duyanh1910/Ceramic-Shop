@@ -632,7 +632,7 @@ function Home() {
         const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/categories');
         const catData = res.data.result || [];
         
-        const menuItems = [ { key: 'all', icon: <AppstoreOutlined />, label: 'Tất cả sản phẩm', className: styles.allProductsMenu } ];
+        const menuItems = [ { key: 'all', icon: <AppstoreOutlined />, label: 'Tất Cả Sản Phẩm', className: styles.allProductsMenu } ];
 
         const parents = catData.filter(c => !c.ParentID);
 
