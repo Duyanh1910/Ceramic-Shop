@@ -173,16 +173,17 @@ export default function Checkout() {
 
   const createOrder = async (values) => {
     const payload = {
-        TenNguoiNhan: values.name,
-        SDT: values.phone, 
-        DiaChiGiaoHang: shippingMethod === 3 ? "Nhận tại cửa hàng" : addressData.string,
-        GhiChu: values.note || '',
-        MaPhuongThuc: paymentMethod,
-        MaPhi: shippingMethod, 
-        addressObj: shippingMethod === 3 ? null : addressData.obj, 
-        ListMaKhuyenMai: appliedVoucher ? [appliedVoucher.MaKhuyenMai] : [],
-        
-        items: selectedItems, 
+        orderData: {
+            TenNguoiNhan: values.name,
+            SDT: values.phone, 
+            DiaChiGiaoHang: shippingMethod === 3 ? "Nhận tại cửa hàng" : addressData.string,
+            GhiChu: values.note || '',
+            MaPhuongThuc: paymentMethod,
+            MaPhi: shippingMethod, 
+            addressObj: shippingMethod === 3 ? null : addressData.obj, 
+            ListMaKhuyenMai: appliedVoucher ? [appliedVoucher.MaKhuyenMai] : [],
+        },
+        selectedVariantIds: selectedItems, 
     };
 
     const res = await axios.post(`${API_BASE}/orders`, payload, authHeader);
