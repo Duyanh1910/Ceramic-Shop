@@ -97,30 +97,30 @@ export default function Checkout() {
       setCalculatingFee(true);
       try {
         const payload = {
-          MaPhi: shippingMethod,
-          addressObj: addressData.obj,
-          items: orderItems.map(i => ({ 
-              idBienThe: i.variantId || i.MaBienThe || i.id,
-              soLuong: i.quantity || i.SoLuong,
-              donGia: i.price || i.DonGia,
-              
-              MaSanPham: i.id || i.productId,
-              MaBienThe: i.variantId || i.MaBienThe || i.id,
-              SoLuong: i.quantity || i.SoLuong 
-          }))
+            MaPhi: shippingMethod,
+            addressObj: addressData.obj,
+            items: orderItems.map(i => ({ 
+                idBienThe: i.variantId || i.MaBienThe || i.id,
+                soLuong: i.quantity || i.SoLuong,
+                donGia: i.price || i.DonGia,
+                MaBienThe: i.variantId || i.MaBienThe || i.id,
+                SoLuong: i.quantity || i.SoLuong
+            }))
         };
 
-        // 🎯 ĐỔI SANG POST VÀ GỌI ĐÚNG ROUTE /calculate-fee
         const res = await axios.post(`${API_BASE}/orders/calculate-fee`, payload, authHeader);
         
-        // Bóc tách dữ liệu từ feeResult.data.total mà Backend trả về
-        const fee = res.data?.feeResult?.data?.total || res.data?.data?.total || 0;
+        const result = res.data?.feeResult?.data || res.data?.data;
+        const totalFee = result?.total || 0;
         
-        console.log("✅ Phí ship chính xác (bao gồm bảo hiểm):", fee);
-        setShippingFee(Number(fee));
+        console.log("✅ Phí ship tính toán được:", totalFee);
+        setShippingFee(Number(totalFee));
 
       } catch (err) {
         console.error('Lỗi tính phí ship:', err.response?.data || err.message);
+        if (err.response?.status === 400) {
+           message.warning(err.response.data.message);
+        }
         setShippingFee(0);
       } finally {
         setCalculatingFee(false);
@@ -128,7 +128,6 @@ export default function Checkout() {
     };
 
     fetchShippingFee();
-    // Lắng nghe sự thay đổi của phương thức giao hàng, địa chỉ và danh sách hàng
   }, [shippingMethod, JSON.stringify(addressData.obj), JSON.stringify(orderItems)]);
 
   const fetchProfile = async () => {
