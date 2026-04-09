@@ -574,6 +574,7 @@ export const adminGetOrderDetailService = async (orderCode) => {
 export const adminUpdateOrderStatusService = async (
   orderCode,
   newStatus,
+  newPaymentStatus,
   note,
 ) => {
   const transaction = await sequelize.transaction();
@@ -677,16 +678,28 @@ Thông tin liên hệ:
         });
       }
     } else {
+      let finalPaymentStatus = order.TrangThaiThanhToan;
+
       if (
-        newStatus == ORDER_STATUS.COMPLETED &&
-        order.TrangThaiThanhToan === 0
+        order.MaPhuongThuc === 1 &&
+        newPaymentStatus !== undefined &&
+        newPaymentStatus !== null
+      ) {
+        finalPaymentStatus = Number(newPaymentStatus);
+        order.TrangThaiThanhToan = finalPaymentStatus;
+      }
+
+      if (
+        Number(newStatus) === ORDER_STATUS.COMPLETED &&
+        finalPaymentStatus === 0
       ) {
         throw new ErrorHandler(
-          "Không thể thay đổi trạng thái đơn hàng do đơn hàng chưa thanh toán!",
+          "Không thể thay đổi trạng thái sang Hoàn thành vì đơn hàng chưa được thanh toán!",
           400,
         );
       }
-      order.TrangThaiDonHang = newStatus;
+
+      order.TrangThaiDonHang = Number(newStatus);
       await order.save({
         transaction,
       });
