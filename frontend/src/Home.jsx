@@ -632,22 +632,25 @@ function Home() {
         const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/categories');
         const catData = res.data.result || [];
         
-        const menuItems = [ { key: 'all', icon: <AppstoreOutlined />, label: 'Tất Cả Sản Phẩm', className: styles.allProductsMenu } ];
+        const menuItems = [ { key: 'all', icon: <AppstoreOutlined />, label: 'Tất cả sản phẩm', className: styles.allProductsMenu } ];
 
         const parents = catData.filter(c => !c.ParentID);
 
         parents.forEach(p => {
-          const mappedChildren = catData.filter(c => c.ParentID === p.MaDanhMuc);
-          
           menuItems.push({
-            key: `parent-${p.MaDanhMuc}`,
+            key: p.MaDanhMuc.toString(),
             label: p.TenDanhMuc,
             className: styles.parentMenuItem,
-            children: mappedChildren.length > 0 ? mappedChildren.map(c => ({
+          });
+          
+          const mappedChildren = catData.filter(c => c.ParentID === p.MaDanhMuc);
+          
+          mappedChildren.forEach(c => {
+            menuItems.push({
               key: c.MaDanhMuc.toString(),
               label: c.TenDanhMuc,
               className: styles.childMenuItem,
-            })) : null
+            });
           });
         });
         
