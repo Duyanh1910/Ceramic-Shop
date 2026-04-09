@@ -17,7 +17,8 @@ import {
     ShoppingFilled,
     AppstoreOutlined,
     LaptopOutlined,
-    TruckOutlined
+    TruckOutlined,
+    HeartOutlined
 } from '@ant-design/icons';
 import styles from './LandingPage.module.css';
 import { saveSession } from './useAuth.js';
@@ -77,6 +78,7 @@ function LandingPage() {
     const exactScroll = useRef(0);
     
     const featureRefs = useRef([]);
+    const vmRefs = useRef([]);
 
     useEffect(() => {
         if (!isAutoPlaying) return;
@@ -117,6 +119,10 @@ function LandingPage() {
         );
 
         featureRefs.current.forEach((ref) => {
+            if (ref) observer.observe(ref);
+        });
+
+        vmRefs.current.forEach((ref) => {
             if (ref) observer.observe(ref);
         });
 
@@ -520,29 +526,26 @@ function LandingPage() {
                     </div>
 
                     <div className={styles.visionMission}>
-                        <div className={styles.vmCard}>
-                            <div className={styles.vmIcon}>
-                                <TrophyOutlined />
+                        <div className={`${styles.vmCard} ${styles.hiddenStart}`} ref={(el) => (vmRefs.current[0] = el)} style={{ transitionDelay: '0s' }}>
+                            <div className={styles.iconWrapper} style={{ backgroundColor: '#009bb6' }}>
+                                <TrophyOutlined className={styles.featureIcon} />
                             </div>
                             <h3>TẦM NHÌN</h3>
-                            <p>Xây dựng CeramicShop trở thành địa chỉ mua sắm gốm sứ trực tuyến thân thiện và đáng tin cậy, 
-                            kết hợp hài hòa giữa nét đẹp truyền thống và công nghệ hiện đại.</p>
+                            <p>Xây dựng CeramicShop trở thành địa chỉ mua sắm gốm sứ trực tuyến thân thiện và đáng tin cậy, kết hợp hài hòa giữa nét đẹp truyền thống và công nghệ hiện đại.</p>
                         </div>
-                        <div className={styles.vmCard}>
-                            <div className={styles.vmIcon}>
-                                <SafetyOutlined />
+                        <div className={`${styles.vmCard} ${styles.hiddenStart}`} ref={(el) => (vmRefs.current[1] = el)} style={{ transitionDelay: '0.15s' }}>
+                            <div className={styles.iconWrapper} style={{ backgroundColor: '#eeb406' }}>
+                                <SafetyOutlined className={styles.featureIcon} />
                             </div>
                             <h3>SỨ MỆNH</h3>
-                            <p>Kiến tạo sự ấm cúng và an yên cho mọi gia đình thông qua những sản phẩm gốm sứ chất lượng, 
-                            không ngừng cải thiện dịch vụ và tôn vinh nét đẹp văn hóa Việt.</p>
+                            <p>Kiến tạo sự ấm cúng và an yên cho mọi gia đình thông qua những sản phẩm gốm sứ chất lượng, không ngừng cải thiện dịch vụ và tôn vinh nét đẹp văn hóa Việt.</p>
                         </div>
-                        <div className={styles.vmCard}>
-                            <div className={styles.vmIcon}>
-                                <CustomerServiceOutlined />
+                        <div className={`${styles.vmCard} ${styles.hiddenStart}`} ref={(el) => (vmRefs.current[2] = el)} style={{ transitionDelay: '0.3s' }}>
+                            <div className={styles.iconWrapper} style={{ backgroundColor: '#009bb6' }}>
+                                <HeartOutlined className={styles.featureIcon} />
                             </div>
                             <h3>GIÁ TRỊ KHÁCH HÀNG</h3>
-                            <p>Sản phẩm mang giá trị văn hóa và nghệ thuật sâu sắc. Mối quan hệ bền vững với sự uy tín, 
-                            minh bạch. Thương hiệu chuyên nghiệp, tận tâm trong từng chi tiết.</p>
+                            <p>Sản phẩm mang giá trị văn hóa và nghệ thuật sâu sắc. Mối quan hệ bền vững với sự uy tín, minh bạch. Thương hiệu chuyên nghiệp, tận tâm trong từng chi tiết.</p>
                         </div>
                     </div>
 
