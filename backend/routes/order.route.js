@@ -14,6 +14,7 @@ const router = express.Router();
 router.post("/", createOrder);
 router.get("/", getMyOrders);
 
+router.post('/summary', calculateSummary);
 router.post("/calculate-fee", calculateFee);
 router.post("/calculate-discount", calculateDiscount);
 router.post("/calculate-product", calculateProductFee);

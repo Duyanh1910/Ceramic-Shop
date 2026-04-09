@@ -95,21 +95,21 @@ export default function Checkout() {
 
       setCalculatingFee(true);
       try {
-        const res = await axios.get(`${API_BASE}/cart/summary`, {
-          ...authHeader,
-          data: {
+        const payload = {
             selectedVariantIds: selectedItems, 
             MaPhi: shippingMethod,
             addressObj: addressData.obj,
             ListMaKhuyenMai: appliedVoucher ? [appliedVoucher.MaKhuyenMai] : [],
-          }
-        });
+        };
+
+        const res = await axios.post(`${API_BASE}/cart/summary`, payload, authHeader);
+        
         const summary = res.data?.result || res.data?.data || res.data;
         const fee = summary?.shippingFee ?? summary?.TongPhiVanChuyen ?? summary?.total ?? 0;
         setShippingFee(Number(fee));
 
       } catch (err) {
-        console.error('Lỗi tính phí ship:', err.response?.data || err.message);
+        console.error('Lỗi tính phí ship:', err.response?.data?.message || err.message);
         setShippingFee(0);
       } finally {
         setCalculatingFee(false);
