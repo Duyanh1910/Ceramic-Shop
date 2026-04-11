@@ -20,8 +20,6 @@ const fmt = (v) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency:
 const token = () => localStorage.getItem('customer_token') || localStorage.getItem('admin_token');
 const authH  = () => ({ headers: { Authorization: `Bearer ${token()}` }, withCredentials: true });
 
-// Loại khuyến mãi (MaLoaiKM): 1=% giảm, 2=giảm cố định
-// LoaiVoucher: 1=giảm đơn, 2=freeship
 const VOUCHER_TYPE_LABEL = { 1: 'Giảm đơn hàng', 2: 'Freeship' };
 const VOUCHER_TYPE_COLOR = { 1: 'blue', 2: 'cyan' };
 const KM_TYPE_LABEL = { 1: 'Phần trăm (%)', 2: 'Số tiền cố định' };
@@ -57,7 +55,6 @@ export default function AdminPromotions() {
       const res = await axios.get(`${API_BASE}/admin/promotions`, authH());
       setPromos(res.data?.result || res.data?.vouchers || []);
     } catch {
-      // Fallback to public endpoint if admin endpoint doesn't exist yet
       try {
         const res = await axios.get(`${API_BASE}/promotions`);
         setPromos(res.data?.vouchers || []);
@@ -139,13 +136,11 @@ export default function AdminPromotions() {
     message.success(`Đã sao chép mã: ${code}`);
   };
 
-  // Stats
   const now = new Date();
   const statsActive  = promos.filter(p => p.TrangThai === 1 && new Date(p.NgayBatDau) <= now && new Date(p.NgayKetThuc) >= now).length;
   const statsExpired = promos.filter(p => new Date(p.NgayKetThuc) < now).length;
   const statsPending = promos.filter(p => p.TrangThai === 1 && new Date(p.NgayBatDau) > now).length;
 
-  // Filter
   const filtered = promos.filter(p => {
     const matchSearch = !searchText
       || p.TenKhuyenMai?.toLowerCase().includes(searchText.toLowerCase())
@@ -282,7 +277,6 @@ export default function AdminPromotions() {
   return (
     <div className={styles.page}>
 
-      {/* Header */}
       <div className={styles.pageHeader}>
         <div className={styles.headerLeft}>
           <TagsOutlined className={styles.headerIcon} />
@@ -296,7 +290,6 @@ export default function AdminPromotions() {
         </Button>
       </div>
 
-      {/* Stats */}
       <Row gutter={[14, 14]} className={styles.statsRow}>
         {[
           { label: 'Tổng', value: promos.length, color: '#1b437c', bg: '#e8f0fe', icon: <TagOutlined /> },
@@ -314,7 +307,6 @@ export default function AdminPromotions() {
         ))}
       </Row>
 
-      {/* Filters */}
       <div className={styles.toolbar}>
         <Input
           prefix={<SearchOutlined style={{ color: '#bbb' }} />}
@@ -337,7 +329,6 @@ export default function AdminPromotions() {
         <Button icon={<ReloadOutlined />} onClick={fetchPromos} className={styles.btnRefresh} />
       </div>
 
-      {/* Table */}
       <div className={styles.tableWrap}>
         <Table
           columns={columns}
@@ -355,7 +346,6 @@ export default function AdminPromotions() {
         />
       </div>
 
-      {/* Modal create/edit */}
       <Modal
         open={modalOpen}
         onCancel={() => setModalOpen(false)}
