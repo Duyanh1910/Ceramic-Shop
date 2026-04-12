@@ -871,8 +871,9 @@ function Home() {
                       <Col xs={24} sm={12} md={12} lg={8} key={p.MaSanPham}>
                         <Badge.Ribbon 
                           text={isDiscontinued ? 'Ngừng bán' : 'Hết hàng'} 
-                          color={isDiscontinued ? 'red' : 'gray'} 
+                          color={isDiscontinued ? 'gray' : 'red'} 
                           style={{ display: (isSoldOut || isDiscontinued) ? 'block' : 'none' }}
+                          placement="start"
                         >
                           <div className={`${styles.customCard} ${isDiscontinued ? styles.disabledCard : ''}`}>
                             <div 
