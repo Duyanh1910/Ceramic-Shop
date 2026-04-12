@@ -957,14 +957,13 @@
   width: 250%;
   height: 250%;
   background: linear-gradient(135deg, transparent, #1b437c, #a9c5f9,#1e9fef , transparent);
-  animation: rotate-border 4s linear infinite;
-  animation-play-state: paused;
-  transform: rotate(0deg);
+  animation: none; 
+  transform: rotate(0deg); 
   z-index: 0;
 }
 
 .customCard:hover::before {
-  animation-play-state: running;
+  animation: rotate-border 3s linear infinite;
 }
 
 .customCard::after {
