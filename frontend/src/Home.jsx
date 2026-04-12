@@ -870,12 +870,13 @@ function Home() {
                     return (
                       <Col xs={24} sm={12} md={12} lg={8} key={p.MaSanPham}>
                         <Badge.Ribbon 
-                          text={isDiscontinued ? 'Ngừng bán' : 'Hết hàng'} 
+                          text={isDiscontinued ? 'Ngừng bán' : '● Hết hàng'} 
                           color={isDiscontinued ? 'gray' : 'red'} 
                           style={{ display: (isSoldOut || isDiscontinued) ? 'block' : 'none' }}
                           placement="start"
                         >
                           <div className={`${styles.customCard} ${isDiscontinued ? styles.disabledCard : ''}`}>
+                            <div className={styles.cardInner}>
                             <div 
                               style={{ width: '100%', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: isDiscontinued ? 'not-allowed' : 'pointer' }}
                               onClick={() => {
@@ -953,6 +954,7 @@ function Home() {
                                 CHI TIẾT
                               </button>
                             </div>
+                          </div>
                           </div>
                         </Badge.Ribbon>
                       </Col>

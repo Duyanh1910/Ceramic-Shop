@@ -571,26 +571,6 @@
   width: 150px;
 }
 
-.customCard {
-  background: #ffffff;
-  border-radius: 8px;
-  border: 1px solid #f0f0f0;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  height: 100%;
-  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-  overflow: hidden;
-  cursor: pointer;
-}
-
-.customCard:hover {
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
-  transform: translateY(-5px);
-  border-color: transparent;
-}
-
 .cardImgWrapper {
   width: 100%;
   aspect-ratio: 1 / 1;
@@ -957,4 +937,56 @@
 }
 .stockOut { 
   background: rgba(255,77,79,0.9); 
+}
+
+.customCard {
+  position: relative;
+  border-radius: 8px;
+  height: 100%;
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.customCard::before {
+  content: '';
+  position: absolute;
+  width: 250%;
+  height: 250%;
+  background: linear-gradient(0deg, transparent, #1b437c, #c48c46, transparent);
+  animation: rotate-border 4s linear infinite;
+  z-index: 0;
+}
+
+.customCard::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  background: #ffffff;
+  border-radius: 6px;
+  z-index: 0;
+}
+
+.cardInner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.customCard:hover {
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+  transform: translateY(-5px);
+}
+
+@keyframes rotate-border {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
