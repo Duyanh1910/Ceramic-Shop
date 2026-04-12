@@ -856,7 +856,7 @@ function Home() {
             </div>
           </div>
 
-          <div style={{ overflowX: 'hidden', padding: '0 10px' }}>
+          <div style={{ overflowX: 'hidden', padding: '15px 10px 25px 10px' }}>
             <Spin spinning={loading} description="Đang tải dữ liệu...">
               {products.length === 0 && !loading ? (
                  <div className={styles.emptyState}>Không tìm thấy sản phẩm nào.</div>
