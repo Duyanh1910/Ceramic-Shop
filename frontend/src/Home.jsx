@@ -884,6 +884,12 @@ function Home() {
                               <div className={styles.cardImgWrapper}>
                                 <img alt={p.TenSanPham} src={imgUrl} />
                                 
+                                {!isDiscontinued &&(
+                                  <span className={`${styles.stockBadge} ${isSoldOut ? styles.stockOut : styles.stockIn}`}>
+                                    {isSoldOut ? 'Hết hàng' : 'Còn hàng'}
+                                  </span>
+                                )}
+
                                 <span className={styles.viewCount} title="Lượt xem">
                                   <EyeOutlined /> {p.LuotXem || 0}
                                 </span>
