@@ -956,7 +956,7 @@
   position: absolute;
   width: 250%;
   height: 250%;
-  background: linear-gradient(0deg, transparent, #1b437c, #ffffff,#71f6f6 , transparent);
+  background: linear-gradient(135deg, transparent, #1b437c, #a9c5f9,#1e9fef , transparent);
   animation: rotate-border 4s linear infinite;
   animation-play-state: paused;
   z-index: 0;
@@ -965,7 +965,10 @@
 .customCard:hover::before {
   animation-play-state: running;
 }
-
+.customCard:not(:hover)::before {
+  animation-play-state: paused;
+  background: linear-gradient(135deg, transparent, #1b437c, #a9c5f9,#1e9fef , transparent);
+}
 .customCard::after {
   content: '';
   position: absolute;
