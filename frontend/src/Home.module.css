@@ -956,7 +956,7 @@
   position: absolute;
   width: 250%;
   height: 250%;
-  background: linear-gradient(135deg, transparent, #292837, #2d38ab,#88EFEC ,#eff1e6, #ece161, #da6d59,#4242a6,#71edef transparent);
+  background: linear-gradient(135deg, transparent, #292837, #2d38ab,#88EFEC ,#eff1e6, #ece161, #da6d59,#4242a6,#71edef, transparent);
   animation: none; 
   transform: rotate(0deg); 
   z-index: 0;
