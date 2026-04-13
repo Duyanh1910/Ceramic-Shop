@@ -68,11 +68,11 @@ export default function Checkout() {
   let preDiscount = 0;
   if(appliedVoucher){
     if(subtotal>=(appliedVoucher.GiaTriToiThieu || 0)){
-      if(appliedVoucher.MaLoaiKm===1){
-      const calculateDiscount = (total * appliedVoucher.GiaTri)/100;
+      if(appliedVoucher.MaLoaiKM===1){
+      const calculateDiscount = (subtotal * appliedVoucher.GiaTri)/100;
       preDiscount = appliedVoucher.GiamToiDa ? Math.min(calculateDiscount,appliedVoucher.GiamToiDa) : calculateDiscount;
     }
-    else if(appliedVoucher.MaLoaiKm===2){
+    else if(appliedVoucher.MaLoaiKM===2){
       preDiscount = appliedVoucher.GiaTri;
     }
     }
