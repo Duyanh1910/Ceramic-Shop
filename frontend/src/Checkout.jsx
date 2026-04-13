@@ -42,7 +42,7 @@ export default function Checkout() {
   const [paymentMethod, setPaymentMethod] = useState(1);
   const [addressError, setAddressError] = useState('');
   const [voucherInput, setVoucherInput] = useState(applyVoucher?.TenKhuyenMai || '');
-  const [appliedProductVoucher, setAppliedProductVoucher] = useState(applyVoucher && (applyVoucher.LoaiKM === 1 || applyVoucher.LoaiKM === 2));
+  const [appliedProductVoucher, setAppliedProductVoucher] = useState(applyVoucher && (applyVoucher.LoaiKM === 1 || applyVoucher.LoaiKM === 2) ? applyVoucher : null);
   const [appliedShipVoucher, setAppliedShipVoucher] = useState(applyVoucher && (applyVoucher.LoaiKM === 3 ? applyVoucher : null));
   const activeVoucherIds = [appliedProductVoucher?.MaKhuyenMai, appliedShipVoucher?.MaKhuyenMai].filter(Boolean);
   const [voucherLoading, setVoucherLoading] = useState(false);
@@ -71,7 +71,7 @@ export default function Checkout() {
   if(appliedProductVoucher && subtotal >= (appliedProductVoucher.GiaTriToiThieu || 0)){
     if(appliedProductVoucher.MaLoaiKM === 1){
       const calculateDiscount = (subtotal * appliedProductVoucher.GiaTri)/100;
-      productDiscount = appliedProductVoucher ? Math.min(calculateDiscount, appliedProductVoucher.GiamToiDa) : calculateDiscount;
+      productDiscount = appliedProductVoucher.GiamToiDa ? Math.min(calculateDiscount, appliedProductVoucher.GiamToiDa) : calculateDiscount;
     }
     else if(appliedProductVoucher.MaLoaiKM === 2){
       productDiscount =  appliedProductVoucher.GiaTri;
@@ -86,7 +86,7 @@ export default function Checkout() {
   shippingDiscount = Math.min(shippingDiscount, subtotal);
 
   const totalDiscount = productDiscount + shippingDiscount;
-  const total = Math.min(0, subtotal - productDiscount + shippingFee - shippingDiscount);
+  const total = Math.max(0, subtotal - productDiscount + shippingFee - shippingDiscount);
 
   const selectedPayment = PAYMENT_METHODS.find((m) => m.id === paymentMethod);
 
@@ -145,7 +145,7 @@ export default function Checkout() {
     };
 
     fetchOrderSummary();
-  }, [shippingMethod, JSON.stringify(addressData.obj), JSON.stringify(orderItems), appliedVoucher]);
+  }, [shippingMethod, JSON.stringify(addressData.obj), JSON.stringify(orderItems), appliedProductVoucher, appliedShipVoucher]);
 
   const fetchProfile = async () => {
     setProfileLoading(true);
@@ -198,7 +198,7 @@ export default function Checkout() {
     try{
       const res = await axios.get(`${API_BASE}/promotions`);
       const all = res.data?.voucher || [];
-      const found = all.find(v=>v.TenKhuyenMai?.toLowerCase() == voucherInput.trim().toLowerCase || String(v.KhuyenMai) == voucherInput.trim());
+      const found = all.find(v=>v.TenKhuyenMai?.toLowerCase() == voucherInput.trim().toLowerCase() || String(v.KhuyenMai) == voucherInput.trim());
       if(!found) {message.error('Mã voucher không tồn tại hoặc đã hết hạn')}
       if(applySpecificVoucher(found)){
         message.success('Áp dụng voucher thành công');
@@ -615,7 +615,8 @@ export default function Checkout() {
                           : fmt(shippingFee)
                       }
                     </span>
-                    {productDiscount > 0 && (
+                  </div>
+                  {productDiscount > 0 && (
                         <div className={styles.summaryRow} style={{ color: '#52c41a' }}>
                           <span>Giảm giá sản phẩm</span>
                           <span>- {fmt(productDiscount)}</span>
@@ -627,13 +628,6 @@ export default function Checkout() {
                         <span>- {fmt(shippingDiscount)}</span>
                       </div>
                     )}
-                  </div>
-
-                  {appliedVoucher && (
-                    <div className={styles.summaryRow} style={{ color: '#52c41a' }}>
-                      <span>Giảm giá</span><span>-{fmt(discount)}</span>
-                    </div>
-                  )}
                   <Divider style={{ margin: '12px 0' }} />
                   <div className={styles.summaryTotal}>
                     <span>Tổng cộng</span>
