@@ -42,7 +42,9 @@ export default function Checkout() {
   const [paymentMethod, setPaymentMethod] = useState(1);
   const [addressError, setAddressError] = useState('');
   const [voucherInput, setVoucherInput] = useState(applyVoucher?.TenKhuyenMai || '');
-  const [appliedVoucher, setAppliedVoucher] = useState(applyVoucher || null);
+  const [appliedProductVoucher, setAppliedProductVoucher] = useState(applyVoucher && (applyVoucher.LoaiKM === 1 || applyVoucher.LoaiKM === 2));
+  const [appliedShipVoucher, setAppliedShipVoucher] = useState(applyVoucher && (applyVoucher.LoaiKM === 3 ? applyVoucher : null));
+  const activeVoucherIds = [appliedProductVoucher?.MaKhuyenMai, appliedShipVoucher?.MaKhuyenMai].filter(Boolean);
   const [voucherLoading, setVoucherLoading] = useState(false);
   const [myVouchers, setMyVouchers] = useState([]);
   const [orderId, setOrderId] = useState(null);
@@ -65,24 +67,26 @@ export default function Checkout() {
     return sum + price * qty;
   }, 0);
 
-  let preDiscount = 0;
-  if(appliedVoucher){
-    if(subtotal>=(appliedVoucher.GiaTriToiThieu || 0)){
-      if(appliedVoucher.MaLoaiKM===1){
-      const calculateDiscount = (subtotal * appliedVoucher.GiaTri)/100;
-      preDiscount = appliedVoucher.GiamToiDa ? Math.min(calculateDiscount,appliedVoucher.GiamToiDa) : calculateDiscount;
+  let productDiscount = 0;
+  if(appliedProductVoucher && subtotal >= (appliedProductVoucher.GiaTriToiThieu || 0)){
+    if(appliedProductVoucher.MaLoaiKM === 1){
+      const calculateDiscount = (subtotal * appliedProductVoucher.GiaTri)/100;
+      productDiscount = appliedProductVoucher ? Math.min(calculateDiscount, appliedProductVoucher.GiamToiDa) : calculateDiscount;
     }
-    else if(appliedVoucher.MaLoaiKM===2 || appliedVoucher.MaLoaiKM===3){
-      preDiscount = appliedVoucher.GiaTri;
-    }
-    }
-    else{
-      preDiscount=0;
+    else if(appliedProductVoucher.MaLoaiKM === 2){
+      productDiscount =  appliedProductVoucher.GiaTri;
     }
   }
+  productDiscount = Math.min(productDiscount, subtotal);
 
-  const discount = Math.min(preDiscount, subtotal);
-  const total = Math.max(0, subtotal - discount + shippingFee);
+  let shippingDiscount = 0;
+  if(appliedShipVoucher && subtotal >= (appliedShipVoucher.GiaTriToiThieu ||0 )){
+    shippingDiscount = appliedShipVoucher.GiaTri;
+  }
+  shippingDiscount = Math.min(shippingDiscount, subtotal);
+
+  const totalDiscount = productDiscount + shippingDiscount;
+  const total = Math.min(0, subtotal - productDiscount + shippingFee - shippingDiscount);
 
   const selectedPayment = PAYMENT_METHODS.find((m) => m.id === paymentMethod);
 
@@ -116,7 +120,7 @@ export default function Checkout() {
             selectedVariantIds: selectedItems,
             MaPhi: shippingMethod,            
             addressObj: addressData.obj,  
-            ListMaKhuyenMai: appliedVoucher ? [appliedVoucher.MaKhuyenMai] : [],
+            ListMaKhuyenMai: activeVoucherIds,
         };
 
         const res = await axios.post(`${API_BASE}/cart/summary`, payload, authHeader);
@@ -174,35 +178,47 @@ export default function Checkout() {
     }
   };
 
-  const handleApplyVoucher = async () => {
-    if (!voucherInput.trim()) return;
-    setVoucherLoading(true);
-    try {
-      const res = await axios.get(`${API_BASE}/promotions`);
-      const all = res.data?.vouchers || [];
-      const found = all.find(
-        (v) => v.TenKhuyenMai?.toLowerCase() === voucherInput.trim().toLowerCase()
-          || String(v.MaKhuyenMai) === voucherInput.trim()
-      );
-      if (!found) { message.error('Mã voucher không tồn tại hoặc đã hết hạn!'); return; }
-      if (found.GiaTriToiThieu && subtotal < Number(found.GiaTriToiThieu)) {
-        message.error(`Đơn tối thiểu ${fmt(found.GiaTriToiThieu)} để dùng mã này!`); return;
-      }
-      setAppliedVoucher(found);
-      message.success('Áp dụng voucher thành công!');
-    } catch { message.error('Không thể kiểm tra voucher!'); }
-    finally { setVoucherLoading(false); }
+  const applySpecificVoucher = (promo) => {
+    if(promo.GiaTriToiThieu && subtotal < Number(promo.GiaTriToiThieu)){
+      message.warning(`Đơn tối thiểu ${fmt(promo.GiaTriToiThieu)} để dùng mã này`);
+      return false;
+    }
+    if(promo.MaLoaiKM === 1 || promo.MaLoaiKM === 2){
+      setAppliedProductVoucher(promo);
+    }
+    else if(promo.MaLoaiKM === 3){
+      setAppliedShipVoucher(promo);
+    }
+    return true;
   };
+
+  const handleApplyVoucher = async() =>{
+    if(!voucherInput.trim()) return;
+    setVoucherLoading(true);
+    try{
+      const res = await axios.get(`${API_BASE}/promotions`);
+      const all = res.data?.voucher || [];
+      const found = all.find(v=>v.TenKhuyenMai?.toLowerCase() == voucherInput.trim().toLowerCase || String(v.KhuyenMai) == voucherInput.trim());
+      if(!found) {message.error('Mã voucher không tồn tại hoặc đã hết hạn')}
+      if(applySpecificVoucher(found)){
+        message.success('Áp dụng voucher thành công');
+        setVoucherInput('');
+      }
+    }
+    catch{
+      message.error("Không thể kiểm tra voucher");
+    }
+    finally{
+      setVoucherLoading(false);
+    }
+  }
 
   const handleSelectMyVoucher = (v) => {
     const promo = v.KhuyenMai || v;
-    if (promo.GiaTriToiThieu && subtotal < Number(promo.GiaTriToiThieu)) {
-      message.warning(`Đơn tối thiểu ${fmt(promo.GiaTriToiThieu)} để dùng mã này!`); return;
+    if(applySpecificVoucher(promo)){
+      message.success('Đã áp dụng voucher');
     }
-    setAppliedVoucher(promo);
-    setVoucherInput(promo.TenKhuyenMai);
-    message.success('Đã áp dụng voucher!');
-  };
+  }
 
   const createOrder = async (values) => {
     const payload = {
@@ -214,7 +230,7 @@ export default function Checkout() {
             MaPhuongThuc: paymentMethod,
             MaPhi: shippingMethod, 
             addressObj: shippingMethod === 3 ? null : addressData.obj, 
-            ListMaKhuyenMai: appliedVoucher ? [appliedVoucher.MaKhuyenMai] : [],
+            ListMaKhuyenMai: activeVoucherIds,
         },
         selectedVariantIds: selectedItems, 
     };
@@ -442,90 +458,112 @@ export default function Checkout() {
 
                   <div className={styles.section}>
                     <div className={styles.sectionTitle}><TagOutlined /> Mã voucher</div>
-                    {appliedVoucher ? (
-                      <div className={styles.appliedVoucher}>
-                        <div className={styles.voucherInfo}>
-                          <Tag color="green">✓ Đã áp dụng</Tag>
-                          <span className={styles.voucherName}>{appliedVoucher.TenKhuyenMai}</span>
-                          <span className={styles.voucherDiscount}>-{fmt(discount)}</span>
+
+                      {appliedProductVoucher && (
+                        <div className={styles.appliedVoucher} style={{ marginBottom: 10 }}>
+                          <div className={styles.voucherInfo}>
+                            <Tag color="green">✓ Mã sản phẩm</Tag>
+                            <span className={styles.voucherName}>{appliedProductVoucher.TenKhuyenMai}</span>
+                            <span className={styles.voucherDiscount}>-{fmt(productDiscount)}</span>
+                          </div>
+                          <Button size="small" danger onClick={() => setAppliedProductVoucher(null)}>Bỏ</Button>
                         </div>
-                        <Button size="small" danger onClick={() => { setAppliedVoucher(null); setVoucherInput(''); }}>Bỏ</Button>
-                      </div>
-                    ) : (
-                      <div className={styles.voucherInputRow}>
-                        <Input value={voucherInput} onChange={(e) => setVoucherInput(e.target.value)}
-                          placeholder="Nhập mã voucher..." className={styles.input}
-                          onPressEnter={handleApplyVoucher}
-                          prefix={<TagOutlined style={{ color: '#bbb' }} />} />
-                        <Button onClick={handleApplyVoucher} loading={voucherLoading}
-                          className={styles.btnApplyVoucher}>Áp dụng</Button>
-                      </div>
-                    )}
-                    {myVouchers.length > 0 && !appliedVoucher && (
-                      <div className={styles.myVouchers}>
-                        {myVouchers.filter(v=>(v.KhuyenMai || v).LoaiKM === 1 || (v.KhuyenMai || v).LoaiKM === 2).length > 0 &&( <>
-                          <div className={styles.myVouchersTitle}>Mã giảm giá sản phẩm:</div>
-                        <div className={styles.voucherCards}>
-                          {myVouchers.filter(v=>(v.KhuyenMai || v).LoaiKM === 1 || (v.KhuyenMai || v).LoaiKM === 2)
-                          .slice(0, 5)
-                          .map((v, i) => {
-                            const promo = v.KhuyenMai || v;
-                            const eligible = !promo.GiaTriToiThieu || subtotal >= Number(promo.GiaTriToiThieu);
-                            return (
-                              <div key={`discount-${i}`}
-                                className={`${styles.voucherCard} ${!eligible ? styles.voucherDisabled : ''}`}
-                                onClick={() => eligible && handleSelectMyVoucher(v)}>
-                                <div className={styles.voucherCardLeft}><TagOutlined className={styles.voucherCardIcon} /></div>
-                                <div className={styles.voucherCardRight}>
-                                  <div className={styles.voucherCardName}>{promo.TenKhuyenMai}</div>
-                                  <div className={styles.voucherCardValue}>
-                                    Giảm {fmt(promo.GiaTri)}{promo.GiamToiDa ? ` (tối đa ${fmt(promo.GiamToiDa)})` : ''}
-                                  </div>
-                                  {promo.GiaTriToiThieu && (
-                                    <div className={styles.voucherCardMin}>
-                                      {eligible ? '✓ Đủ điều kiện' : `Đơn tối thiểu ${fmt(promo.GiaTriToiThieu)}`}
-                                    </div>
-                                  )}
-                                </div>
+                      )}
+
+                      {appliedShippingVoucher && (
+                        <div className={styles.appliedVoucher} style={{ marginBottom: 10 }}>
+                          <div className={styles.voucherInfo}>
+                            <Tag color="cyan">✓ Mã vận chuyển</Tag>
+                            <span className={styles.voucherName}>{appliedShippingVoucher.TenKhuyenMai}</span>
+                            <span className={styles.voucherDiscount}>-{fmt(shippingDiscount)}</span>
+                          </div>
+                          <Button size="small" danger onClick={() => setAppliedShippingVoucher(null)}>Bỏ</Button>
+                        </div>
+                      )}
+
+                      {(!appliedProductVoucher || !appliedShippingVoucher) && (
+                        <div className={styles.voucherInputRow} style={{ marginBottom: 20 }}>
+                          <Input value={voucherInput} onChange={(e) => setVoucherInput(e.target.value)}
+                            placeholder="Nhập mã voucher..." className={styles.input}
+                            onPressEnter={handleApplyVoucher}
+                            prefix={<TagOutlined style={{ color: '#bbb' }} />} />
+                          <Button onClick={handleApplyVoucher} loading={voucherLoading}
+                            className={styles.btnApplyVoucher}>Áp dụng</Button>
+                        </div>
+                      )}
+
+                      {myVouchers.length > 0 && (
+                        <div className={styles.myVouchers}>
+                          
+                          {!appliedProductVoucher && myVouchers.filter(v => (v.KhuyenMai || v).MaLoaiKM === 1 || (v.KhuyenMai || v).MaLoaiKM === 2).length > 0 && ( 
+                            <>
+                              <div className={styles.myVouchersTitle}>Mã giảm giá sản phẩm:</div>
+                              <div className={styles.voucherCards} style={{ marginBottom: 15 }}>
+                                {myVouchers
+                                  .filter(v => (v.KhuyenMai || v).MaLoaiKM === 1 || (v.KhuyenMai || v).MaLoaiKM === 2)
+                                  .slice(0, 5)
+                                  .map((v, i) => {
+                                    const promo = v.KhuyenMai || v;
+                                    const eligible = !promo.GiaTriToiThieu || subtotal >= Number(promo.GiaTriToiThieu);
+                                    return (
+                                      <div key={`discount-${i}`}
+                                        className={`${styles.voucherCard} ${!eligible ? styles.voucherDisabled : ''}`}
+                                        onClick={() => eligible && handleSelectMyVoucher(v)}>
+                                        <div className={styles.voucherCardLeft}><TagOutlined className={styles.voucherCardIcon} /></div>
+                                        <div className={styles.voucherCardRight}>
+                                          <div className={styles.voucherCardName}>{promo.TenKhuyenMai}</div>
+                                          <div className={styles.voucherCardValue}>
+                                            Giảm {fmt(promo.GiaTri)}{promo.GiamToiDa ? ` (tối đa ${fmt(promo.GiamToiDa)})` : ''}
+                                          </div>
+                                          {promo.GiaTriToiThieu && (
+                                            <div className={styles.voucherCardMin}>
+                                              {eligible ? '✓ Đủ điều kiện' : `Đơn tối thiểu ${fmt(promo.GiaTriToiThieu)}`}
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
                               </div>
-                            );
-                          })}
-                        </div>
-                        </>
-                        )}
-                        
-                        {myVouchers.filter(v=>(v.KhuyenMai || v).LoaiKM === 3).length > 0 &&( <>
-                          <div className={styles.myVouchersTitle}>Ưu đãi giao hàng</div>
-                        <div className={styles.voucherCards}>
-                          {myVouchers.filter(v=>(v.KhuyenMai || v).LoaiKM === 3)
-                          .slice(0, 3)
-                          .map((v, i) => {
-                            const promo = v.KhuyenMai || v;
-                            const eligible = !promo.GiaTriToiThieu || subtotal >= Number(promo.GiaTriToiThieu);
-                            return (
-                              <div key={`free-${i}`}
-                                className={`${styles.voucherCard} ${!eligible ? styles.voucherDisabled : ''}`}
-                                onClick={() => eligible && handleSelectMyVoucher(v)}>
-                                <div className={styles.voucherCardLeft}><TagOutlined className={styles.voucherCardIcon} /></div>
-                                <div className={styles.voucherCardRight}>
-                                  <div className={styles.voucherCardName}>{promo.TenKhuyenMai}</div>
-                                  <div className={styles.voucherCardValue}>
-                                    Giảm {fmt(promo.GiaTri)}{promo.GiamToiDa ? ` (tối đa ${fmt(promo.GiamToiDa)})` : ''}
-                                  </div>
-                                  {promo.GiaTriToiThieu && (
-                                    <div className={styles.voucherCardMin}>
-                                      {eligible ? '✓ Đủ điều kiện' : `Đơn tối thiểu ${fmt(promo.GiaTriToiThieu)}`}
-                                    </div>
-                                  )}
-                                </div>
+                            </>
+                          )}
+                          
+                          {!appliedShippingVoucher && myVouchers.filter(v => (v.KhuyenMai || v).MaLoaiKM === 3).length > 0 && ( 
+                            <>
+                              <div className={styles.myVouchersTitle}>Ưu đãi giao hàng:</div>
+                              <div className={styles.voucherCards}>
+                                {myVouchers
+                                  .filter(v => (v.KhuyenMai || v).MaLoaiKM === 3)
+                                  .slice(0, 3)
+                                  .map((v, i) => {
+                                    const promo = v.KhuyenMai || v;
+                                    const eligible = !promo.GiaTriToiThieu || subtotal >= Number(promo.GiaTriToiThieu);
+                                    return (
+                                      <div key={`free-${i}`}
+                                        className={`${styles.voucherCard} ${!eligible ? styles.voucherDisabled : ''}`}
+                                        onClick={() => eligible && handleSelectMyVoucher(v)}>
+                                        <div className={styles.voucherCardLeft} style={{ background: 'linear-gradient(160deg, #0f9d58, #0a7e46)' }}>
+                                          <TagOutlined className={styles.voucherCardIcon} />
+                                        </div>
+                                        <div className={styles.voucherCardRight}>
+                                          <div className={styles.voucherCardName}>{promo.TenKhuyenMai}</div>
+                                          <div className={styles.voucherCardValue} style={{ color: '#0f9d58' }}>
+                                            Giảm phí ship {fmt(promo.GiaTri)}{promo.GiamToiDa ? ` (tối đa ${fmt(promo.GiamToiDa)})` : ''}
+                                          </div>
+                                          {promo.GiaTriToiThieu && (
+                                            <div className={styles.voucherCardMin}>
+                                              {eligible ? '✓ Đủ điều kiện' : `Đơn tối thiểu ${fmt(promo.GiaTriToiThieu)}`}
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
                               </div>
-                            );
-                          })}
+                            </>
+                          )}
                         </div>
-                        </>
-                        )}
-                      </div>
-                    )}
+                      )}
                   </div>
 
                   <Button type="primary" htmlType="submit" block loading={loading || calculatingFee}
@@ -577,6 +615,18 @@ export default function Checkout() {
                           : fmt(shippingFee)
                       }
                     </span>
+                    {productDiscount > 0 && (
+                        <div className={styles.summaryRow} style={{ color: '#52c41a' }}>
+                          <span>Giảm giá sản phẩm</span>
+                          <span>- {fmt(productDiscount)}</span>
+                        </div> 
+                      )}
+                    {shippingDiscount > 0 &&(
+                      <div className={styles.summaryRow} style={{color: '#0f9d58'}}>
+                        <span>Giảm giá phí giao hàng</span>
+                        <span>- {fmt(shippingDiscount)}</span>
+                      </div>
+                    )}
                   </div>
 
                   {appliedVoucher && (
