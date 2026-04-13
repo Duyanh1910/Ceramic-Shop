@@ -939,7 +939,7 @@
   background: rgba(255,77,79,0.9); 
 }
 
-.customCard {
+/* .customCard {
   position: relative;
   border-radius: 8px;
   height: 100%;
@@ -1006,5 +1006,116 @@
 
 .customCard:hover .cardImgWrapper img {
   filter: drop-shadow(0 10px 20px rgba(0, 139, 199, 0.411));
+  transform: scale(1.05);
+} */
+
+.customCard {
+  position: relative;
+  border-radius: 8px;
+  height: 100%;
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  overflow: hidden; /* Giữ nếp vuông vắn cho khung ngoài */
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* --- LỚP MỰC TÀU (VIỀN LOANG) --- */
+.customCard::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  
+  /* Bảng màu Thủy Mặc: Đen tuyền, xám khói, trắng giấy dó */
+  background: linear-gradient(
+    135deg, 
+    #050505 0%, 
+    #4a4a4a 25%, 
+    #fdfcf8 50%, 
+    #8b8b8b 75%, 
+    #111111 100%
+  );
+  
+  /* Phóng to dải màu để lấy không gian cho nước chảy */
+  background-size: 300% 300%;
+  
+  /* Tạo độ nhòe (loang mực) thay vì đường nét sắc cứng */
+  filter: blur(8px); 
+  
+  /* Phóng to lớp màu 1 chút để bù đắp phần viền bị mờ do blur */
+  transform: scale(1.1); 
+  
+  /* Chảy chậm rãi khi ở trạng thái bình thường */
+  animation: waterFlow 10s ease infinite; 
+  z-index: 0;
+}
+
+/* KHI HOVER: Nước chảy nhanh hơn và dập dềnh */
+.customCard:hover::before {
+  animation: 
+    waterFlow 5s ease infinite, 
+    inkPulse 2.5s ease-in-out infinite alternate;
+}
+
+/* --- LỚP GIẤY NỀN TRONG CÙNG --- */
+.customCard::after {
+  content: '';
+  position: absolute;
+  inset: 4px; /* Độ dày của viền mực */
+  background: #fdfcf8; /* Đổi sang màu trắng ngà của giấy xuyến chỉ */
+  border-radius: 6px;
+  z-index: 0;
+}
+
+.cardInner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.customCard:hover {
+  /* Bóng tối màu hơn một chút cho hợp concept */
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+  transform: translateY(-5px);
+}
+
+/* =========================================
+   KEYFRAMES DÀNH RIÊNG CHO THỦY MẶC
+========================================= */
+
+/* Hoạt ảnh nước chảy (dịch chuyển màu) */
+@keyframes waterFlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Hoạt ảnh mực dập dềnh loang lổ (chỉ kích hoạt khi hover) */
+@keyframes inkPulse {
+  0% { filter: blur(6px); opacity: 0.8; }
+  100% { filter: blur(12px); opacity: 1; }
+}
+
+/* --- ẢNH SẢN PHẨM PHONG THỦY --- */
+.cardImgWrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: all 0.5s ease;
+  
+  /* Đổi bóng đổ sang màu xám tro thay vì xanh dương để hợp tone tranh */
+  filter: drop-shadow(0 5px 10px rgba(50, 50, 50, 0.4));
+}
+
+.customCard:hover .cardImgWrapper img {
+  /* Bóng đổ lan rộng như sương khói khi bay lên */
+  filter: drop-shadow(0 12px 24px rgba(20, 20, 20, 0.5));
   transform: scale(1.05);
 }
