@@ -310,26 +310,33 @@
 }
 
 .btnSubmitOrder {
-  height: 48px !important;
+  height: 52px !important; 
   border-radius: 8px !important;
-  background: #e74c3c !important;
-  border-color: #e74c3c !important;
-  font-size: 15px !important;
+  background: #1b437c !important; 
+  border-color: #1b437c !important;
+  font-size: 16px !important;
   font-weight: 700 !important;
   letter-spacing: 0.5px !important;
-  margin-top: 4px;
-  transition: all 0.3s !important;
+  margin-top: 20px;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 4px 15px rgba(27, 67, 124, 0.25) !important; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .btnSubmitOrder:hover:not(:disabled) {
-  background: #c0392b !important;
-  border-color: #c0392b !important;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(231,76,60,0.3) !important;
+  background: #13325c !important; 
+  border-color: #13325c !important;
+  transform: translateY(-2px); 
+  box-shadow: 0 6px 20px rgba(27, 67, 124, 0.4) !important;
 }
 .btnSubmitOrder:disabled {
-  background: #f0f0f0 !important;
-  border-color: #f0f0f0 !important;
-  color: #bbb !important;
+  background: #f5f5f5 !important;
+  border-color: #d9d9d9 !important;
+  color: #a8a8a8 !important; 
+  box-shadow: none !important;
+  transform: none !important;
+  cursor: not-allowed !important;
 }
 
 .guestNote {

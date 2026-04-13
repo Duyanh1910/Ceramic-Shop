@@ -376,6 +376,7 @@ function Cart() {
                   </div>
 
                   <Button 
+                    className={styles.btnSubmitOrder}
                     type="primary" 
                     size="large"
                     block
@@ -394,7 +395,7 @@ function Cart() {
                         } 
                       });
                     }}
-                    style={{ background: '#1b437c', marginTop: '20px' }}
+                    style={{marginTop: '20px' }}
                   >
                     TIẾN HÀNH THANH TOÁN ({formatPrice(finalTotal)})
                   </Button>
