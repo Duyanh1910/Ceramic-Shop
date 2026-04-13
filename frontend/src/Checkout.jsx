@@ -43,7 +43,7 @@ export default function Checkout() {
   const [addressError, setAddressError] = useState('');
   const [voucherInput, setVoucherInput] = useState(applyVoucher?.TenKhuyenMai || '');
   const [appliedProductVoucher, setAppliedProductVoucher] = useState(applyVoucher && (applyVoucher.LoaiKM === 1 || applyVoucher.LoaiKM === 2) ? applyVoucher : null);
-  const [appliedShippingVoucher, setappliedShippingVoucher] = useState(applyVoucher && (applyVoucher.LoaiKM === 3 ? applyVoucher : null));
+  const [appliedShippingVoucher, setAppliedShippingVoucher] = useState(applyVoucher && (applyVoucher.LoaiKM === 3 ? applyVoucher : null));
   const activeVoucherIds = [appliedProductVoucher?.MaKhuyenMai, appliedShippingVoucher?.MaKhuyenMai].filter(Boolean);
   const [voucherLoading, setVoucherLoading] = useState(false);
   const [myVouchers, setMyVouchers] = useState([]);
@@ -187,7 +187,7 @@ export default function Checkout() {
       setAppliedProductVoucher(promo);
     }
     else if(promo.MaLoaiKM === 3){
-      setappliedShippingVoucher(promo);
+      setAppliedShippingVoucher(promo);
     }
     return true;
   };
