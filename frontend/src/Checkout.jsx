@@ -72,7 +72,7 @@ export default function Checkout() {
       const calculateDiscount = (subtotal * appliedVoucher.GiaTri)/100;
       preDiscount = appliedVoucher.GiamToiDa ? Math.min(calculateDiscount,appliedVoucher.GiamToiDa) : calculateDiscount;
     }
-    else if(appliedVoucher.MaLoaiKM===2){
+    else if(appliedVoucher.MaLoaiKM===2 || appliedVoucher.MaLoaiKM===3){
       preDiscount = appliedVoucher.GiaTri;
     }
     }
@@ -463,13 +463,16 @@ export default function Checkout() {
                     )}
                     {myVouchers.length > 0 && !appliedVoucher && (
                       <div className={styles.myVouchers}>
-                        <div className={styles.myVouchersTitle}>Voucher của bạn:</div>
+                        {myVouchers.filter(v=>(v.KhuyenMai || v).LoaiKM === 1 || (v.KhuyeMai || v).LoaiKM === 2).length > 0 &&( <>
+                          <div className={styles.myVouchersTitle}>Mã giảm giá sản phẩm:</div>
                         <div className={styles.voucherCards}>
-                          {myVouchers.slice(0, 3).map((v, i) => {
+                          {myVouchers.filter(v=>(v.KhuyeMai || v).LoaiKM === 1 || (v.KhuyeMai || v).LoaiKM === 2)
+                          .slice(0, 5)
+                          .map((v, i) => {
                             const promo = v.KhuyenMai || v;
                             const eligible = !promo.GiaTriToiThieu || subtotal >= Number(promo.GiaTriToiThieu);
                             return (
-                              <div key={i}
+                              <div key={`discount-${i}`}
                                 className={`${styles.voucherCard} ${!eligible ? styles.voucherDisabled : ''}`}
                                 onClick={() => eligible && handleSelectMyVoucher(v)}>
                                 <div className={styles.voucherCardLeft}><TagOutlined className={styles.voucherCardIcon} /></div>
@@ -488,6 +491,39 @@ export default function Checkout() {
                             );
                           })}
                         </div>
+                        </>
+                        )}
+                        
+                        {myVouchers.filter(v=>(v.KhuyenMai || v).LoaiKM === 3).length > 0 &&( <>
+                          <div className={styles.myVouchersTitle}>Ưu đãi giao hàng</div>
+                        <div className={styles.voucherCards}>
+                          {myVouchers.filter(v=>(v.KhuyeMai || v).LoaiKM === 3)
+                          .slice(0, 3)
+                          .map((v, i) => {
+                            const promo = v.KhuyenMai || v;
+                            const eligible = !promo.GiaTriToiThieu || subtotal >= Number(promo.GiaTriToiThieu);
+                            return (
+                              <div key={`discount-${i}`}
+                                className={`${styles.voucherCard} ${!eligible ? styles.voucherDisabled : ''}`}
+                                onClick={() => eligible && handleSelectMyVoucher(v)}>
+                                <div className={styles.voucherCardLeft}><TagOutlined className={styles.voucherCardIcon} /></div>
+                                <div className={styles.voucherCardRight}>
+                                  <div className={styles.voucherCardName}>{promo.TenKhuyenMai}</div>
+                                  <div className={styles.voucherCardValue}>
+                                    Giảm {fmt(promo.GiaTri)}{promo.GiamToiDa ? ` (tối đa ${fmt(promo.GiamToiDa)})` : ''}
+                                  </div>
+                                  {promo.GiaTriToiThieu && (
+                                    <div className={styles.voucherCardMin}>
+                                      {eligible ? '✓ Đủ điều kiện' : `Đơn tối thiểu ${fmt(promo.GiaTriToiThieu)}`}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        </>
+                        )}
                       </div>
                     )}
                   </div>
