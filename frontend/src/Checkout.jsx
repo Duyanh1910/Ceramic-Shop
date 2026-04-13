@@ -67,16 +67,22 @@ export default function Checkout() {
 
   let preDiscount = 0;
   if(appliedVoucher){
-    if(appliedVoucher.MaLoaiKm===1){
-      const calculateDiscount = (totalPrice * appliedVoucher.GiaTri)/100;
+    if(subtotal>=(appliedVoucher.GiaTriToiThieu || 0)){
+      if(appliedVoucher.MaLoaiKm===1){
+      const calculateDiscount = (total * appliedVoucher.GiaTri)/100;
       preDiscount = appliedVoucher.GiamToiDa ? Math.min(calculateDiscount,appliedVoucher.GiamToiDa) : calculateDiscount;
     }
     else if(appliedVoucher.MaLoaiKm===2){
       preDiscount = appliedVoucher.GiaTri;
     }
+    }
+    else{
+      preDiscount=0;
+    }
   }
 
-  const discount = Math.min(preDiscount, totalPrice);
+  const discount = Math.min(preDiscount, subtotal);
+  const total = Math.max(0, subtotal - discount + shippingFee);
 
   const selectedPayment = PAYMENT_METHODS.find((m) => m.id === paymentMethod);
 
