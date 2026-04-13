@@ -856,7 +856,7 @@ function Home() {
             </div>
           </div>
 
-          <div style={{ overflowX: 'hidden', padding: '0 10px' }}>
+          <div style={{ overflowX: 'hidden', padding: '15px 10px 25px 10px' }}>
             <Spin spinning={loading} description="Đang tải dữ liệu...">
               {products.length === 0 && !loading ? (
                  <div className={styles.emptyState}>Không tìm thấy sản phẩm nào.</div>
@@ -870,11 +870,13 @@ function Home() {
                     return (
                       <Col xs={24} sm={12} md={12} lg={8} key={p.MaSanPham}>
                         <Badge.Ribbon 
-                          text={isDiscontinued ? 'Ngừng bán' : 'Hết hàng'} 
-                          color={isDiscontinued ? 'red' : 'gray'} 
+                          text={isDiscontinued ? 'Ngừng bán' : '● Hết hàng'} 
+                          color={isDiscontinued ? 'gray' : 'red'} 
                           style={{ display: (isSoldOut || isDiscontinued) ? 'block' : 'none' }}
+                          placement="start"
                         >
                           <div className={`${styles.customCard} ${isDiscontinued ? styles.disabledCard : ''}`}>
+                            <div className={styles.cardInner}>
                             <div 
                               style={{ width: '100%', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: isDiscontinued ? 'not-allowed' : 'pointer' }}
                               onClick={() => {
@@ -884,6 +886,12 @@ function Home() {
                               <div className={styles.cardImgWrapper}>
                                 <img alt={p.TenSanPham} src={imgUrl} />
                                 
+                                {!isDiscontinued &&(
+                                  <span className={`${styles.stockBadge} ${isSoldOut ? styles.stockOut : styles.stockIn}`}>
+                                    {isSoldOut ? 'Hết hàng' : 'Còn hàng'}
+                                  </span>
+                                )}
+
                                 <span className={styles.viewCount} title="Lượt xem">
                                   <EyeOutlined /> {p.LuotXem || 0}
                                 </span>
@@ -946,6 +954,7 @@ function Home() {
                                 CHI TIẾT
                               </button>
                             </div>
+                          </div>
                           </div>
                         </Badge.Ribbon>
                       </Col>
