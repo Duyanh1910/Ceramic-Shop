@@ -251,7 +251,7 @@ function Cart() {
                   {cart.length === 0 ? (
                     <div className={styles.emptyState}>
                       <Empty description="Không có sản phẩm nào trong giỏ hàng" />
-                      <Button type="primary" className={styles.btnGoShop} onClick={() => navigate('/')}>
+                      <Button type="primary" className={styles.btnGoShop} onClick={() => navigate('/home')}>
                         Mua sắm ngay
                       </Button>
                     </div>

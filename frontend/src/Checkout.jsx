@@ -20,7 +20,7 @@ const fmt = (p) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency:
 const PAYMENT_METHODS = [
   { id: 1, icon: '💵', name: 'Thanh toán khi nhận hàng (COD)', desc: 'Trả tiền mặt khi nhận được hàng', gateway: null },
   { id: 2, icon: '🏦', name: 'Chuyển khoản ngân hàng', desc: 'Chuyển khoản trước — đơn xử lý sau khi xác nhận', gateway: null },
-  { id: 3, icon: null, name: 'MoMo', desc: 'Thanh toán qua ví MoMo — chuyển hướng tới cổng thanh toán', gateway: 'momo', logo: 'https://upload.wikimedia.org/wikipedia/vi/f/fe/MoMo_Logo.png' },
+  { id: 3, icon: null, name: 'MoMo', desc: 'Thanh toán qua ví MoMo — chuyển hướng tới cổng thanh toán', gateway: 'momo', logo: 'https://w7.pngwing.com/pngs/924/499/png-transparent-momo-hd-logo-thumbnail.png' },
   { id: 4, icon: null, name: 'ZaloPay', desc: 'Thanh toán qua ZaloPay — chuyển hướng tới cổng thanh toán', gateway: 'zalopay', logo: 'https://cdn.haitrieu.com/wp-content/uploads/2022/10/Logo-ZaloPay-Square.png' },
 ];
 
@@ -65,8 +65,18 @@ export default function Checkout() {
     return sum + price * qty;
   }, 0);
 
-  const discount = appliedVoucher ? Math.min(appliedVoucher.GiaTri, appliedVoucher.GiamToiDa ?? Infinity) : 0;
-  const total = Math.max(0, subtotal - discount + shippingFee);
+  let preDiscount = 0;
+  if(appliedVoucher){
+    if(appliedVoucher.MaLoaiKm===1){
+      const calculateDiscount = (totalPrice * appliedVoucher.GiaTri)/100;
+      preDiscount = appliedVoucher.GiamToiDa ? Math.min(calculateDiscount,appliedVoucher.GiamToiDa) : calculateDiscount;
+    }
+    else if(appliedVoucher.MaLoaiKm===2){
+      preDiscount = appliedVoucher.GiaTri;
+    }
+  }
+
+  const discount = Math.min(preDiscount, totalPrice);
 
   const selectedPayment = PAYMENT_METHODS.find((m) => m.id === paymentMethod);
 
