@@ -305,7 +305,17 @@ export default function Checkout() {
       <div className={styles.pageWrapper}>
         <Helmet><title>Đặt hàng thành công | Ceramic Shop</title></Helmet>
         <header className={styles.topHeader}>
-          <div className={styles.logo} onClick={() => navigate('/')}>CERAMIC-SHOP</div>
+          <div className={styles.logoBox} onClick={() => navigate('/')}>
+            <img 
+              src="/logo.png" 
+              alt="Ceramic Shop Logo" 
+              className={styles.logoImg} 
+            />
+            <div className={styles.logoTextWrap}>
+              <h1 className={styles.logoText}>CERAMIC-SHOP</h1>
+              <span className={styles.logoSub}>TINH HOA GỐM SỨ VIỆT</span>
+            </div>
+          </div>
         </header>
         <div className={styles.successWrapper}>
           <div className={styles.successCard}>
@@ -347,7 +357,17 @@ export default function Checkout() {
       <Helmet><title>Thanh toán | Ceramic Shop</title></Helmet>
 
       <header className={styles.topHeader}>
-        <div className={styles.logo} onClick={() => navigate('/')}>CERAMIC-SHOP</div>
+        <div className={styles.logoBox} onClick={() => navigate('/')}>
+          <img 
+            src="/logo.png" 
+            alt="Ceramic Shop Logo" 
+            className={styles.logoImg} 
+          />
+          <div className={styles.logoTextWrap}>
+            <h1 className={styles.logoText}>CERAMIC-SHOP</h1>
+            <span className={styles.logoSub}>TINH HOA GỐM SỨ VIỆT</span>
+          </div>
+        </div>
         <Button type="link" icon={<ArrowLeftOutlined />}
           onClick={() => navigate('/cart')} className={styles.btnBack}>
           Quay lại giỏ hàng

@@ -33,26 +33,61 @@
   z-index: 100;
 }
 
-.logo {
-  font-family: 'Arsenal', serif;
-  font-size: 22px;
-  font-weight: 700;
-  color: #1b437c;
-  letter-spacing: 2px;
+.logoBox {
+  display: flex;
+  align-items: center;
+  gap: 15px;
   cursor: pointer;
   transition: opacity 0.2s;
 }
-.logo:hover { opacity: 0.75; }
+.logoBox:hover { opacity: 0.8; }
+
+.logoImg {
+  width: 50px;
+  height: auto;
+  object-fit: contain;
+}
+
+.logoTextWrap {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.logoText {
+  font-family: 'Arsenal', serif;
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 !important;
+  padding: 0 !important;
+  color: #173354;
+  letter-spacing: 2px;
+  line-height: 1 !important;
+}
+
+.logoSub {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: #BB9244;
+  font-weight: normal; 
+  margin: 4px 0 0 0 !important;
+  padding: 0 !important;
+  line-height: 1.2 !important;
+}
 
 .btnBack {
-  color: #666 !important;
-  font-weight: 600 !important;
-  font-size: 13px !important;
+  color: #1b437c !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
   display: flex;
   align-items: center;
   gap: 4px;
+  transition: all 0.3s ease !important;
 }
-.btnBack:hover { color: #1b437c !important; }
+.btnBack:hover { 
+  color: #c48c46 !important;
+  transform: translateX(-4px);
+}
 
 .mainContent { padding: 28px 24px 72px; }
 .container { max-width: 1140px; margin: 0 auto; }
