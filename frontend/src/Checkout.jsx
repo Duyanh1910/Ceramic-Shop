@@ -463,10 +463,10 @@ export default function Checkout() {
                     )}
                     {myVouchers.length > 0 && !appliedVoucher && (
                       <div className={styles.myVouchers}>
-                        {myVouchers.filter(v=>(v.KhuyenMai || v).LoaiKM === 1 || (v.KhuyeMai || v).LoaiKM === 2).length > 0 &&( <>
+                        {myVouchers.filter(v=>(v.KhuyenMai || v).LoaiKM === 1 || (v.KhuyenMai || v).LoaiKM === 2).length > 0 &&( <>
                           <div className={styles.myVouchersTitle}>Mã giảm giá sản phẩm:</div>
                         <div className={styles.voucherCards}>
-                          {myVouchers.filter(v=>(v.KhuyeMai || v).LoaiKM === 1 || (v.KhuyeMai || v).LoaiKM === 2)
+                          {myVouchers.filter(v=>(v.KhuyenMai || v).LoaiKM === 1 || (v.KhuyenMai || v).LoaiKM === 2)
                           .slice(0, 5)
                           .map((v, i) => {
                             const promo = v.KhuyenMai || v;
@@ -497,7 +497,7 @@ export default function Checkout() {
                         {myVouchers.filter(v=>(v.KhuyenMai || v).LoaiKM === 3).length > 0 &&( <>
                           <div className={styles.myVouchersTitle}>Ưu đãi giao hàng</div>
                         <div className={styles.voucherCards}>
-                          {myVouchers.filter(v=>(v.KhuyeMai || v).LoaiKM === 3)
+                          {myVouchers.filter(v=>(v.KhuyenMai || v).LoaiKM === 3)
                           .slice(0, 3)
                           .map((v, i) => {
                             const promo = v.KhuyenMai || v;
