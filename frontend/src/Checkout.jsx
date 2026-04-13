@@ -503,7 +503,7 @@ export default function Checkout() {
                             const promo = v.KhuyenMai || v;
                             const eligible = !promo.GiaTriToiThieu || subtotal >= Number(promo.GiaTriToiThieu);
                             return (
-                              <div key={`discount-${i}`}
+                              <div key={`free-${i}`}
                                 className={`${styles.voucherCard} ${!eligible ? styles.voucherDisabled : ''}`}
                                 onClick={() => eligible && handleSelectMyVoucher(v)}>
                                 <div className={styles.voucherCardLeft}><TagOutlined className={styles.voucherCardIcon} /></div>
