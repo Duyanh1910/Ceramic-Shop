@@ -42,8 +42,12 @@ export default function Checkout() {
   const [paymentMethod, setPaymentMethod] = useState(1);
   const [addressError, setAddressError] = useState('');
   const [voucherInput, setVoucherInput] = useState(applyVoucher?.TenKhuyenMai || '');
-  const [appliedProductVoucher, setAppliedProductVoucher] = useState(applyVoucher && (applyVoucher.LoaiKM === 1 || applyVoucher.LoaiKM === 2) ? applyVoucher : null);
-  const [appliedShippingVoucher, setAppliedShippingVoucher] = useState(applyVoucher && (applyVoucher.LoaiKM === 3 ? applyVoucher : null));
+  const [appliedProductVoucher, setAppliedProductVoucher] = useState(
+      applyVoucher && applyVoucher.LoaiVoucher === 1 ? applyVoucher : null
+  );
+  const [appliedShippingVoucher, setAppliedShippingVoucher] = useState(
+      applyVoucher && applyVoucher.LoaiVoucher === 2 ? applyVoucher : null
+  );
   const activeVoucherIds = [appliedProductVoucher?.MaKhuyenMai, appliedShippingVoucher?.MaKhuyenMai].filter(Boolean);
   const [voucherLoading, setVoucherLoading] = useState(false);
   const [myVouchers, setMyVouchers] = useState([]);
@@ -73,10 +77,11 @@ export default function Checkout() {
       const calculateDiscount = (subtotal * appliedProductVoucher.GiaTri)/100;
       productDiscount = appliedProductVoucher.GiamToiDa ? Math.min(calculateDiscount, appliedProductVoucher.GiamToiDa) : calculateDiscount;
     }
-    else if(appliedProductVoucher.MaLoaiKM === 2){
-      productDiscount =  appliedProductVoucher.GiaTri;
+    else {
+      productDiscount = appliedProductVoucher.GiaTri;
     }
   }
+  productDiscount = Math.min(productDiscount, subtotal);
   productDiscount = Math.min(productDiscount, subtotal);
 
   let shippingDiscount = 0;
@@ -183,10 +188,10 @@ export default function Checkout() {
       message.warning(`Đơn tối thiểu ${fmt(promo.GiaTriToiThieu)} để dùng mã này`);
       return false;
     }
-    if(promo.MaLoaiKM === 1 || promo.MaLoaiKM === 2){
+    if(promo.LoaiVoucher === 1){
       setAppliedProductVoucher(promo);
     }
-    else if(promo.MaLoaiKM === 3){
+    else if(promo.LoaiVoucher === 2){
       setAppliedShippingVoucher(promo);
     }
     return true;
@@ -495,12 +500,12 @@ export default function Checkout() {
                       {myVouchers.length > 0 && (
                         <div className={styles.myVouchers}>
                           
-                          {!appliedProductVoucher && myVouchers.filter(v => (v.KhuyenMai || v).MaLoaiKM === 1 || (v.KhuyenMai || v).MaLoaiKM === 2).length > 0 && ( 
+                          {!appliedProductVoucher && myVouchers.filter(v => (v.KhuyenMai || v).LoaiVoucher === 1).length > 0 && ( 
                             <>
                               <div className={styles.myVouchersTitle}>Mã giảm giá sản phẩm:</div>
                               <div className={styles.voucherCards} style={{ marginBottom: 15 }}>
                                 {myVouchers
-                                  .filter(v => (v.KhuyenMai || v).MaLoaiKM === 1 || (v.KhuyenMai || v).MaLoaiKM === 2)
+                                  .filter(v => (v.KhuyenMai || v).LoaiVoucher === 1)
                                   .slice(0, 5)
                                   .map((v, i) => {
                                     const promo = v.KhuyenMai || v;
@@ -528,12 +533,12 @@ export default function Checkout() {
                             </>
                           )}
                           
-                          {!appliedShippingVoucher && myVouchers.filter(v => (v.KhuyenMai || v).MaLoaiKM === 3).length > 0 && ( 
+                          {!appliedShippingVoucher && myVouchers.filter(v => (v.KhuyenMai || v).LoaiVoucher === 2).length > 0 && ( 
                             <>
                               <div className={styles.myVouchersTitle}>Ưu đãi giao hàng:</div>
                               <div className={styles.voucherCards}>
                                 {myVouchers
-                                  .filter(v => (v.KhuyenMai || v).MaLoaiKM === 3)
+                                  .filter(v => (v.KhuyenMai || v).LoaiVoucher === 2)
                                   .slice(0, 3)
                                   .map((v, i) => {
                                     const promo = v.KhuyenMai || v;
