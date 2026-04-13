@@ -198,7 +198,7 @@ export default function Checkout() {
     try{
       const res = await axios.get(`${API_BASE}/promotions`);
       const all = res.data?.voucher || [];
-      const found = all.find(v=>v.TenKhuyenMai?.toLowerCase() == voucherInput.trim().toLowerCase() || String(v.KhuyenMai) == voucherInput.trim());
+      const found = all.find(v=>v.TenKhuyenMai?.toLowerCase() == voucherInput.trim().toLowerCase() || String(v.MaKhuyenMai) == voucherInput.trim());
       if(!found) {message.error('Mã voucher không tồn tại hoặc đã hết hạn')}
       if(applySpecificVoucher(found)){
         message.success('Áp dụng voucher thành công');
