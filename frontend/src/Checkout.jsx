@@ -43,8 +43,8 @@ export default function Checkout() {
   const [addressError, setAddressError] = useState('');
   const [voucherInput, setVoucherInput] = useState(applyVoucher?.TenKhuyenMai || '');
   const [appliedProductVoucher, setAppliedProductVoucher] = useState(applyVoucher && (applyVoucher.LoaiKM === 1 || applyVoucher.LoaiKM === 2) ? applyVoucher : null);
-  const [appliedShipVoucher, setAppliedShipVoucher] = useState(applyVoucher && (applyVoucher.LoaiKM === 3 ? applyVoucher : null));
-  const activeVoucherIds = [appliedProductVoucher?.MaKhuyenMai, appliedShipVoucher?.MaKhuyenMai].filter(Boolean);
+  const [appliedShippingVoucher, setappliedShippingVoucher] = useState(applyVoucher && (applyVoucher.LoaiKM === 3 ? applyVoucher : null));
+  const activeVoucherIds = [appliedProductVoucher?.MaKhuyenMai, appliedShippingVoucher?.MaKhuyenMai].filter(Boolean);
   const [voucherLoading, setVoucherLoading] = useState(false);
   const [myVouchers, setMyVouchers] = useState([]);
   const [orderId, setOrderId] = useState(null);
@@ -80,8 +80,8 @@ export default function Checkout() {
   productDiscount = Math.min(productDiscount, subtotal);
 
   let shippingDiscount = 0;
-  if(appliedShipVoucher && subtotal >= (appliedShipVoucher.GiaTriToiThieu ||0 )){
-    shippingDiscount = appliedShipVoucher.GiaTri;
+  if(appliedShippingVoucher && subtotal >= (appliedShippingVoucher.GiaTriToiThieu ||0 )){
+    shippingDiscount = appliedShippingVoucher.GiaTri;
   }
   shippingDiscount = Math.min(shippingDiscount, subtotal);
 
@@ -145,7 +145,7 @@ export default function Checkout() {
     };
 
     fetchOrderSummary();
-  }, [shippingMethod, JSON.stringify(addressData.obj), JSON.stringify(orderItems), appliedProductVoucher, appliedShipVoucher]);
+  }, [shippingMethod, JSON.stringify(addressData.obj), JSON.stringify(orderItems), appliedProductVoucher, appliedShippingVoucher]);
 
   const fetchProfile = async () => {
     setProfileLoading(true);
@@ -187,7 +187,7 @@ export default function Checkout() {
       setAppliedProductVoucher(promo);
     }
     else if(promo.MaLoaiKM === 3){
-      setAppliedShipVoucher(promo);
+      setappliedShippingVoucher(promo);
     }
     return true;
   };
