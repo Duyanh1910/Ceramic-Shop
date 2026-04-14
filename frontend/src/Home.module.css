@@ -969,7 +969,7 @@
 .customCard::after {
   content: '';
   position: absolute;
-  inset: 8px;
+  inset: 5px;
   background: #ffffff;
   border-radius: 6px;
   z-index: 0;
@@ -1006,6 +1006,6 @@
 }
 
 .customCard:hover .cardImgWrapper img {
-  filter: drop-shadow(0 10px 20px rgba(0, 139, 199, 0.411));
+  filter: drop-shadow(0 10px 20px rgba(1, 14, 19, 0.411));
   transform: scale(1.05);
 }
