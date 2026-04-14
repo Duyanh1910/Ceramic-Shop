@@ -80,10 +80,12 @@
 :global(.ant-menu-dark .ant-menu-item-selected) {
   background: linear-gradient(90deg, rgba(196,140,70,0.25), rgba(196,140,70,0.1)) !important;
   border-right: 3px solid #c48c46 !important;
+  color: #c48c46 !important;
 }
 
 :global(.ant-menu-dark .ant-menu-item:hover) {
   background: rgba(255,255,255,0.06) !important;
+  color: #ffffff !important;
 }
 
 :global(.ant-menu-dark .ant-menu-item) {
@@ -91,6 +93,7 @@
   margin: 2px 0 !important;
   font-family: 'Arsenal', sans-serif !important;
   font-size: 14px !important;
+  color: rgba(255, 255, 255, 0.65) !important;
 }
 
 .siderFooter {
