@@ -14,19 +14,19 @@ const API_BASE = 'https://ceramic-shop-u8ak.onrender.com/api/v1';
 
 const STAFF_MENU = [
   { key: '/admin', icon: <DashboardOutlined />, label: 'Tổng quan' },
-  { key: '/admin/orders', icon: <FileTextOutlined />, label: 'Đơn hàng' },
   { key: '/admin/products', icon: <ShoppingOutlined />, label: 'Sản phẩm' },
   { key: '/admin/customers', icon: <TeamOutlined />, label: 'Khách hàng' },
+  { key: '/admin/orders', icon: <FileTextOutlined />, label: 'Trang chủ' },
 ];
 
 const ADMIN_MENU = [
   { key: '/admin', icon: <DashboardOutlined />, label: 'Tổng quan' },
-  { key: '/admin/orders', icon: <FileTextOutlined />, label: 'Đơn hàng' },
   { key: '/admin/products', icon: <ShoppingOutlined />, label: 'Sản phẩm' },
   { key: '/admin/customers', icon: <TeamOutlined />, label: 'Khách hàng' },
   { key: '/admin/staffs', icon: <UserOutlined />, label: 'Nhân viên' },
   { key: '/admin/promotions', icon: <TagsOutlined />, label: 'Khuyến mãi' },
   { key: '/admin/reports', icon: <BarChartOutlined />, label: 'Báo cáo' },
+  { key: '/admin/orders', icon: <FileTextOutlined />, label: 'Trang chủ' },
 ];
 
 export default function AdminLayout() {
