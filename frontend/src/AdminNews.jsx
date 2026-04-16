@@ -91,10 +91,10 @@ export default function AdminNews() {
       };
 
       if (editRecord) {
-        await axios.put(`${API_BASE}/news/admin/${editRecord.MaTinTuc}`, payload, authH());
+        await axios.put(`${API_BASE}/news/${editRecord.MaTinTuc}`, payload, authH());
         message.success('Cập nhật tin tức thành công!');
       } else {
-        await axios.post(`${API_BASE}/news/admin`, payload, authH());
+        await axios.post(`${API_BASE}/news`, payload, authH());
         message.success('Tạo tin tức thành công!');
       }
       setModalOpen(false);
@@ -106,7 +106,7 @@ export default function AdminNews() {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`${API_BASE}/news/admin/${id}`, authH());
+      await axios.delete(`${API_BASE}/news/${id}`, authH());
       message.success('Đã xoá tin tức!');
       fetchNews();
     } catch (err) {
