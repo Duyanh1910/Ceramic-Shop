@@ -38,7 +38,7 @@ export default function AdminNews() {
   const fetchNews = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API_BASE}/news/admin`, authH());
+      const res = await axios.get(`${API_BASE}/news`, authH());
       setNews(res.data?.result || []);
     } catch {
       message.error('Không thể tải danh sách tin tức!');
