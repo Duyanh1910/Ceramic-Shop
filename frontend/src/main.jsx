@@ -29,6 +29,7 @@ import Checkout from './Checkout.jsx';
 import PaymentResult from './PaymentResult.jsx';
 import AdminProfile from './AdminProfile.jsx';
 import AdminPromotions from './AdminPromotions.jsx';
+import AdminNews from './AdminNews.jsx';
 ReactGA.initialize("G-909W1LHHLD");
 
 const AnalyticsTracker = () => {
@@ -154,6 +155,11 @@ createRoot(document.getElementById('root')).render(
               <AdminPromotions />
             </ProtectedRoute>
           } />
+          <Route path="news" element={
+            <ProtectedRoute allowedRoles={['Admin']}>
+              <AdminNews/>
+            </ProtectedRoute>
+          }/>
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />
