@@ -155,7 +155,7 @@ createRoot(document.getElementById('root')).render(
               <AdminPromotions />
             </ProtectedRoute>
           } />
-          <Routh path="news" element={
+          <Route path="news" element={
             <ProtectedRoute allowedRoles={['Admin']}>
               <AdminNews/>
             </ProtectedRoute>
