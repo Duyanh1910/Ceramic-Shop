@@ -181,7 +181,7 @@ export const changePasswordService = async (id, oldPassword, newPassword) => {
     if (!isMatch) {
       throw new ErrorHandler("Mật khẩu không chính xác!", 401);
     }
-    const hashed_password = await bcrypt.hash(newPassword, SALT_ROUNDS);
+    const hashed_password = await bcrypt.hash(newPassword, Number(SALT_ROUNDS));
     account.Password = hashed_password;
     await account.save();
   } catch (err) {
