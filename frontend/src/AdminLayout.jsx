@@ -16,7 +16,7 @@ const STAFF_MENU = [
   { key: '/admin', icon: <DashboardOutlined />, label: 'Tổng quan' },
   { key: '/admin/products', icon: <ShoppingOutlined />, label: 'Sản phẩm' },
   { key: '/admin/customers', icon: <TeamOutlined />, label: 'Khách hàng' },
-  { key: '/admin/orders', icon: <FileTextOutlined />, label: 'Trang chủ' },
+  { key: '/admin/news', icon: <FileTextOutlined />, label: 'Tin tức' },
 ];
 
 const ADMIN_MENU = [
@@ -26,7 +26,7 @@ const ADMIN_MENU = [
   { key: '/admin/staffs', icon: <UserOutlined />, label: 'Nhân viên' },
   { key: '/admin/promotions', icon: <TagsOutlined />, label: 'Khuyến mãi' },
   { key: '/admin/reports', icon: <BarChartOutlined />, label: 'Báo cáo' },
-  { key: '/admin/orders', icon: <FileTextOutlined />, label: 'Trang chủ' },
+  { key: '/admin/news', icon: <FileTextOutlined />, label: 'Tin tức' },
 ];
 
 export default function AdminLayout() {

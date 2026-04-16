@@ -1004,6 +1004,6 @@
 }
 
 .customCard:hover .cardImgWrapper img {
-  filter: drop-shadow(0 10px 20px rgba(0, 139, 199, 0.411));
+  filter: drop-shadow(0 10px 20px rgba(59, 74, 80, 0.411));
   transform: scale(1.05);
 }
