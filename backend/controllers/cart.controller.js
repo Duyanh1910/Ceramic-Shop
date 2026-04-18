@@ -58,7 +58,7 @@ export const updateCartItemsController = async (req, res, next) => {
     const { SoLuong } = req.body;
     const quantity = Number(SoLuong);
     const MaBienThe = Number(req.params.id);
-    if (Number.isNaN(quantity) || quantity <= 0) {
+    if (Number.isNaN(quantity) || quantity < 0) {
       return next(new ErrorHandler("Số lượng sản phẩm phải là số dương!", 400));
     }
     if (Number.isNaN(MaBienThe) || MaBienThe <= 0) {

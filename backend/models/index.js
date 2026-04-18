@@ -33,6 +33,10 @@ import RatingModel from "./rating.model.js";
 
 import NewsModel from "./news.model.js";
 
+import WarrantyHistoryModel from "./warranty_history.model.js";
+import WarrantyModel from "./warranty.model.js";
+import RiskModel from "./risk.model.js";
+
 // --- QUAN HỆ TÀI KHOẢN & PHÂN QUYỀN ---
 RoleModel.hasMany(AccountModel, {
   foreignKey: "MaQuyen",
@@ -198,6 +202,29 @@ NewsModel.belongsTo(StaffModel, {
   foreignKey: "MaNhanVien",
 });
 
+// --- QUAN HỆ HẬU MÃI ---
+OrderModel.hasMany(RiskModel, {
+  foreignKey: "MaDonHang",
+});
+RiskModel.belongsTo(OrderModel, {
+  foreignKey: "MaDonHang",
+});
+
+OrderDetailModel.hasMany(WarrantyModel, {
+  foreignKey: "MaCTDH",
+});
+WarrantyModel.belongsTo(OrderDetailModel, {
+  foreignKey: "MaCTDH",
+});
+
+WarrantyModel.hasMany(WarrantyHistoryModel, {
+  foreignKey: "MaBaoHanh",
+  as: "LichSuCapNhat",
+});
+WarrantyHistoryModel.belongsTo(WarrantyModel, {
+  foreignKey: "MaBaoHanh",
+  as: "BaoHanh",
+});
 export {
   sequelize,
   AccountModel,
@@ -227,4 +254,7 @@ export {
   PaymentTransactionModel,
   ShippingTypeModel,
   NewsModel,
+  RiskModel,
+  WarrantyHistoryModel,
+  WarrantyModel,
 };
