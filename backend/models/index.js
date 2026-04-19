@@ -219,11 +219,9 @@ WarrantyModel.belongsTo(OrderDetailModel, {
 
 WarrantyModel.hasMany(WarrantyHistoryModel, {
   foreignKey: "MaBaoHanh",
-  as: "LichSuCapNhat",
 });
 WarrantyHistoryModel.belongsTo(WarrantyModel, {
   foreignKey: "MaBaoHanh",
-  as: "BaoHanh",
 });
 export {
   sequelize,

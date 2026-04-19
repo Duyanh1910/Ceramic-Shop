@@ -73,3 +73,27 @@ export const getAllWarrantyService = async (
     data: warranties.rows,
   };
 };
+
+export const getWarrantyByIdService = async (id) => {
+  const warranty = await WarrantyModel.findByPk(id, {
+    include: [
+      {
+        model: WarrantyHistoryModel,
+        separate: true,
+        order: [["NgayXuLy", "DESC"]],
+      },
+      {
+        model: OrderDetailModel,
+        include: [
+          {
+            model: OrderModel,
+          },
+          {
+            model: VariantModel,
+          },
+        ],
+      },
+    ],
+  });
+  return warranty;
+};

@@ -1,4 +1,7 @@
-import { getAllWarrantyService } from "../../../services/warranty.service.js";
+import {
+  getAllWarrantyService,
+  getWarrantyByIdService,
+} from "../../../services/warranty.service.js";
 import ErrorHandler from "../../../utils/error_handler.js";
 
 export const getAllWarranties = async (req, res, next) => {
@@ -29,6 +32,25 @@ export const getAllWarranties = async (req, res, next) => {
     });
   } catch (err) {
     console.error("Error in getAllWarranties controller:", err);
+    next(err);
+  }
+};
+
+export const getWarrantyById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const idNum = Number(id);
+    if (!id || !Number.isInteger(idNum)) {
+      throw new ErrorHandler("Giá trị nhập vào không hợp lệ!", 422);
+    }
+    const results = await getWarrantyByIdService(Number(id));
+
+    res.status(200).json({
+      success: true,
+      message: "Lấy thông tin danh sách bảo hành thành công!",
+      result: results,
+    });
+  } catch (err) {
     next(err);
   }
 };

@@ -1,0 +1,52 @@
+.modalContent {
+  padding: 10px 0;
+  min-height: 300px;
+}
+
+.loadingContainer {
+  text-align: center;
+  margin-top: 80px;
+}
+
+.sectionTitle {
+  margin-bottom: 16px !important;
+}
+
+.highlightText {
+  color: #1677ff;
+  font-weight: 500;
+}
+
+.emptyHistory {
+  text-align: center;
+  color: #999;
+  padding: 20px 0;
+}
+
+.notFound {
+  text-align: center;
+  color: #999;
+}
+
+.timelineItem {
+  margin-bottom: 16px;
+}
+
+.timelineHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.timelinePersonnel {
+  margin-bottom: 4px;
+  font-size: 13px;
+}
+
+.timelineNote {
+  background-color: #f5f5f5;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #333;
+}

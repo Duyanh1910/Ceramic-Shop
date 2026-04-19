@@ -20,7 +20,9 @@ import {
 import dayjs from "dayjs";
 import axios from "axios";
 
-import styles from "./AdminWarranties.module.css";
+import "./AdminWarranties.module.css";
+
+import WarrantyHistory from "./AdminWarrantyHistory";
 
 const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1";
 const { Title, Text } = Typography;
@@ -268,14 +270,14 @@ const WarrantyList = () => {
         rowClassName={(record) => (record.trangThai === 0 ? "row-expired" : "")}
       />
 
-      {/* <WarrantyHistoryModal
+      <WarrantyHistory
         open={isHistoryModalOpen}
         maBaoHanh={selectedWarrantyId}
         onCancel={() => {
           setIsHistoryModalOpen(false);
           setSelectedWarrantyId(null);
         }}
-      /> */}
+      />
     </Card>
   );
 };
