@@ -125,18 +125,31 @@ const WarrantyList = () => {
             className="product-image"
           />
           <div className="product-col-wrapper">
-            <Text strong style={{ fontSize: "14px" }}>
-              {record.tenSanPham}
-            </Text>
-            <Text type="secondary" className="product-variant">
-              Phân loại: {record.tenBienThe}
-            </Text>
+            <div>
+              <Text strong style={{ fontSize: "14px" }}>
+                {record.tenSanPham}
+              </Text>
+            </div>
+
+            <div style={{ marginTop: 2 }}>
+              <Text type="secondary" className="product-variant">
+                Phân loại: {record.tenBienThe}
+              </Text>
+            </div>
+
             {record.ghiChu && (
-              <Tooltip title={record.ghiChu}>
-                <Text type="secondary" ellipsis className="product-note">
-                  {record.ghiChu}
-                </Text>
-              </Tooltip>
+              <div style={{ marginTop: 6 }}>
+                <Tooltip title={record.ghiChu}>
+                  <Text
+                    type="secondary"
+                    ellipsis
+                    className="product-note"
+                    style={{ margin: 0 }}
+                  >
+                    {record.ghiChu}
+                  </Text>
+                </Tooltip>
+              </div>
             )}
           </div>
         </Space>
@@ -150,9 +163,11 @@ const WarrantyList = () => {
           <Text strong style={{ color: "#1677ff" }}>
             {record.maDonHang}
           </Text>
-          <Text type="secondary" className="info-code">
-            Mã BH: #{record.maBaoHanh}
-          </Text>
+          <div style={{ marginTop: 2 }}>
+            <Text type="secondary" className="info-code">
+              Mã BH: #{record.maBaoHanh}
+            </Text>
+          </div>
         </div>
       ),
     },
@@ -161,7 +176,7 @@ const WarrantyList = () => {
       key: "duration",
       render: (_, record) => (
         <div className="duration-col-wrapper">
-          <div>
+          <div style={{ marginBottom: 4 }}>
             <span className="duration-start-label">Bắt đầu:</span>{" "}
             {dayjs(record.ngayBatDau).format("DD/MM/YYYY")}
           </div>
@@ -176,21 +191,10 @@ const WarrantyList = () => {
       title: "Trạng thái",
       dataIndex: "trangThai",
       key: "trangThai",
-
       render: (trangThai) => {
-        if (trangThai === 1)
-          return (
-            <Badge
-              status="success"
-              text={<Tag color="green">Còn hiệu lực</Tag>}
-            />
-          );
-        if (trangThai === 0)
-          return <Badge status="error" text={<Tag color="red">Hết hạn</Tag>} />;
-        if (trangThai === 2)
-          return (
-            <Badge status="default" text={<Tag color="default">Đã hủy</Tag>} />
-          );
+        if (trangThai === 1) return <Tag color="green">Còn hiệu lực</Tag>;
+        if (trangThai === 0) return <Tag color="red">Hết hạn</Tag>;
+        if (trangThai === 2) return <Tag color="default">Đã hủy</Tag>;
         return <Tag>{trangThai}</Tag>;
       },
     },
