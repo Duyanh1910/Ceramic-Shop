@@ -20,8 +20,7 @@ import {
 import dayjs from "dayjs";
 import axios from "axios";
 
-import WarrantyHistoryModal from "./WarrantyHistoryModal";
-import "./Warranty.css";
+import "./AdminWarranties.module.css";
 
 const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1";
 const { Title, Text } = Typography;
@@ -30,32 +29,27 @@ const WarrantyList = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // States quản lý Data fetching từ Server
   const [page, setPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
-  const [status, setStatus] = useState(undefined); // undefined = Lấy tất cả
-
-  // States Modal
+  const [status, setStatus] = useState(undefined);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [selectedWarrantyId, setSelectedWarrantyId] = useState(null);
 
   const axiosConfig = { withCredentials: true };
 
-  // 1. Kỹ thuật Debounce: Tự động search khi ngừng gõ 500ms
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       if (search !== searchInput) {
         setSearch(searchInput);
-        setPage(1); // Reset về trang 1 khi search
+        setPage(1);
       }
     }, 500);
 
     return () => clearTimeout(delayDebounceFn);
   }, [searchInput, search]);
 
-  // 2. Fetch API mỗi khi page, search hoặc status thay đổi
   useEffect(() => {
     fetchData();
   }, [page, search, status]);
@@ -68,7 +62,7 @@ const WarrantyList = () => {
           page,
           limit: 10,
           search,
-          status, // Gửi status xuống server (Backend đã hỗ trợ bắt tham số này)
+          status,
         },
         ...axiosConfig,
       });
@@ -105,7 +99,7 @@ const WarrantyList = () => {
 
   const handleStatusChange = (e) => {
     setStatus(e.target.value);
-    setPage(1); // Reset về trang 1 khi đổi bộ lọc
+    setPage(1);
   };
 
   const handleViewHistory = (record) => {
@@ -182,7 +176,7 @@ const WarrantyList = () => {
       title: "Trạng thái",
       dataIndex: "trangThai",
       key: "trangThai",
-      // Xóa filters cục bộ ở đây, vì đã dùng bộ lọc Radio Button ở trên Table
+
       render: (trangThai) => {
         if (trangThai === 1)
           return (
@@ -232,7 +226,7 @@ const WarrantyList = () => {
         </Space>
       }
     >
-      {/* Thanh Toolbar cực kỳ clean và tiện dụng cho Admin */}
+      {}
       <div className="warranty-toolbar">
         <Input
           placeholder="Tìm mã đơn hàng..."
@@ -270,14 +264,14 @@ const WarrantyList = () => {
         rowClassName={(record) => (record.trangThai === 0 ? "row-expired" : "")}
       />
 
-      <WarrantyHistoryModal
+      {/* <WarrantyHistoryModal
         open={isHistoryModalOpen}
         maBaoHanh={selectedWarrantyId}
         onCancel={() => {
           setIsHistoryModalOpen(false);
           setSelectedWarrantyId(null);
         }}
-      />
+      /> */}
     </Card>
   );
 };
