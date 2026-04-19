@@ -5,6 +5,7 @@ import {
   DashboardOutlined, ShoppingOutlined, TeamOutlined, UserOutlined,
   LogoutOutlined, MenuFoldOutlined, MenuUnfoldOutlined, BellOutlined,
   ShopOutlined, TagsOutlined, FileTextOutlined, SettingOutlined, BarChartOutlined,
+  SafetyOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import axios from 'axios';
@@ -17,6 +18,7 @@ const STAFF_MENU = [
   { key: '/admin/products', icon: <ShoppingOutlined />, label: 'Sản phẩm' },
   { key: '/admin/customers', icon: <TeamOutlined />, label: 'Khách hàng' },
   { key: '/admin/news', icon: <FileTextOutlined />, label: 'Tin tức' },
+  { key: '/admin/warranties', icon: <SafetyOutlined/>,label: 'Bảo hành'}
 ];
 
 const ADMIN_MENU = [
@@ -27,6 +29,7 @@ const ADMIN_MENU = [
   { key: '/admin/promotions', icon: <TagsOutlined />, label: 'Khuyến mãi' },
   { key: '/admin/reports', icon: <BarChartOutlined />, label: 'Báo cáo' },
   { key: '/admin/news', icon: <FileTextOutlined />, label: 'Tin tức' },
+  { key: '/admin/warranties', icon: <SafetyOutlined/>,label: 'Bảo hành'}
 ];
 
 export default function AdminLayout() {
