@@ -20,7 +20,7 @@ import {
 import dayjs from "dayjs";
 import axios from "axios";
 
-import "./AdminWarranties.module.css";
+import styles from "./AdminWarranties.module.css";
 
 const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1";
 const { Title, Text } = Typography;
@@ -61,7 +61,7 @@ const WarrantyList = () => {
         params: {
           page,
           limit: 10,
-          search,
+          search: search?.toUpperCase().trim(),
           status,
         },
         ...axiosConfig,
