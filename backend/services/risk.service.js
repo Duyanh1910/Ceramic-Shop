@@ -41,6 +41,8 @@ export const getAllRiskService = async (
     where: riskWhere,
     limit: limit,
     offset: offset,
+    distinct: true,
+    col: "MaRuiRo",
     order: [["MaRuiRo", sortOrder]],
     include: [
       {

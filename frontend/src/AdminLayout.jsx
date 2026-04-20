@@ -41,7 +41,7 @@ const ADMIN_MENU = [
   { key: "/admin/reports", icon: <BarChartOutlined />, label: "Báo cáo" },
   { key: "/admin/news", icon: <FileTextOutlined />, label: "Tin tức" },
   { key: "/admin/warranties", icon: <SafetyOutlined />, label: "Bảo hành" },
-  { key: "/admin/risks", icon: <AlertOutlined />, label: "Bảo hành" },
+  { key: "/admin/risks", icon: <AlertOutlined />, label: "Rủi ro" },
 ];
 
 export default function AdminLayout() {
