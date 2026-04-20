@@ -1,35 +1,47 @@
-import { useState } from 'react';
-import { useEffect } from 'react';
-import { Layout, Menu, Avatar, Dropdown, Button, Badge } from 'antd';
+import { useState } from "react";
+import { useEffect } from "react";
+import { Layout, Menu, Avatar, Dropdown, Button, Badge, Alert } from "antd";
 import {
-  DashboardOutlined, ShoppingOutlined, TeamOutlined, UserOutlined,
-  LogoutOutlined, MenuFoldOutlined, MenuUnfoldOutlined, BellOutlined,
-  ShopOutlined, TagsOutlined, FileTextOutlined, SettingOutlined, BarChartOutlined,
+  DashboardOutlined,
+  ShoppingOutlined,
+  TeamOutlined,
+  UserOutlined,
+  LogoutOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+  BellOutlined,
+  ShopOutlined,
+  TagsOutlined,
+  FileTextOutlined,
+  SettingOutlined,
+  BarChartOutlined,
   SafetyOutlined,
-} from '@ant-design/icons';
-import { useNavigate, useLocation, Outlet } from 'react-router-dom';
-import axios from 'axios';
-import styles from './AdminLayout.module.css';
+  AlertOutlined,
+} from "@ant-design/icons";
+import { useNavigate, useLocation, Outlet } from "react-router-dom";
+import axios from "axios";
+import styles from "./AdminLayout.module.css";
 const { Header, Sider, Content } = Layout;
-const API_BASE = 'https://ceramic-shop-u8ak.onrender.com/api/v1';
+const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1";
 
 const STAFF_MENU = [
-  { key: '/admin', icon: <DashboardOutlined />, label: 'Tổng quan' },
-  { key: '/admin/products', icon: <ShoppingOutlined />, label: 'Sản phẩm' },
-  { key: '/admin/customers', icon: <TeamOutlined />, label: 'Khách hàng' },
-  { key: '/admin/news', icon: <FileTextOutlined />, label: 'Tin tức' },
-  { key: '/admin/warranties', icon: <SafetyOutlined/>,label: 'Bảo hành'}
+  { key: "/admin", icon: <DashboardOutlined />, label: "Tổng quan" },
+  { key: "/admin/products", icon: <ShoppingOutlined />, label: "Sản phẩm" },
+  { key: "/admin/customers", icon: <TeamOutlined />, label: "Khách hàng" },
+  { key: "/admin/news", icon: <FileTextOutlined />, label: "Tin tức" },
+  { key: "/admin/warranties", icon: <SafetyOutlined />, label: "Bảo hành" },
 ];
 
 const ADMIN_MENU = [
-  { key: '/admin', icon: <DashboardOutlined />, label: 'Tổng quan' },
-  { key: '/admin/products', icon: <ShoppingOutlined />, label: 'Sản phẩm' },
-  { key: '/admin/customers', icon: <TeamOutlined />, label: 'Khách hàng' },
-  { key: '/admin/staffs', icon: <UserOutlined />, label: 'Nhân viên' },
-  { key: '/admin/promotions', icon: <TagsOutlined />, label: 'Khuyến mãi' },
-  { key: '/admin/reports', icon: <BarChartOutlined />, label: 'Báo cáo' },
-  { key: '/admin/news', icon: <FileTextOutlined />, label: 'Tin tức' },
-  { key: '/admin/warranties', icon: <SafetyOutlined/>,label: 'Bảo hành'}
+  { key: "/admin", icon: <DashboardOutlined />, label: "Tổng quan" },
+  { key: "/admin/products", icon: <ShoppingOutlined />, label: "Sản phẩm" },
+  { key: "/admin/customers", icon: <TeamOutlined />, label: "Khách hàng" },
+  { key: "/admin/staffs", icon: <UserOutlined />, label: "Nhân viên" },
+  { key: "/admin/promotions", icon: <TagsOutlined />, label: "Khuyến mãi" },
+  { key: "/admin/reports", icon: <BarChartOutlined />, label: "Báo cáo" },
+  { key: "/admin/news", icon: <FileTextOutlined />, label: "Tin tức" },
+  { key: "/admin/warranties", icon: <SafetyOutlined />, label: "Bảo hành" },
+  { key: "/admin/risks", icon: <AlertOutlined />, label: "Bảo hành" },
 ];
 
 export default function AdminLayout() {
@@ -37,67 +49,89 @@ export default function AdminLayout() {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
 
-  const rawRole = localStorage.getItem('admin_role') || localStorage.getItem('role') || '';
+  const rawRole =
+    localStorage.getItem("admin_role") || localStorage.getItem("role") || "";
   const roleString = rawRole.trim().toLowerCase();
 
   useEffect(() => {
-    if (roleString === 'customer' || !roleString) {
+    if (roleString === "customer" || !roleString) {
       localStorage.clear();
-      navigate('/login');
+      navigate("/login");
     }
   }, [roleString, navigate]);
 
-  const isAdmin = roleString === 'admin';
-  const role = isAdmin ? 'Admin' : 'Staff';
-  const username = localStorage.getItem('admin_username') || localStorage.getItem('username') || 'Tài khoản';
+  const isAdmin = roleString === "admin";
+  const role = isAdmin ? "Admin" : "Staff";
+  const username =
+    localStorage.getItem("admin_username") ||
+    localStorage.getItem("username") ||
+    "Tài khoản";
   const menuItems = isAdmin ? ADMIN_MENU : STAFF_MENU;
   const handleLogout = async () => {
     try {
-      await axios.post(`${API_BASE}/auth/logout`, {}, { withCredentials: true });
+      await axios.post(
+        `${API_BASE}/auth/logout`,
+        {},
+        { withCredentials: true },
+      );
     } catch (err) {
-      console.error('Lỗi đăng xuất:', err);
+      console.error("Lỗi đăng xuất:", err);
     } finally {
       localStorage.clear();
-      navigate('/login');
+      navigate("/login");
     }
   };
 
   const userMenu = {
     items: [
-      { key: 'adminprofile', icon: <UserOutlined />, label: 'Tài khoản' },
-      { type: 'divider' },
-      { key: 'logout', icon: <LogoutOutlined />, label: 'Đăng xuất', danger: true },
+      { key: "adminprofile", icon: <UserOutlined />, label: "Tài khoản" },
+      { type: "divider" },
+      {
+        key: "logout",
+        icon: <LogoutOutlined />,
+        label: "Đăng xuất",
+        danger: true,
+      },
     ],
     onClick: ({ key }) => {
-      if (key === 'logout') handleLogout();
-      if (key === 'adminprofile') navigate('/admin/adminprofile');
+      if (key === "logout") handleLogout();
+      if (key === "adminprofile") navigate("/admin/adminprofile");
     },
   };
 
   return (
     <Layout className={styles.adminWrapper}>
       <Sider
-        trigger={null} collapsible collapsed={collapsed}
-        width={240} className={styles.sider} breakpoint="lg"
+        trigger={null}
+        collapsible
+        collapsed={collapsed}
+        width={240}
+        className={styles.sider}
+        breakpoint="lg"
         onBreakpoint={(broken) => setCollapsed(broken)}
       >
-        <div className={styles.siderLogo} onClick={() => navigate('/')}>
+        <div className={styles.siderLogo} onClick={() => navigate("/")}>
           <ShopOutlined className={styles.logoIcon} />
           {!collapsed && <span className={styles.logoText}>CERAMIC</span>}
         </div>
 
         {!collapsed && (
           <div className={styles.roleTag}>
-            <span className={role === 'Admin' ? styles.roleAdmin : styles.roleStaff}>
-              {role === 'Admin' ? '👑 Admin' : '🛠 Staff'}
+            <span
+              className={role === "Admin" ? styles.roleAdmin : styles.roleStaff}
+            >
+              {role === "Admin" ? "👑 Admin" : "🛠 Staff"}
             </span>
           </div>
         )}
 
         <Menu
-          theme="dark" mode="inline"
-          selectedKeys={[location.pathname]} items={menuItems}
-          onClick={({ key }) => navigate(key)} className={styles.siderMenu}
+          theme="dark"
+          mode="inline"
+          selectedKeys={[location.pathname]}
+          items={menuItems}
+          onClick={({ key }) => navigate(key)}
+          className={styles.siderMenu}
         />
 
         <div className={styles.siderFooter}>
@@ -123,7 +157,9 @@ export default function AdminLayout() {
           <div className={styles.headerRight}>
             <Dropdown menu={userMenu} placement="bottomRight" arrow>
               <div className={styles.userInfo}>
-                <Avatar className={styles.avatar}>{username?.[0]?.toUpperCase()}</Avatar>
+                <Avatar className={styles.avatar}>
+                  {username?.[0]?.toUpperCase()}
+                </Avatar>
                 <div className={styles.userMeta}>
                   <span className={styles.userName}>{username}</span>
                   <span className={styles.userRole}>{role}</span>
