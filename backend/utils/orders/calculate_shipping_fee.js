@@ -72,7 +72,7 @@ const calculateShippingFee = async (
     let ghnDetails = null;
 
     if (Number(MaPhi) === 2) {
-      if (address.ToProvinceID !== 31)
+      if (address.ToProvinceID !== 224)
         throw new ErrorHandler(
           "Giao hỏa tốc chỉ áp dụng trong nội thành!",
           400,
