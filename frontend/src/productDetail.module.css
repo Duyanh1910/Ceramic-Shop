@@ -526,7 +526,7 @@
   font-family: 'Arsenal', serif;
   font-size: 32px;
   font-weight: 700;
-  margin: 0 0 10px 0; /* Thu nhỏ margin dưới một chút để chèn sao */
+  margin: 0 0 10px 0;
   color: #1b437c;
   line-height: 1.3;
 }
@@ -898,9 +898,6 @@
   .footerGrid { grid-template-columns: 1fr; }
 }
 
-/* ------------------------------------- */
-/* --- CÁC CLASS CSS CHO PHẦN ĐÁNH GIÁ --- */
-/* ------------------------------------- */
 
 .detailRatingBox {
   display: flex;
@@ -986,9 +983,6 @@
   margin: 0;
 }
 
-/* ------------------------------------------- */
-/* --- CSS KHỐI THỐNG KÊ ĐÁNH GIÁ (OVERVIEW) ---*/
-/* ------------------------------------------- */
 
 .ratingOverview {
   display: flex;
@@ -1003,7 +997,7 @@
 }
 
 .overviewCol {
-  flex: 1.2; /* Cho cột thanh ngang rộng hơn chút */
+  flex: 1.2;
   padding: 0 20px;
 }
 
@@ -1052,7 +1046,6 @@
   margin: 0 15px !important;
 }
 
-/* Ẩn margin mặc định của Ant Design Progress */
 :global(.ant-progress) {
   margin-bottom: 0 !important;
 }
@@ -1092,7 +1085,6 @@
   color: #faad14;
 }
 
-/* Đảm bảo giao diện không bị nát trên điện thoại */
 @media (max-width: 768px) {
   .ratingOverview {
     flex-direction: column;

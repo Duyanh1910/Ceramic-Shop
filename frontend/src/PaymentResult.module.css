@@ -55,7 +55,6 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Icon circle */
 .iconCircle {
   width: 88px;
   height: 88px;
@@ -100,7 +99,6 @@
   margin: 0 0 24px;
 }
 
-/* Detail box */
 .detailBox {
   background: #f7f9fc;
   border: 1px solid #e8eef8;
@@ -154,7 +152,6 @@
 .amountSuccess { font-size: 20px; color: #52c41a; font-weight: 700; }
 .amountFail    { font-size: 20px; color: #cf1322; font-weight: 700; }
 
-/* Fail guide */
 .failGuide {
   background: #fff8e6;
   border: 1px solid #ffd591;
@@ -176,7 +173,6 @@
 
 .failGuide li { margin-bottom: 4px; }
 
-/* Actions */
 .actions {
   display: flex;
   flex-direction: column;

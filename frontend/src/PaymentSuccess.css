@@ -1,6 +1,3 @@
-/* =========================================
-   VARIABLES - THEME CAO CẤP
-========================================= */
 :root {
   --primary: #A6246D;
   --primary-glow: rgba(166, 36, 109, 0.4);
@@ -15,15 +12,11 @@
   --error-glow: rgba(239, 68, 68, 0.3);
 }
 
-/* =========================================
-   BACKGROUND & LAYOUT (Hiệu ứng kính mờ)
-========================================= */
 .wrapper {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  /* Gradient nền chuyển động nhẹ */
   background: linear-gradient(-45deg, #fce7f3, #e0e7ff, #f3e8ff, #ffedd5);
   background-size: 400% 400%;
   animation: gradientBG 15s ease infinite;
@@ -34,7 +27,6 @@
 .card {
   width: 100%;
   max-width: 440px;
-  /* Hiệu ứng Glassmorphism */
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -48,9 +40,6 @@
   animation: cardSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* =========================================
-   ANIMATED ICONS (Icon tự vẽ đường nét)
-========================================= */
 .icon-container {
   width: 88px;
   height: 88px;
@@ -63,7 +52,6 @@
   z-index: 10;
 }
 
-/* Hiệu ứng tỏa sáng xung quanh Icon */
 .icon-container::before {
   content: '';
   position: absolute;
@@ -82,16 +70,12 @@
 .icon-container.error { background: #fef2f2; color: var(--error); }
 .icon-container.error::before { box-shadow: 0 0 30px var(--error-glow); }
 
-/* SVG Stroke Animation */
 .animate-draw {
   stroke-dasharray: 100;
   stroke-dashoffset: 100;
   animation: drawStroke 0.8s cubic-bezier(0.65, 0, 0.45, 1) 0.2s forwards;
 }
 
-/* =========================================
-   TYPOGRAPHY
-========================================= */
 .title {
   font-size: 1.6rem;
   font-weight: 800;
@@ -109,9 +93,6 @@
   line-height: 1.6;
 }
 
-/* =========================================
-   HÓA ĐƠN (RECEIPT TICKET)
-========================================= */
 .receipt {
   position: relative;
   background: white;
@@ -123,13 +104,12 @@
   border: 1px dashed #cbd5e1;
 }
 
-/* Hiệu ứng lỗ cắt của biên lai */
 .receipt::before, .receipt::after {
   content: '';
   position: absolute;
   top: 50%;
   width: 20px; height: 20px;
-  background-color: var(--bg-color); /* Trùng màu nền để tạo cảm giác xuyên thấu */
+  background-color: var(--bg-color);
   border-radius: 50%;
   transform: translateY(-50%);
   z-index: 1;
@@ -168,9 +148,6 @@
   letter-spacing: 0.5px;
 }
 
-/* =========================================
-   BUTTONS CAO CẤP
-========================================= */
 .actions {
   display: flex;
   flex-direction: column;
@@ -196,7 +173,6 @@
   box-shadow: 0 10px 20px var(--primary-glow);
 }
 
-/* Hiệu ứng luồng sáng lướt qua nút */
 .btn.primary::after {
   content: '';
   position: absolute;
@@ -219,9 +195,6 @@
 }
 .btn.secondary:hover { background: #e2e8f0; transform: translateY(-2px); }
 
-/* =========================================
-   LOADING SPINNER
-========================================= */
 .loader-wrapper {
   display: flex;
   flex-direction: column;
@@ -240,9 +213,6 @@
   margin-bottom: 1.5rem;
 }
 
-/* =========================================
-   KEYFRAMES (Hoạt ảnh)
-========================================= */
 @keyframes gradientBG {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }

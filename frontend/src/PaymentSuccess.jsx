@@ -108,12 +108,10 @@ const PaymentSuccess = () => {
     );
   }
 
-  // Giao diện Kết quả
   return (
     <div className="wrapper">
       <div className="card">
         
-        {/* ANIMATED ICONS */}
         <div className={`icon-container ${status}`}>
           {status === 'success' && (
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
@@ -133,7 +131,6 @@ const PaymentSuccess = () => {
           )}
         </div>
 
-        {/* TIÊU ĐỀ */}
         <h2 className={`title ${status}`}>
           {status === 'success' ? 'Thanh toán thành công!'
             : status === 'pending' ? 'Giao dịch đang xử lý'
@@ -146,7 +143,6 @@ const PaymentSuccess = () => {
             : message}
         </p>
 
-        {/* BIÊN LAI (RECEIPT) */}
         {orderId && (
           <div className="receipt">
             {method && (
@@ -166,7 +162,6 @@ const PaymentSuccess = () => {
           </div>
         )}
 
-        {/* NÚT BẤM (BUTTONS) */}
         <div className="actions">
           <Link to="/orders" className="btn primary">
             Xem đơn hàng của tôi

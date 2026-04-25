@@ -58,7 +58,6 @@ export default function Breadcrumb({ customLabels = {}, className = '' }) {
       label = config?.label || seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, ' ');
       icon = config?.icon || null;
       
-      // KIỂM TRA REDIRECT: Nếu trong từ điển có cài redirect thì ưu tiên lấy nó
       if (config?.redirect) {
         targetPath = config.redirect;
       }

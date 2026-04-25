@@ -242,7 +242,6 @@ export default function SupportPage() {
       <Helmet><title>{current.title} | Ceramic Shop</title></Helmet>
 
       <header className={styles.topHeader}>
-        {/* Khối Logo giống trang Landing Page / Forgot Password */}
         <div className={styles.logoBox} onClick={() => navigate('/')}>
           <img 
             src="https://res.cloudinary.com/dcmwz0uis/image/upload/v1774819165/IMG_20260330_041641_qwo8lc.jpg" 
@@ -255,7 +254,6 @@ export default function SupportPage() {
           </div>
         </div>
 
-        {/* Nút Quay lại giống trang Forgot Password */}
         <Button
           type="link"
           icon={<ArrowLeftOutlined />}

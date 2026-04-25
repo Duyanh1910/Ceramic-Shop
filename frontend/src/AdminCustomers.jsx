@@ -36,11 +36,10 @@ export default function AdminCustomers() {
 
   const handleSearch = () => { setPage(1); setSearch(searchInput); };
 
-  // ĐÃ FIX: Chống gọi API 2 lần
   const handleReload = () => {
     setSearchInput('');
     if (search === '' && page === 1) {
-      fetchData(); // Bắt buộc tải lại nếu state không đổi
+      fetchData();
     } else {
       setSearch('');
       setPage(1);
@@ -52,7 +51,6 @@ export default function AdminCustomers() {
       title: 'Khách hàng',
       render: (_, row) => (
         <div className={styles.userCell}>
-          {/* ĐÃ FIX: Tránh lỗi src rỗng */}
           <Avatar src={row.Avatar || null} className={styles.userAvatar} size={38}>
             {row.TenKhachHang?.[0] || '?'}
           </Avatar>

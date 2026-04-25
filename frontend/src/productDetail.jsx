@@ -45,7 +45,6 @@ function ProductDetail() {
   const [searchOptions, setSearchOptions] = useState([]);
   const inputRef = useRef(null);
 
-  // Chỉ cần giữ lại state cho phần hiển thị Rating ở trên cùng
   const [ratingStats, setRatingStats] = useState({ avg: 0, total: 0 });
 
   useEffect(() => {
@@ -630,7 +629,6 @@ function ProductDetail() {
             <div className={styles.info}>
               <h1 className={styles.title}>{product.TenSanPham}</h1>
               
-              {/* --- ĐÁNH GIÁ TRUNG BÌNH --- */}
               <div className={styles.detailRatingBox}>
                 <Rate disabled allowHalf value={ratingStats.avg} className={styles.detailStars} />
                 <span className={styles.detailRatingText}>
@@ -685,11 +683,9 @@ function ProductDetail() {
             <div className={styles.descContent} dangerouslySetInnerHTML={{ __html: product.MoTa || 'Chưa có thông tin mô tả chi tiết.' }}></div>
           </div>
 
-          {/* --- BẮT ĐẦU KHU VỰC ĐÁNH GIÁ --- */}
           <div className={styles.sectionBox} style={{ padding: 0, border: 'none', background: 'transparent' }}>
             <ProductReview productId={id} />
           </div>
-          {/* --- KẾT THÚC KHU VỰC ĐÁNH GIÁ --- */}
 
           <div className={styles.sectionBox} style={{ marginTop: 30 }}>
             <h3 className={styles.sectionTitle}>Sản Phẩm Tương Tự</h3>
