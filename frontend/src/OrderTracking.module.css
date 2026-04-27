@@ -81,7 +81,6 @@
 .container {
   max-width: 1100px;
   margin: 0 auto;
-  background-color: rgb(141, 73, 58);
 }
 
 .pageHeader {
@@ -155,6 +154,10 @@
 
 .table :global(.ant-table-tbody > tr:hover > td) {
   background: #fafcff !important;
+}
+
+.table :global(.ant-table-tbody) {
+  background: #b65030 !important;
 }
 
 .table :global(.ant-pagination) {
