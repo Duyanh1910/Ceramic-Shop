@@ -1,18 +1,14 @@
-@import url("https://fonts.googleapis.com/css2?family=Arsenal:wght@400;600;700&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Arsenal:wght@400;600;700&display=swap');
 
 :global(body) {
   margin: 0 !important;
   padding: 0 !important;
-  font-family: "Arsenal", sans-serif !important;
+  font-family: 'Arsenal', sans-serif !important;
 }
 
 .pageWrapper {
   min-height: 100vh;
-  background:
-    linear-gradient(rgba(255, 255, 255, 0.8), rgb(213, 233, 255)),
-    url("https://res.cloudinary.com/dcmwz0uis/image/upload/v1774819412/bghome_dnne19.avif")
-      center/cover no-repeat fixed;
-  background-attachment: fixed;
+  background: linear-gradient(rgba(255, 255, 255, 0.8), rgb(213, 233, 255)), url('https://res.cloudinary.com/dcmwz0uis/image/upload/v1774819412/bghome_dnne19.avif') center/cover no-repeat fixed;  background-attachment: fixed;
   background-attachment: fixed;
   background-size: cover;
 }
@@ -23,7 +19,7 @@
   align-items: center;
   padding: 0 50px;
   background: #ffffff;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
   height: 80px;
   position: sticky;
   top: 0;
@@ -49,7 +45,7 @@
 }
 
 .logoText {
-  font-family: "Arsenal", serif;
+  font-family: 'Arsenal', serif;
   font-size: 28px;
   font-weight: 700;
   margin: 0;
@@ -61,34 +57,21 @@
 .logoSub {
   font-size: 11px;
   letter-spacing: 2px;
-  color: #bb9244;
-  font-weight: normal;
+  color: #BB9244;
+  font-weight: normal; 
 }
 
-.btnBack {
-  color: #1b437c !important;
-  font-weight: 600;
-  font-size: 15px;
-}
-.btnBack:hover {
-  color: #c48c46 !important;
-}
+.btnBack { color: #1b437c !important; font-weight: 600; font-size: 15px; }
+.btnBack:hover { color: #c48c46 !important; }
 
-.mainContent {
-  padding: 32px 20px 60px;
-}
+.mainContent { padding: 32px 20px 60px; }
 
-.container {
-  max-width: 1100px;
-  margin: 0 auto;
-}
+.container { max-width: 1100px; margin: 0 auto; }
 
-.pageHeader {
-  margin-bottom: 20px;
-}
+.pageHeader { margin-bottom: 20px; }
 
 .pageTitle {
-  font-family: "Arsenal", serif;
+  font-family: 'Arsenal', serif;
   font-size: 26px;
   font-weight: 700;
   color: #1b437c;
@@ -98,16 +81,12 @@
   gap: 10px;
 }
 
-.pageSub {
-  font-size: 14px;
-  color: #888;
-  margin: 0;
-}
+.pageSub { font-size: 14px; color: #888; margin: 0; }
 
 .card {
   background: #fff;
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.04);
   overflow: hidden;
 }
 
@@ -156,10 +135,6 @@
   background: #fafcff !important;
 }
 
-.table :global(.ant-table-tbody) {
-  background: #b65030 !important;
-}
-
 .table :global(.ant-pagination) {
   padding: 16px 20px !important;
 }
@@ -171,10 +146,7 @@
   font-size: 14px;
 }
 
-.productCount {
-  color: #666;
-  font-size: 13px;
-}
+.productCount { color: #666; font-size: 13px; }
 
 .amount {
   color: #d0021b;
@@ -182,11 +154,7 @@
   font-size: 14px;
 }
 
-.actionCell {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
+.actionCell { display: flex; gap: 8px; flex-wrap: wrap; }
 
 .btnView {
   border-color: #1b437c !important;
@@ -202,7 +170,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  font-family: "Arsenal", serif;
+  font-family: 'Arsenal', serif;
   font-size: 18px;
   font-weight: 700;
   color: #1b437c;
@@ -215,9 +183,7 @@
   font-weight: 400;
 }
 
-.detailBody {
-  padding: 8px 0;
-}
+.detailBody { padding: 8px 0; }
 
 .timelineWrap {
   background: #f7f9fc;
@@ -254,9 +220,7 @@
   font-size: 14px;
 }
 
-.detailSection {
-  margin-bottom: 20px;
-}
+.detailSection { margin-bottom: 20px; }
 
 .sectionTitle {
   font-size: 14px;
@@ -280,11 +244,7 @@
   color: #333;
 }
 
-.productList {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
+.productList { display: flex; flex-direction: column; gap: 12px; }
 
 .productItem {
   display: flex;
@@ -296,18 +256,14 @@
 }
 
 .productImg {
-  width: 60px;
-  height: 60px;
+  width: 60px; height: 60px;
   object-fit: cover;
   border-radius: 6px;
   flex-shrink: 0;
   border: 1px solid #eee;
 }
 
-.productInfo {
-  flex: 1;
-  min-width: 0;
-}
+.productInfo { flex: 1; min-width: 0; }
 
 .productName {
   font-size: 14px;
@@ -319,11 +275,7 @@
   text-overflow: ellipsis;
 }
 
-.productVariant {
-  font-size: 12px;
-  color: #999;
-  margin-bottom: 6px;
-}
+.productVariant { font-size: 12px; color: #999; margin-bottom: 6px; }
 
 .productMeta {
   display: flex;
@@ -333,10 +285,7 @@
   color: #666;
 }
 
-.productTotal {
-  font-weight: 700;
-  color: #d0021b;
-}
+.productTotal { font-weight: 700; color: #d0021b; }
 
 .summaryBox {
   background: #f7f9fc;
@@ -365,10 +314,7 @@
   margin-top: 4px;
 }
 
-.totalAmount {
-  color: #d0021b;
-  font-size: 18px;
-}
+.totalAmount { color: #d0021b; font-size: 18px; }
 
 .btnCancel {
   height: 44px !important;
@@ -378,9 +324,7 @@
 }
 
 @media (max-width: 640px) {
-  .topHeader {
-    padding: 0 16px;
-  }
+  .topHeader { padding: 0 16px; }
 }
 .tabs :global(.ant-tabs-nav-list) {
   width: 100%;
