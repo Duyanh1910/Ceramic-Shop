@@ -1,15 +1,15 @@
-@import url('https://fonts.googleapis.com/css2?family=Arsenal:wght@400;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Arsenal:wght@400;600;700&display=swap");
 
 :global(body) {
   margin: 0 !important;
   padding: 0 !important;
   background-color: #fdfdfd !important;
-  font-family: 'Arsenal', sans-serif !important;
+  font-family: "Arsenal", sans-serif !important;
 }
 
 .cartWrapper {
   min-height: 100vh;
-  background: linear-gradient(rgba(255, 255, 255, 0.8), rgb(213, 233, 255)), url('https://res.cloudinary.com/dcmwz0uis/image/upload/v1774819412/bghome_dnne19.avif') center/cover no-repeat fixed;
+  background: #d0021b;
   background-attachment: fixed;
   background-size: cover;
 }
@@ -19,8 +19,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 0 50px;
-  background: rgba(255,255,255,0.97);
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   height: 75px;
   position: sticky;
   top: 0;
@@ -33,10 +33,20 @@
   gap: 4px;
 }
 
-.btnLoginHeader { color: #c48c46 !important; font-weight: 600; }
-.btnLoginHeader:hover { color: #a3712e !important; }
-.btnBack { color: #1b437c !important; font-weight: 600; }
-.btnBack:hover { color: #e74c3c !important; }
+.btnLoginHeader {
+  color: #c48c46 !important;
+  font-weight: 600;
+}
+.btnLoginHeader:hover {
+  color: #a3712e !important;
+}
+.btnBack {
+  color: #1b437c !important;
+  font-weight: 600;
+}
+.btnBack:hover {
+  color: #e74c3c !important;
+}
 
 .logoBox {
   display: flex;
@@ -58,7 +68,7 @@
 }
 
 .logoText {
-  font-family: 'Arsenal', serif;
+  font-family: "Arsenal", serif;
   font-size: 28px;
   font-weight: 700;
   margin: 0 !important;
@@ -71,15 +81,20 @@
 .logoSub {
   font-size: 11px;
   letter-spacing: 2px;
-  color: #BB9244;
-  font-weight: normal; 
+  color: #bb9244;
+  font-weight: normal;
   margin: 4px 0 0 0 !important;
   padding: 0 !important;
   line-height: 1.2 !important;
 }
 
-.mainContent { padding: 28px 20px 60px; }
-.container { max-width: 1280px; margin: 0 auto; }
+.mainContent {
+  padding: 28px 20px 60px;
+}
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+}
 
 .guestBanner {
   display: flex;
@@ -101,7 +116,9 @@
   cursor: pointer;
   text-decoration: underline;
 }
-.bannerLink:hover { color: #c48c46; }
+.bannerLink:hover {
+  color: #c48c46;
+}
 
 .pageTitle {
   font-size: 22px;
@@ -129,7 +146,7 @@
 .cartListSection {
   background: #fff;
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
   overflow: hidden;
 }
 
@@ -162,18 +179,52 @@
   border-bottom: 1px solid #f5f5f5;
   transition: background 0.2s;
 }
-.cartItemRow:last-child { border-bottom: none; }
-.cartItemRow:hover { background: #fafcff; }
+.cartItemRow:last-child {
+  border-bottom: none;
+}
+.cartItemRow:hover {
+  background: #fafcff;
+}
 
-.colCheckbox { width: 36px; flex-shrink: 0; }
-.colProduct { flex: 5; display: flex; align-items: center; gap: 14px; min-width: 0; }
-.colPrice { flex: 2; text-align: center; font-size: 14px; color: #555; }
-.colQty { flex: 2; display: flex; justify-content: center; }
-.colTotal { flex: 2; text-align: center; font-size: 15px; font-weight: 700; color: #d0021b; }
-.colAction { width: 44px; display: flex; justify-content: flex-end; flex-shrink: 0; }
+.colCheckbox {
+  width: 36px;
+  flex-shrink: 0;
+}
+.colProduct {
+  flex: 5;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+.colPrice {
+  flex: 2;
+  text-align: center;
+  font-size: 14px;
+  color: #555;
+}
+.colQty {
+  flex: 2;
+  display: flex;
+  justify-content: center;
+}
+.colTotal {
+  flex: 2;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 700;
+  color: #d0021b;
+}
+.colAction {
+  width: 44px;
+  display: flex;
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
 
 .itemImg {
-  width: 76px; height: 76px;
+  width: 76px;
+  height: 76px;
   object-fit: cover;
   border-radius: 8px;
   border: 1px solid #f0f0f0;
@@ -191,7 +242,11 @@
   line-height: 1.4;
 }
 
-.itemVariant { font-size: 12px; color: #999; margin-top: 4px; }
+.itemVariant {
+  font-size: 12px;
+  color: #999;
+  margin-top: 4px;
+}
 
 .qtyControls {
   display: flex;
@@ -205,36 +260,42 @@
 .qtyBtn {
   background: #f9f9f9;
   border: none;
-  width: 30px; height: 100%;
+  width: 30px;
+  height: 100%;
   cursor: pointer;
   font-size: 16px;
   color: #444;
   transition: background 0.15s;
-  font-family: 'Arsenal', sans-serif;
+  font-family: "Arsenal", sans-serif;
 }
-.qtyBtn:hover { background: #e8eef8; color: #1b437c; }
+.qtyBtn:hover {
+  background: #e8eef8;
+  color: #1b437c;
+}
 
 .qtyInput {
-  width: 38px; height: 100%;
+  width: 38px;
+  height: 100%;
   border: none;
   border-left: 1px solid #e0e0e0;
   border-right: 1px solid #e0e0e0;
   text-align: center;
-  font-family: 'Arsenal', sans-serif;
+  font-family: "Arsenal", sans-serif;
   font-size: 14px;
   font-weight: 600;
   outline: none;
   appearance: textfield;
 }
 .qtyInput::-webkit-outer-spin-button,
-.qtyInput::-webkit-inner-spin-button { -webkit-appearance: none; }
-
+.qtyInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
 
 .checkoutSection {
   background: #fff;
   border-radius: 12px;
   padding: 24px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
   position: sticky;
   top: 95px;
 }
@@ -270,7 +331,9 @@
   font-weight: 700;
 }
 
-.formSection { margin-top: 20px; }
+.formSection {
+  margin-top: 20px;
+}
 
 .formTitle {
   font-size: 15px;
@@ -285,7 +348,7 @@
 .customInput {
   border-radius: 6px !important;
   border: 1.5px solid #e0e0e0 !important;
-  font-family: 'Arsenal', sans-serif !important;
+  font-family: "Arsenal", sans-serif !important;
   font-size: 14px !important;
   transition: all 0.25s !important;
 }
@@ -293,7 +356,7 @@
 .customInput:focus,
 .customInput:focus-within {
   border-color: #1b437c !important;
-  box-shadow: 0 0 0 2px rgba(27,67,124,0.08) !important;
+  box-shadow: 0 0 0 2px rgba(27, 67, 124, 0.08) !important;
 }
 
 .customSelect :global(.ant-select-selector) {
@@ -306,34 +369,34 @@
 .customSelect:hover :global(.ant-select-selector),
 .customSelect:global(.ant-select-focused) :global(.ant-select-selector) {
   border-color: #1b437c !important;
-  box-shadow: 0 0 0 2px rgba(27,67,124,0.08) !important;
+  box-shadow: 0 0 0 2px rgba(27, 67, 124, 0.08) !important;
 }
 
 .btnSubmitOrder {
-  height: 52px !important; 
+  height: 52px !important;
   border-radius: 8px !important;
-  background: #1b437c !important; 
+  background: #1b437c !important;
   border-color: #1b437c !important;
   font-size: 16px !important;
   font-weight: 700 !important;
   letter-spacing: 0.5px !important;
   margin-top: 20px;
   transition: all 0.3s ease !important;
-  box-shadow: 0 4px 15px rgba(27, 67, 124, 0.25) !important; 
+  box-shadow: 0 4px 15px rgba(27, 67, 124, 0.25) !important;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 .btnSubmitOrder:hover:not(:disabled) {
-  background: #13325c !important; 
+  background: #13325c !important;
   border-color: #13325c !important;
-  transform: translateY(-2px); 
+  transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(27, 67, 124, 0.4) !important;
 }
 .btnSubmitOrder:disabled {
   background: #f5f5f5 !important;
   border-color: #d9d9d9 !important;
-  color: #a8a8a8 !important; 
+  color: #a8a8a8 !important;
   box-shadow: none !important;
   transform: none !important;
   cursor: not-allowed !important;
@@ -351,16 +414,27 @@
   border-color: #1b437c !important;
 }
 
-.modalBody { text-align: center; padding: 10px 0 4px; }
-.modalIcon { font-size: 42px; margin-bottom: 12px; }
+.modalBody {
+  text-align: center;
+  padding: 10px 0 4px;
+}
+.modalIcon {
+  font-size: 42px;
+  margin-bottom: 12px;
+}
 .modalTitle {
-  font-family: 'Arsenal', serif;
+  font-family: "Arsenal", serif;
   font-size: 20px;
   font-weight: 700;
   color: #1b437c;
   margin: 0 0 8px;
 }
-.modalSub { font-size: 14px; color: #666; line-height: 1.6; margin-bottom: 20px; }
+.modalSub {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
 
 .btnModalLogin {
   height: 44px !important;
@@ -370,7 +444,10 @@
   font-weight: 700 !important;
   margin-bottom: 10px;
 }
-.btnModalLogin:hover { background: #13325c !important; border-color: #13325c !important; }
+.btnModalLogin:hover {
+  background: #13325c !important;
+  border-color: #13325c !important;
+}
 
 .btnModalRegister {
   height: 40px !important;
@@ -380,14 +457,17 @@
   font-weight: 600 !important;
   margin-bottom: 12px;
 }
-.btnModalRegister:hover { border-color: #1b437c !important; color: #1b437c !important; }
+.btnModalRegister:hover {
+  border-color: #1b437c !important;
+  color: #1b437c !important;
+}
 
 .btnContinueGuest {
   background: none;
   border: none;
   color: #aaa;
   font-size: 13px;
-  font-family: 'Arsenal', sans-serif;
+  font-family: "Arsenal", sans-serif;
   cursor: pointer;
   padding: 0;
   display: block;
@@ -395,7 +475,9 @@
   text-align: center;
   transition: color 0.2s;
 }
-.btnContinueGuest:hover { color: #1b437c; }
+.btnContinueGuest:hover {
+  color: #1b437c;
+}
 
 .emptyState {
   padding: 60px 20px;
@@ -419,18 +501,51 @@
 }
 
 @media (max-width: 960px) {
-  .layoutGrid { grid-template-columns: 1fr; }
-  .checkoutSection { position: static; }
+  .layoutGrid {
+    grid-template-columns: 1fr;
+  }
+  .checkoutSection {
+    position: static;
+  }
 }
 
 @media (max-width: 640px) {
-  .topHeader { padding: 0 16px; }
-  .cartHeaderRow { display: none; }
-  .cartItemRow { flex-wrap: wrap; gap: 10px; position: relative; padding: 14px 16px; }
-  .colCheckbox { position: absolute; top: 18px; left: 16px; }
-  .colProduct { flex: 100%; padding-left: 26px; }
-  .colPrice { flex: 1; font-size: 13px; }
-  .colQty { flex: 1; justify-content: flex-end; }
-  .colTotal { flex: 100%; text-align: right; }
-  .colAction { position: absolute; top: 12px; right: 14px; }
+  .topHeader {
+    padding: 0 16px;
+  }
+  .cartHeaderRow {
+    display: none;
+  }
+  .cartItemRow {
+    flex-wrap: wrap;
+    gap: 10px;
+    position: relative;
+    padding: 14px 16px;
+  }
+  .colCheckbox {
+    position: absolute;
+    top: 18px;
+    left: 16px;
+  }
+  .colProduct {
+    flex: 100%;
+    padding-left: 26px;
+  }
+  .colPrice {
+    flex: 1;
+    font-size: 13px;
+  }
+  .colQty {
+    flex: 1;
+    justify-content: flex-end;
+  }
+  .colTotal {
+    flex: 100%;
+    text-align: right;
+  }
+  .colAction {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+  }
 }
