@@ -1,10 +1,23 @@
-const generateOrderCode = () => {
-  const date = new Date();
-  const dateStr = `${date.getFullYear().toString().slice(-2)}${(date.getMonth() + 1).toString().padStart(2, "0")}${date.getDate().toString().padStart(2, "0")}`;
-  const randomStr = Math.random().toString(36).substring(2, 6).toUpperCase();
-  return `DH${dateStr}${randomStr}`;
-};
+import {
+  AccountModel,
+  CustomerModel,
+  OrderModel,
+  OrderDetailModel,
+  
+} from "./models/index.js";
+import { Op } from "sequelize";
+const row = await CustomerModel.findOne({
+  include: [
+    {
+      model: AccountModel,
+      as: "TaiKhoan",
+      where: {
+        Username: {
+          [Op.like]: "khachhang1",
+        },
+      },
+    },
+  ],
+});
 
-for (let i = 0; i < 50; i++) {
-  console.log(generateOrderCode());
-}
+console.log(row);
