@@ -743,6 +743,7 @@
   background: transparent;
   color: #1b437c;
   border: 1px solid #1b437c;
+  box-shadow: 0 5px 0 #1a5edb;
 }
 
 .btnDetail:hover:not(:disabled) {
@@ -754,7 +755,10 @@
   text-shadow: 0 0 5px #0ff;
   box-shadow: 0 0 10px #0ff;
 }
-
+.btnDetail:active{
+  transform: translateY(5px);
+  box-shadow: none;
+}
 
 .paginationBox {
   display: flex;
