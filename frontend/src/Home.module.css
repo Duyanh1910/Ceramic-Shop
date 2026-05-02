@@ -740,24 +740,27 @@
 }
 
 .btnDetail {
-  background: transparent;
-  color: #1b437c;
-  border: 1px solid #1b437c;
+  background: #2575fc;
+  color: white;
+  border-radius: 8px;
+  border: 2px solid #1b437c; 
   box-shadow: 0 5px 0 #1a5edb;
+  transition: all 0.3s ease;
+  cursor: pointer;
 }
-
 .btnDetail:hover:not(:disabled) {
   background: #00114fcc;
-  color:#0ff;
-  transform: translateY(-2px);
-  border: 2px solid #0ff;
-  border-radius: 8px;
+  color: #0ff;
+  border-color: #0ff;
   text-shadow: 0 0 5px #0ff;
-  box-shadow: 0 0 10px #0ff;
+  transform: translateY(-2px);
+  box-shadow: 
+    0 0 12px #0ff,         
+    0 7px 0 #1a5edb;       
 }
-.btnDetail:active{
+.btnDetail:active:not(:disabled) {
   transform: translateY(5px);
-  box-shadow: none;
+  box-shadow: 0 0 8px #0ff; 
 }
 
 .paginationBox {
