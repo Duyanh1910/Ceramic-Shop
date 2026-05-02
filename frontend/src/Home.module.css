@@ -746,7 +746,7 @@
 }
 
 .btnDetail:hover:not(:disabled) {
-  background: #020086;
+  background: #00114fcc;
   color:#0ff;
   transform: translateY(-2px);
   border: 2px solid #0ff;
