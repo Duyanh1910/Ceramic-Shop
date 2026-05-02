@@ -743,7 +743,7 @@
   background: #2575fc;
   color: white;
   border-radius: 8px;
-  border: 2px solid #1b437c; 
+  border: none; 
   box-shadow: 0 5px 0 #1a5edb;
   transition: all 0.3s ease;
   cursor: pointer;
