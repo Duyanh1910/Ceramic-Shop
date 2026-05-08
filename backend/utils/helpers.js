@@ -22,7 +22,7 @@ export const isValidDate = (date) => {
 };
 
 export const isValidUsername = (string) => {
-  const regex = /^[a-zA-Z0-9]{3,30}$/;
+  const regex = /^(?![_-])[a-zA-Z0-9_-]{3,30}(?<![_-])$/;
   return regex.test(String(string));
 };
 

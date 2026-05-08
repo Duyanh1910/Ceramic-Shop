@@ -53,7 +53,7 @@ export const customerRegister = async (req, res, next) => {
     if (!checkValidate(email)) {
       throw new ErrorHandler("Email không được để trống!", 422);
     }
-    if (!isValidUsername(email)) {
+    if (!isValidUsername(username)) {
       throw new ErrorHandler("Định dạng username không hợp lệ!", 422);
     }
     if (!isValidEmail(email)) {
