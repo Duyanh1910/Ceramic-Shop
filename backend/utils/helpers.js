@@ -21,6 +21,11 @@ export const isValidDate = (date) => {
   return d instanceof Date && !isNaN(d);
 };
 
+export const isValidUsername = (string) => {
+  const regex = /^[a-zA-Z0-9]{3,30}$/;
+  return regex.test(String(string));
+};
+
 export const validateVariants = (BienThe) => {
   if (!BienThe || !Array.isArray(BienThe) || BienThe.length === 0) {
     throw new ErrorHandler("Biến thể không hợp lệ!", 400);

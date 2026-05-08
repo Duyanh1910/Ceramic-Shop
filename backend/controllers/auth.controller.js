@@ -11,6 +11,7 @@ import {
   isStringEmpty,
   isValidEmail,
   isValidPhoneNumber,
+  isValidUsername,
 } from "../utils/helpers.js";
 
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
@@ -46,25 +47,29 @@ export const customerRegister = async (req, res, next) => {
   try {
     const { username, password, name, phone_number, email, address } = req.body;
     if (!checkValidate(username, password)) {
-      throw new ErrorHandler("Username và password không được để trống!", 400);
+      throw new ErrorHandler("Username và password không được để trống!", 422);
     }
+
     if (!checkValidate(email)) {
-      throw new ErrorHandler("Email không được để trống!", 400);
+      throw new ErrorHandler("Email không được để trống!", 422);
+    }
+    if (!isValidUsername(email)) {
+      throw new ErrorHandler("Định dạng username không hợp lệ!", 422);
     }
     if (!isValidEmail(email)) {
-      throw new ErrorHandler("Định dạng email không hợp lệ!", 400);
+      throw new ErrorHandler("Định dạng email không hợp lệ!", 422);
     }
     if (!isStringEmpty(name) && name.length > 100) {
-      throw new ErrorHandler("Tên khách hàng không hợp lệ!", 400);
+      throw new ErrorHandler("Tên khách hàng không hợp lệ!", 422);
     }
     if (!isStringEmpty(phone_number) && !isValidPhoneNumber(phone_number)) {
-      throw new ErrorHandler("Số điện thoại không hợp lệ!", 400);
+      throw new ErrorHandler("Số điện thoại không hợp lệ!", 422);
     }
     if (!isStringEmpty(address) && address.length > 255) {
-      throw new ErrorHandler("Địa chỉ không hợp lệ!", 400);
+      throw new ErrorHandler("Địa chỉ không hợp lệ!", 422);
     }
     if (password.length < 6) {
-      throw new ErrorHandler(`Mật khẩu phải dài hơn 6 ký tự!`, 400);
+      throw new ErrorHandler(`Mật khẩu phải dài hơn 6 ký tự!`, 422);
     }
     const result = await customerRegisterService(
       username,
