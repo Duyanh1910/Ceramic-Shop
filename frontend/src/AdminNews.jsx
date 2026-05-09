@@ -156,7 +156,7 @@ export default function AdminNews() {
   const handleStatusChange = async (checked, record) => {
     const newStatus = checked ? 1 : 0;
     try {
-      await axios.put(
+      await axios.patch(
         `${API_BASE}/news/${record.MaTinTuc}/status`,
         { status: newStatus },
         authH(),
