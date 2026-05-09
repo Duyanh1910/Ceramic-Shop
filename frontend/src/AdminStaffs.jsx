@@ -139,7 +139,7 @@ export default function AdminStaffs() {
         NgaySinh: values.NgaySinh ? values.NgaySinh.format("YYYY-MM-DD") : null,
       };
 
-      await axios.put(
+      await axios.patch(
         `${API_BASE}/admin/staffs/${currentEditId}`,
         payload,
         axiosConfig,
@@ -254,20 +254,23 @@ export default function AdminStaffs() {
 
   return (
     <div className={styles.wrapper}>
+      {/* Gộp nút Thêm nhân viên vào trong pageHeader */}
       <div className={styles.pageHeader}>
         <div>
           <h1 className={styles.pageTitle}>Quản lý nhân viên</h1>
           <p className={styles.pageSub}>Tổng cộng {total} nhân viên</p>
         </div>
+
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          className={styles.btnAdd}
+          onClick={showAddModal}
+        >
+          Thêm nhân viên
+        </Button>
       </div>
-      <Button
-        type="primary"
-        icon={<PlusOutlined />}
-        className={styles.btnAdd}
-        onClick={showAddModal}
-      >
-        Thêm nhân viên
-      </Button>
+
       <div className={styles.toolbar}>
         <Input
           prefix={<SearchOutlined />}
