@@ -6,7 +6,7 @@ import {
 export const getAllNews = async (req, res, next) => {
   try {
     const news = await getAllNewsService();
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Lấy danh sách tin tức thành công!",
       result: news,
@@ -22,7 +22,13 @@ export const getNewsContent = async (req, res, next) => {
     const id = req.params.id;
     console.log(`Mã tin tức: ${id}`);
     const news = await getNewsContentService(Number(id));
-    res.status(200).json({
+    if (!news) {
+      return res.status(404).json({
+        success: true,
+        message: "Không tìm thấy tin tức này!",
+      });
+    }
+    return res.status(200).json({
       success: true,
       message: "Lấy tin tức thành công!",
       result: news,
