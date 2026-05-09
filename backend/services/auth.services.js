@@ -79,6 +79,7 @@ export const loginService = async (username, password, rememberMe) => {
   const account = await AccountModel.findOne({
     where: {
       Username: username,
+      TrangThai: 1,
     },
     include: [
       {
@@ -87,7 +88,6 @@ export const loginService = async (username, password, rememberMe) => {
       },
     ],
   });
-
   if (account == null) {
     throw new ErrorHandler("Tên đăng nhập hoặc mật khẩu không chính xác!", 401);
   }

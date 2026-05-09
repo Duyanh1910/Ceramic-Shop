@@ -4,6 +4,7 @@ import {
   createStaffService,
   updateStaffMeService,
   updateStaffService,
+  deleteStaffService,
 } from "../../../services/staff.services.js";
 import { getMeService } from "../../../services/auth.services.js";
 import ErrorHandler from "../../../utils/error_handler.js";
@@ -145,6 +146,19 @@ export const createNewStaff = async (req, res, next) => {
       success: true,
       message: "Tạo nhân viên mới thành công!",
       result,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const deleteStaff = async (req, res, next) => {
+  try {
+    const id = Number(req.params.id);
+    await deleteStaffService(id);
+    res.status(200).json({
+      success: true,
+      message: "Xóa nhân viên thành công!",
     });
   } catch (err) {
     next(err);

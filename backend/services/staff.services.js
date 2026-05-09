@@ -74,6 +74,7 @@ export const getAllStaffService = async (
           MaQuyen: {
             [Op.ne]: 1,
           },
+          TrangThai: 1,
         },
         attributes: {
           exclude: ["MaTaiKhoan", "Password"],
@@ -92,7 +93,7 @@ export const getAllStaffService = async (
     data: users.rows,
     total: users.count,
     totalPages: Math.ceil(users.count / limit),
-    page,
+    page: Number(page),
   };
 };
 
@@ -103,6 +104,7 @@ export const getStaffService = async (id) => {
     },
     include: {
       model: AccountModel,
+      where: { TrangThai: 1 },
       attributes: ["Username", "Email"],
     },
   });
@@ -249,5 +251,46 @@ export const updateStaffService = async (id, data) => {
     if (err.statusCode) throw err;
     console.error(err);
     throw new ErrorHandler("Lỗi server! Không thể cập nhật thông tin!", 500);
+  }
+};
+
+export const deleteStaffService = async (id) => {
+  const transaction = await sequelize.transaction();
+  try {
+    const staff = await StaffModel.findOne({
+      where: {
+        MaNhanVien: id,
+      },
+      include: [
+        {
+          model: AccountModel,
+          where: {
+            TrangThai: 1,
+          },
+        },
+      ],
+      transaction: transaction,
+    });
+    if (!staff) {
+      throw new ErrorHandler("Không tìm thấy thông tin nhân viên này!", 404);
+    }
+    await AccountModel.update(
+      {
+        TrangThai: 0,
+      },
+      {
+        where: {
+          MaTaiKhoan: staff.MaTaiKhoan,
+        },
+        transaction,
+      },
+    );
+    await transaction.commit();
+    return true;
+  } catch (err) {
+    await transaction.rollback();
+    if (err.statusCode) throw err;
+    console.error(err);
+    throw new ErrorHandler("Lỗi server! Không thể xóa nhân viên!", 500);
   }
 };
