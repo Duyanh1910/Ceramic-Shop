@@ -6,7 +6,6 @@ import {
   Form,
   Input,
   Switch,
-  Tag,
   Tooltip,
   Popconfirm,
   message,
@@ -154,6 +153,31 @@ export default function AdminNews() {
     }
   };
 
+  // Hàm mới: Xử lý cập nhật nhanh trạng thái ngoài Table
+  const handleStatusChange = async (checked, record) => {
+    const newStatus = checked ? 1 : 0;
+    try {
+      // Giả định API của bạn dùng phương thức PUT hoặc PATCH
+      await axios.put(
+        `${API_BASE}/news/${record.MaTinTuc}/status`,
+        { TrangThai: newStatus },
+        authH(),
+      );
+      message.success(`Đã ${checked ? "hiển thị" : "ẩn"} bài viết!`);
+
+      // Tối ưu UI: Cập nhật state nội bộ thay vì gọi lại hàm fetchNews() để tránh giật lag bảng
+      setNews((prevNews) =>
+        prevNews.map((n) =>
+          n.MaTinTuc === record.MaTinTuc ? { ...n, TrangThai: newStatus } : n,
+        ),
+      );
+    } catch (err) {
+      message.error(
+        err.response?.data?.message || "Lỗi khi cập nhật trạng thái!",
+      );
+    }
+  };
+
   const filtered = news.filter(
     (n) => !search || n.TieuDe?.toLowerCase().includes(search.toLowerCase()),
   );
@@ -195,11 +219,15 @@ export default function AdminNews() {
     {
       title: "Trạng thái",
       key: "status",
-      width: 110,
+      width: 120,
+      // Đã cập nhật render dùng Switch
       render: (_, r) => (
-        <Tag color={r.TrangThai === 1 ? "green" : "default"}>
-          {r.TrangThai === 1 ? "Hiển thị" : "Ẩn"}
-        </Tag>
+        <Switch
+          checked={r.TrangThai === 1}
+          onChange={(checked) => handleStatusChange(checked, r)}
+          checkedChildren="Hiện"
+          unCheckedChildren="Ẩn"
+        />
       ),
     },
     {
@@ -387,6 +415,7 @@ export default function AdminNews() {
             />
           </Form.Item>
 
+          {/* Vẫn giữ Switch trong form để người dùng tạo mới có thể set luôn trạng thái */}
           <div className={styles.formRow2}>
             <Form.Item
               name="TrangThai"
