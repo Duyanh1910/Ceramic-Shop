@@ -153,19 +153,16 @@ export default function AdminNews() {
     }
   };
 
-  // Hàm mới: Xử lý cập nhật nhanh trạng thái ngoài Table
   const handleStatusChange = async (checked, record) => {
     const newStatus = checked ? 1 : 0;
     try {
-      // Giả định API của bạn dùng phương thức PUT hoặc PATCH
       await axios.put(
         `${API_BASE}/news/${record.MaTinTuc}/status`,
-        { TrangThai: newStatus },
+        { status: newStatus },
         authH(),
       );
       message.success(`Đã ${checked ? "hiển thị" : "ẩn"} bài viết!`);
 
-      // Tối ưu UI: Cập nhật state nội bộ thay vì gọi lại hàm fetchNews() để tránh giật lag bảng
       setNews((prevNews) =>
         prevNews.map((n) =>
           n.MaTinTuc === record.MaTinTuc ? { ...n, TrangThai: newStatus } : n,
@@ -220,7 +217,6 @@ export default function AdminNews() {
       title: "Trạng thái",
       key: "status",
       width: 120,
-      // Đã cập nhật render dùng Switch
       render: (_, r) => (
         <Switch
           checked={r.TrangThai === 1}
