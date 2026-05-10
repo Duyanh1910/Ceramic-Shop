@@ -305,8 +305,10 @@ export default function AdminNews() {
     setSaving(true);
     try {
       const payload = {
-        ...values,
-        TrangThai: values.TrangThai ? 1 : 0,
+        title: values.TieuDe,
+        content: values.NoiDung,
+        imageUrl: values.HinhAnh,
+        status: values.TrangThai ? 1 : 0,
       };
 
       if (editRecord) {
