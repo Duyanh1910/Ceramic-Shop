@@ -26,9 +26,24 @@ import {
   ReloadOutlined,
   UploadOutlined,
   CameraOutlined,
+  BoldOutlined,
+  ItalicOutlined,
+  UnderlineOutlined,
+  OrderedListOutlined,
+  UnorderedListOutlined,
+  PictureOutlined,
+  LinkOutlined,
+  CodeOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
 import dayjs from "dayjs";
+
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import Underline from "@tiptap/extension-underline";
+import TiptapImage from "@tiptap/extension-image";
+import Link from "@tiptap/extension-link";
+
 import styles from "./AdminNews.module.css";
 
 const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1/admin";
@@ -41,6 +56,177 @@ const authH = () => ({
   },
   withCredentials: true,
 });
+
+const TiptapEditor = ({ value, onChange }) => {
+  const editor = useEditor({
+    extensions: [
+      StarterKit.configure({
+        heading: { levels: [1, 2, 3] },
+      }),
+      Underline,
+      TiptapImage.configure({
+        inline: true,
+      }),
+      Link.configure({
+        openOnClick: false,
+      }),
+    ],
+    content: value || "",
+    onUpdate: ({ editor }) => {
+      onChange(editor.getHTML());
+    },
+  });
+
+  useEffect(() => {
+    if (editor && value && editor.getHTML() !== value) {
+      editor.commands.setContent(value);
+    }
+  }, [value, editor]);
+
+  if (!editor) return null;
+
+  const handleImageUpload = () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = async () => {
+      const file = input.files[0];
+      if (file) {
+        const hideMsg = message.loading("Đang tải ảnh lên...", 0);
+        try {
+          const fd = new FormData();
+          fd.append("file", file);
+          fd.append("upload_preset", CDN_PRESET);
+
+          const res = await axios.post(
+            `https://api.cloudinary.com/v1_1/${CDN_CLOUD}/image/upload`,
+            fd,
+          );
+          editor.chain().focus().setImage({ src: res.data.secure_url }).run();
+          hideMsg();
+        } catch (error) {
+          hideMsg();
+          console.error(error);
+          message.error("Lỗi khi tải ảnh lên!");
+        }
+      }
+    };
+    input.click();
+  };
+
+  const setLink = () => {
+    const previousUrl = editor.getAttributes("link").href;
+    const url = window.prompt("Nhập URL:", previousUrl);
+    if (url === null) return;
+    if (url === "") {
+      editor.chain().focus().extendMarkRange("link").unsetLink().run();
+      return;
+    }
+    editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
+  };
+
+  return (
+    <div className={styles.tiptapContainer}>
+      <div className={styles.tiptapToolbar}>
+        <Space wrap size={2}>
+          <Tooltip title="Heading 1">
+            <Button
+              size="small"
+              type={
+                editor.isActive("heading", { level: 1 }) ? "primary" : "text"
+              }
+              onClick={() =>
+                editor.chain().focus().toggleHeading({ level: 1 }).run()
+              }
+            >
+              H1
+            </Button>
+          </Tooltip>
+          <Tooltip title="Heading 2">
+            <Button
+              size="small"
+              type={
+                editor.isActive("heading", { level: 2 }) ? "primary" : "text"
+              }
+              onClick={() =>
+                editor.chain().focus().toggleHeading({ level: 2 }).run()
+              }
+            >
+              H2
+            </Button>
+          </Tooltip>
+          <Tooltip title="In đậm">
+            <Button
+              size="small"
+              type={editor.isActive("bold") ? "primary" : "text"}
+              onClick={() => editor.chain().focus().toggleBold().run()}
+              icon={<BoldOutlined />}
+            />
+          </Tooltip>
+          <Tooltip title="In nghiêng">
+            <Button
+              size="small"
+              type={editor.isActive("italic") ? "primary" : "text"}
+              onClick={() => editor.chain().focus().toggleItalic().run()}
+              icon={<ItalicOutlined />}
+            />
+          </Tooltip>
+          <Tooltip title="Gạch chân">
+            <Button
+              size="small"
+              type={editor.isActive("underline") ? "primary" : "text"}
+              onClick={() => editor.chain().focus().toggleUnderline().run()}
+              icon={<UnderlineOutlined />}
+            />
+          </Tooltip>
+          <Divider type="vertical" />
+          <Tooltip title="Danh sách chấm">
+            <Button
+              size="small"
+              type={editor.isActive("bulletList") ? "primary" : "text"}
+              onClick={() => editor.chain().focus().toggleBulletList().run()}
+              icon={<UnorderedListOutlined />}
+            />
+          </Tooltip>
+          <Tooltip title="Danh sách số">
+            <Button
+              size="small"
+              type={editor.isActive("orderedList") ? "primary" : "text"}
+              onClick={() => editor.chain().focus().toggleOrderedList().run()}
+              icon={<OrderedListOutlined />}
+            />
+          </Tooltip>
+          <Divider type="vertical" />
+          <Tooltip title="Chèn Link">
+            <Button
+              size="small"
+              type={editor.isActive("link") ? "primary" : "text"}
+              onClick={setLink}
+              icon={<LinkOutlined />}
+            />
+          </Tooltip>
+          <Tooltip title="Chèn code">
+            <Button
+              size="small"
+              type={editor.isActive("codeBlock") ? "primary" : "text"}
+              onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+              icon={<CodeOutlined />}
+            />
+          </Tooltip>
+          <Tooltip title="Chèn ảnh">
+            <Button
+              size="small"
+              type="text"
+              onClick={handleImageUpload}
+              icon={<PictureOutlined />}
+            />
+          </Tooltip>
+        </Space>
+      </div>
+      <EditorContent editor={editor} className={styles.tiptapEditorArea} />
+    </div>
+  );
+};
 
 export default function AdminNews() {
   const [news, setNews] = useState([]);
@@ -73,7 +259,7 @@ export default function AdminNews() {
     setEditRecord(null);
     setImgPreview("");
     form.resetFields();
-    form.setFieldsValue({ TrangThai: true });
+    form.setFieldsValue({ TrangThai: true, NoiDung: "" });
     setModalOpen(true);
   };
 
@@ -162,7 +348,6 @@ export default function AdminNews() {
         authH(),
       );
       message.success(`Đã ${checked ? "hiển thị" : "ẩn"} bài viết!`);
-
       setNews((prevNews) =>
         prevNews.map((n) =>
           n.MaTinTuc === record.MaTinTuc ? { ...n, TrangThai: newStatus } : n,
@@ -356,7 +541,7 @@ export default function AdminNews() {
           </div>
         }
         footer={null}
-        width={720}
+        width={800}
         destroyOnHidden
         className={styles.modal}
       >
@@ -403,15 +588,14 @@ export default function AdminNews() {
             </div>
           </Form.Item>
 
-          <Form.Item name="NoiDung" label="Nội dung">
-            <Input.TextArea
-              rows={10}
-              placeholder="Nội dung bài viết (hỗ trợ HTML)..."
-              className={styles.textarea}
-            />
+          <Form.Item
+            name="NoiDung"
+            label="Nội dung"
+            rules={[{ required: true, message: "Nhập nội dung bài viết!" }]}
+          >
+            <TiptapEditor />
           </Form.Item>
 
-          {/* Vẫn giữ Switch trong form để người dùng tạo mới có thể set luôn trạng thái */}
           <div className={styles.formRow2}>
             <Form.Item
               name="TrangThai"
