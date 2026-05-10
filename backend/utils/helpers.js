@@ -26,6 +26,16 @@ export const isValidUsername = (string) => {
   return regex.test(String(string));
 };
 
+export const isValidUrl = (url) => {
+  try {
+    const parsed = new URL(url);
+
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+};
+
 export const validateVariants = (BienThe) => {
   if (!BienThe || !Array.isArray(BienThe) || BienThe.length === 0) {
     throw new ErrorHandler("Biến thể không hợp lệ!", 400);

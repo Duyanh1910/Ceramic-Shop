@@ -1,6 +1,5 @@
 import { StaffModel, NewsModel } from "../models/index.js";
 import ErrorHandler from "../utils/error_handler.js";
-
 export const getAllNewsService = async () => {
   const news = await NewsModel.findAll({
     where: {
@@ -71,6 +70,30 @@ export const updateNewsStatusService = async (id, status) => {
     throw new ErrorHandler("Không tìm thấy bài viết này!", 404);
   }
   await news.update({
+    TrangThai: status,
+  });
+  return news;
+};
+
+export const createNewsService = async (
+  id,
+  title,
+  content,
+  imageUrl,
+  status = 1,
+) => {
+  const staff = await StaffModel.findOne({
+    where: {
+      MaTaiKhoan: id,
+    },
+  });
+  if (!staff) throw new ErrorHandler("Không tìm thấy nhân viên này!", 404);
+  const news = await NewsModel.create({
+    MaNhanVien: staff.MaNhanVien,
+    TieuDe: title,
+    NoiDung: content,
+    HinhAnh: imageUrl,
+    NgayTao: new Date(),
     TrangThai: status,
   });
   return news;

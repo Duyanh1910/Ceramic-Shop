@@ -24,7 +24,7 @@ export const getNewsContent = async (req, res, next) => {
     const news = await getNewsContentService(Number(id));
     if (!news) {
       return res.status(404).json({
-        success: true,
+        success: false,
         message: "Không tìm thấy tin tức này!",
       });
     }
