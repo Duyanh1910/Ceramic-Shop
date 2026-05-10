@@ -4,6 +4,7 @@ import {
   getNewsContent,
   updateNewsStatus,
   createNews,
+  updateNews
 } from "../../controllers/admin/news/adminNews.controller.js";
 
 const router = express.Router();
@@ -12,5 +13,5 @@ router.post("/", createNews);
 router.get("/:id", getNewsContent);
 
 router.patch("/:id/status", updateNewsStatus);
-
+router.patch("/:id/", updateNewsStatus);
 export default router;

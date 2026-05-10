@@ -20,7 +20,6 @@ import {
 import {
   PlusOutlined,
   EditOutlined,
-  DeleteOutlined,
   FileTextOutlined,
   SearchOutlined,
   ReloadOutlined,
@@ -331,16 +330,6 @@ export default function AdminNews() {
     }
   };
 
-  const handleDelete = async (id) => {
-    try {
-      await axios.delete(`${API_BASE}/news/${id}`, authH());
-      message.success("Đã xoá tin tức!");
-      fetchNews();
-    } catch (err) {
-      message.error(err.response?.data?.message || "Không thể xoá!");
-    }
-  };
-
   const handleStatusChange = async (checked, record) => {
     const newStatus = checked ? 1 : 0;
     try {
@@ -428,17 +417,6 @@ export default function AdminNews() {
               onClick={() => openEdit(r)}
             />
           </Tooltip>
-          <Popconfirm
-            title="Xoá tin tức này?"
-            onConfirm={() => handleDelete(r.MaTinTuc)}
-            okText="Xoá"
-            cancelText="Huỷ"
-            okButtonProps={{ danger: true }}
-          >
-            <Tooltip title="Xoá">
-              <Button type="text" danger icon={<DeleteOutlined />} />
-            </Tooltip>
-          </Popconfirm>
         </Space>
       ),
     },
