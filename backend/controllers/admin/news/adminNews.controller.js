@@ -3,6 +3,7 @@ import {
   getNewsContentAdminService,
   updateNewsStatusService,
   createNewsService,
+  updateNewsService,
 } from "../../../services/news.services.js";
 import sanitizeHtml from "sanitize-html";
 import { isValidUrl } from "../../../utils/helpers.js";
@@ -28,6 +29,7 @@ const allowedAttributes = {
   a: ["href"],
   img: ["src", "alt"],
 };
+const allowedSchemes = ["http", "https", "mailto"];
 const baseImage =
   "https://res.cloudinary.com/dcmwz0uis/image/upload/v1774029061/Screenshot_2026-03-20_093855_h7t2yi.png";
 export const getAllNews = async (req, res, next) => {
@@ -92,9 +94,20 @@ export const createNews = async (req, res, next) => {
   try {
     const id = req.user.id;
     const { title, content, imageUrl, status } = req.body;
+    if (!title || !content) {
+      return next(
+        new ErrorHandler("Tiêu đề và nội dung không được để trống!", 400),
+      );
+    }
+    if (isNaN(Number(id))) {
+      return res
+        .status(400)
+        .json({ success: false, message: "ID không hợp lệ!" });
+    }
     const formattedContent = sanitizeHtml(content, {
       allowedTags: allowedTags,
       allowedAttributes: allowedAttributes,
+      allowedSchemes: allowedSchemes,
     });
     if (imageUrl && !isValidUrl(imageUrl)) {
       return next(new ErrorHandler("URL không hợp lệ!", 422));
@@ -104,11 +117,53 @@ export const createNews = async (req, res, next) => {
       title,
       formattedContent,
       imageUrl ?? baseImage,
-      status || 1,
+      status ?? 1,
     );
     return res.status(200).json({
       success: true,
       message: "Tạo tin tức thành công!",
+      result: news,
+    });
+  } catch (err) {
+    console.error(err);
+    next(err);
+  }
+};
+
+export const updateNews = async (req, res, next) => {
+  try {
+    const idAcc = req.user.id;
+    const id = req.params.id;
+    const { title, content, imageUrl, status } = req.body;
+    if (!title || !content) {
+      return next(
+        new ErrorHandler("Tiêu đề và nội dung không được để trống!", 400),
+      );
+    }
+    if (isNaN(Number(id))) {
+      return res
+        .status(400)
+        .json({ success: false, message: "ID không hợp lệ!" });
+    }
+    const formattedContent = sanitizeHtml(content, {
+      allowedTags: allowedTags,
+      allowedAttributes: allowedAttributes,
+      allowedSchemes: allowedSchemes,
+    });
+    if (imageUrl && !isValidUrl(imageUrl)) {
+      return next(new ErrorHandler("URL không hợp lệ!", 422));
+    }
+    const news = await updateNewsService(
+      Number(idAcc),
+      Number(id),
+      title,
+      formattedContent,
+      imageUrl ?? baseImage,
+      status ?? 1,
+    );
+    return res.status(200).json({
+      success: true,
+      message: "Cập nhật tin tức thành công!",
       result: news,
     });
   } catch (err) {

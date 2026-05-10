@@ -98,3 +98,35 @@ export const createNewsService = async (
   });
   return news;
 };
+
+export const updateNewsService = async (
+  id,
+  idNews,
+  title,
+  content,
+  imageUrl,
+  status,
+) => {
+  const staff = await StaffModel.findOne({
+    where: {
+      MaTaiKhoan: id,
+    },
+  });
+  if (!staff) throw new ErrorHandler("Không tìm thấy nhân viên này!", 404);
+  const news = await NewsModel.findOne({
+    where: {
+      MaTinTuc: idNews,
+    },
+  });
+  if (!news) {
+    throw new ErrorHandler("Không tìm thấy bài viết này!", 404);
+  }
+  await news.update({
+    MaNhanVien: staff.MaNhanVien,
+    TieuDe: title,
+    NoiDung: content,
+    HinhAnh: imageUrl,
+    TrangThai: status,
+  });
+  return news;
+};
