@@ -311,7 +311,7 @@ export default function AdminNews() {
       };
 
       if (editRecord) {
-        await axios.put(
+        await axios.patch(
           `${API_BASE}/news/${editRecord.MaTinTuc}`,
           payload,
           authH(),
