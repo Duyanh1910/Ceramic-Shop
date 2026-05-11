@@ -288,16 +288,37 @@ export default function AdminProducts() {
       ),
     },
     {
-      title: "Hiện/Ẩn",
+      title: "Trạng thái",
       dataIndex: "TrangThai",
-      width: 100,
+      width: 140,
       render: (v, row) => (
-        <Switch
-          checked={v === 1}
-          size="small"
-          // Truyền trạng thái hiện tại vào hàm để xử lý đảo ngược
-          onChange={() => handleUpdateStatus(row.MaSanPham, row.TrangThai)}
-        />
+        <Space size={8}>
+          <span
+            style={{
+              color: v === 0 ? "#ff4d4f" : "#bfbfbf",
+              fontWeight: v === 0 ? "600" : "normal",
+              fontSize: "13px",
+            }}
+          >
+            Ẩn
+          </span>
+
+          <Switch
+            checked={v === 1}
+            size="small"
+            onChange={() => handleUpdateStatus(row.MaSanPham, row.TrangThai)}
+          />
+
+          <span
+            style={{
+              color: v === 1 ? "#52c41a" : "#bfbfbf",
+              fontWeight: v === 1 ? "600" : "normal",
+              fontSize: "13px",
+            }}
+          >
+            Hiện
+          </span>
+        </Space>
       ),
     },
     {
