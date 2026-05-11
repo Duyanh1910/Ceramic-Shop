@@ -73,22 +73,35 @@ export const validateVariants = (BienThe) => {
     if (item.TrangThai != null && ![0, 1].includes(item.TrangThai)) {
       throw new ErrorHandler(`${prefix} trạng thái không hợp lệ`, 400);
     }
+
+    const dimensionFields = ["KhoiLuong", "ChieuDai", "ChieuRong", "ChieuCao"];
+    dimensionFields.forEach((field) => {
+      if (
+        item[field] != null &&
+        (isNaN(item[field]) || Number(item[field]) < 0)
+      ) {
+        throw new ErrorHandler(
+          `${prefix} ${field} không hợp lệ (phải >= 0)`,
+          400,
+        );
+      }
+    });
+
     if (item.images != null) {
       if (!Array.isArray(item.images)) {
         throw new ErrorHandler(`${prefix} images phải là mảng`, 400);
       }
-
       item.images.forEach((img, i) => {
         if (typeof img !== "string" || img.trim() === "") {
           throw new ErrorHandler(`${prefix} ảnh #${i + 1} không hợp lệ`, 400);
         }
       });
     }
+
     if (item.attributes != null) {
       if (!Array.isArray(item.attributes)) {
         throw new ErrorHandler(`${prefix} attributes không hợp lệ`, 400);
       }
-
       item.attributes.forEach((attrId, i) => {
         if (!Number.isInteger(attrId) || attrId <= 0) {
           throw new ErrorHandler(

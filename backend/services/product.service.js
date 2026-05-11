@@ -11,13 +11,14 @@ import {
 import { Sequelize, Op } from "sequelize";
 import ErrorHandler from "../utils/error_handler.js";
 
-export const getAllProductsService = async (
+const getProductsHelper = async (
   page = 1,
   limit = 10,
   search = "",
   sort = "MaSanPham",
   order = "DESC",
   category = null,
+  isAdmin = false,
 ) => {
   const offset = (page - 1) * limit;
 
@@ -28,13 +29,15 @@ export const getAllProductsService = async (
     "ThuongHieu",
     "Gia",
   ];
-
   const allowedOrder = ["ASC", "DESC"];
 
   if (!allowedSortFields.includes(sort)) sort = "MaSanPham";
   if (!allowedOrder.includes(order.toUpperCase())) order = "DESC";
 
   const whereCondition = {};
+  if (!isAdmin) {
+    whereCondition.TrangThai = 1;
+  }
 
   if (search) {
     whereCondition[Op.or] = [
@@ -43,6 +46,7 @@ export const getAllProductsService = async (
       { "$DanhMucSanPham.TenDanhMuc$": { [Op.like]: `%${search}%` } },
     ];
   }
+
   if (category) {
     const childCategories = await CategoryModel.findAll({
       where: { ParentID: category },
@@ -50,14 +54,12 @@ export const getAllProductsService = async (
     });
 
     const childIds = childCategories.map((c) => c.MaDanhMuc);
-
     whereCondition.MaDanhMuc = {
       [Op.in]: [category, ...childIds],
     };
   }
 
   let orderCondition;
-
   if (sort === "Gia") {
     orderCondition = [
       [
@@ -72,17 +74,11 @@ export const getAllProductsService = async (
   } else {
     orderCondition = [[sort, order]];
   }
+
   const productIdsResult = await ProductModel.findAll({
     where: whereCondition,
     attributes: ["MaSanPham"],
-
-    include: [
-      {
-        model: CategoryModel,
-        attributes: [],
-      },
-    ],
-
+    include: [{ model: CategoryModel, attributes: [] }],
     order: orderCondition,
     limit,
     offset,
@@ -92,19 +88,11 @@ export const getAllProductsService = async (
   const ids = productIdsResult.map((p) => p.MaSanPham);
 
   if (ids.length === 0) {
-    return {
-      data: [],
-      total: 0,
-      totalPages: 0,
-      page,
-    };
+    return { data: [], total: 0, totalPages: 0, page };
   }
 
   const products = await ProductModel.findAll({
-    where: {
-      MaSanPham: ids,
-    },
-
+    where: { MaSanPham: ids },
     attributes: [
       "MaSanPham",
       "TenSanPham",
@@ -114,44 +102,26 @@ export const getAllProductsService = async (
       "MoTa",
       "TrangThai",
     ],
-
     include: [
-      {
-        model: CategoryModel,
-        attributes: ["MaDanhMuc", "TenDanhMuc"],
-      },
-      {
-        model: VariantModel,
-        attributes: ["Gia", "SoLuong"],
-      },
+      { model: CategoryModel, attributes: ["MaDanhMuc", "TenDanhMuc"] },
+      { model: VariantModel, attributes: ["Gia", "SoLuong"] },
     ],
   });
 
   const total = await ProductModel.count({
     where: whereCondition,
-    include: [
-      {
-        model: CategoryModel,
-        attributes: [],
-      },
-    ],
+    include: [{ model: CategoryModel, attributes: [] }],
     distinct: true,
   });
 
   const productMap = new Map();
-
-  products.forEach((p) => {
-    productMap.set(p.MaSanPham, p);
-  });
-
+  products.forEach((p) => productMap.set(p.MaSanPham, p));
   const sortedProducts = ids.map((id) => productMap.get(id));
 
   const result = sortedProducts.map((p) => {
     const variants = p.BienTheSanPhams || [];
-
     const giaThapNhat =
       variants.length > 0 ? Math.min(...variants.map((v) => v.Gia)) : 0;
-
     const tongSoLuong = variants.reduce((sum, v) => sum + (v.SoLuong || 0), 0);
 
     return {
@@ -175,24 +145,32 @@ export const getAllProductsService = async (
   };
 };
 
-export const getProductService = async (id) => {
-  await ProductModel.increment("LuotXem", {
+const getSingleProductHelper = async (id, isAdmin = false) => {
+  if (!isAdmin) {
+    await ProductModel.increment("LuotXem", {
+      where: { MaSanPham: id },
+      by: 1,
+    });
+  }
+
+  const productWhere = isAdmin ? {} : { TrangThai: 1 };
+  const variantWhere = isAdmin ? {} : { TrangThai: 1 };
+
+  const product = await ProductModel.findOne({
+    attributes: ["MaSanPham", "TenSanPham", "MoTa", "Thumbnail", "TrangThai"],
     where: {
       MaSanPham: id,
+      ...productWhere,
     },
-    by: 1,
-  });
-  const product = await ProductModel.findByPk(id, {
-    attributes: ["MaSanPham", "TenSanPham", "MoTa", "Thumbnail", "TrangThai"],
-
     include: [
       {
         model: CategoryModel,
         attributes: ["MaDanhMuc", "TenDanhMuc"],
       },
-
       {
         model: VariantModel,
+        where: variantWhere,
+        required: false,
         attributes: [
           "MaBienThe",
           "TenBienThe",
@@ -201,13 +179,11 @@ export const getProductService = async (id) => {
           "KhoiLuong",
           "TrangThai",
         ],
-
         include: [
           {
             model: VariantImageModel,
             attributes: ["DuongDan"],
           },
-
           {
             model: AttributeValueModel,
             attributes: ["MaGiaTri", "GiaTri"],
@@ -224,10 +200,18 @@ export const getProductService = async (id) => {
     ],
   });
 
-  if (!product) return null;
-
-  return product;
+  return product || null;
 };
+
+export const getAllProductsService = (...args) =>
+  getProductsHelper(...args, false);
+
+export const getProductService = (id) => getSingleProductHelper(id, false);
+
+export const getAllProductsAdminService = (...args) =>
+  getProductsHelper(...args, true);
+
+export const getProductAdminService = (id) => getSingleProductHelper(id, true);
 
 export const addNewProductService = async (
   categoryID,
@@ -275,6 +259,10 @@ export const addNewProductService = async (
           SoLuong: item.SoLuong,
           TrangThai: item.TrangThai,
           MoTa: item.MoTa,
+          KhoiLuong: item.KhoiLuong || 0,
+          ChieuDai: item.ChieuDai || 0,
+          ChieuRong: item.ChieuRong || 0,
+          ChieuCao: item.ChieuCao || 0,
         },
         {
           transaction: transaction,
@@ -359,6 +347,10 @@ export const updateProductInfoService = async (
             SoLuong: item.SoLuong,
             TrangThai: item.TrangThai,
             MoTa: item.MoTa,
+            KhoiLuong: item.KhoiLuong || 0,
+            ChieuDai: item.ChieuDai || 0,
+            ChieuRong: item.ChieuRong || 0,
+            ChieuCao: item.ChieuCao || 0,
           },
           {
             where: { MaBienThe: item.MaBienThe },
@@ -367,6 +359,10 @@ export const updateProductInfoService = async (
         );
 
         if (item.images && item.images.length > 0) {
+          await VariantImageModel.destroy({
+            where: { MaBienThe: item.MaBienThe },
+            transaction,
+          });
           const images = item.images.map((img) => ({
             MaBienThe: item.MaBienThe,
             DuongDan: img,
@@ -377,6 +373,10 @@ export const updateProductInfoService = async (
         }
 
         if (item.attributes && item.attributes.length > 0) {
+          await VariantAttributeModel.destroy({
+            where: { MaBienThe: item.MaBienThe },
+            transaction,
+          });
           const attributes = item.attributes.map((atrri) => ({
             MaBienThe: item.MaBienThe,
             MaGiaTri: atrri,
@@ -437,7 +437,7 @@ export const deleteVariantImageService = async (imageID, variantID) => {
     await VariantImageModel.destroy({
       where: {
         MaBienThe: variantID,
-        MaHinhAnh: imageID,
+        MaHinhAnh: { [Op.in]: imageID },
       },
       transaction,
     });
@@ -447,5 +447,59 @@ export const deleteVariantImageService = async (imageID, variantID) => {
     console.error(err);
     if (err.statusCode) throw err;
     throw new ErrorHandler("Lỗi server! Không thể xóa ảnh của biến thể", 500);
+  }
+};
+
+export const updateProductStatusService = async (productID, status) => {
+  const transaction = await sequelize.transaction();
+  try {
+    const product = await ProductModel.findByPk(productID);
+    if (!product) {
+      throw new ErrorHandler("Không tìm thấy sản phẩm này!", 404);
+    }
+    await product.update(
+      {
+        TrangThai: status,
+      },
+      {
+        transaction,
+      },
+    );
+    await transaction.commit();
+  } catch (err) {
+    await transaction.rollback();
+    console.error(err);
+    if (err.statusCode) throw err;
+    throw new ErrorHandler(
+      "Lỗi server! Không thể cập nhật trạng thái của sản phẩm",
+      500,
+    );
+  }
+};
+
+export const updateVariantStatusService = async (variantID, status) => {
+  const transaction = await sequelize.transaction();
+  try {
+    const variant = await VariantModel.findByPk(variantID);
+    if (!variant) {
+      throw new ErrorHandler("Không tìm thấy biến thể này!", 404);
+    }
+    await variant.update(
+      {
+        TrangThai: status,
+      },
+      {
+        transaction,
+      },
+    );
+    await transaction.commit();
+  } catch (err) {
+    await transaction.rollback();
+    console.error(err);
+    if (err.statusCode) throw err;
+    throw new ErrorHandler(
+      "Lỗi server! Không thể cập nhật trạng thái của biến thể này",
+      500,
+    );
   }
 };
