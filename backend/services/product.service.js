@@ -157,7 +157,6 @@ const getSingleProductHelper = async (id, isAdmin = false) => {
   const variantWhere = isAdmin ? {} : { TrangThai: 1 };
 
   const product = await ProductModel.findOne({
-    attributes: ["MaSanPham", "TenSanPham", "MoTa", "Thumbnail", "TrangThai"],
     where: {
       MaSanPham: id,
       ...productWhere,
@@ -171,14 +170,6 @@ const getSingleProductHelper = async (id, isAdmin = false) => {
         model: VariantModel,
         where: variantWhere,
         required: false,
-        attributes: [
-          "MaBienThe",
-          "TenBienThe",
-          "Gia",
-          "SoLuong",
-          "KhoiLuong",
-          "TrangThai",
-        ],
         include: [
           {
             model: VariantImageModel,
