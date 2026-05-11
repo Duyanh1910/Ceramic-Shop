@@ -24,6 +24,7 @@ import {
   EyeOutlined,
   ReloadOutlined,
   UploadOutlined,
+  FileImageOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
 import styles from "./AdminTable.module.css";
@@ -94,14 +95,13 @@ export default function AdminProducts() {
     setPage(1);
   };
 
-  const handleImageUpload = async (options) => {
+  // 1. UPLOAD ẢNH CHÍNH SẢN PHẨM
+  const handleMainImageUpload = async (options) => {
     const { file, onSuccess, onError } = options;
     setUploadingImage(true);
-
     const formData = new FormData();
     formData.append("file", file);
     formData.append("upload_preset", CDN_PRESET);
-
     try {
       const res = await axios.post(
         `https://api.cloudinary.com/v1_1/${CDN_CLOUD}/image/upload`,
@@ -109,12 +109,37 @@ export default function AdminProducts() {
       );
       form.setFieldsValue({ thumbnail: res.data.secure_url });
       onSuccess("Ok");
-      message.success("Tải ảnh lên thành công!");
     } catch (err) {
       onError({ err });
-      message.error("Lỗi khi tải ảnh lên Cloudinary!");
+      message.error("Lỗi khi tải ảnh lên!");
     } finally {
       setUploadingImage(false);
+    }
+  };
+
+  // 2. UPLOAD ẢNH CHO TỪNG BIẾN THỂ
+  const handleVariantImageUpload = async (options, index) => {
+    const { file, onSuccess, onError } = options;
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", CDN_PRESET);
+    try {
+      const res = await axios.post(
+        `https://api.cloudinary.com/v1_1/${CDN_CLOUD}/image/upload`,
+        formData,
+      );
+      const currentVariants = form.getFieldValue("variants") || [];
+      // Đảm bảo không bị lỗi reference array
+      const updatedVariants = [...currentVariants];
+      updatedVariants[index] = {
+        ...updatedVariants[index],
+        images: [res.data.secure_url],
+      };
+      form.setFieldsValue({ variants: updatedVariants });
+      onSuccess("Ok");
+    } catch (err) {
+      onError({ err });
+      message.error("Lỗi khi tải ảnh biến thể!");
     }
   };
 
@@ -126,11 +151,9 @@ export default function AdminProducts() {
         axiosConfig,
       );
       const p = res.data?.result;
-
       if (p) {
         setEditingId(id);
         setAddModal(true);
-
         const mappedVariants = p.BienTheSanPhams?.map((v) => ({
           MaBienThe: v.MaBienThe,
           TenBienThe: v.TenBienThe,
@@ -140,7 +163,8 @@ export default function AdminProducts() {
           ChieuDai: v.ChieuDai,
           ChieuRong: v.ChieuRong,
           ChieuCao: v.ChieuCao,
-          TrangThai: v.TrangThai === 1, // Convert sang boolean cho Switch
+          TrangThai: v.TrangThai === 1,
+          images: v.VariantImages?.map((img) => img.DuongDan) || [],
         })) || [{}];
 
         form.setFieldsValue({
@@ -154,31 +178,27 @@ export default function AdminProducts() {
         });
       }
     } catch (err) {
-      message.error("Không thể lấy thông tin chi tiết sản phẩm!");
+      message.error("Lỗi lấy dữ liệu!");
     } finally {
       setLoading(false);
     }
   };
 
-  // HÀM XỬ LÝ XÓA BIẾN THỂ TRONG MODAL
   const handleRemoveVariant = async (removeFn, fieldName, variantId) => {
     if (!variantId) {
-      // Nếu là biến thể mới thêm (chưa có ID), chỉ cần xóa trên giao diện
       removeFn(fieldName);
       return;
     }
-
-    // Nếu biến thể đã có trong DB, gọi API ẩn nó đi
     try {
       await axios.patch(
         `${API_BASE}/admin/products/variants/${variantId}/status`,
         { status: 0 },
         axiosConfig,
       );
-      message.success("Đã ẩn biến thể thành công!");
-      removeFn(fieldName); // Sau đó xóa khỏi UI
+      message.success("Đã ẩn biến thể!");
+      removeFn(fieldName);
     } catch (err) {
-      message.error("Không thể ẩn biến thể!");
+      message.error("Lỗi khi ẩn biến thể!");
     }
   };
 
@@ -197,11 +217,12 @@ export default function AdminProducts() {
           TenBienThe: v.TenBienThe,
           Gia: Number(v.Gia),
           SoLuong: Number(v.SoLuong),
-          TrangThai: v.TrangThai ? 1 : 0, // Convert boolean back to number
+          TrangThai: v.TrangThai ? 1 : 0,
           KhoiLuong: Number(v.KhoiLuong || 0),
           ChieuDai: Number(v.ChieuDai || 0),
           ChieuRong: Number(v.ChieuRong || 0),
           ChieuCao: Number(v.ChieuCao || 0),
+          images: v.images || [],
           attributes: [4],
         })),
       };
@@ -212,10 +233,10 @@ export default function AdminProducts() {
           payload,
           axiosConfig,
         );
-        message.success("Cập nhật sản phẩm thành công!");
+        message.success("Cập nhật thành công!");
       } else {
         await axios.post(`${API_BASE}/admin/products`, payload, axiosConfig);
-        message.success("Thêm sản phẩm thành công!");
+        message.success("Thêm mới thành công!");
       }
 
       setAddModal(false);
@@ -236,23 +257,20 @@ export default function AdminProducts() {
         item.MaSanPham === id ? { ...item, TrangThai: newStatus } : item,
       ),
     );
-
     try {
       await axios.patch(
         `${API_BASE}/admin/products/${id}/status`,
         { status: newStatus },
         axiosConfig,
       );
-      message.success(
-        newStatus === 1 ? "Đã hiện sản phẩm!" : "Đã ẩn sản phẩm!",
-      );
+      message.success(newStatus === 1 ? "Đã hiện!" : "Đã ẩn!");
     } catch (err) {
       setData((prevData) =>
         prevData.map((item) =>
           item.MaSanPham === id ? { ...item, TrangThai: currentStatus } : item,
         ),
       );
-      message.error("Cập nhật trạng thái thất bại!");
+      message.error("Lỗi!");
     }
   };
 
@@ -267,7 +285,6 @@ export default function AdminProducts() {
           width={52}
           height={52}
           style={{ objectFit: "cover", borderRadius: 6 }}
-          fallback="https://via.placeholder.com/52"
           preview={false}
         />
       ),
@@ -293,13 +310,6 @@ export default function AdminProducts() {
       title: "Giá thấp nhất",
       dataIndex: "GiaThapNhat",
       render: (v) => <span className={styles.price}>{fmt(v)}</span>,
-    },
-    {
-      title: "Tồn kho",
-      dataIndex: "TongSoLuong",
-      render: (v) => (
-        <Tag color={v > 10 ? "green" : v > 0 ? "orange" : "red"}>{v ?? 0}</Tag>
-      ),
     },
     {
       title: "Trạng thái",
@@ -341,7 +351,7 @@ export default function AdminProducts() {
       width: 110,
       render: (_, row) => (
         <Space size={4}>
-          <Tooltip title="Xem trên web">
+          <Tooltip title="Xem web">
             <Button
               type="text"
               icon={<EyeOutlined />}
@@ -349,7 +359,7 @@ export default function AdminProducts() {
               onClick={() => window.open(`/product/${row.MaSanPham}`, "_blank")}
             />
           </Tooltip>
-          <Tooltip title="Chỉnh sửa">
+          <Tooltip title="Sửa">
             <Button
               type="text"
               icon={<EditOutlined />}
@@ -358,12 +368,10 @@ export default function AdminProducts() {
               onClick={() => showEditModal(row.MaSanPham)}
             />
           </Tooltip>
-          <Tooltip title="Xoá (Ẩn)">
+          <Tooltip title="Ẩn">
             <Popconfirm
-              title="Xác nhận ẩn sản phẩm này?"
+              title="Ẩn SP này?"
               onConfirm={() => handleUpdateStatus(row.MaSanPham, 1)}
-              okText="Xoá"
-              cancelText="Huỷ"
             >
               <Button
                 type="text"
@@ -392,7 +400,6 @@ export default function AdminProducts() {
         <Button
           type="primary"
           icon={<PlusOutlined />}
-          className={styles.btnAdd}
           onClick={() => {
             setEditingId(null);
             form.resetFields();
@@ -407,21 +414,14 @@ export default function AdminProducts() {
       <div className={styles.toolbar}>
         <Input
           prefix={<SearchOutlined />}
-          placeholder="Tìm kiếm tên sản phẩm, thương hiệu..."
+          placeholder="Tìm kiếm..."
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           onPressEnter={handleSearch}
-          className={styles.searchInput}
+          style={{ width: 300 }}
           allowClear
           onClear={handleReload}
         />
-        <Button
-          icon={<SearchOutlined />}
-          onClick={handleSearch}
-          className={styles.btnSearch}
-        >
-          Tìm kiếm
-        </Button>
         <Button icon={<ReloadOutlined />} onClick={handleReload} />
       </div>
 
@@ -431,56 +431,38 @@ export default function AdminProducts() {
           columns={columns}
           rowKey="MaSanPham"
           loading={loading}
-          className={styles.table}
-          pagination={{
-            current: page,
-            pageSize: 10,
-            total,
-            onChange: setPage,
-            showTotal: (t) => `Tổng ${t} sản phẩm`,
-            showSizeChanger: false,
-          }}
+          pagination={{ current: page, pageSize: 10, total, onChange: setPage }}
           size="middle"
-          locale={{ emptyText: "Không có sản phẩm nào" }}
         />
       </div>
 
       <Modal
         open={addModal}
-        title={
-          <span className={styles.modalTitle}>
-            {editingId ? "Chỉnh sửa sản phẩm" : "Thêm sản phẩm mới"}
-          </span>
-        }
+        title={editingId ? "Chỉnh sửa sản phẩm" : "Thêm sản phẩm mới"}
         onCancel={() => {
           setAddModal(false);
           setEditingId(null);
           form.resetFields();
         }}
         footer={null}
-        width={800}
+        width={850}
         centered
       >
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleSubmit}
-          className={styles.modalForm}
-        >
+        <Form form={form} layout="vertical" onFinish={handleSubmit}>
           <div
             style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16 }}
           >
             <Form.Item
               name="productName"
               label="Tên sản phẩm"
-              rules={[{ required: true, message: "Nhập tên!" }]}
+              rules={[{ required: true }]}
             >
-              <Input placeholder="Tên sản phẩm" />
+              <Input placeholder="Tên sản phẩm..." />
             </Form.Item>
             <Form.Item
               name="categoryID"
               label="Danh mục"
-              rules={[{ required: true, message: "Chọn danh mục!" }]}
+              rules={[{ required: true }]}
             >
               <Select placeholder="Chọn danh mục">
                 {leafCategories.map((c) => (
@@ -492,24 +474,38 @@ export default function AdminProducts() {
             </Form.Item>
           </div>
 
-          <Form.Item label="Ảnh đại diện" required>
-            <div style={{ display: "flex", gap: "10px" }}>
-              <Form.Item
-                name="thumbnail"
-                noStyle
-                rules={[{ required: true, message: "Vui lòng tải ảnh lên!" }]}
-              >
+          <Form.Item label="Ảnh đại diện (Sản phẩm)" required>
+            <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+              <Form.Item name="thumbnail" noStyle rules={[{ required: true }]}>
                 <Input placeholder="URL ảnh..." readOnly style={{ flex: 1 }} />
               </Form.Item>
               <Upload
                 showUploadList={false}
-                customRequest={handleImageUpload}
+                customRequest={handleMainImageUpload}
                 accept="image/*"
               >
                 <Button icon={<UploadOutlined />} loading={uploadingImage}>
                   Tải ảnh lên
                 </Button>
               </Upload>
+
+              {/* Ép Form render lại Preview ảnh chính khi upload xong */}
+              <Form.Item
+                shouldUpdate={(prev, curr) => prev.thumbnail !== curr.thumbnail}
+                noStyle
+              >
+                {({ getFieldValue }) => {
+                  const thumbUrl = getFieldValue("thumbnail");
+                  return thumbUrl ? (
+                    <Image
+                      src={thumbUrl}
+                      width={40}
+                      height={40}
+                      style={{ objectFit: "cover", borderRadius: 4 }}
+                    />
+                  ) : null;
+                }}
+              </Form.Item>
             </div>
           </Form.Item>
 
@@ -517,7 +513,7 @@ export default function AdminProducts() {
             style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}
           >
             <Form.Item name="brand" label="Thương hiệu">
-              <Input placeholder="Tên thương hiệu" />
+              <Input />
             </Form.Item>
             <Form.Item name="status" label="Trạng thái SP">
               <Select>
@@ -528,12 +524,11 @@ export default function AdminProducts() {
           </div>
 
           <Form.Item name="description" label="Mô tả">
-            <Input.TextArea rows={3} placeholder="Mô tả..." />
+            <Input.TextArea rows={2} />
           </Form.Item>
 
           <div className={styles.variantSection}>
             <div className={styles.variantTitle}>Danh sách biến thể</div>
-
             <Form.List name="variants">
               {(fields, { add, remove }) => (
                 <>
@@ -541,11 +536,10 @@ export default function AdminProducts() {
                     <div
                       key={key}
                       style={{
-                        border: "1px solid #e8e8e8",
-                        padding: "16px",
-                        marginBottom: "16px",
-                        borderRadius: "8px",
-                        position: "relative",
+                        border: "1px solid #f0f0f0",
+                        padding: 16,
+                        marginBottom: 16,
+                        borderRadius: 8,
                         background: "#fafafa",
                       }}
                     >
@@ -553,34 +547,28 @@ export default function AdminProducts() {
                         style={{
                           display: "flex",
                           justifyContent: "space-between",
-                          alignItems: "center",
-                          marginBottom: "12px",
+                          marginBottom: 12,
                         }}
                       >
-                        <div style={{ fontWeight: "bold" }}>
+                        <span style={{ fontWeight: 600 }}>
                           Biến thể #{index + 1}
-                        </div>
-
+                        </span>
                         <Space>
-                          {/* THÊM SWITCH ẨN/HIỆN CHO TỪNG BIẾN THỂ */}
                           <Form.Item
                             {...restField}
                             name={[name, "TrangThai"]}
                             valuePropName="checked"
                             noStyle
-                            initialValue={true}
                           >
-                            <Switch
-                              checkedChildren="Hiện"
-                              unCheckedChildren="Ẩn"
-                              size="small"
-                            />
+                            <Switch size="small" />
                           </Form.Item>
-
                           {fields.length > 1 && (
-                            <Popconfirm
-                              title="Ẩn/Xóa biến thể này khỏi danh sách?"
-                              onConfirm={() =>
+                            <Button
+                              type="text"
+                              danger
+                              icon={<DeleteOutlined />}
+                              size="small"
+                              onClick={() =>
                                 handleRemoveVariant(
                                   remove,
                                   name,
@@ -591,16 +579,83 @@ export default function AdminProducts() {
                                   ]),
                                 )
                               }
-                            >
-                              <Button
-                                type="text"
-                                danger
-                                icon={<DeleteOutlined />}
-                                size="small"
-                              />
-                            </Popconfirm>
+                            />
                           )}
                         </Space>
+                      </div>
+
+                      {/* KHU VỰC ẢNH BIẾN THỂ (Có Preview Reactivity) */}
+                      <div
+                        style={{
+                          marginBottom: 16,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 12,
+                        }}
+                      >
+                        <Form.Item
+                          {...restField}
+                          name={[name, "images"]}
+                          noStyle
+                        >
+                          <Input hidden />
+                        </Form.Item>
+                        <Upload
+                          showUploadList={false}
+                          customRequest={(opt) =>
+                            handleVariantImageUpload(opt, name)
+                          }
+                          accept="image/*"
+                        >
+                          <Button size="small" icon={<FileImageOutlined />}>
+                            Ảnh biến thể
+                          </Button>
+                        </Upload>
+
+                        {/* Ép Form render lại Preview ảnh biến thể khi upload xong */}
+                        <Form.Item
+                          shouldUpdate={(prev, curr) =>
+                            prev.variants?.[name]?.images !==
+                            curr.variants?.[name]?.images
+                          }
+                          noStyle
+                        >
+                          {({ getFieldValue }) => {
+                            const imgs = getFieldValue([
+                              "variants",
+                              name,
+                              "images",
+                            ]);
+                            return imgs?.[0] ? (
+                              <Image
+                                src={imgs[0]}
+                                width={50}
+                                height={50}
+                                style={{
+                                  borderRadius: 4,
+                                  objectFit: "cover",
+                                  border: "1px solid #ddd",
+                                }}
+                              />
+                            ) : (
+                              <div
+                                style={{
+                                  width: 50,
+                                  height: 50,
+                                  background: "#eee",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  borderRadius: 4,
+                                  fontSize: 10,
+                                  color: "#999",
+                                }}
+                              >
+                                No Image
+                              </div>
+                            );
+                          }}
+                        </Form.Item>
                       </div>
 
                       <Form.Item
@@ -614,9 +669,9 @@ export default function AdminProducts() {
                         {...restField}
                         name={[name, "TenBienThe"]}
                         label="Tên biến thể"
-                        rules={[{ required: true, message: "Nhập tên!" }]}
+                        rules={[{ required: true }]}
                       >
-                        <Input placeholder="VD: Hoa sen cổ điển..." />
+                        <Input />
                       </Form.Item>
 
                       <div
@@ -629,100 +684,75 @@ export default function AdminProducts() {
                         <Form.Item
                           {...restField}
                           name={[name, "Gia"]}
-                          label="Giá (VNĐ)"
-                          rules={[{ required: true, message: "Nhập giá!" }]}
+                          label="Giá"
                         >
-                          <InputNumber
-                            min={0}
-                            style={{ width: "100%" }}
-                            formatter={(v) =>
-                              `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                            }
-                          />
+                          <InputNumber style={{ width: "100%" }} />
                         </Form.Item>
                         <Form.Item
                           {...restField}
                           name={[name, "SoLuong"]}
-                          label="Số lượng tồn"
-                          rules={[
-                            { required: true, message: "Nhập số lượng!" },
-                          ]}
+                          label="Kho"
                         >
-                          <InputNumber min={0} style={{ width: "100%" }} />
+                          <InputNumber style={{ width: "100%" }} />
                         </Form.Item>
                       </div>
 
                       <div
                         style={{
                           display: "grid",
-                          gridTemplateColumns: "1fr 1fr 1fr 1fr",
-                          gap: 12,
+                          gridTemplateColumns: "repeat(4, 1fr)",
+                          gap: 8,
                           marginTop: 8,
                         }}
                       >
                         <Form.Item
                           {...restField}
                           name={[name, "KhoiLuong"]}
-                          label="Nặng (g)"
+                          label="Nặng(g)"
                         >
-                          <InputNumber min={0} style={{ width: "100%" }} />
+                          <InputNumber size="small" style={{ width: "100%" }} />
                         </Form.Item>
                         <Form.Item
                           {...restField}
                           name={[name, "ChieuDai"]}
-                          label="Dài (cm)"
+                          label="Dài(cm)"
                         >
-                          <InputNumber min={0} style={{ width: "100%" }} />
+                          <InputNumber size="small" style={{ width: "100%" }} />
                         </Form.Item>
                         <Form.Item
                           {...restField}
                           name={[name, "ChieuRong"]}
-                          label="Rộng (cm)"
+                          label="Rộng(cm)"
                         >
-                          <InputNumber min={0} style={{ width: "100%" }} />
+                          <InputNumber size="small" style={{ width: "100%" }} />
                         </Form.Item>
                         <Form.Item
                           {...restField}
                           name={[name, "ChieuCao"]}
-                          label="Cao (cm)"
+                          label="Cao(cm)"
                         >
-                          <InputNumber min={0} style={{ width: "100%" }} />
+                          <InputNumber size="small" style={{ width: "100%" }} />
                         </Form.Item>
                       </div>
                     </div>
                   ))}
-                  <Form.Item>
-                    <Button
-                      type="dashed"
-                      onClick={() => add({ TrangThai: true })}
-                      block
-                      icon={<PlusOutlined />}
-                    >
-                      Thêm biến thể khác
-                    </Button>
-                  </Form.Item>
+                  <Button
+                    type="dashed"
+                    onClick={() => add({ TrangThai: true, images: [] })}
+                    block
+                    icon={<PlusOutlined />}
+                  >
+                    Thêm biến thể
+                  </Button>
                 </>
               )}
             </Form.List>
           </div>
 
           <div className={styles.modalFooter}>
-            <Button
-              onClick={() => {
-                setAddModal(false);
-                setEditingId(null);
-                form.resetFields();
-              }}
-            >
-              Huỷ
-            </Button>
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={submitting}
-              className={styles.btnAdd}
-            >
-              {editingId ? "Cập nhật sản phẩm" : "Thêm sản phẩm"}
+            <Button onClick={() => setAddModal(false)}>Huỷ</Button>
+            <Button type="primary" htmlType="submit" loading={submitting}>
+              {editingId ? "Cập nhật" : "Thêm mới"}
             </Button>
           </div>
         </Form>
