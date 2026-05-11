@@ -131,6 +131,7 @@ const getProductsHelper = async (
       ThuongHieu: p.ThuongHieu,
       LuotXem: p.LuotXem,
       MoTa: p.MoTa,
+      TrangThai: p.TrangThai,
       DanhMuc: p.DanhMucSanPham,
       GiaThapNhat: giaThapNhat,
       TongSoLuong: tongSoLuong,

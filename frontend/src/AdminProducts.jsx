@@ -80,9 +80,7 @@ export default function AdminProducts() {
     try {
       const res = await axios.get(`${API_BASE}/categories`, axiosConfig);
       setCategories(res.data?.result || []);
-    } catch (err) {
-      console.error(err);
-    }
+    } catch {}
   };
 
   const handleSearch = () => {
@@ -142,6 +140,7 @@ export default function AdminProducts() {
           ChieuDai: v.ChieuDai,
           ChieuRong: v.ChieuRong,
           ChieuCao: v.ChieuCao,
+          TrangThai: v.TrangThai === 1, // Convert sang boolean cho Switch
         })) || [{}];
 
         form.setFieldsValue({
@@ -155,14 +154,34 @@ export default function AdminProducts() {
         });
       }
     } catch (err) {
-      console.error(err);
       message.error("Không thể lấy thông tin chi tiết sản phẩm!");
     } finally {
       setLoading(false);
     }
   };
 
-  // 3. SUBMIT VỚI MẢNG BIẾN THỂ
+  // HÀM XỬ LÝ XÓA BIẾN THỂ TRONG MODAL
+  const handleRemoveVariant = async (removeFn, fieldName, variantId) => {
+    if (!variantId) {
+      // Nếu là biến thể mới thêm (chưa có ID), chỉ cần xóa trên giao diện
+      removeFn(fieldName);
+      return;
+    }
+
+    // Nếu biến thể đã có trong DB, gọi API ẩn nó đi
+    try {
+      await axios.patch(
+        `${API_BASE}/admin/products/variants/${variantId}/status`,
+        { status: 0 },
+        axiosConfig,
+      );
+      message.success("Đã ẩn biến thể thành công!");
+      removeFn(fieldName); // Sau đó xóa khỏi UI
+    } catch (err) {
+      message.error("Không thể ẩn biến thể!");
+    }
+  };
+
   const handleSubmit = async (values) => {
     setSubmitting(true);
     try {
@@ -173,13 +192,12 @@ export default function AdminProducts() {
         brand: values.brand,
         description: values.description,
         status: Number(values.status ?? 1),
-        // Lặp qua mảng variants từ Form.List để map thành mảng BienThe gửi cho API
         BienThe: values.variants.map((v) => ({
-          MaBienThe: v.MaBienThe, // Có dòng này thì API sẽ Update biến thể cũ, thiếu thì Tạo mới
+          MaBienThe: v.MaBienThe,
           TenBienThe: v.TenBienThe,
           Gia: Number(v.Gia),
           SoLuong: Number(v.SoLuong),
-          TrangThai: 1,
+          TrangThai: v.TrangThai ? 1 : 0, // Convert boolean back to number
           KhoiLuong: Number(v.KhoiLuong || 0),
           ChieuDai: Number(v.ChieuDai || 0),
           ChieuRong: Number(v.ChieuRong || 0),
@@ -211,11 +229,8 @@ export default function AdminProducts() {
     }
   };
 
-  // 4. SỬA LỖI SWITCH TRẠNG THÁI (OPTIMISTIC UPDATE)
   const handleUpdateStatus = async (id, currentStatus) => {
     const newStatus = currentStatus === 1 ? 0 : 1;
-
-    // Cập nhật giao diện trước để tạo cảm giác mượt mà
     setData((prevData) =>
       prevData.map((item) =>
         item.MaSanPham === id ? { ...item, TrangThai: newStatus } : item,
@@ -232,7 +247,6 @@ export default function AdminProducts() {
         newStatus === 1 ? "Đã hiện sản phẩm!" : "Đã ẩn sản phẩm!",
       );
     } catch (err) {
-      console.error(err);
       setData((prevData) =>
         prevData.map((item) =>
           item.MaSanPham === id ? { ...item, TrangThai: currentStatus } : item,
@@ -291,35 +305,36 @@ export default function AdminProducts() {
       title: "Trạng thái",
       dataIndex: "TrangThai",
       width: 140,
-      render: (v, row) => (
-        <Space size={8}>
-          <span
-            style={{
-              color: v === 0 ? "#ff4d4f" : "#bfbfbf",
-              fontWeight: v === 0 ? "600" : "normal",
-              fontSize: "13px",
-            }}
-          >
-            Ẩn
-          </span>
-
-          <Switch
-            checked={v === 1}
-            size="small"
-            onChange={() => handleUpdateStatus(row.MaSanPham, row.TrangThai)}
-          />
-
-          <span
-            style={{
-              color: v === 1 ? "#52c41a" : "#bfbfbf",
-              fontWeight: v === 1 ? "600" : "normal",
-              fontSize: "13px",
-            }}
-          >
-            Hiện
-          </span>
-        </Space>
-      ),
+      render: (v, row) => {
+        const isVisible = Number(v) === 1;
+        return (
+          <Space size={8}>
+            <span
+              style={{
+                color: !isVisible ? "#ff4d4f" : "#bfbfbf",
+                fontWeight: !isVisible ? "600" : "normal",
+                fontSize: "13px",
+              }}
+            >
+              Ẩn
+            </span>
+            <Switch
+              checked={isVisible}
+              size="small"
+              onChange={() => handleUpdateStatus(row.MaSanPham, row.TrangThai)}
+            />
+            <span
+              style={{
+                color: isVisible ? "#52c41a" : "#bfbfbf",
+                fontWeight: isVisible ? "600" : "normal",
+                fontSize: "13px",
+              }}
+            >
+              Hiện
+            </span>
+          </Space>
+        );
+      },
     },
     {
       title: "Thao tác",
@@ -346,7 +361,7 @@ export default function AdminProducts() {
           <Tooltip title="Xoá (Ẩn)">
             <Popconfirm
               title="Xác nhận ẩn sản phẩm này?"
-              onConfirm={() => handleUpdateStatus(row.MaSanPham, 1)} // Chuyển từ đang bật sang tắt (0)
+              onConfirm={() => handleUpdateStatus(row.MaSanPham, 1)}
               okText="Xoá"
               cancelText="Huỷ"
             >
@@ -381,7 +396,7 @@ export default function AdminProducts() {
           onClick={() => {
             setEditingId(null);
             form.resetFields();
-            form.setFieldsValue({ variants: [{}] });
+            form.setFieldsValue({ variants: [{ TrangThai: true }] });
             setAddModal(true);
           }}
         >
@@ -504,7 +519,7 @@ export default function AdminProducts() {
             <Form.Item name="brand" label="Thương hiệu">
               <Input placeholder="Tên thương hiệu" />
             </Form.Item>
-            <Form.Item name="status" label="Trạng thái">
+            <Form.Item name="status" label="Trạng thái SP">
               <Select>
                 <Select.Option value={1}>Đang hoạt động</Select.Option>
                 <Select.Option value={0}>Tạm ẩn</Select.Option>
@@ -513,21 +528,11 @@ export default function AdminProducts() {
           </div>
 
           <Form.Item name="description" label="Mô tả">
-            <Input.TextArea rows={3} placeholder="Mô tả chi tiết sản phẩm..." />
+            <Input.TextArea rows={3} placeholder="Mô tả..." />
           </Form.Item>
 
-          {/* SỬ DỤNG FORM.LIST CHO NHIỀU BIẾN THỂ */}
           <div className={styles.variantSection}>
-            <div
-              className={styles.variantTitle}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <span>Danh sách biến thể</span>
-            </div>
+            <div className={styles.variantTitle}>Danh sách biến thể</div>
 
             <Form.List name="variants">
               {(fields, { add, remove }) => (
@@ -544,19 +549,59 @@ export default function AdminProducts() {
                         background: "#fafafa",
                       }}
                     >
-                      <div style={{ fontWeight: "bold", marginBottom: "12px" }}>
-                        Biến thể #{index + 1}
-                      </div>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          marginBottom: "12px",
+                        }}
+                      >
+                        <div style={{ fontWeight: "bold" }}>
+                          Biến thể #{index + 1}
+                        </div>
 
-                      {fields.length > 1 && (
-                        <Button
-                          type="text"
-                          danger
-                          icon={<DeleteOutlined />}
-                          style={{ position: "absolute", top: 12, right: 12 }}
-                          onClick={() => remove(name)}
-                        />
-                      )}
+                        <Space>
+                          {/* THÊM SWITCH ẨN/HIỆN CHO TỪNG BIẾN THỂ */}
+                          <Form.Item
+                            {...restField}
+                            name={[name, "TrangThai"]}
+                            valuePropName="checked"
+                            noStyle
+                            initialValue={true}
+                          >
+                            <Switch
+                              checkedChildren="Hiện"
+                              unCheckedChildren="Ẩn"
+                              size="small"
+                            />
+                          </Form.Item>
+
+                          {fields.length > 1 && (
+                            <Popconfirm
+                              title="Ẩn/Xóa biến thể này khỏi danh sách?"
+                              onConfirm={() =>
+                                handleRemoveVariant(
+                                  remove,
+                                  name,
+                                  form.getFieldValue([
+                                    "variants",
+                                    name,
+                                    "MaBienThe",
+                                  ]),
+                                )
+                              }
+                            >
+                              <Button
+                                type="text"
+                                danger
+                                icon={<DeleteOutlined />}
+                                size="small"
+                              />
+                            </Popconfirm>
+                          )}
+                        </Space>
+                      </div>
 
                       <Form.Item
                         {...restField}
@@ -565,14 +610,11 @@ export default function AdminProducts() {
                       >
                         <Input />
                       </Form.Item>
-
                       <Form.Item
                         {...restField}
                         name={[name, "TenBienThe"]}
                         label="Tên biến thể"
-                        rules={[
-                          { required: true, message: "Nhập tên biến thể!" },
-                        ]}
+                        rules={[{ required: true, message: "Nhập tên!" }]}
                       >
                         <Input placeholder="VD: Hoa sen cổ điển..." />
                       </Form.Item>
@@ -652,7 +694,7 @@ export default function AdminProducts() {
                   <Form.Item>
                     <Button
                       type="dashed"
-                      onClick={() => add()}
+                      onClick={() => add({ TrangThai: true })}
                       block
                       icon={<PlusOutlined />}
                     >
