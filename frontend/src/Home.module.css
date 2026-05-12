@@ -1000,7 +1000,7 @@
 
 .customCard:hover::before{
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
-  background: linear-gradient(135deg, transparent,#2c5170, #256c65,#324176, transparent);
+  background: linear-gradient(135deg, transparent,#2c5170,#7980DF, #256c65,#81A1bb,#324176, transparent);
   transform: translateY(-5px);
 }
 
