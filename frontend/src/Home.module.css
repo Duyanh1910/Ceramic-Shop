@@ -1014,10 +1014,10 @@
   object-fit: contain;
   transition: all 0.5s ease;
   
-  filter: drop-shadow(0 5px 10px rgba(81, 82, 82, 0.411));
+  filter: drop-shadow(0 5px 10px rgba(255, 255, 255, 0.645));
 }
 
 .customCard:hover .cardImgWrapper img {
-  filter: drop-shadow(0 10px 20px rgba(59, 74, 80, 0.411));
+  filter: drop-shadow(0 10px 20px rgba(255, 255, 255, 0.645));
   transform: scale(1.05);
 }
