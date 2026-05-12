@@ -886,7 +886,7 @@ function Home() {
                               <div className={styles.cardImgWrapper}>
                                 <img alt={p.TenSanPham} src={imgUrl} />
                                 
-                                {!isSoldOut &&(
+                                {!isDiscontinued &&(
                                   <span className={`${styles.stockBadge} ${isSoldOut ? styles.stockOut : styles.stockIn}`}>
                                     {isSoldOut ? 'Hết hàng' : 'Còn hàng'}
                                   </span>
