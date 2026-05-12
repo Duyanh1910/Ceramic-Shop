@@ -95,7 +95,6 @@ export default function AdminProducts() {
     setPage(1);
   };
 
-  // 1. UPLOAD ẢNH CHÍNH SẢN PHẨM
   const handleMainImageUpload = async (options) => {
     const { file, onSuccess, onError } = options;
     setUploadingImage(true);
@@ -117,7 +116,6 @@ export default function AdminProducts() {
     }
   };
 
-  // 2. UPLOAD ẢNH CHO TỪNG BIẾN THỂ
   const handleVariantImageUpload = async (options, index) => {
     const { file, onSuccess, onError } = options;
     const formData = new FormData();
@@ -129,7 +127,6 @@ export default function AdminProducts() {
         formData,
       );
       const currentVariants = form.getFieldValue("variants") || [];
-      // Đảm bảo không bị lỗi reference array
       const updatedVariants = [...currentVariants];
       updatedVariants[index] = {
         ...updatedVariants[index],
@@ -431,7 +428,7 @@ export default function AdminProducts() {
           columns={columns}
           rowKey="MaSanPham"
           loading={loading}
-          pagination={{ current: page, pageSize: 10, total, onChange: setPage }}
+          pagination={{ current: page, pageSize: 10, total, onChange: setPage, showSizeChanger: false }}
           size="middle"
         />
       </div>
@@ -489,7 +486,6 @@ export default function AdminProducts() {
                 </Button>
               </Upload>
 
-              {/* Ép Form render lại Preview ảnh chính khi upload xong */}
               <Form.Item
                 shouldUpdate={(prev, curr) => prev.thumbnail !== curr.thumbnail}
                 noStyle
@@ -584,7 +580,6 @@ export default function AdminProducts() {
                         </Space>
                       </div>
 
-                      {/* KHU VỰC ẢNH BIẾN THỂ (Có Preview Reactivity) */}
                       <div
                         style={{
                           marginBottom: 16,
@@ -612,7 +607,6 @@ export default function AdminProducts() {
                           </Button>
                         </Upload>
 
-                        {/* Ép Form render lại Preview ảnh biến thể khi upload xong */}
                         <Form.Item
                           shouldUpdate={(prev, curr) =>
                             prev.variants?.[name]?.images !==
