@@ -870,23 +870,23 @@ function Home() {
                     return (
                       <Col xs={24} sm={12} md={12} lg={8} key={p.MaSanPham}>
                         <Badge.Ribbon 
-                          text={isDiscontinued ? 'Ngừng bán' : '● Hết hàng'} 
-                          color={isDiscontinued ? 'gray' : 'red'} 
+                          text={isSoldOut ? 'Hết hàng' :'Còn hàng' } 
+                          color={isSoldOut ? 'red' : 'green'} 
                           style={{ display: (isSoldOut || isDiscontinued) ? 'block' : 'none' }}
                           placement="start"
                         >
-                          <div className={`${styles.customCard} ${isDiscontinued ? styles.disabledCard : ''}`}>
+                          <div className={`${styles.customCard} ${isSoldOut ? styles.disabledCard : ''}`}>
                             <div className={styles.cardInner}>
                             <div 
-                              style={{ width: '100%', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: isDiscontinued ? 'not-allowed' : 'pointer' }}
+                              style={{ width: '100%', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: isSoldOut ? 'not-allowed' : 'pointer' }}
                               onClick={() => {
-                                if (!isDiscontinued) navigate(`/product/${p.MaSanPham}`);
+                                if (!isSoldOut) navigate(`/product/${p.MaSanPham}`);
                               }}
                             >
                               <div className={styles.cardImgWrapper}>
                                 <img alt={p.TenSanPham} src={imgUrl} />
                                 
-                                {!isDiscontinued &&(
+                                {!isSoldOut &&(
                                   <span className={`${styles.stockBadge} ${isSoldOut ? styles.stockOut : styles.stockIn}`}>
                                     {isSoldOut ? 'Hết hàng' : 'Còn hàng'}
                                   </span>
