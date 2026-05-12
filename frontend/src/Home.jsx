@@ -872,16 +872,13 @@ function Home() {
                         <Badge.Ribbon 
                           text={isSoldOut ? 'Hết hàng' :'Còn hàng' } 
                           color={isSoldOut ? 'red' : 'green'} 
-                          style={{ display: (isSoldOut || isDiscontinued) ? 'block' : 'none' }}
                           placement="start"
                         >
-                          <div className={`${styles.customCard} ${isSoldOut ? styles.disabledCard : ''}`}>
+                          <div className={styles.customCard}>
                             <div className={styles.cardInner}>
                             <div 
-                              style={{ width: '100%', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: isSoldOut ? 'not-allowed' : 'pointer' }}
-                              onClick={() => {
-                                if (!isSoldOut) navigate(`/product/${p.MaSanPham}`);
-                              }}
+                              style={{ width: '100%', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer' }}
+                              onClick={() => navigate(`/product/${p.MaSanPham}`)}
                             >
                               <div className={styles.cardImgWrapper}>
                                 <img alt={p.TenSanPham} src={imgUrl} />
