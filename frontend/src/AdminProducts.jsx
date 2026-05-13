@@ -33,6 +33,14 @@ const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1";
 const CDN_CLOUD = "dcmwz0uis";
 const CDN_PRESET = "the_creamy_shop";
 
+const MENH_OPTIONS = [
+  { value: 30002, label: "Kim" },
+  { value: 30003, label: "Mộc" },
+  { value: 30004, label: "Thủy" },
+  { value: 30005, label: "Hỏa" },
+  { value: 30006, label: "Thổ" },
+];
+
 const fmt = (p) =>
   new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
     p,
@@ -151,18 +159,26 @@ export default function AdminProducts() {
       if (p) {
         setEditingId(id);
         setAddModal(true);
-        const mappedVariants = p.BienTheSanPhams?.map((v) => ({
-          MaBienThe: v.MaBienThe,
-          TenBienThe: v.TenBienThe,
-          Gia: v.Gia,
-          SoLuong: v.SoLuong,
-          KhoiLuong: v.KhoiLuong,
-          ChieuDai: v.ChieuDai,
-          ChieuRong: v.ChieuRong,
-          ChieuCao: v.ChieuCao,
-          TrangThai: v.TrangThai === 1,
-          images: v.VariantImages?.map((img) => img.DuongDan) || [],
-        })) || [{}];
+        const mappedVariants = p.BienTheSanPhams?.map((v) => {
+          const validMenhIds = MENH_OPTIONS.map((opt) => opt.value);
+          const menhAttr = v.AttributeValues?.find((attr) =>
+            validMenhIds.includes(attr.MaGiaTri),
+          );
+
+          return {
+            MaBienThe: v.MaBienThe,
+            TenBienThe: v.TenBienThe,
+            Menh: menhAttr ? menhAttr.MaGiaTri : undefined,
+            Gia: v.Gia,
+            SoLuong: v.SoLuong,
+            KhoiLuong: v.KhoiLuong,
+            ChieuDai: v.ChieuDai,
+            ChieuRong: v.ChieuRong,
+            ChieuCao: v.ChieuCao,
+            TrangThai: v.TrangThai === 1,
+            images: v.VariantImages?.map((img) => img.DuongDan) || [],
+          };
+        }) || [{}];
 
         form.setFieldsValue({
           categoryID: p.MaDanhMuc,
@@ -220,7 +236,7 @@ export default function AdminProducts() {
           ChieuRong: Number(v.ChieuRong || 0),
           ChieuCao: Number(v.ChieuCao || 0),
           images: v.images || [],
-          attributes: [4],
+          attributes: v.Menh ? [Number(v.Menh)] : [],
         })),
       };
 
@@ -428,7 +444,13 @@ export default function AdminProducts() {
           columns={columns}
           rowKey="MaSanPham"
           loading={loading}
-          pagination={{ current: page, pageSize: 10, total, onChange: setPage, showSizeChanger: false }}
+          pagination={{
+            current: page,
+            pageSize: 10,
+            total,
+            onChange: setPage,
+            showSizeChanger: false,
+          }}
           size="middle"
         />
       </div>
@@ -659,14 +681,40 @@ export default function AdminProducts() {
                       >
                         <Input />
                       </Form.Item>
-                      <Form.Item
-                        {...restField}
-                        name={[name, "TenBienThe"]}
-                        label="Tên biến thể"
-                        rules={[{ required: true }]}
+
+                      {/* Thêm div bọc ngoài để chia cột 2/1 cho Tên và Mệnh */}
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "2fr 1fr",
+                          gap: 16,
+                        }}
                       >
-                        <Input />
-                      </Form.Item>
+                        <Form.Item
+                          {...restField}
+                          name={[name, "TenBienThe"]}
+                          label="Tên biến thể"
+                          rules={[{ required: true }]}
+                        >
+                          <Input />
+                        </Form.Item>
+                        <Form.Item
+                          {...restField}
+                          name={[name, "Menh"]}
+                          label="Mệnh"
+                          rules={[
+                            { required: true, message: "Bắt buộc chọn mệnh" },
+                          ]}
+                        >
+                          <Select placeholder="Chọn Mệnh">
+                            {MENH_OPTIONS.map((opt) => (
+                              <Select.Option key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </Select.Option>
+                            ))}
+                          </Select>
+                        </Form.Item>
+                      </div>
 
                       <div
                         style={{
