@@ -54,6 +54,7 @@ export default function AdminProducts() {
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [addModal, setAddModal] = useState(false);
+  const [viewMode, setViewMode] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [categories, setCategories] = useState([]);
@@ -65,17 +66,20 @@ export default function AdminProducts() {
   useEffect(() => {
     fetchData();
   }, [page, search]);
+
   useEffect(() => {
     fetchCategories();
   }, []);
 
   const fetchData = async () => {
     setLoading(true);
+
     try {
       const res = await axios.get(
         `${API_BASE}/admin/products?page=${page}&limit=10&search=${search}`,
         axiosConfig,
       );
+
       setData(res.data?.result?.data || []);
       setTotal(res.data?.result?.total || 0);
     } catch {
@@ -105,15 +109,19 @@ export default function AdminProducts() {
 
   const handleMainImageUpload = async (options) => {
     const { file, onSuccess, onError } = options;
+
     setUploadingImage(true);
+
     const formData = new FormData();
     formData.append("file", file);
     formData.append("upload_preset", CDN_PRESET);
+
     try {
       const res = await axios.post(
         `https://api.cloudinary.com/v1_1/${CDN_CLOUD}/image/upload`,
         formData,
       );
+
       form.setFieldsValue({ thumbnail: res.data.secure_url });
       onSuccess("Ok");
     } catch (err) {
@@ -126,20 +134,25 @@ export default function AdminProducts() {
 
   const handleVariantImageUpload = async (options, index) => {
     const { file, onSuccess, onError } = options;
+
     const formData = new FormData();
     formData.append("file", file);
     formData.append("upload_preset", CDN_PRESET);
+
     try {
       const res = await axios.post(
         `https://api.cloudinary.com/v1_1/${CDN_CLOUD}/image/upload`,
         formData,
       );
+
       const currentVariants = form.getFieldValue("variants") || [];
       const updatedVariants = [...currentVariants];
+
       updatedVariants[index] = {
         ...updatedVariants[index],
         images: [res.data.secure_url],
       };
+
       form.setFieldsValue({ variants: updatedVariants });
       onSuccess("Ok");
     } catch (err) {
@@ -148,20 +161,25 @@ export default function AdminProducts() {
     }
   };
 
-  const showEditModal = async (id) => {
+  const showEditModal = async (id, isView = false) => {
     setLoading(true);
+    setViewMode(isView);
+
     try {
       const res = await axios.get(
         `${API_BASE}/admin/products/${id}`,
         axiosConfig,
       );
+
       const p = res.data?.result;
+
       if (p) {
         setEditingId(id);
         setAddModal(true);
+
         const mappedVariants = p.BienTheSanPhams?.map((v) => {
           const validMenhIds = MENH_OPTIONS.map((opt) => opt.value);
-          const menhAttr = v.AttributeValues?.find((attr) =>
+          const menhAttr = v.GiaTriThuocTinhs?.find((attr) =>
             validMenhIds.includes(attr.MaGiaTri),
           );
 
@@ -176,7 +194,7 @@ export default function AdminProducts() {
             ChieuRong: v.ChieuRong,
             ChieuCao: v.ChieuCao,
             TrangThai: v.TrangThai === 1,
-            images: v.VariantImages?.map((img) => img.DuongDan) || [],
+            images: v.HinhAnhBienThes?.map((img) => img.DuongDan) || [],
           };
         }) || [{}];
 
@@ -190,33 +208,47 @@ export default function AdminProducts() {
           variants: mappedVariants,
         });
       }
-    } catch (err) {
+    } catch {
       message.error("Lỗi lấy dữ liệu!");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleRemoveVariant = async (removeFn, fieldName, variantId) => {
-    if (!variantId) {
-      removeFn(fieldName);
-      return;
-    }
+  const handleHideVariant = (fieldName) => {
+    const currentVariants = form.getFieldValue("variants") || [];
+
+    const updatedVariants = currentVariants.map((variant, index) => {
+      if (index === fieldName) {
+        return {
+          ...variant,
+          TrangThai: false,
+        };
+      }
+
+      return variant;
+    });
+
+    form.setFieldsValue({
+      variants: updatedVariants,
+    });
+
+    message.success("Đã ẩn biến thể!");
+  };
+
+  const handleDeleteProduct = async (id) => {
     try {
-      await axios.patch(
-        `${API_BASE}/admin/products/variants/${variantId}/status`,
-        { status: 0 },
-        axiosConfig,
-      );
-      message.success("Đã ẩn biến thể!");
-      removeFn(fieldName);
-    } catch (err) {
-      message.error("Lỗi khi ẩn biến thể!");
+      await axios.delete(`${API_BASE}/admin/products/${id}`, axiosConfig);
+      message.success("Đã xóa sản phẩm thành công!");
+      fetchData();
+    } catch {
+      message.error("Lỗi khi xóa sản phẩm!");
     }
   };
 
   const handleSubmit = async (values) => {
     setSubmitting(true);
+
     try {
       const payload = {
         categoryID: Number(values.categoryID),
@@ -246,6 +278,7 @@ export default function AdminProducts() {
           payload,
           axiosConfig,
         );
+
         message.success("Cập nhật thành công!");
       } else {
         await axios.post(`${API_BASE}/admin/products`, payload, axiosConfig);
@@ -254,6 +287,7 @@ export default function AdminProducts() {
 
       setAddModal(false);
       setEditingId(null);
+      setViewMode(false);
       form.resetFields();
       fetchData();
     } catch (err) {
@@ -265,24 +299,28 @@ export default function AdminProducts() {
 
   const handleUpdateStatus = async (id, currentStatus) => {
     const newStatus = currentStatus === 1 ? 0 : 1;
+
     setData((prevData) =>
       prevData.map((item) =>
         item.MaSanPham === id ? { ...item, TrangThai: newStatus } : item,
       ),
     );
+
     try {
       await axios.patch(
         `${API_BASE}/admin/products/${id}/status`,
         { status: newStatus },
         axiosConfig,
       );
+
       message.success(newStatus === 1 ? "Đã hiện!" : "Đã ẩn!");
-    } catch (err) {
+    } catch {
       setData((prevData) =>
         prevData.map((item) =>
           item.MaSanPham === id ? { ...item, TrangThai: currentStatus } : item,
         ),
       );
+
       message.error("Lỗi!");
     }
   };
@@ -330,6 +368,7 @@ export default function AdminProducts() {
       width: 140,
       render: (v, row) => {
         const isVisible = Number(v) === 1;
+
         return (
           <Space size={8}>
             <span
@@ -341,11 +380,13 @@ export default function AdminProducts() {
             >
               Ẩn
             </span>
+
             <Switch
               checked={isVisible}
               size="small"
               onChange={() => handleUpdateStatus(row.MaSanPham, row.TrangThai)}
             />
+
             <span
               style={{
                 color: isVisible ? "#52c41a" : "#bfbfbf",
@@ -364,27 +405,29 @@ export default function AdminProducts() {
       width: 110,
       render: (_, row) => (
         <Space size={4}>
-          <Tooltip title="Xem web">
+          <Tooltip title="Xem sản phẩm">
             <Button
               type="text"
               icon={<EyeOutlined />}
               size="small"
-              onClick={() => window.open(`/product/${row.MaSanPham}`, "_blank")}
+              onClick={() => showEditModal(row.MaSanPham, true)}
             />
           </Tooltip>
+
           <Tooltip title="Sửa">
             <Button
               type="text"
               icon={<EditOutlined />}
               size="small"
               className={styles.editBtn}
-              onClick={() => showEditModal(row.MaSanPham)}
+              onClick={() => showEditModal(row.MaSanPham, false)}
             />
           </Tooltip>
-          <Tooltip title="Ẩn">
+
+          <Tooltip title="Xóa">
             <Popconfirm
-              title="Ẩn SP này?"
-              onConfirm={() => handleUpdateStatus(row.MaSanPham, 1)}
+              title="Bạn có chắc chắn muốn xóa sản phẩm này?"
+              onConfirm={() => handleDeleteProduct(row.MaSanPham)}
             >
               <Button
                 type="text"
@@ -410,10 +453,12 @@ export default function AdminProducts() {
           <h1 className={styles.pageTitle}>Quản lý sản phẩm</h1>
           <p className={styles.pageSub}>Tổng cộng {total} sản phẩm</p>
         </div>
+
         <Button
           type="primary"
           icon={<PlusOutlined />}
           onClick={() => {
+            setViewMode(false);
             setEditingId(null);
             form.resetFields();
             form.setFieldsValue({ variants: [{ TrangThai: true }] });
@@ -435,6 +480,7 @@ export default function AdminProducts() {
           allowClear
           onClear={handleReload}
         />
+
         <Button icon={<ReloadOutlined />} onClick={handleReload} />
       </div>
 
@@ -457,31 +503,46 @@ export default function AdminProducts() {
 
       <Modal
         open={addModal}
-        title={editingId ? "Chỉnh sửa sản phẩm" : "Thêm sản phẩm mới"}
+        title={
+          viewMode
+            ? "Xem chi tiết sản phẩm"
+            : editingId
+              ? "Chỉnh sửa sản phẩm"
+              : "Thêm sản phẩm mới"
+        }
         onCancel={() => {
           setAddModal(false);
           setEditingId(null);
+          setViewMode(false);
           form.resetFields();
         }}
         footer={null}
         width={850}
         centered
       >
-        <Form form={form} layout="vertical" onFinish={handleSubmit}>
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleSubmit}
+          disabled={viewMode}
+        >
           <div
             style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16 }}
           >
             <Form.Item
               name="productName"
               label="Tên sản phẩm"
-              rules={[{ required: true }]}
+              rules={[
+                { required: true, message: "Vui lòng nhập tên sản phẩm" },
+              ]}
             >
               <Input placeholder="Tên sản phẩm..." />
             </Form.Item>
+
             <Form.Item
               name="categoryID"
               label="Danh mục"
-              rules={[{ required: true }]}
+              rules={[{ required: true, message: "Vui lòng chọn danh mục" }]}
             >
               <Select placeholder="Chọn danh mục">
                 {leafCategories.map((c) => (
@@ -495,18 +556,25 @@ export default function AdminProducts() {
 
           <Form.Item label="Ảnh đại diện (Sản phẩm)" required>
             <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-              <Form.Item name="thumbnail" noStyle rules={[{ required: true }]}>
+              <Form.Item
+                name="thumbnail"
+                noStyle
+                rules={[{ required: true, message: "Vui lòng chọn ảnh" }]}
+              >
                 <Input placeholder="URL ảnh..." readOnly style={{ flex: 1 }} />
               </Form.Item>
-              <Upload
-                showUploadList={false}
-                customRequest={handleMainImageUpload}
-                accept="image/*"
-              >
-                <Button icon={<UploadOutlined />} loading={uploadingImage}>
-                  Tải ảnh lên
-                </Button>
-              </Upload>
+
+              {!viewMode && (
+                <Upload
+                  showUploadList={false}
+                  customRequest={handleMainImageUpload}
+                  accept="image/*"
+                >
+                  <Button icon={<UploadOutlined />} loading={uploadingImage}>
+                    Tải ảnh lên
+                  </Button>
+                </Upload>
+              )}
 
               <Form.Item
                 shouldUpdate={(prev, curr) => prev.thumbnail !== curr.thumbnail}
@@ -514,6 +582,7 @@ export default function AdminProducts() {
               >
                 {({ getFieldValue }) => {
                   const thumbUrl = getFieldValue("thumbnail");
+
                   return thumbUrl ? (
                     <Image
                       src={thumbUrl}
@@ -533,6 +602,7 @@ export default function AdminProducts() {
             <Form.Item name="brand" label="Thương hiệu">
               <Input />
             </Form.Item>
+
             <Form.Item name="status" label="Trạng thái SP">
               <Select>
                 <Select.Option value={1}>Đang hoạt động</Select.Option>
@@ -547,255 +617,309 @@ export default function AdminProducts() {
 
           <div className={styles.variantSection}>
             <div className={styles.variantTitle}>Danh sách biến thể</div>
+
             <Form.List name="variants">
-              {(fields, { add, remove }) => (
+              {(fields, { add }) => (
                 <>
-                  {fields.map(({ key, name, ...restField }, index) => (
-                    <div
-                      key={key}
-                      style={{
-                        border: "1px solid #f0f0f0",
-                        padding: 16,
-                        marginBottom: 16,
-                        borderRadius: 8,
-                        background: "#fafafa",
-                      }}
-                    >
+                  {fields.map(({ key, name, ...restField }, index) => {
+                    const variantStatus = form.getFieldValue([
+                      "variants",
+                      name,
+                      "TrangThai",
+                    ]);
+
+                    const isHidden = variantStatus === false;
+
+                    return (
                       <div
+                        key={key}
                         style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          marginBottom: 12,
+                          border: "1px solid #f0f0f0",
+                          padding: 16,
+                          marginBottom: 16,
+                          borderRadius: 8,
+                          background: isHidden ? "#fff1f0" : "#fafafa",
+                          opacity: isHidden ? 0.7 : 1,
                         }}
                       >
-                        <span style={{ fontWeight: 600 }}>
-                          Biến thể #{index + 1}
-                        </span>
-                        <Space>
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            marginBottom: 12,
+                          }}
+                        >
+                          <Space>
+                            <span style={{ fontWeight: 600 }}>
+                              Biến thể #{index + 1}
+                            </span>
+
+                            {isHidden && <Tag color="red">Đã ẩn</Tag>}
+                          </Space>
+
+                          <Space>
+                            <Form.Item
+                              {...restField}
+                              name={[name, "TrangThai"]}
+                              valuePropName="checked"
+                              noStyle
+                            >
+                              <Switch size="small" />
+                            </Form.Item>
+
+                            {!viewMode && !isHidden && (
+                              <Tooltip title="Ẩn biến thể">
+                                <Button
+                                  type="text"
+                                  danger
+                                  icon={<DeleteOutlined />}
+                                  size="small"
+                                  onClick={() => handleHideVariant(name)}
+                                />
+                              </Tooltip>
+                            )}
+                          </Space>
+                        </div>
+
+                        <div
+                          style={{
+                            marginBottom: 16,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 12,
+                          }}
+                        >
                           <Form.Item
                             {...restField}
-                            name={[name, "TrangThai"]}
-                            valuePropName="checked"
+                            name={[name, "images"]}
                             noStyle
                           >
-                            <Switch size="small" />
+                            <Input hidden />
                           </Form.Item>
-                          {fields.length > 1 && (
-                            <Button
-                              type="text"
-                              danger
-                              icon={<DeleteOutlined />}
-                              size="small"
-                              onClick={() =>
-                                handleRemoveVariant(
-                                  remove,
-                                  name,
-                                  form.getFieldValue([
-                                    "variants",
-                                    name,
-                                    "MaBienThe",
-                                  ]),
-                                )
+
+                          {!viewMode && (
+                            <Upload
+                              showUploadList={false}
+                              customRequest={(opt) =>
+                                handleVariantImageUpload(opt, name)
                               }
-                            />
+                              accept="image/*"
+                            >
+                              <Button size="small" icon={<FileImageOutlined />}>
+                                Ảnh biến thể
+                              </Button>
+                            </Upload>
                           )}
-                        </Space>
-                      </div>
 
-                      <div
-                        style={{
-                          marginBottom: 16,
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 12,
-                        }}
-                      >
+                          <Form.Item
+                            shouldUpdate={(prev, curr) =>
+                              prev.variants?.[name]?.images !==
+                              curr.variants?.[name]?.images
+                            }
+                            noStyle
+                          >
+                            {({ getFieldValue }) => {
+                              const imgs = getFieldValue([
+                                "variants",
+                                name,
+                                "images",
+                              ]);
+
+                              return imgs?.[0] ? (
+                                <Image
+                                  src={imgs[0]}
+                                  width={50}
+                                  height={50}
+                                  style={{
+                                    borderRadius: 4,
+                                    objectFit: "cover",
+                                    border: "1px solid #ddd",
+                                  }}
+                                />
+                              ) : (
+                                <div
+                                  style={{
+                                    width: 50,
+                                    height: 50,
+                                    background: "#eee",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    borderRadius: 4,
+                                    fontSize: 10,
+                                    color: "#999",
+                                  }}
+                                >
+                                  No Image
+                                </div>
+                              );
+                            }}
+                          </Form.Item>
+                        </div>
+
                         <Form.Item
                           {...restField}
-                          name={[name, "images"]}
-                          noStyle
-                        >
-                          <Input hidden />
-                        </Form.Item>
-                        <Upload
-                          showUploadList={false}
-                          customRequest={(opt) =>
-                            handleVariantImageUpload(opt, name)
-                          }
-                          accept="image/*"
-                        >
-                          <Button size="small" icon={<FileImageOutlined />}>
-                            Ảnh biến thể
-                          </Button>
-                        </Upload>
-
-                        <Form.Item
-                          shouldUpdate={(prev, curr) =>
-                            prev.variants?.[name]?.images !==
-                            curr.variants?.[name]?.images
-                          }
-                          noStyle
-                        >
-                          {({ getFieldValue }) => {
-                            const imgs = getFieldValue([
-                              "variants",
-                              name,
-                              "images",
-                            ]);
-                            return imgs?.[0] ? (
-                              <Image
-                                src={imgs[0]}
-                                width={50}
-                                height={50}
-                                style={{
-                                  borderRadius: 4,
-                                  objectFit: "cover",
-                                  border: "1px solid #ddd",
-                                }}
-                              />
-                            ) : (
-                              <div
-                                style={{
-                                  width: 50,
-                                  height: 50,
-                                  background: "#eee",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  borderRadius: 4,
-                                  fontSize: 10,
-                                  color: "#999",
-                                }}
-                              >
-                                No Image
-                              </div>
-                            );
-                          }}
-                        </Form.Item>
-                      </div>
-
-                      <Form.Item
-                        {...restField}
-                        name={[name, "MaBienThe"]}
-                        hidden
-                      >
-                        <Input />
-                      </Form.Item>
-
-                      {/* Thêm div bọc ngoài để chia cột 2/1 cho Tên và Mệnh */}
-                      <div
-                        style={{
-                          display: "grid",
-                          gridTemplateColumns: "2fr 1fr",
-                          gap: 16,
-                        }}
-                      >
-                        <Form.Item
-                          {...restField}
-                          name={[name, "TenBienThe"]}
-                          label="Tên biến thể"
-                          rules={[{ required: true }]}
+                          name={[name, "MaBienThe"]}
+                          hidden
                         >
                           <Input />
                         </Form.Item>
-                        <Form.Item
-                          {...restField}
-                          name={[name, "Menh"]}
-                          label="Mệnh"
-                          rules={[
-                            { required: true, message: "Bắt buộc chọn mệnh" },
-                          ]}
-                        >
-                          <Select placeholder="Chọn Mệnh">
-                            {MENH_OPTIONS.map((opt) => (
-                              <Select.Option key={opt.value} value={opt.value}>
-                                {opt.label}
-                              </Select.Option>
-                            ))}
-                          </Select>
-                        </Form.Item>
-                      </div>
 
-                      <div
-                        style={{
-                          display: "grid",
-                          gridTemplateColumns: "1fr 1fr",
-                          gap: 16,
-                        }}
-                      >
-                        <Form.Item
-                          {...restField}
-                          name={[name, "Gia"]}
-                          label="Giá"
+                        <div
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "2fr 1fr",
+                            gap: 16,
+                          }}
                         >
-                          <InputNumber style={{ width: "100%" }} />
-                        </Form.Item>
-                        <Form.Item
-                          {...restField}
-                          name={[name, "SoLuong"]}
-                          label="Kho"
-                        >
-                          <InputNumber style={{ width: "100%" }} />
-                        </Form.Item>
-                      </div>
+                          <Form.Item
+                            {...restField}
+                            name={[name, "TenBienThe"]}
+                            label="Tên biến thể"
+                            rules={[
+                              {
+                                required: true,
+                                message: "Vui lòng nhập tên biến thể",
+                              },
+                            ]}
+                          >
+                            <Input />
+                          </Form.Item>
 
-                      <div
-                        style={{
-                          display: "grid",
-                          gridTemplateColumns: "repeat(4, 1fr)",
-                          gap: 8,
-                          marginTop: 8,
-                        }}
-                      >
-                        <Form.Item
-                          {...restField}
-                          name={[name, "KhoiLuong"]}
-                          label="Nặng(g)"
+                          <Form.Item
+                            {...restField}
+                            name={[name, "Menh"]}
+                            label="Mệnh"
+                            rules={[
+                              {
+                                required: true,
+                                message: "Bắt buộc chọn mệnh",
+                              },
+                            ]}
+                          >
+                            <Select placeholder="Chọn Mệnh">
+                              {MENH_OPTIONS.map((opt) => (
+                                <Select.Option
+                                  key={opt.value}
+                                  value={opt.value}
+                                >
+                                  {opt.label}
+                                </Select.Option>
+                              ))}
+                            </Select>
+                          </Form.Item>
+                        </div>
+
+                        <div
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "1fr 1fr",
+                            gap: 16,
+                          }}
                         >
-                          <InputNumber size="small" style={{ width: "100%" }} />
-                        </Form.Item>
-                        <Form.Item
-                          {...restField}
-                          name={[name, "ChieuDai"]}
-                          label="Dài(cm)"
+                          <Form.Item
+                            {...restField}
+                            name={[name, "Gia"]}
+                            label="Giá"
+                          >
+                            <InputNumber style={{ width: "100%" }} />
+                          </Form.Item>
+
+                          <Form.Item
+                            {...restField}
+                            name={[name, "SoLuong"]}
+                            label="Kho"
+                          >
+                            <InputNumber style={{ width: "100%" }} />
+                          </Form.Item>
+                        </div>
+
+                        <div
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "repeat(4, 1fr)",
+                            gap: 8,
+                            marginTop: 8,
+                          }}
                         >
-                          <InputNumber size="small" style={{ width: "100%" }} />
-                        </Form.Item>
-                        <Form.Item
-                          {...restField}
-                          name={[name, "ChieuRong"]}
-                          label="Rộng(cm)"
-                        >
-                          <InputNumber size="small" style={{ width: "100%" }} />
-                        </Form.Item>
-                        <Form.Item
-                          {...restField}
-                          name={[name, "ChieuCao"]}
-                          label="Cao(cm)"
-                        >
-                          <InputNumber size="small" style={{ width: "100%" }} />
-                        </Form.Item>
+                          <Form.Item
+                            {...restField}
+                            name={[name, "KhoiLuong"]}
+                            label="Nặng(g)"
+                          >
+                            <InputNumber
+                              size="small"
+                              style={{ width: "100%" }}
+                            />
+                          </Form.Item>
+
+                          <Form.Item
+                            {...restField}
+                            name={[name, "ChieuDai"]}
+                            label="Dài(cm)"
+                          >
+                            <InputNumber
+                              size="small"
+                              style={{ width: "100%" }}
+                            />
+                          </Form.Item>
+
+                          <Form.Item
+                            {...restField}
+                            name={[name, "ChieuRong"]}
+                            label="Rộng(cm)"
+                          >
+                            <InputNumber
+                              size="small"
+                              style={{ width: "100%" }}
+                            />
+                          </Form.Item>
+
+                          <Form.Item
+                            {...restField}
+                            name={[name, "ChieuCao"]}
+                            label="Cao(cm)"
+                          >
+                            <InputNumber
+                              size="small"
+                              style={{ width: "100%" }}
+                            />
+                          </Form.Item>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                  <Button
-                    type="dashed"
-                    onClick={() => add({ TrangThai: true, images: [] })}
-                    block
-                    icon={<PlusOutlined />}
-                  >
-                    Thêm biến thể
-                  </Button>
+                    );
+                  })}
+
+                  {!viewMode && (
+                    <Button
+                      type="dashed"
+                      onClick={() => add({ TrangThai: true, images: [] })}
+                      block
+                      icon={<PlusOutlined />}
+                    >
+                      Thêm biến thể
+                    </Button>
+                  )}
                 </>
               )}
             </Form.List>
           </div>
 
           <div className={styles.modalFooter}>
-            <Button onClick={() => setAddModal(false)}>Huỷ</Button>
-            <Button type="primary" htmlType="submit" loading={submitting}>
-              {editingId ? "Cập nhật" : "Thêm mới"}
+            <Button
+              onClick={() => {
+                setAddModal(false);
+                setViewMode(false);
+              }}
+            >
+              Đóng
             </Button>
+
+            {!viewMode && (
+              <Button type="primary" htmlType="submit" loading={submitting}>
+                {editingId ? "Cập nhật" : "Thêm mới"}
+              </Button>
+            )}
           </div>
         </Form>
       </Modal>

@@ -495,3 +495,32 @@ export const updateVariantStatusService = async (variantID, status) => {
     );
   }
 };
+
+export const deleteProductService = async (productID) => {
+  const transaction = await sequelize.transaction();
+
+  try {
+    const product = await ProductModel.findByPk(productID, {
+      transaction,
+    });
+
+    if (!product) {
+      throw new ErrorHandler("Không tìm thấy sản phẩm này!", 404);
+    }
+
+    await product.destroy({
+      transaction,
+    });
+
+    await transaction.commit();
+
+    return true;
+  } catch (err) {
+    await transaction.rollback();
+    console.error(err);
+
+    if (err.statusCode) throw err;
+
+    throw new ErrorHandler("Lỗi server! Không thể xóa sản phẩm này", 500);
+  }
+};

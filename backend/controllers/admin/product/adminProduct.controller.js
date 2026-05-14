@@ -6,6 +6,7 @@ import {
   updateProductInfoService,
   updateProductStatusService,
   updateVariantStatusService,
+  deleteProductService,
 } from "../../../services/product.service.js";
 import ErrorHandler from "../../../utils/error_handler.js";
 import { checkValidate, validateVariants } from "../../../utils/helpers.js";
@@ -232,6 +233,23 @@ export const updateVariantStatusController = async (req, res, next) => {
     return res.status(200).json({
       success: true,
       message: "Cập nhật trạng thái biến thể thành công!",
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const destroyProductController = async (req, res, next) => {
+  try {
+    const productID = Number(req.params.id);
+    if (!Number.isInteger(productID) || productID <= 0) {
+      return next(new ErrorHandler("ID sản phẩm không hợp lệ!", 400));
+    }
+    await deleteProductService(productID);
+
+    return res.status(200).json({
+      success: true,
+      message: "Xóa sản phẩm thành công!",
     });
   } catch (err) {
     next(err);

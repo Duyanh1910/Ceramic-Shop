@@ -42,7 +42,13 @@ const ProductModel = sequelize.define(
   },
   {
     tableName: "SanPham",
-    timestamps: false,
+
+    timestamps: true,
+    createdAt: false,
+    updatedAt: false,
+
+    paranoid: true,
+    deletedAt: "deleted_at",
   },
 );
 
