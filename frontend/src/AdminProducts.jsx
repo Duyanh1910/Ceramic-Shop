@@ -43,8 +43,52 @@ const MENH_OPTIONS = [
 
 const fmt = (p) =>
   new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
-    p,
+    p ?? 0,
   );
+
+const ImagePreviewBox = ({ url, size = 120, emptyText = "Chưa có ảnh" }) => {
+  if (!url) {
+    return (
+      <div
+        style={{
+          width: size,
+          height: size,
+          borderRadius: 14,
+          border: "1px dashed #d9d9d9",
+          background: "#fafafa",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "#999",
+          fontSize: 13,
+          textAlign: "center",
+          padding: 10,
+          lineHeight: 1.4,
+        }}
+      >
+        {emptyText}
+      </div>
+    );
+  }
+
+  return (
+    <Image
+      src={url}
+      width={size}
+      height={size}
+      preview={{
+        mask: "Xem ảnh",
+      }}
+      style={{
+        objectFit: "cover",
+        borderRadius: 14,
+        border: "1px solid #eee",
+        background: "#fff",
+        cursor: "pointer",
+      }}
+    />
+  );
+};
 
 export default function AdminProducts() {
   const [data, setData] = useState([]);
@@ -98,7 +142,7 @@ export default function AdminProducts() {
 
   const handleSearch = () => {
     setPage(1);
-    setSearch(searchInput);
+    setSearch(searchInput.trim());
   };
 
   const handleReload = () => {
@@ -173,11 +217,13 @@ export default function AdminProducts() {
 
       const p = res.data?.result;
 
-      if (p) {
-        setEditingId(id);
-        setAddModal(true);
+      if (!p) return;
 
-        const mappedVariants = p.BienTheSanPhams?.map((v) => {
+      setEditingId(id);
+      setAddModal(true);
+
+      const mappedVariants =
+        p.BienTheSanPhams?.map((v) => {
           const validMenhIds = MENH_OPTIONS.map((opt) => opt.value);
           const menhAttr = v.GiaTriThuocTinhs?.find((attr) =>
             validMenhIds.includes(attr.MaGiaTri),
@@ -196,18 +242,20 @@ export default function AdminProducts() {
             TrangThai: v.TrangThai === 1,
             images: v.HinhAnhBienThes?.map((img) => img.DuongDan) || [],
           };
-        }) || [{}];
+        }) || [];
 
-        form.setFieldsValue({
-          categoryID: p.MaDanhMuc,
-          productName: p.TenSanPham,
-          thumbnail: p.Thumbnail,
-          brand: p.ThuongHieu,
-          description: p.MoTa,
-          status: p.TrangThai,
-          variants: mappedVariants,
-        });
-      }
+      form.setFieldsValue({
+        categoryID: p.MaDanhMuc,
+        productName: p.TenSanPham,
+        thumbnail: p.Thumbnail,
+        brand: p.ThuongHieu,
+        description: p.MoTa,
+        status: p.TrangThai,
+        variants:
+          mappedVariants.length > 0
+            ? mappedVariants
+            : [{ TrangThai: true, images: [] }],
+      });
     } catch {
       message.error("Lỗi lấy dữ liệu!");
     } finally {
@@ -257,7 +305,7 @@ export default function AdminProducts() {
         brand: values.brand,
         description: values.description,
         status: Number(values.status ?? 1),
-        BienThe: values.variants.map((v) => ({
+        BienThe: (values.variants || []).map((v) => ({
           MaBienThe: v.MaBienThe,
           TenBienThe: v.TenBienThe,
           Gia: Number(v.Gia),
@@ -298,7 +346,7 @@ export default function AdminProducts() {
   };
 
   const handleUpdateStatus = async (id, currentStatus) => {
-    const newStatus = currentStatus === 1 ? 0 : 1;
+    const newStatus = Number(currentStatus) === 1 ? 0 : 1;
 
     setData((prevData) =>
       prevData.map((item) =>
@@ -321,8 +369,26 @@ export default function AdminProducts() {
         ),
       );
 
-      message.error("Lỗi!");
+      message.error("Lỗi cập nhật trạng thái!");
     }
+  };
+
+  const openCreateModal = () => {
+    setViewMode(false);
+    setEditingId(null);
+    form.resetFields();
+    form.setFieldsValue({
+      status: 1,
+      variants: [{ TrangThai: true, images: [] }],
+    });
+    setAddModal(true);
+  };
+
+  const closeModal = () => {
+    setAddModal(false);
+    setEditingId(null);
+    setViewMode(false);
+    form.resetFields();
   };
 
   const columns = [
@@ -335,7 +401,7 @@ export default function AdminProducts() {
           src={url}
           width={52}
           height={52}
-          style={{ objectFit: "cover", borderRadius: 6 }}
+          style={{ objectFit: "cover", borderRadius: 8 }}
           preview={false}
         />
       ),
@@ -374,8 +440,8 @@ export default function AdminProducts() {
             <span
               style={{
                 color: !isVisible ? "#ff4d4f" : "#bfbfbf",
-                fontWeight: !isVisible ? "600" : "normal",
-                fontSize: "13px",
+                fontWeight: !isVisible ? 600 : 400,
+                fontSize: 13,
               }}
             >
               Ẩn
@@ -390,8 +456,8 @@ export default function AdminProducts() {
             <span
               style={{
                 color: isVisible ? "#52c41a" : "#bfbfbf",
-                fontWeight: isVisible ? "600" : "normal",
-                fontSize: "13px",
+                fontWeight: isVisible ? 600 : 400,
+                fontSize: 13,
               }}
             >
               Hiện
@@ -402,7 +468,7 @@ export default function AdminProducts() {
     },
     {
       title: "Thao tác",
-      width: 110,
+      width: 120,
       render: (_, row) => (
         <Space size={4}>
           <Tooltip title="Xem sản phẩm">
@@ -424,9 +490,12 @@ export default function AdminProducts() {
             />
           </Tooltip>
 
-          <Tooltip title="Xóa">
+          <Tooltip title="Xóa sản phẩm">
             <Popconfirm
               title="Bạn có chắc chắn muốn xóa sản phẩm này?"
+              description="Sản phẩm sẽ được xóa mềm để không ảnh hưởng đơn hàng cũ."
+              okText="Xóa"
+              cancelText="Hủy"
               onConfirm={() => handleDeleteProduct(row.MaSanPham)}
             >
               <Button
@@ -457,13 +526,7 @@ export default function AdminProducts() {
         <Button
           type="primary"
           icon={<PlusOutlined />}
-          onClick={() => {
-            setViewMode(false);
-            setEditingId(null);
-            form.resetFields();
-            form.setFieldsValue({ variants: [{ TrangThai: true }] });
-            setAddModal(true);
-          }}
+          onClick={openCreateModal}
         >
           Thêm sản phẩm
         </Button>
@@ -472,16 +535,18 @@ export default function AdminProducts() {
       <div className={styles.toolbar}>
         <Input
           prefix={<SearchOutlined />}
-          placeholder="Tìm kiếm..."
+          placeholder="Tìm kiếm sản phẩm, thương hiệu, danh mục..."
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           onPressEnter={handleSearch}
-          style={{ width: 300 }}
+          style={{ width: 360 }}
           allowClear
           onClear={handleReload}
         />
 
-        <Button icon={<ReloadOutlined />} onClick={handleReload} />
+        <Button icon={<ReloadOutlined />} onClick={handleReload}>
+          Làm mới
+        </Button>
       </div>
 
       <div className={styles.tableCard}>
@@ -504,30 +569,42 @@ export default function AdminProducts() {
       <Modal
         open={addModal}
         title={
-          viewMode
-            ? "Xem chi tiết sản phẩm"
-            : editingId
-              ? "Chỉnh sửa sản phẩm"
-              : "Thêm sản phẩm mới"
+          <div>
+            <div style={{ fontSize: 18, fontWeight: 700 }}>
+              {viewMode
+                ? "Xem chi tiết sản phẩm"
+                : editingId
+                  ? "Chỉnh sửa sản phẩm"
+                  : "Thêm sản phẩm mới"}
+            </div>
+            <div style={{ fontSize: 13, color: "#8c8c8c", marginTop: 4 }}>
+              Quản lý thông tin sản phẩm, ảnh đại diện và các biến thể.
+            </div>
+          </div>
         }
-        onCancel={() => {
-          setAddModal(false);
-          setEditingId(null);
-          setViewMode(false);
-          form.resetFields();
-        }}
+        onCancel={closeModal}
         footer={null}
-        width={850}
+        width={1100}
         centered
+        destroyOnClose
       >
         <Form
           form={form}
           layout="vertical"
           onFinish={handleSubmit}
           disabled={viewMode}
+          initialValues={{
+            status: 1,
+            variants: [{ TrangThai: true, images: [] }],
+          }}
         >
           <div
-            style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16 }}
+            style={{
+              display: "grid",
+              gridTemplateColumns: "2fr 1fr",
+              gap: 18,
+              marginTop: 18,
+            }}
           >
             <Form.Item
               name="productName"
@@ -536,7 +613,7 @@ export default function AdminProducts() {
                 { required: true, message: "Vui lòng nhập tên sản phẩm" },
               ]}
             >
-              <Input placeholder="Tên sản phẩm..." />
+              <Input size="large" placeholder="Nhập tên sản phẩm..." />
             </Form.Item>
 
             <Form.Item
@@ -544,7 +621,7 @@ export default function AdminProducts() {
               label="Danh mục"
               rules={[{ required: true, message: "Vui lòng chọn danh mục" }]}
             >
-              <Select placeholder="Chọn danh mục">
+              <Select size="large" placeholder="Chọn danh mục">
                 {leafCategories.map((c) => (
                   <Select.Option key={c.MaDanhMuc} value={c.MaDanhMuc}>
                     {c.TenDanhMuc}
@@ -554,57 +631,89 @@ export default function AdminProducts() {
             </Form.Item>
           </div>
 
-          <Form.Item label="Ảnh đại diện (Sản phẩm)" required>
-            <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-              <Form.Item
-                name="thumbnail"
-                noStyle
-                rules={[{ required: true, message: "Vui lòng chọn ảnh" }]}
-              >
-                <Input placeholder="URL ảnh..." readOnly style={{ flex: 1 }} />
-              </Form.Item>
+          <Form.Item
+            name="thumbnail"
+            hidden
+            rules={[{ required: true, message: "Vui lòng chọn ảnh sản phẩm" }]}
+          >
+            <Input />
+          </Form.Item>
 
-              {!viewMode && (
-                <Upload
-                  showUploadList={false}
-                  customRequest={handleMainImageUpload}
-                  accept="image/*"
-                >
-                  <Button icon={<UploadOutlined />} loading={uploadingImage}>
-                    Tải ảnh lên
-                  </Button>
-                </Upload>
-              )}
-
+          <Form.Item label="Ảnh đại diện sản phẩm" required>
+            <div
+              style={{
+                display: "flex",
+                gap: 22,
+                alignItems: "center",
+                padding: 18,
+                border: "1px solid #f0f0f0",
+                borderRadius: 16,
+                background: "#fafafa",
+              }}
+            >
               <Form.Item
                 shouldUpdate={(prev, curr) => prev.thumbnail !== curr.thumbnail}
                 noStyle
               >
-                {({ getFieldValue }) => {
-                  const thumbUrl = getFieldValue("thumbnail");
-
-                  return thumbUrl ? (
-                    <Image
-                      src={thumbUrl}
-                      width={40}
-                      height={40}
-                      style={{ objectFit: "cover", borderRadius: 4 }}
-                    />
-                  ) : null;
-                }}
+                {({ getFieldValue }) => (
+                  <ImagePreviewBox
+                    url={getFieldValue("thumbnail")}
+                    size={170}
+                    emptyText="Chưa có ảnh sản phẩm"
+                  />
+                )}
               </Form.Item>
+
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 6 }}>
+                  Ảnh chính của sản phẩm
+                </div>
+
+                <div
+                  style={{
+                    color: "#8c8c8c",
+                    fontSize: 13,
+                    marginBottom: 16,
+                    lineHeight: 1.5,
+                  }}
+                >
+                  Ảnh này sẽ hiển thị ở danh sách sản phẩm, trang chi tiết và
+                  các khu vực giới thiệu sản phẩm.
+                </div>
+
+                {!viewMode && (
+                  <Upload
+                    showUploadList={false}
+                    customRequest={handleMainImageUpload}
+                    accept="image/*"
+                  >
+                    <Button
+                      type="primary"
+                      icon={<UploadOutlined />}
+                      loading={uploadingImage}
+                      size="large"
+                    >
+                      Tải ảnh sản phẩm
+                    </Button>
+                  </Upload>
+                )}
+              </div>
             </div>
           </Form.Item>
 
           <div
-            style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 18,
+            }}
           >
             <Form.Item name="brand" label="Thương hiệu">
-              <Input />
+              <Input size="large" placeholder="Nhập thương hiệu..." />
             </Form.Item>
 
-            <Form.Item name="status" label="Trạng thái SP">
-              <Select>
+            <Form.Item name="status" label="Trạng thái sản phẩm">
+              <Select size="large">
                 <Select.Option value={1}>Đang hoạt động</Select.Option>
                 <Select.Option value={0}>Tạm ẩn</Select.Option>
               </Select>
@@ -612,289 +721,371 @@ export default function AdminProducts() {
           </div>
 
           <Form.Item name="description" label="Mô tả">
-            <Input.TextArea rows={2} />
+            <Input.TextArea
+              rows={3}
+              placeholder="Nhập mô tả ngắn cho sản phẩm..."
+            />
           </Form.Item>
 
           <div className={styles.variantSection}>
-            <div className={styles.variantTitle}>Danh sách biến thể</div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 14,
+              }}
+            >
+              <div>
+                <div className={styles.variantTitle}>Danh sách biến thể</div>
+                <div style={{ color: "#8c8c8c", fontSize: 13 }}>
+                  Mỗi biến thể có thể có giá, tồn kho, ảnh và thuộc tính riêng.
+                </div>
+              </div>
+            </div>
 
             <Form.List name="variants">
               {(fields, { add }) => (
                 <>
-                  {fields.map(({ key, name, ...restField }, index) => {
-                    const variantStatus = form.getFieldValue([
-                      "variants",
-                      name,
-                      "TrangThai",
-                    ]);
+                  {fields.map(({ key, name, ...restField }, index) => (
+                    <Form.Item
+                      key={key}
+                      shouldUpdate={(prev, curr) =>
+                        prev.variants?.[name]?.TrangThai !==
+                        curr.variants?.[name]?.TrangThai
+                      }
+                      noStyle
+                    >
+                      {({ getFieldValue }) => {
+                        const variantStatus = getFieldValue([
+                          "variants",
+                          name,
+                          "TrangThai",
+                        ]);
 
-                    const isHidden = variantStatus === false;
+                        const isHidden = variantStatus === false;
 
-                    return (
-                      <div
-                        key={key}
-                        style={{
-                          border: "1px solid #f0f0f0",
-                          padding: 16,
-                          marginBottom: 16,
-                          borderRadius: 8,
-                          background: isHidden ? "#fff1f0" : "#fafafa",
-                          opacity: isHidden ? 0.7 : 1,
-                        }}
-                      >
-                        <div
-                          style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            marginBottom: 12,
-                          }}
-                        >
-                          <Space>
-                            <span style={{ fontWeight: 600 }}>
-                              Biến thể #{index + 1}
-                            </span>
+                        return (
+                          <div
+                            style={{
+                              border: isHidden
+                                ? "1px solid #ffccc7"
+                                : "1px solid #f0f0f0",
+                              padding: 18,
+                              marginBottom: 18,
+                              borderRadius: 16,
+                              background: isHidden ? "#fff1f0" : "#fafafa",
+                              opacity: isHidden ? 0.82 : 1,
+                            }}
+                          >
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                marginBottom: 14,
+                              }}
+                            >
+                              <Space>
+                                <span style={{ fontWeight: 700, fontSize: 15 }}>
+                                  Biến thể #{index + 1}
+                                </span>
 
-                            {isHidden && <Tag color="red">Đã ẩn</Tag>}
-                          </Space>
+                                {isHidden ? (
+                                  <Tag color="red">Đã ẩn</Tag>
+                                ) : (
+                                  <Tag color="green">Đang hiện</Tag>
+                                )}
+                              </Space>
 
-                          <Space>
+                              <Space>
+                                <span
+                                  style={{
+                                    fontSize: 13,
+                                    color: isHidden ? "#ff4d4f" : "#52c41a",
+                                  }}
+                                >
+                                  {isHidden ? "Ẩn" : "Hiện"}
+                                </span>
+
+                                <Form.Item
+                                  {...restField}
+                                  name={[name, "TrangThai"]}
+                                  valuePropName="checked"
+                                  noStyle
+                                >
+                                  <Switch size="small" />
+                                </Form.Item>
+
+                                {!viewMode && !isHidden && (
+                                  <Tooltip title="Ẩn biến thể">
+                                    <Button
+                                      type="text"
+                                      danger
+                                      icon={<DeleteOutlined />}
+                                      size="small"
+                                      onClick={() => handleHideVariant(name)}
+                                    />
+                                  </Tooltip>
+                                )}
+                              </Space>
+                            </div>
+
                             <Form.Item
                               {...restField}
-                              name={[name, "TrangThai"]}
-                              valuePropName="checked"
-                              noStyle
+                              name={[name, "images"]}
+                              hidden
                             >
-                              <Switch size="small" />
+                              <Input />
                             </Form.Item>
 
-                            {!viewMode && !isHidden && (
-                              <Tooltip title="Ẩn biến thể">
-                                <Button
-                                  type="text"
-                                  danger
-                                  icon={<DeleteOutlined />}
-                                  size="small"
-                                  onClick={() => handleHideVariant(name)}
-                                />
-                              </Tooltip>
-                            )}
-                          </Space>
-                        </div>
-
-                        <div
-                          style={{
-                            marginBottom: 16,
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 12,
-                          }}
-                        >
-                          <Form.Item
-                            {...restField}
-                            name={[name, "images"]}
-                            noStyle
-                          >
-                            <Input hidden />
-                          </Form.Item>
-
-                          {!viewMode && (
-                            <Upload
-                              showUploadList={false}
-                              customRequest={(opt) =>
-                                handleVariantImageUpload(opt, name)
-                              }
-                              accept="image/*"
+                            <div
+                              style={{
+                                marginBottom: 18,
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 20,
+                                padding: 16,
+                                borderRadius: 14,
+                                background: "#fff",
+                                border: "1px solid #f0f0f0",
+                              }}
                             >
-                              <Button size="small" icon={<FileImageOutlined />}>
-                                Ảnh biến thể
-                              </Button>
-                            </Upload>
-                          )}
+                              <Form.Item
+                                shouldUpdate={(prev, curr) =>
+                                  prev.variants?.[name]?.images !==
+                                  curr.variants?.[name]?.images
+                                }
+                                noStyle
+                              >
+                                {({ getFieldValue }) => {
+                                  const imgs = getFieldValue([
+                                    "variants",
+                                    name,
+                                    "images",
+                                  ]);
 
-                          <Form.Item
-                            shouldUpdate={(prev, curr) =>
-                              prev.variants?.[name]?.images !==
-                              curr.variants?.[name]?.images
-                            }
-                            noStyle
-                          >
-                            {({ getFieldValue }) => {
-                              const imgs = getFieldValue([
-                                "variants",
-                                name,
-                                "images",
-                              ]);
+                                  return (
+                                    <ImagePreviewBox
+                                      url={imgs?.[0]}
+                                      size={140}
+                                      emptyText="Chưa có ảnh biến thể"
+                                    />
+                                  );
+                                }}
+                              </Form.Item>
 
-                              return imgs?.[0] ? (
-                                <Image
-                                  src={imgs[0]}
-                                  width={50}
-                                  height={50}
-                                  style={{
-                                    borderRadius: 4,
-                                    objectFit: "cover",
-                                    border: "1px solid #ddd",
-                                  }}
-                                />
-                              ) : (
+                              <div style={{ flex: 1 }}>
                                 <div
                                   style={{
-                                    width: 50,
-                                    height: 50,
-                                    background: "#eee",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    borderRadius: 4,
-                                    fontSize: 10,
-                                    color: "#999",
+                                    fontWeight: 700,
+                                    fontSize: 15,
+                                    marginBottom: 6,
                                   }}
                                 >
-                                  No Image
+                                  Ảnh biến thể
                                 </div>
-                              );
-                            }}
-                          </Form.Item>
-                        </div>
 
-                        <Form.Item
-                          {...restField}
-                          name={[name, "MaBienThe"]}
-                          hidden
-                        >
-                          <Input />
-                        </Form.Item>
-
-                        <div
-                          style={{
-                            display: "grid",
-                            gridTemplateColumns: "2fr 1fr",
-                            gap: 16,
-                          }}
-                        >
-                          <Form.Item
-                            {...restField}
-                            name={[name, "TenBienThe"]}
-                            label="Tên biến thể"
-                            rules={[
-                              {
-                                required: true,
-                                message: "Vui lòng nhập tên biến thể",
-                              },
-                            ]}
-                          >
-                            <Input />
-                          </Form.Item>
-
-                          <Form.Item
-                            {...restField}
-                            name={[name, "Menh"]}
-                            label="Mệnh"
-                            rules={[
-                              {
-                                required: true,
-                                message: "Bắt buộc chọn mệnh",
-                              },
-                            ]}
-                          >
-                            <Select placeholder="Chọn Mệnh">
-                              {MENH_OPTIONS.map((opt) => (
-                                <Select.Option
-                                  key={opt.value}
-                                  value={opt.value}
+                                <div
+                                  style={{
+                                    color: "#8c8c8c",
+                                    fontSize: 13,
+                                    marginBottom: 14,
+                                    lineHeight: 1.5,
+                                  }}
                                 >
-                                  {opt.label}
-                                </Select.Option>
-                              ))}
-                            </Select>
-                          </Form.Item>
-                        </div>
+                                  Ảnh này giúp khách hàng nhận biết rõ từng biến
+                                  thể của sản phẩm.
+                                </div>
 
-                        <div
-                          style={{
-                            display: "grid",
-                            gridTemplateColumns: "1fr 1fr",
-                            gap: 16,
-                          }}
-                        >
-                          <Form.Item
-                            {...restField}
-                            name={[name, "Gia"]}
-                            label="Giá"
-                          >
-                            <InputNumber style={{ width: "100%" }} />
-                          </Form.Item>
+                                {!viewMode && (
+                                  <Upload
+                                    showUploadList={false}
+                                    customRequest={(opt) =>
+                                      handleVariantImageUpload(opt, name)
+                                    }
+                                    accept="image/*"
+                                  >
+                                    <Button
+                                      size="large"
+                                      icon={<FileImageOutlined />}
+                                    >
+                                      Tải ảnh biến thể
+                                    </Button>
+                                  </Upload>
+                                )}
+                              </div>
+                            </div>
 
-                          <Form.Item
-                            {...restField}
-                            name={[name, "SoLuong"]}
-                            label="Kho"
-                          >
-                            <InputNumber style={{ width: "100%" }} />
-                          </Form.Item>
-                        </div>
+                            <Form.Item
+                              {...restField}
+                              name={[name, "MaBienThe"]}
+                              hidden
+                            >
+                              <Input />
+                            </Form.Item>
 
-                        <div
-                          style={{
-                            display: "grid",
-                            gridTemplateColumns: "repeat(4, 1fr)",
-                            gap: 8,
-                            marginTop: 8,
-                          }}
-                        >
-                          <Form.Item
-                            {...restField}
-                            name={[name, "KhoiLuong"]}
-                            label="Nặng(g)"
-                          >
-                            <InputNumber
-                              size="small"
-                              style={{ width: "100%" }}
-                            />
-                          </Form.Item>
+                            <div
+                              style={{
+                                display: "grid",
+                                gridTemplateColumns: "2fr 1fr",
+                                gap: 18,
+                              }}
+                            >
+                              <Form.Item
+                                {...restField}
+                                name={[name, "TenBienThe"]}
+                                label="Tên biến thể"
+                                rules={[
+                                  {
+                                    required: true,
+                                    message: "Vui lòng nhập tên biến thể",
+                                  },
+                                ]}
+                              >
+                                <Input
+                                  size="large"
+                                  placeholder="Ví dụ: Size M, Màu trắng..."
+                                />
+                              </Form.Item>
 
-                          <Form.Item
-                            {...restField}
-                            name={[name, "ChieuDai"]}
-                            label="Dài(cm)"
-                          >
-                            <InputNumber
-                              size="small"
-                              style={{ width: "100%" }}
-                            />
-                          </Form.Item>
+                              <Form.Item
+                                {...restField}
+                                name={[name, "Menh"]}
+                                label="Mệnh"
+                                rules={[
+                                  {
+                                    required: true,
+                                    message: "Bắt buộc chọn mệnh",
+                                  },
+                                ]}
+                              >
+                                <Select size="large" placeholder="Chọn mệnh">
+                                  {MENH_OPTIONS.map((opt) => (
+                                    <Select.Option
+                                      key={opt.value}
+                                      value={opt.value}
+                                    >
+                                      {opt.label}
+                                    </Select.Option>
+                                  ))}
+                                </Select>
+                              </Form.Item>
+                            </div>
 
-                          <Form.Item
-                            {...restField}
-                            name={[name, "ChieuRong"]}
-                            label="Rộng(cm)"
-                          >
-                            <InputNumber
-                              size="small"
-                              style={{ width: "100%" }}
-                            />
-                          </Form.Item>
+                            <div
+                              style={{
+                                display: "grid",
+                                gridTemplateColumns: "1fr 1fr",
+                                gap: 18,
+                              }}
+                            >
+                              <Form.Item
+                                {...restField}
+                                name={[name, "Gia"]}
+                                label="Giá"
+                                rules={[
+                                  {
+                                    required: true,
+                                    message: "Vui lòng nhập giá",
+                                  },
+                                ]}
+                              >
+                                <InputNumber
+                                  size="large"
+                                  min={0}
+                                  style={{ width: "100%" }}
+                                  placeholder="Nhập giá"
+                                />
+                              </Form.Item>
 
-                          <Form.Item
-                            {...restField}
-                            name={[name, "ChieuCao"]}
-                            label="Cao(cm)"
-                          >
-                            <InputNumber
-                              size="small"
-                              style={{ width: "100%" }}
-                            />
-                          </Form.Item>
-                        </div>
-                      </div>
-                    );
-                  })}
+                              <Form.Item
+                                {...restField}
+                                name={[name, "SoLuong"]}
+                                label="Kho"
+                                rules={[
+                                  {
+                                    required: true,
+                                    message: "Vui lòng nhập số lượng",
+                                  },
+                                ]}
+                              >
+                                <InputNumber
+                                  size="large"
+                                  min={0}
+                                  style={{ width: "100%" }}
+                                  placeholder="Nhập tồn kho"
+                                />
+                              </Form.Item>
+                            </div>
+
+                            <div
+                              style={{
+                                display: "grid",
+                                gridTemplateColumns: "repeat(4, 1fr)",
+                                gap: 12,
+                              }}
+                            >
+                              <Form.Item
+                                {...restField}
+                                name={[name, "KhoiLuong"]}
+                                label="Nặng(g)"
+                              >
+                                <InputNumber
+                                  size="middle"
+                                  min={0}
+                                  style={{ width: "100%" }}
+                                />
+                              </Form.Item>
+
+                              <Form.Item
+                                {...restField}
+                                name={[name, "ChieuDai"]}
+                                label="Dài(cm)"
+                              >
+                                <InputNumber
+                                  size="middle"
+                                  min={0}
+                                  style={{ width: "100%" }}
+                                />
+                              </Form.Item>
+
+                              <Form.Item
+                                {...restField}
+                                name={[name, "ChieuRong"]}
+                                label="Rộng(cm)"
+                              >
+                                <InputNumber
+                                  size="middle"
+                                  min={0}
+                                  style={{ width: "100%" }}
+                                />
+                              </Form.Item>
+
+                              <Form.Item
+                                {...restField}
+                                name={[name, "ChieuCao"]}
+                                label="Cao(cm)"
+                              >
+                                <InputNumber
+                                  size="middle"
+                                  min={0}
+                                  style={{ width: "100%" }}
+                                />
+                              </Form.Item>
+                            </div>
+                          </div>
+                        );
+                      }}
+                    </Form.Item>
+                  ))}
 
                   {!viewMode && (
                     <Button
                       type="dashed"
                       onClick={() => add({ TrangThai: true, images: [] })}
                       block
+                      size="large"
                       icon={<PlusOutlined />}
                     >
                       Thêm biến thể
@@ -905,18 +1096,25 @@ export default function AdminProducts() {
             </Form.List>
           </div>
 
-          <div className={styles.modalFooter}>
-            <Button
-              onClick={() => {
-                setAddModal(false);
-                setViewMode(false);
-              }}
-            >
+          <div
+            className={styles.modalFooter}
+            style={{
+              marginTop: 22,
+              paddingTop: 16,
+              borderTop: "1px solid #f0f0f0",
+            }}
+          >
+            <Button size="large" onClick={closeModal}>
               Đóng
             </Button>
 
             {!viewMode && (
-              <Button type="primary" htmlType="submit" loading={submitting}>
+              <Button
+                type="primary"
+                size="large"
+                htmlType="submit"
+                loading={submitting}
+              >
                 {editingId ? "Cập nhật" : "Thêm mới"}
               </Button>
             )}
