@@ -61,6 +61,7 @@ const InventoryHistory = () => {
         });
       }
     } catch (error) {
+      console.error(error);
       message.error("Lỗi khi tải dữ liệu lịch sử tồn kho!");
     } finally {
       setLoadingTable(false);
@@ -128,6 +129,7 @@ const InventoryHistory = () => {
 
       message.success("Tải báo cáo thành công!");
     } catch (error) {
+      console.error(error);
       message.error("Có lỗi xảy ra khi tải file!");
     } finally {
       setLoadingExport(false);
@@ -146,6 +148,7 @@ const InventoryHistory = () => {
         setDetailData(response.data.result);
       }
     } catch (error) {
+      console.error(error);
       message.error("Lỗi khi tải chi tiết lịch sử!");
     } finally {
       setLoadingDetail(false);
