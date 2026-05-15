@@ -75,6 +75,26 @@ const buildReviewFilter = ({
           [Op.like]: `%${keyword}%`,
         },
       },
+      {
+        "$ChiTietDonHang.BienTheSanPham.TenBienThe$": {
+          [Op.like]: `%${keyword}%`,
+        },
+      },
+      {
+        "$ChiTietDonHang.BienTheSanPham.SanPham.TenSanPham$": {
+          [Op.like]: `%${keyword}%`,
+        },
+      },
+      {
+        "$KhachHang.TenKhachHang$": {
+          [Op.like]: `%${keyword}%`,
+        },
+      },
+      {
+        "$ChiTietDonHang.DonHang.MaHienThi$": {
+          [Op.like]: `%${keyword}%`,
+        },
+      },
     ];
   }
 
@@ -87,18 +107,18 @@ const buildReviewFilter = ({
   }
 
   if (startDate || endDate) {
-    ratingWhere.NgayDanhGia = {};
+    ratingWhere.NgayGui = {};
 
     if (startDate) {
       const start = new Date(startDate);
       start.setHours(0, 0, 0, 0);
-      ratingWhere.NgayDanhGia[Op.gte] = start;
+      ratingWhere.NgayGui[Op.gte] = start;
     }
 
     if (endDate) {
       const end = new Date(endDate);
       end.setHours(23, 59, 59, 999);
-      ratingWhere.NgayDanhGia[Op.lte] = end;
+      ratingWhere.NgayGui[Op.lte] = end;
     }
   }
 
@@ -126,48 +146,40 @@ const buildReviewFilter = ({
     ratingWhere,
     variantWhere,
     productWhere,
-    keyword,
   };
 };
 
-const getReviewIncludes = ({
-  variantWhere = {},
-  productWhere = {},
-  keyword = "",
-} = {}) => [
+const getReviewIncludes = ({ variantWhere = {}, productWhere = {} } = {}) => [
   {
     model: CustomerModel,
+    as: "KhachHang",
     attributes: ["MaKhachHang", "TenKhachHang", "Avatar"],
     required: false,
   },
   {
     model: OrderDetailModel,
+    as: "ChiTietDonHang",
     required: true,
     include: [
       {
         model: OrderModel,
+        as: "DonHang",
         attributes: ["MaDonHang", "MaHienThi", "NgayDat"],
         required: false,
       },
       {
         model: VariantModel,
+        as: "BienTheSanPham",
         attributes: ["MaBienThe", "TenBienThe", "MaSanPham"],
         where: Object.keys(variantWhere).length ? variantWhere : undefined,
         required: true,
         include: [
           {
             model: ProductModel,
+            as: "SanPham",
             attributes: ["MaSanPham", "TenSanPham"],
-            where: Object.keys(productWhere).length
-              ? productWhere
-              : keyword
-                ? {
-                    TenSanPham: {
-                      [Op.like]: `%${keyword}%`,
-                    },
-                  }
-                : undefined,
-            required: Object.keys(productWhere).length > 0 || !!keyword,
+            where: Object.keys(productWhere).length ? productWhere : undefined,
+            required: Object.keys(productWhere).length > 0,
           },
         ],
       },
@@ -183,10 +195,12 @@ export const reviewsProductService = async (productID) => {
     include: [
       {
         model: OrderDetailModel,
+        as: "ChiTietDonHang",
         required: true,
         include: [
           {
             model: VariantModel,
+            as: "BienTheSanPham",
             required: true,
             where: {
               MaSanPham: productID,
@@ -196,6 +210,7 @@ export const reviewsProductService = async (productID) => {
       },
       {
         model: CustomerModel,
+        as: "KhachHang",
         attributes: ["TenKhachHang", "Avatar"],
       },
     ],
@@ -213,11 +228,13 @@ export const averageRatingService = async (productID) => {
     include: [
       {
         model: OrderDetailModel,
+        as: "ChiTietDonHang",
         attributes: [],
         required: true,
         include: [
           {
             model: VariantModel,
+            as: "BienTheSanPham",
             required: true,
             attributes: [],
             where: { MaSanPham: productID },
@@ -253,6 +270,7 @@ export const createReviewsService = async (
       include: [
         {
           model: OrderModel,
+          as: "DonHang",
           where: {
             MaKhachHang: customer.MaKhachHang,
             TrangThaiDonHang: 3,
@@ -261,6 +279,7 @@ export const createReviewsService = async (
         },
         {
           model: VariantModel,
+          as: "BienTheSanPham",
           where: { MaSanPham: idProduct },
           attributes: ["MaSanPham"],
         },
@@ -334,30 +353,29 @@ export const adminGetAllReviewsService = async ({
   const offset = (currentPage - 1) * currentLimit;
   const sortOrder = String(order).toUpperCase() === "ASC" ? "ASC" : "DESC";
 
-  const { ratingWhere, variantWhere, productWhere, keyword } =
-    buildReviewFilter({
-      search,
-      productName,
-      variantName,
-      productId,
-      variantId,
-      rating,
-      status,
-      startDate,
-      endDate,
-    });
+  const { ratingWhere, variantWhere, productWhere } = buildReviewFilter({
+    search,
+    productName,
+    variantName,
+    productId,
+    variantId,
+    rating,
+    status,
+    startDate,
+    endDate,
+  });
 
   const { rows, count } = await RatingModel.findAndCountAll({
     where: ratingWhere,
     include: getReviewIncludes({
       variantWhere,
       productWhere,
-      keyword,
     }),
     order: [["MaDanhGia", sortOrder]],
     limit: currentLimit,
     offset,
     distinct: true,
+    subQuery: false,
   });
 
   return {
@@ -385,27 +403,26 @@ export const exportCustomerFeedbackXlsxService = async ({
 } = {}) => {
   const sortOrder = String(order).toUpperCase() === "ASC" ? "ASC" : "DESC";
 
-  const { ratingWhere, variantWhere, productWhere, keyword } =
-    buildReviewFilter({
-      search,
-      productName,
-      variantName,
-      productId,
-      variantId,
-      rating,
-      status,
-      startDate,
-      endDate,
-    });
+  const { ratingWhere, variantWhere, productWhere } = buildReviewFilter({
+    search,
+    productName,
+    variantName,
+    productId,
+    variantId,
+    rating,
+    status,
+    startDate,
+    endDate,
+  });
 
   const reviews = await RatingModel.findAll({
     where: ratingWhere,
     include: getReviewIncludes({
       variantWhere,
       productWhere,
-      keyword,
     }),
     order: [["MaDanhGia", sortOrder]],
+    subQuery: false,
   });
 
   const workbook = new ExcelJS.Workbook();
@@ -488,7 +505,7 @@ export const exportCustomerFeedbackXlsxService = async ({
 
     worksheet.addImage(logoId, {
       tl: { col: 0.15, row: 0.32 },
-      ext: { width: 100, height: 100 },
+      ext: { width: 72, height: 52 },
       editAs: "oneCell",
     });
   } catch (error) {
@@ -627,28 +644,11 @@ export const exportCustomerFeedbackXlsxService = async ({
   reviews.forEach((item, index) => {
     const review = item.get({ plain: true });
 
-    const customer =
-      review.KhachHang || review.Customer || review.customer || {};
-    const orderDetail =
-      review.ChiTietDonHang ||
-      review.OrderDetail ||
-      review.OrderDetailModel ||
-      review.orderDetail ||
-      {};
-    const order =
-      orderDetail.DonHang || orderDetail.Order || orderDetail.order || {};
-    const variant =
-      orderDetail.BienTheSanPham ||
-      orderDetail.Variant ||
-      orderDetail.VariantModel ||
-      orderDetail.variant ||
-      {};
-    const product =
-      variant.SanPham ||
-      variant.Product ||
-      variant.ProductModel ||
-      variant.product ||
-      {};
+    const customer = review.KhachHang || {};
+    const orderDetail = review.ChiTietDonHang || {};
+    const order = orderDetail.DonHang || {};
+    const variant = orderDetail.BienTheSanPham || {};
+    const product = variant.SanPham || {};
 
     const row = worksheet.getRow(10 + index);
 
@@ -662,10 +662,10 @@ export const exportCustomerFeedbackXlsxService = async ({
       Number(review.TrangThai) === 1 ? "Hiển thị" : "Ẩn",
       order.MaHienThi || order.MaDonHang || "",
       order.NgayDat ? formatDateTimeVN(order.NgayDat) : "",
-      review.NgayDanhGia ? formatDateTimeVN(review.NgayDanhGia) : "",
+      review.NgayGui ? formatDateTimeVN(review.NgayGui) : "",
     ];
 
-    row.height = 34;
+    row.height = 42;
 
     row.eachCell((cell, colNumber) => {
       cell.font = {

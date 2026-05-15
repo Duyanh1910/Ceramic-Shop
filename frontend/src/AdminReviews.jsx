@@ -20,14 +20,23 @@ const { Option } = Select;
 
 const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1/admin/reviews";
 
+const lineClampStyle = {
+  display: "-webkit-box",
+  WebkitLineClamp: 3,
+  WebkitBoxOrient: "vertical",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  lineHeight: "20px",
+  maxHeight: "60px",
+  whiteSpace: "normal",
+};
+
 const AdminReviews = () => {
   const [data, setData] = useState([]);
   const [loadingTable, setLoadingTable] = useState(false);
   const [loadingExport, setLoadingExport] = useState(false);
 
   const [searchText, setSearchText] = useState("");
-  const [productName, setProductName] = useState("");
-  const [variantName, setVariantName] = useState("");
   const [filterRating, setFilterRating] = useState(null);
   const [filterStatus, setFilterStatus] = useState(null);
   const [dateRange, setDateRange] = useState(null);
@@ -39,16 +48,7 @@ const AdminReviews = () => {
   });
 
   const fetchData = useCallback(
-    async (
-      page = 1,
-      limit = 10,
-      search = "",
-      rating,
-      status,
-      dates,
-      product = "",
-      variant = "",
-    ) => {
+    async (page = 1, limit = 10, search = "", rating, status, dates) => {
       try {
         setLoadingTable(true);
 
@@ -64,8 +64,6 @@ const AdminReviews = () => {
           page,
           limit,
           search,
-          ...(product && { productName: product }),
-          ...(variant && { variantName: variant }),
           ...(rating !== null && rating !== undefined && { rating }),
           ...(status !== null && status !== undefined && { status }),
           ...(startDate && { startDate }),
@@ -106,8 +104,6 @@ const AdminReviews = () => {
         filterRating,
         filterStatus,
         dateRange,
-        productName,
-        variantName,
       );
     }, 500);
 
@@ -117,8 +113,6 @@ const AdminReviews = () => {
     pagination.current,
     pagination.pageSize,
     searchText,
-    productName,
-    variantName,
     filterRating,
     filterStatus,
     dateRange,
@@ -150,8 +144,6 @@ const AdminReviews = () => {
 
       const params = {
         search: searchText,
-        ...(productName && { productName }),
-        ...(variantName && { variantName }),
         ...(filterRating !== null &&
           filterRating !== undefined && { rating: filterRating }),
         ...(filterStatus !== null &&
@@ -196,49 +188,22 @@ const AdminReviews = () => {
   };
 
   const getOrderDetail = (record) => {
-    return (
-      record.ChiTietDonHang ||
-      record.OrderDetail ||
-      record.OrderDetailModel ||
-      record.orderDetail ||
-      {}
-    );
+    return record.ChiTietDonHang || {};
   };
 
   const getVariant = (record) => {
     const orderDetail = getOrderDetail(record);
-
-    return (
-      orderDetail.BienTheSanPham ||
-      orderDetail.Variant ||
-      orderDetail.VariantModel ||
-      orderDetail.variant ||
-      {}
-    );
+    return orderDetail.BienTheSanPham || {};
   };
 
   const getProduct = (record) => {
     const variant = getVariant(record);
-
-    return (
-      variant.SanPham ||
-      variant.Product ||
-      variant.ProductModel ||
-      variant.product ||
-      {}
-    );
+    return variant.SanPham || {};
   };
 
   const getOrder = (record) => {
     const orderDetail = getOrderDetail(record);
-
-    return (
-      orderDetail.DonHang ||
-      orderDetail.Order ||
-      orderDetail.OrderModel ||
-      orderDetail.order ||
-      {}
-    );
+    return orderDetail.DonHang || {};
   };
 
   const columns = [
@@ -252,35 +217,50 @@ const AdminReviews = () => {
     {
       title: "Khách hàng",
       key: "KhachHang",
-      width: 180,
+      width: 170,
       render: (_, record) => {
-        const customer =
-          record.KhachHang ||
-          record.Customer ||
-          record.CustomerModel ||
-          record.customer ||
-          {};
-
+        const customer = record.KhachHang || {};
         return customer.TenKhachHang || "Khách ẩn danh";
       },
     },
     {
       title: "Sản phẩm",
       key: "SanPham",
-      width: 280,
+      width: 340,
       render: (_, record) => {
         const variant = getVariant(record);
         const product = getProduct(record);
 
+        const productText = product.TenSanPham || "N/A";
+        const variantText = variant.TenBienThe || "N/A";
+
         return (
-          <div>
-            <div style={{ fontWeight: 600, color: "#173B63" }}>
-              {product.TenSanPham || "N/A"}
+          <Tooltip title={`${productText} - ${variantText}`}>
+            <div>
+              <div
+                style={{
+                  ...lineClampStyle,
+                  fontWeight: 600,
+                  color: "#173B63",
+                }}
+              >
+                {productText}
+              </div>
+
+              <div
+                style={{
+                  ...lineClampStyle,
+                  marginTop: 4,
+                  fontSize: 12,
+                  color: "#888",
+                  WebkitLineClamp: 2,
+                  maxHeight: 40,
+                }}
+              >
+                Phân loại: {variantText}
+              </div>
             </div>
-            <div style={{ fontSize: "12px", color: "#888", marginTop: 4 }}>
-              Phân loại: {variant.TenBienThe || "N/A"}
-            </div>
-          </div>
+          </Tooltip>
         );
       },
     },
@@ -288,7 +268,7 @@ const AdminReviews = () => {
       title: "Đánh giá",
       dataIndex: "DiemDanhGia",
       key: "DiemDanhGia",
-      width: 150,
+      width: 145,
       align: "center",
       render: (diem) => (
         <Rate disabled value={Number(diem) || 0} style={{ fontSize: 14 }} />
@@ -298,30 +278,29 @@ const AdminReviews = () => {
       title: "Nội dung",
       dataIndex: "NoiDung",
       key: "NoiDung",
-      width: 320,
-      render: (text) => (
-        <Tooltip title={text || "Không có nội dung"}>
-          <div
-            style={{
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              maxWidth: 300,
-            }}
-          >
-            {text || (
-              <span style={{ color: "#aaa", fontStyle: "italic" }}>
-                Không có nội dung
-              </span>
-            )}
-          </div>
-        </Tooltip>
-      ),
+      width: 400,
+      render: (text) => {
+        const content = text || "Không có nội dung";
+
+        return (
+          <Tooltip title={content}>
+            <div
+              style={{
+                ...lineClampStyle,
+                color: text ? "inherit" : "#aaa",
+                fontStyle: text ? "normal" : "italic",
+              }}
+            >
+              {content}
+            </div>
+          </Tooltip>
+        );
+      },
     },
     {
       title: "Mã đơn hàng",
       key: "MaDonHang",
-      width: 150,
+      width: 145,
       align: "center",
       render: (_, record) => {
         const order = getOrder(record);
@@ -330,11 +309,11 @@ const AdminReviews = () => {
     },
     {
       title: "Ngày đánh giá",
-      key: "NgayDanhGia",
-      width: 170,
+      key: "NgayGui",
+      width: 165,
       align: "center",
       render: (_, record) => {
-        const date = record.NgayDanhGia || record.NgayGui || record.createdAt;
+        const date = record.NgayGui || record.createdAt;
         return date ? dayjs(date).format("DD/MM/YYYY HH:mm") : "N/A";
       },
     },
@@ -342,7 +321,7 @@ const AdminReviews = () => {
       title: "Trạng thái",
       dataIndex: "TrangThai",
       key: "TrangThai",
-      width: 120,
+      width: 115,
       align: "center",
       render: (status) => {
         return Number(status) === 1 ? (
@@ -365,38 +344,27 @@ const AdminReviews = () => {
         </div>
       </div>
 
-      <div className={styles.toolbar} style={{ flexWrap: "wrap", gap: "12px" }}>
+      <div
+        className={styles.toolbar}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          flexWrap: "nowrap",
+          gap: 12,
+          width: "100%",
+        }}
+      >
         <Input
-          placeholder="Tìm nội dung đánh giá..."
+          placeholder="Tìm nội dung, sản phẩm, biến thể, khách hàng, mã đơn..."
           prefix={<SearchOutlined />}
-          style={{ width: 240, borderRadius: "8px" }}
+          style={{
+            flex: "1 1 420px",
+            minWidth: 320,
+            borderRadius: 8,
+          }}
           value={searchText}
           onChange={(e) => {
             setSearchText(e.target.value);
-            resetPagination();
-          }}
-          allowClear
-        />
-
-        <Input
-          placeholder="Lọc theo tên sản phẩm..."
-          prefix={<SearchOutlined />}
-          style={{ width: 240, borderRadius: "8px" }}
-          value={productName}
-          onChange={(e) => {
-            setProductName(e.target.value);
-            resetPagination();
-          }}
-          allowClear
-        />
-
-        <Input
-          placeholder="Lọc theo tên biến thể..."
-          prefix={<SearchOutlined />}
-          style={{ width: 220, borderRadius: "8px" }}
-          value={variantName}
-          onChange={(e) => {
-            setVariantName(e.target.value);
             resetPagination();
           }}
           allowClear
@@ -434,7 +402,10 @@ const AdminReviews = () => {
         </Select>
 
         <RangePicker
-          style={{ borderRadius: "8px" }}
+          style={{
+            width: 290,
+            borderRadius: 8,
+          }}
           format="DD/MM/YYYY"
           value={dateRange}
           onChange={(dates) => {
@@ -450,7 +421,11 @@ const AdminReviews = () => {
           icon={<DownloadOutlined />}
           onClick={handleExportReport}
           loading={loadingExport}
-          style={{ marginLeft: "auto", borderRadius: "8px" }}
+          style={{
+            borderRadius: 8,
+            height: 36,
+            whiteSpace: "nowrap",
+          }}
         >
           Xuất báo cáo
         </Button>
