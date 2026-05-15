@@ -38,44 +38,63 @@ const InventoryHistory = () => {
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [detailData, setDetailData] = useState(null);
 
-  const fetchData = useCallback(async (page = 1, limit = 10, search = "") => {
-    try {
-      setLoadingTable(true);
-      const queryParams = new URLSearchParams({
-        page,
-        limit,
-        search,
-      });
+  const fetchData = useCallback(
+    async (page = 1, limit = 10, search = "", dates = null) => {
+      try {
+        setLoadingTable(true);
 
-      const response = await axios.get(
-        `${API_BASE}/inventories?${queryParams.toString()}`,
-        { withCredentials: true },
-      );
+        let startDate = "";
+        let endDate = "";
 
-      if (response.data.success) {
-        setData(response.data.result.data);
-        setPagination({
-          current: response.data.result.pagination.page,
-          pageSize: response.data.result.pagination.limit,
-          total: response.data.result.pagination.total,
+        if (dates && dates.length === 2) {
+          startDate = dates[0].format("YYYY-MM-DD");
+          endDate = dates[1].format("YYYY-MM-DD");
+        }
+
+        const queryParams = new URLSearchParams({
+          page,
+          limit,
+          search,
+          ...(startDate && { startDate }),
+          ...(endDate && { endDate }),
         });
+
+        const response = await axios.get(
+          `${API_BASE}/inventories?${queryParams.toString()}`,
+          { withCredentials: true },
+        );
+
+        if (response.data.success) {
+          setData(response.data.result.data);
+          setPagination({
+            current: response.data.result.pagination.page,
+            pageSize: response.data.result.pagination.limit,
+            total: response.data.result.pagination.total,
+          });
+        }
+      } catch (error) {
+        console.error(error);
+        message.error("Lỗi khi tải dữ liệu lịch sử tồn kho!");
+      } finally {
+        setLoadingTable(false);
       }
-    } catch (error) {
-      console.error(error);
-      message.error("Lỗi khi tải dữ liệu lịch sử tồn kho!");
-    } finally {
-      setLoadingTable(false);
-    }
-  }, []);
+    },
+    [],
+  );
 
   useEffect(() => {
-    fetchData(pagination.current, pagination.pageSize, searchText);
-  }, [fetchData, pagination.current, pagination.pageSize]);
+    const timer = setTimeout(() => {
+      fetchData(pagination.current, pagination.pageSize, searchText, dateRange);
+    }, 500);
 
-  const handleSearch = () => {
-    setPagination((prev) => ({ ...prev, current: 1 }));
-    fetchData(1, pagination.pageSize, searchText);
-  };
+    return () => clearTimeout(timer);
+  }, [
+    fetchData,
+    pagination.current,
+    pagination.pageSize,
+    searchText,
+    dateRange,
+  ]);
 
   const handleTableChange = (newPagination) => {
     setPagination({
@@ -238,24 +257,22 @@ const InventoryHistory = () => {
           prefix={<SearchOutlined />}
           className={styles.searchInput}
           value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-          onPressEnter={handleSearch}
+          onChange={(e) => {
+            setSearchText(e.target.value);
+            setPagination((prev) => ({ ...prev, current: 1 }));
+          }}
         />
-        <Button
-          type="primary"
-          ghost
-          className={styles.btnSearch}
-          onClick={handleSearch}
-        >
-          Tìm
-        </Button>
 
         <RangePicker
           style={{ borderRadius: "8px" }}
           format="DD/MM/YYYY"
           value={dateRange}
-          onChange={(dates) => setDateRange(dates)}
+          onChange={(dates) => {
+            setDateRange(dates);
+            setPagination((prev) => ({ ...prev, current: 1 }));
+          }}
           placeholder={["Từ ngày", "Đến ngày"]}
+          allowClear
         />
 
         <Button
