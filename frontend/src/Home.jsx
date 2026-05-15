@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { Dropdown, Avatar, Space, Layout, Menu, Input, Select, Row, Col, Pagination, Spin, Badge, message, AutoComplete, Popover, Button, Radio, Rate } from 'antd';
-import { LogoutOutlined, SearchOutlined, ShoppingCartOutlined, DeleteOutlined, ReloadOutlined, AppstoreOutlined, EyeOutlined, UserOutlined, ShoppingOutlined } from '@ant-design/icons';
+import { LogoutOutlined, SearchOutlined, ShoppingCartOutlined, DeleteOutlined, ReloadOutlined, AppstoreOutlined, EyeOutlined, UserOutlined, ShoppingOutlined, WalletOutlined } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import styles from './Home.module.css';
@@ -190,21 +190,34 @@ function Home() {
   }, [location.search]);
 
   const userMenu = [
-    { 
-      key: '1', 
-      label: 'Tài khoản', 
-      icon: <UserOutlined />,
-      onClick: () => navigate('/profile') 
-    },
-    { type: 'divider' },
-    {key:'2',
-      label:'Đơn hàng của tôi',
-      icon: <ShoppingOutlined />,
-      onClick: ()=> navigate('/orders')
-    },
-    {type: 'divider'},
-    { key: '3', danger: true, label: 'Đăng xuất', icon: <LogoutOutlined />, onClick: handleLogout },
-  ];
+  { 
+    key: '1', 
+    label: 'Tài khoản', 
+    icon: <UserOutlined />,
+    onClick: () => navigate('/profile') 
+  },
+  {
+    key: '2',
+    label: 'Ví của tôi',
+    icon: <WalletOutlined />,
+    onClick: () => navigate('/vouchers')
+  },
+  { type: 'divider' },
+  {
+    key: '3',
+    label: 'Đơn hàng của tôi',
+    icon: <ShoppingOutlined />,
+    onClick: () => navigate('/orders')
+  },
+  { type: 'divider' },
+  {
+    key: '4',
+    danger: true,
+    label: 'Đăng xuất',
+    icon: <LogoutOutlined />,
+    onClick: handleLogout
+  },
+];
 
   const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price || 0);
 

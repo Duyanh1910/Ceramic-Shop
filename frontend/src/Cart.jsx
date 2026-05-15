@@ -388,12 +388,23 @@ function Cart() {
                       if (!isLoggedIn) {
                         return setLoginModal(true); 
                       }
+                      let pendingVoucher = null;
+
+                      try {
+                        pendingVoucher = JSON.parse(localStorage.getItem('pending_apply_voucher') || 'null');
+                      } catch {
+                        pendingVoucher = null;
+                      }
+
                       navigate('/checkout', { 
                         state: { 
                           selectedItems: selectedItems.map(key => parseInt(key.split('-')[1] || key.split('-')[0])),
-                          cartItems: selectedCartItems
+                          cartItems: selectedCartItems,
+                          applyVoucher: pendingVoucher
                         } 
                       });
+
+                      localStorage.removeItem('pending_apply_voucher');
                     }}
                     style={{marginTop: '20px' }}
                   >

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Layout, Form, Input, Button, Avatar, message, Upload, Divider } from 'antd';
-import { UserOutlined, ArrowLeftOutlined, UploadOutlined, ProfileOutlined, ShoppingOutlined, LockOutlined } from '@ant-design/icons';
+import { UserOutlined, ArrowLeftOutlined, UploadOutlined, ProfileOutlined, ShoppingOutlined, LockOutlined, WalletOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
@@ -8,6 +8,7 @@ import styles from './Profile.module.css';
 
 import ChangePassword from './ChangePassword'; 
 import OrderTrackingMini from './OrderTrackingMini';
+import VoucherWalletContent from './VoucherWalletContent';
 
 const { Header, Content, Sider } = Layout;
 
@@ -165,6 +166,12 @@ function Profile() {
                   <LockOutlined /> Đổi mật khẩu
                 </li>
                 <li 
+                  className={activeTab === 'vouchers' ? styles.active : ''} 
+                  onClick={() => setActiveTab('vouchers')}
+                >
+                  <WalletOutlined /> Ví khuyến mại
+                </li>
+                <li 
                   className={activeTab === 'orders' ? styles.active : ''} 
                   onClick={() => setActiveTab('orders')}
                 >
@@ -256,6 +263,10 @@ function Profile() {
 
               {activeTab === 'orders' && (
                 <OrderTrackingMini />
+              )}
+
+              {activeTab === 'vouchers' && (
+                <VoucherWalletContent compact />
               )}
 
             </Content>

@@ -40,6 +40,7 @@ import AdminWarranties from "./AdminWarranties.jsx";
 import AdminRisks from "./AdminRisks.jsx";
 import AdminInventories from "./AdminInventories.jsx";
 import AdminReviews from "./AdminReviews.jsx";
+import VoucherWallet from "./VoucherWallet.jsx";
 
 ReactGA.initialize("G-909W1LHHLD");
 
@@ -159,7 +160,14 @@ createRoot(document.getElementById("root")).render(
               </ProtectedRoute>
             }
           />
-
+          <Route
+            path="/vouchers"
+            element={
+              <ProtectedRoute allowedRoles={["Customer", "Admin", "Staff"]}>
+                <VoucherWallet />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/admin"
             element={

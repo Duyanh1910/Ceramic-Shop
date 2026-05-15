@@ -1,0 +1,152 @@
+@import url('https://fonts.googleapis.com/css2?family=Arsenal:wght@400;600;700&display=swap');
+
+:global(body) {
+  margin: 0 !important;
+  padding: 0 !important;
+  background-color: #fdfdfd !important;
+  font-family: 'Arsenal', sans-serif !important;
+}
+
+.walletWrapper {
+  min-height: 100vh;
+  background-color: #fdfdfd;
+  background: linear-gradient(rgba(255, 255, 255, 0.8), rgb(213, 233, 255)), url('https://res.cloudinary.com/dcmwz0uis/image/upload/v1774819412/bghome_dnne19.avif') center/cover no-repeat fixed;
+  background-attachment: fixed;
+}
+
+.topHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 50px;
+  background-color: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  height: 75px;
+}
+
+.logoBox {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  cursor: pointer;
+}
+
+.logoImg {
+  width: 50px;
+  height: auto;
+  object-fit: contain;
+  mix-blend-mode: multiply;
+}
+
+.logoTextWrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.logoText {
+  font-family: 'Arsenal', serif;
+  font-size: 26px;
+  font-weight: 700;
+  margin: 0 0 5px 0;
+  color: #173354;
+  letter-spacing: 2px;
+  line-height: 1;
+}
+
+.logoSub {
+  font-size: 11px;
+  letter-spacing: 2.5px;
+  color: #BB9244;
+  font-weight: 600;
+  margin: 0;
+  line-height: 1;
+}
+
+.btnBack {
+  color: #1b437c;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.btnBack:hover {
+  color: #c48c46;
+}
+
+.mainContent {
+  padding: 40px 20px 70px;
+}
+
+.container {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.pageHero {
+  background: linear-gradient(135deg, #1b437c, #102b4f);
+  color: #fff;
+  border-radius: 16px;
+  padding: 30px 36px;
+  margin-bottom: 22px;
+  box-shadow: 0 10px 30px rgba(27, 67, 124, 0.18);
+}
+
+.heroLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #f2c276;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.pageHero h1 {
+  margin: 0 0 8px;
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.pageHero p {
+  max-width: 650px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 15px;
+}
+
+.contentCard {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  padding: 30px 34px;
+  border: 1px solid #f0f0f0;
+}
+
+@media (max-width: 768px) {
+  .topHeader {
+    padding: 0 18px;
+  }
+
+  .logoText {
+    font-size: 20px;
+  }
+
+  .logoSub {
+    font-size: 9px;
+  }
+
+  .pageHero {
+    padding: 24px;
+  }
+
+  .pageHero h1 {
+    font-size: 25px;
+  }
+
+  .contentCard {
+    padding: 20px;
+  }
+}

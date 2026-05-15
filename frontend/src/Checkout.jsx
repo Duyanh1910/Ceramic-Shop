@@ -17,6 +17,22 @@ import AddressSelector from './AddressSelector.jsx';
 const API_BASE = 'https://ceramic-shop-u8ak.onrender.com/api/v1';
 const fmt = (p) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(p ?? 0);
 
+const getVoucherValueText = (promo) => {
+  if (Number(promo?.MaLoaiKM) === 1) {
+    return `Giảm ${Number(promo?.GiaTri || 0)}%${promo?.GiamToiDa ? ` (tối đa ${fmt(promo.GiamToiDa)})` : ''}`;
+  }
+
+  return `Giảm ${fmt(promo?.GiaTri)}${promo?.GiamToiDa ? ` (tối đa ${fmt(promo.GiamToiDa)})` : ''}`;
+};
+
+const getShippingVoucherValueText = (promo) => {
+  if (Number(promo?.MaLoaiKM) === 1) {
+    return `Giảm phí ship ${Number(promo?.GiaTri || 0)}%${promo?.GiamToiDa ? ` (tối đa ${fmt(promo.GiamToiDa)})` : ''}`;
+  }
+
+  return `Giảm phí ship ${fmt(promo?.GiaTri)}${promo?.GiamToiDa ? ` (tối đa ${fmt(promo.GiamToiDa)})` : ''}`;
+};
+
 const PAYMENT_METHODS = [
   { id: 1, icon: '💵', name: 'Thanh toán khi nhận hàng (COD)', desc: 'Trả tiền mặt khi nhận được hàng', gateway: null },
   { id: 2, icon: '🏦', name: 'Chuyển khoản ngân hàng', desc: 'Chuyển khoản trước — đơn xử lý sau khi xác nhận', gateway: null },
@@ -43,10 +59,10 @@ export default function Checkout() {
   const [addressError, setAddressError] = useState('');
   const [voucherInput, setVoucherInput] = useState(applyVoucher?.TenKhuyenMai || '');
   const [appliedProductVoucher, setAppliedProductVoucher] = useState(
-      applyVoucher && applyVoucher.LoaiVoucher === 1 ? applyVoucher : null
+      applyVoucher && Number(applyVoucher.LoaiVoucher) === 1 ? applyVoucher : null
   );
   const [appliedShippingVoucher, setAppliedShippingVoucher] = useState(
-      applyVoucher && applyVoucher.LoaiVoucher === 2 ? applyVoucher : null
+      applyVoucher && Number(applyVoucher.LoaiVoucher) === 2 ? applyVoucher : null
   );
   const activeVoucherIds = [appliedProductVoucher?.MaKhuyenMai, appliedShippingVoucher?.MaKhuyenMai].filter(Boolean);
   const [voucherLoading, setVoucherLoading] = useState(false);
@@ -73,22 +89,26 @@ export default function Checkout() {
 
   let productDiscount = 0;
   if(appliedProductVoucher && subtotal >= (appliedProductVoucher.GiaTriToiThieu || 0)){
-    if(appliedProductVoucher.MaLoaiKM === 1){
-      const calculateDiscount = (subtotal * appliedProductVoucher.GiaTri)/100;
-      productDiscount = appliedProductVoucher.GiamToiDa ? Math.min(calculateDiscount, appliedProductVoucher.GiamToiDa) : calculateDiscount;
+    if(Number(appliedProductVoucher.MaLoaiKM) === 1){
+      const calculateDiscount = (subtotal * Number(appliedProductVoucher.GiaTri || 0))/100;
+      productDiscount = appliedProductVoucher.GiamToiDa ? Math.min(calculateDiscount, Number(appliedProductVoucher.GiamToiDa)) : calculateDiscount;
     }
     else {
-      productDiscount = appliedProductVoucher.GiaTri;
+      productDiscount = Number(appliedProductVoucher.GiaTri || 0);
     }
   }
-  productDiscount = Math.min(productDiscount, subtotal);
   productDiscount = Math.min(productDiscount, subtotal);
 
   let shippingDiscount = 0;
   if(appliedShippingVoucher && subtotal >= (appliedShippingVoucher.GiaTriToiThieu ||0 )){
-    shippingDiscount = appliedShippingVoucher.GiaTri;
+    if (Number(appliedShippingVoucher.MaLoaiKM) === 1) {
+      const calculateDiscount = (shippingFee * Number(appliedShippingVoucher.GiaTri || 0)) / 100;
+      shippingDiscount = appliedShippingVoucher.GiamToiDa ? Math.min(calculateDiscount, Number(appliedShippingVoucher.GiamToiDa)) : calculateDiscount;
+    } else {
+      shippingDiscount = Number(appliedShippingVoucher.GiaTri || 0);
+    }
   }
-  shippingDiscount = Math.min(shippingDiscount, subtotal);
+  shippingDiscount = Math.min(shippingDiscount, shippingFee);
 
   const totalDiscount = productDiscount + shippingDiscount;
   const total = Math.max(0, subtotal - productDiscount + shippingFee - shippingDiscount);
@@ -177,7 +197,7 @@ export default function Checkout() {
 
   const fetchMyVouchers = async () => {
     try {
-      const res = await axios.get(`${API_BASE}/vouchers/me`, authHeader);
+      const res = await axios.get(`${API_BASE}/vouchers/me?tab=usable`, authHeader);
       setMyVouchers(res.data?.vouchers || []);
     } catch (err) {
     }
@@ -188,23 +208,37 @@ export default function Checkout() {
       message.warning(`Đơn tối thiểu ${fmt(promo.GiaTriToiThieu)} để dùng mã này`);
       return false;
     }
-    if(promo.LoaiVoucher === 1){
+    if(Number(promo.LoaiVoucher) === 1){
       setAppliedProductVoucher(promo);
     }
-    else if(promo.LoaiVoucher === 2){
+    else if(Number(promo.LoaiVoucher) === 2){
       setAppliedShippingVoucher(promo);
     }
     return true;
   };
 
   const handleApplyVoucher = async() =>{
-    if(!voucherInput.trim()) return;
+    const inputValue = voucherInput.trim();
+
+    if(!inputValue) return;
+
     setVoucherLoading(true);
     try{
       const res = await axios.get(`${API_BASE}/promotions`);
-      const all = res.data?.voucher || [];
-      const found = all.find(v=>v.TenKhuyenMai?.toLowerCase() == voucherInput.trim().toLowerCase() || String(v.MaKhuyenMai) == voucherInput.trim());
-      if(!found) {message.error('Mã voucher không tồn tại hoặc đã hết hạn')}
+      const all = res.data?.vouchers || [];
+      const inputLower = inputValue.toLowerCase();
+
+      const found = all.find(v => 
+        v.TenKhuyenMai?.toLowerCase() === inputLower ||
+        v.MaCode?.toLowerCase() === inputLower ||
+        String(v.MaKhuyenMai) === inputValue
+      );
+
+      if(!found) {
+        message.error('Mã voucher không tồn tại hoặc đã hết hạn');
+        return;
+      }
+
       if(applySpecificVoucher(found)){
         message.success('Áp dụng voucher thành công');
         setVoucherInput('');
@@ -520,12 +554,12 @@ export default function Checkout() {
                       {myVouchers.length > 0 && (
                         <div className={styles.myVouchers}>
                           
-                          {!appliedProductVoucher && myVouchers.filter(v => (v.KhuyenMai || v).LoaiVoucher === 1).length > 0 && ( 
+                          {!appliedProductVoucher && myVouchers.filter(v => Number((v.KhuyenMai || v).LoaiVoucher) === 1).length > 0 && ( 
                             <>
                               <div className={styles.myVouchersTitle}>Mã giảm giá sản phẩm:</div>
                               <div className={styles.voucherCards} style={{ marginBottom: 15 }}>
                                 {myVouchers
-                                  .filter(v => (v.KhuyenMai || v).LoaiVoucher === 1)
+                                  .filter(v => Number((v.KhuyenMai || v).LoaiVoucher) === 1)
                                   .slice(0, 5)
                                   .map((v, i) => {
                                     const promo = v.KhuyenMai || v;
@@ -538,7 +572,7 @@ export default function Checkout() {
                                         <div className={styles.voucherCardRight}>
                                           <div className={styles.voucherCardName}>{promo.TenKhuyenMai}</div>
                                           <div className={styles.voucherCardValue}>
-                                            Giảm {fmt(promo.GiaTri)}{promo.GiamToiDa ? ` (tối đa ${fmt(promo.GiamToiDa)})` : ''}
+                                            {getVoucherValueText(promo)}
                                           </div>
                                           {promo.GiaTriToiThieu && (
                                             <div className={styles.voucherCardMin}>
@@ -553,12 +587,12 @@ export default function Checkout() {
                             </>
                           )}
                           
-                          {!appliedShippingVoucher && myVouchers.filter(v => (v.KhuyenMai || v).LoaiVoucher === 2).length > 0 && ( 
+                          {!appliedShippingVoucher && myVouchers.filter(v => Number((v.KhuyenMai || v).LoaiVoucher) === 2).length > 0 && ( 
                             <>
                               <div className={styles.myVouchersTitle}>Ưu đãi giao hàng:</div>
                               <div className={styles.voucherCards}>
                                 {myVouchers
-                                  .filter(v => (v.KhuyenMai || v).LoaiVoucher === 2)
+                                  .filter(v => Number((v.KhuyenMai || v).LoaiVoucher) === 2)
                                   .slice(0, 3)
                                   .map((v, i) => {
                                     const promo = v.KhuyenMai || v;
@@ -573,7 +607,7 @@ export default function Checkout() {
                                         <div className={styles.voucherCardRight}>
                                           <div className={styles.voucherCardName}>{promo.TenKhuyenMai}</div>
                                           <div className={styles.voucherCardValue} style={{ color: '#0f9d58' }}>
-                                            Giảm phí ship {fmt(promo.GiaTri)}{promo.GiamToiDa ? ` (tối đa ${fmt(promo.GiamToiDa)})` : ''}
+                                            {getShippingVoucherValueText(promo)}
                                           </div>
                                           {promo.GiaTriToiThieu && (
                                             <div className={styles.voucherCardMin}>

@@ -1,0 +1,242 @@
+.walletBox {
+  width: 100%;
+}
+
+.walletHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 18px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1b437c;
+  margin: 0 0 6px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.subTitle {
+  color: #666;
+  margin: 0;
+  font-size: 14px;
+}
+
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.statCard {
+  background: #f7f9fc;
+  border: 1px solid #edf0f7;
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.statCard span {
+  display: block;
+  color: #777;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.statCard strong {
+  color: #1b437c;
+  font-size: 26px;
+  line-height: 1;
+}
+
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.searchInput {
+  width: min(330px, 100%);
+  border-radius: 20px !important;
+}
+
+.loadingWrap,
+.emptyWrap {
+  min-height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fafcff;
+  border: 1px dashed #dfe7f3;
+  border-radius: 12px;
+}
+
+.loadingWrap {
+  flex-direction: column;
+  gap: 12px;
+  color: #1b437c;
+}
+
+.voucherList {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.voucherCard {
+  display: grid;
+  grid-template-columns: 96px 1fr auto;
+  gap: 16px;
+  align-items: stretch;
+  background: #ffffff;
+  border: 1px solid #edf0f7;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 4px 18px rgba(27, 67, 124, 0.05);
+  transition: all 0.2s;
+}
+
+.voucherCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(27, 67, 124, 0.1);
+}
+
+.voucherLeft {
+  background: linear-gradient(180deg, #1b437c, #102b4f);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 12px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.iconCircle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.14);
+  color: #f3c172;
+  font-size: 22px;
+}
+
+.voucherBody {
+  padding: 16px 0;
+  min-width: 0;
+}
+
+.cardTop {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.voucherBody h3 {
+  margin: 0 0 6px;
+  color: #222;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.value {
+  color: #c48c46;
+  font-size: 24px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.conditionList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  color: #777;
+  font-size: 13px;
+}
+
+.codeRow {
+  margin-top: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px dashed #cbd7ea;
+  background: #f7f9fc;
+}
+
+.codeRow code {
+  color: #1b437c;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+}
+
+.actions {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  min-width: 116px;
+}
+
+.primaryBtn {
+  background: #1b437c !important;
+  border-color: #1b437c !important;
+  border-radius: 8px !important;
+  font-weight: 700 !important;
+}
+
+.compact .title {
+  font-size: 22px;
+}
+
+.compact .voucherCard {
+  grid-template-columns: 82px 1fr auto;
+}
+
+.compact .value {
+  font-size: 21px;
+}
+
+@media (max-width: 768px) {
+  .statsRow {
+    grid-template-columns: 1fr;
+  }
+
+  .voucherCard,
+  .compact .voucherCard {
+    grid-template-columns: 76px 1fr;
+  }
+
+  .actions {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    justify-content: flex-end;
+    padding-top: 0;
+  }
+
+  .toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .searchInput {
+    width: 100%;
+  }
+}
