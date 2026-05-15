@@ -495,31 +495,52 @@ function ProductDetail() {
     </div>
   );
 
-  const handleSearchInput = async (value) => {
+    const handleSearchInput = async (value) => {
     setSearchKw(value);
-    if (!value) { setSearchOptions([]); return; }
-    try {
-      const searchLower = value.toLowerCase();
-      const res = await axios.get(`https://ceramic-shop-u8ak.onrender.com/api/v1/products?limit=1000`);
-      let data = res.data.data || res.data.result?.data || [];
-      
-      data = data.filter(item => item.TenSanPham.toLowerCase().includes(searchLower));
-      
-      const options = data.slice(0, 10).map(item => ({
-        value: item.TenSanPham,
-        label: (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }} onClick={() => navigate(`/product/${item.MaSanPham}`)}>
-            <img src={item.Thumbnail || 'https://via.placeholder.com/40'} alt={item.TenSanPham} style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 4 }} />
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <span style={{ fontWeight: 500, color: '#1b437c' }}>{item.TenSanPham}</span>
-              <span style={{ fontSize: 12, color: '#e74c3c', fontWeight: 'bold' }}>{formatPrice(item.GiaThapNhat)}</span>
-            </div>
-          </div>
-        ),
-      }));
-      setSearchOptions(options);
-    } catch (error) {}
+    if (!value) { 
+      setSearchOptions([]); 
+      return; 
+    }
+    
   };
+  useEffect(()=>{
+      if(!searchKw){
+        setSearchOptions([]);
+        return;
+      }
+      const delayDebounceFn = setTimeout(async()=>{
+        try {
+          const res = await axios.get(`https://ceramic-shop-u8ak.onrender.com/api/v1/products?limit=1000`);
+          let data = res.data.data || res.data.result?.data || [];
+          
+          const searchLower = searchKw.toLowerCase();
+          
+          data = data.filter(item => {
+            const matchName = item.TenSanPham?.toLowerCase().includes(searchLower);
+            const matchCat = item.DanhMuc?.TenDanhMuc?.toLowerCase().includes(searchLower);
+            return matchName || matchCat;
+          });
+
+          const options = data.slice(0, 10).map(item => ({
+            value: item.TenSanPham, 
+            label: (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }} onClick={(e) => { e.stopPropagation(); navigate(`/product/${item.MaSanPham}`); }}>
+                <img src={item.Thumbnail || 'https://via.placeholder.com/40'} alt={item.TenSanPham} style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 4 }} />
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontWeight: 500, color: '#1b437c' }}>{item.TenSanPham}</span>
+                  <span style={{ fontSize: 12, color: '#e74c3c', fontWeight: 'bold' }}>{formatPrice(item.GiaThapNhat)}</span>
+                </div>
+              </div>
+            ),
+          }));
+          setSearchOptions(options);
+        } catch (error) {
+          console.error(error);
+          setSearchOptions([]);
+        }
+      },500);
+      return () => clearTimeout(delayDebounceFn);
+    },[searchKw,navigate])
 
   const executeSearch = () => {
     navigate(`/home?search=${searchKw}`);
