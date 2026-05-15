@@ -87,6 +87,44 @@ export const exportInventoryHistoryXlsxService = async (
   startDate,
   endDate,
 ) => {
+  const VIETNAM_TIME_ZONE = "Asia/Ho_Chi_Minh";
+
+  const formatDateTimeVN = (value = new Date()) => {
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+      return "";
+    }
+
+    return new Intl.DateTimeFormat("vi-VN", {
+      timeZone: VIETNAM_TIME_ZONE,
+      hour12: false,
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    }).format(date);
+  };
+
+  const formatDateOnlyVN = (value) => {
+    if (!value) return "";
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+      return "";
+    }
+
+    return new Intl.DateTimeFormat("vi-VN", {
+      timeZone: VIETNAM_TIME_ZONE,
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }).format(date);
+  };
+
   const sortOrder = String(order).toUpperCase() === "ASC" ? "ASC" : "DESC";
   const keyword = String(search || "").trim();
 
@@ -185,14 +223,28 @@ export const exportInventoryHistoryXlsxService = async (
     worksheet.getColumn(index + 1).width = width;
   });
 
-  worksheet.getRow(1).height = 28;
-  worksheet.getRow(2).height = 26;
+  worksheet.getRow(1).height = 24;
+  worksheet.getRow(2).height = 24;
   worksheet.getRow(3).height = 22;
-  worksheet.getRow(4).height = 16;
-  worksheet.getRow(5).height = 30;
+  worksheet.getRow(4).height = 14;
+  worksheet.getRow(5).height = 34;
   worksheet.getRow(6).height = 22;
   worksheet.getRow(7).height = 22;
   worksheet.getRow(8).height = 14;
+
+  for (let row = 1; row <= 8; row += 1) {
+    for (let col = 1; col <= 10; col += 1) {
+      worksheet.getCell(row, col).fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FFFFFFFF" },
+      };
+    }
+  }
+
+  worksheet.mergeCells("A1:A3");
+  worksheet.mergeCells("B1:E2");
+  worksheet.mergeCells("B3:E3");
 
   try {
     const response = await axios.get(
@@ -208,16 +260,16 @@ export const exportInventoryHistoryXlsxService = async (
     });
 
     worksheet.addImage(logoId, {
-      tl: { col: 0.2, row: 0.15 },
-      ext: { width: 115, height: 78 },
+      tl: { col: 0.15, row: 0.32 },
+      ext: { width: 100, height: 100 },
+      editAs: "oneCell",
     });
   } catch (error) {
     console.error("Không tải được logo:", error.message);
   }
 
-  worksheet.mergeCells("B1:E2");
   const shopNameCell = worksheet.getCell("B1");
-  shopNameCell.value = "C E R A M I C - S H O P";
+  shopNameCell.value = "CERAMIC-SHOP";
   shopNameCell.font = {
     name: "Times New Roman",
     size: 22,
@@ -225,21 +277,27 @@ export const exportInventoryHistoryXlsxService = async (
     color: { argb: "FF173B63" },
   };
   shopNameCell.alignment = {
-    vertical: "middle",
+    vertical: "bottom",
     horizontal: "left",
   };
 
-  worksheet.mergeCells("B3:E3");
   const sloganCell = worksheet.getCell("B3");
-  sloganCell.value = "T I N H   H O A   G Ố M   S Ứ   V I Ệ T";
+  sloganCell.value = "Tinh hoa gốm sứ Việt";
   sloganCell.font = {
     name: "Arial",
-    size: 10,
+    size: 11,
+    italic: true,
     color: { argb: "FFC28A5D" },
   };
   sloganCell.alignment = {
-    vertical: "middle",
+    vertical: "top",
     horizontal: "left",
+  };
+
+  worksheet.mergeCells("A4:J4");
+  const dividerCell = worksheet.getCell("A4");
+  dividerCell.border = {
+    bottom: { style: "medium", color: { argb: "FF2F6B3F" } },
   };
 
   worksheet.mergeCells("A5:J5");
@@ -258,7 +316,7 @@ export const exportInventoryHistoryXlsxService = async (
 
   worksheet.mergeCells("A6:J6");
   const exportDateCell = worksheet.getCell("A6");
-  exportDateCell.value = `Ngày xuất: ${new Date().toLocaleString("vi-VN")}`;
+  exportDateCell.value = `Ngày xuất: ${formatDateTimeVN(new Date())}`;
   exportDateCell.font = {
     name: "Arial",
     size: 11,
@@ -270,26 +328,14 @@ export const exportInventoryHistoryXlsxService = async (
     horizontal: "center",
   };
 
-  const formatDateOnly = (value) => {
-    if (!value) return "";
-
-    const date = new Date(value);
-
-    if (Number.isNaN(date.getTime())) {
-      return "";
-    }
-
-    return date.toLocaleDateString("vi-VN");
-  };
-
   let dateRangeText = "Thời gian dữ liệu: Tất cả";
 
   if (startDate && endDate) {
-    dateRangeText = `Thời gian dữ liệu: Từ ${formatDateOnly(startDate)} đến ${formatDateOnly(endDate)}`;
+    dateRangeText = `Thời gian dữ liệu: Từ ${formatDateOnlyVN(startDate)} đến ${formatDateOnlyVN(endDate)}`;
   } else if (startDate) {
-    dateRangeText = `Thời gian dữ liệu: Từ ${formatDateOnly(startDate)}`;
+    dateRangeText = `Thời gian dữ liệu: Từ ${formatDateOnlyVN(startDate)}`;
   } else if (endDate) {
-    dateRangeText = `Thời gian dữ liệu: Đến ${formatDateOnly(endDate)}`;
+    dateRangeText = `Thời gian dữ liệu: Đến ${formatDateOnlyVN(endDate)}`;
   }
 
   worksheet.mergeCells("A7:J7");
@@ -386,7 +432,7 @@ export const exportInventoryHistoryXlsxService = async (
       history.LoaiThamChieu || "",
       history.MaThamChieu || "",
       history.DonHang?.MaHienThi || "",
-      history.NgayTao ? new Date(history.NgayTao).toLocaleString("vi-VN") : "",
+      history.NgayTao ? formatDateTimeVN(history.NgayTao) : "",
       history.GhiChu || "",
     ];
 
