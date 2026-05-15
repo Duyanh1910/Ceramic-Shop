@@ -140,6 +140,7 @@
   color: #555 !important;
   width: 40px;
   height: 40px;
+  align-items: flex-end;
 }
 
 .headerRight {
