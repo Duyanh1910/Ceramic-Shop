@@ -340,6 +340,7 @@ export default function AdminPromotions() {
             pageSize: 10,
             showSizeChanger: true,
             showTotal: (total) => `${total} khuyến mãi`,
+            showSizeChanger: false
           }}
           className={styles.table}
           locale={{ emptyText: <Empty description="Chưa có khuyến mãi nào" image={Empty.PRESENTED_IMAGE_SIMPLE} /> }}

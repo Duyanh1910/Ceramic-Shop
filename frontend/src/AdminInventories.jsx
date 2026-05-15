@@ -296,7 +296,7 @@ const InventoryHistory = () => {
             current: pagination.current,
             pageSize: pagination.pageSize,
             total: pagination.total,
-            showSizeChanger: true,
+            showSizeChanger: false,
           }}
           loading={loadingTable}
           onChange={handleTableChange}

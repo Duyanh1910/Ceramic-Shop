@@ -440,7 +440,7 @@ const AdminReviews = () => {
             current: pagination.current,
             pageSize: pagination.pageSize,
             total: pagination.total,
-            showSizeChanger: true,
+            showSizeChanger: false,
             showTotal: (total) => `Tổng ${total} đánh giá`,
           }}
           loading={loadingTable}
