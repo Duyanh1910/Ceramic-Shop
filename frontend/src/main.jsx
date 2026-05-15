@@ -39,6 +39,8 @@ import AdminNews from "./AdminNews.jsx";
 import AdminWarranties from "./AdminWarranties.jsx";
 import AdminRisks from "./AdminRisks.jsx";
 import AdminInventories from "./AdminInventories.jsx";
+import AdminReviews from "./AdminReviews.jsx";
+
 ReactGA.initialize("G-909W1LHHLD");
 
 const AnalyticsTracker = () => {
@@ -172,6 +174,7 @@ createRoot(document.getElementById("root")).render(
             <Route path="reports" element={<AdminReports />} />
             <Route path="customers" element={<AdminCustomers />} />
             <Route path="inventories" element={<AdminInventories />} />
+            <Route path="reviews" element={<AdminReviews />} />
             <Route
               path="staffs"
               element={

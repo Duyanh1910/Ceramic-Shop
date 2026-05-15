@@ -18,6 +18,7 @@ import {
   SafetyOutlined,
   AlertOutlined,
   AuditOutlined,
+  CommentOutlined,
 } from "@ant-design/icons";
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import axios from "axios";
@@ -33,6 +34,16 @@ const STAFF_MENU = [
   { key: "/admin/news", icon: <FileTextOutlined />, label: "Tin tức" },
   { key: "/admin/warranties", icon: <SafetyOutlined />, label: "Bảo hành" },
   { key: "/admin/risks", icon: <AlertOutlined />, label: "Rủi ro" },
+  {
+    key: "/admin/inventories",
+    icon: <AuditOutlined />,
+    label: "Lịch sử tồn kho",
+  },
+  {
+    key: "/admin/reviews",
+    icon: <CommentOutlined />,
+    label: "Phản hồi khách hàng",
+  },
 ];
 
 const ADMIN_MENU = [
@@ -49,6 +60,11 @@ const ADMIN_MENU = [
     key: "/admin/inventories",
     icon: <AuditOutlined />,
     label: "Lịch sử tồn kho",
+  },
+  {
+    key: "/admin/reviews",
+    icon: <CommentOutlined />,
+    label: "Phản hồi khách hàng",
   },
 ];
 

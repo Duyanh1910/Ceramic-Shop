@@ -26,6 +26,8 @@ const AdminReviews = () => {
   const [loadingExport, setLoadingExport] = useState(false);
 
   const [searchText, setSearchText] = useState("");
+  const [productName, setProductName] = useState("");
+  const [variantName, setVariantName] = useState("");
   const [filterRating, setFilterRating] = useState(null);
   const [filterStatus, setFilterStatus] = useState(null);
   const [dateRange, setDateRange] = useState(null);
@@ -37,7 +39,16 @@ const AdminReviews = () => {
   });
 
   const fetchData = useCallback(
-    async (page = 1, limit = 10, search = "", rating, status, dates) => {
+    async (
+      page = 1,
+      limit = 10,
+      search = "",
+      rating,
+      status,
+      dates,
+      product = "",
+      variant = "",
+    ) => {
       try {
         setLoadingTable(true);
 
@@ -53,6 +64,8 @@ const AdminReviews = () => {
           page,
           limit,
           search,
+          ...(product && { productName: product }),
+          ...(variant && { variantName: variant }),
           ...(rating !== null && rating !== undefined && { rating }),
           ...(status !== null && status !== undefined && { status }),
           ...(startDate && { startDate }),
@@ -67,7 +80,7 @@ const AdminReviews = () => {
         );
 
         if (response.data.success) {
-          setData(response.data.result.data);
+          setData(response.data.result.data || []);
           setPagination({
             current: response.data.result.pagination.page,
             pageSize: response.data.result.pagination.limit,
@@ -93,6 +106,8 @@ const AdminReviews = () => {
         filterRating,
         filterStatus,
         dateRange,
+        productName,
+        variantName,
       );
     }, 500);
 
@@ -102,17 +117,19 @@ const AdminReviews = () => {
     pagination.current,
     pagination.pageSize,
     searchText,
+    productName,
+    variantName,
     filterRating,
     filterStatus,
     dateRange,
   ]);
 
   const handleTableChange = (newPagination) => {
-    setPagination({
-      ...pagination,
+    setPagination((prev) => ({
+      ...prev,
       current: newPagination.current,
       pageSize: newPagination.pageSize,
-    });
+    }));
   };
 
   const resetPagination = () => {
@@ -122,6 +139,7 @@ const AdminReviews = () => {
   const handleExportReport = async () => {
     try {
       setLoadingExport(true);
+
       let startDate = "";
       let endDate = "";
 
@@ -132,8 +150,12 @@ const AdminReviews = () => {
 
       const params = {
         search: searchText,
-        ...(filterRating !== null && { rating: filterRating }),
-        ...(filterStatus !== null && { status: filterStatus }),
+        ...(productName && { productName }),
+        ...(variantName && { variantName }),
+        ...(filterRating !== null &&
+          filterRating !== undefined && { rating: filterRating }),
+        ...(filterStatus !== null &&
+          filterStatus !== undefined && { status: filterStatus }),
         ...(startDate && { startDate }),
         ...(endDate && { endDate }),
       };
@@ -149,6 +171,7 @@ const AdminReviews = () => {
       const blob = new Blob([response.data], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
+
       const downloadUrl = window.URL.createObjectURL(blob);
 
       const link = document.createElement("a");
@@ -165,11 +188,57 @@ const AdminReviews = () => {
 
       message.success("Xuất báo cáo thành công!");
     } catch (error) {
-      console.error(error);
+      console.error("Lỗi khi xuất báo cáo:", error);
       message.error("Có lỗi xảy ra khi tải file!");
     } finally {
       setLoadingExport(false);
     }
+  };
+
+  const getOrderDetail = (record) => {
+    return (
+      record.ChiTietDonHang ||
+      record.OrderDetail ||
+      record.OrderDetailModel ||
+      record.orderDetail ||
+      {}
+    );
+  };
+
+  const getVariant = (record) => {
+    const orderDetail = getOrderDetail(record);
+
+    return (
+      orderDetail.BienTheSanPham ||
+      orderDetail.Variant ||
+      orderDetail.VariantModel ||
+      orderDetail.variant ||
+      {}
+    );
+  };
+
+  const getProduct = (record) => {
+    const variant = getVariant(record);
+
+    return (
+      variant.SanPham ||
+      variant.Product ||
+      variant.ProductModel ||
+      variant.product ||
+      {}
+    );
+  };
+
+  const getOrder = (record) => {
+    const orderDetail = getOrderDetail(record);
+
+    return (
+      orderDetail.DonHang ||
+      orderDetail.Order ||
+      orderDetail.OrderModel ||
+      orderDetail.order ||
+      {}
+    );
   };
 
   const columns = [
@@ -178,30 +247,37 @@ const AdminReviews = () => {
       dataIndex: "MaDanhGia",
       key: "MaDanhGia",
       width: 80,
+      align: "center",
     },
     {
       title: "Khách hàng",
       key: "KhachHang",
+      width: 180,
       render: (_, record) => {
-        const customer = record.KhachHang || {};
+        const customer =
+          record.KhachHang ||
+          record.Customer ||
+          record.CustomerModel ||
+          record.customer ||
+          {};
+
         return customer.TenKhachHang || "Khách ẩn danh";
       },
     },
     {
       title: "Sản phẩm",
       key: "SanPham",
-      width: 250,
+      width: 280,
       render: (_, record) => {
-        const orderDetail = record.ChiTietDonHang || {};
-        const variant = orderDetail.BienTheSanPham || {};
-        const product = variant.SanPham || {};
+        const variant = getVariant(record);
+        const product = getProduct(record);
 
         return (
           <div>
-            <div style={{ fontWeight: 500, color: "#173B63" }}>
+            <div style={{ fontWeight: 600, color: "#173B63" }}>
               {product.TenSanPham || "N/A"}
             </div>
-            <div style={{ fontSize: "12px", color: "#888" }}>
+            <div style={{ fontSize: "12px", color: "#888", marginTop: 4 }}>
               Phân loại: {variant.TenBienThe || "N/A"}
             </div>
           </div>
@@ -213,27 +289,28 @@ const AdminReviews = () => {
       dataIndex: "DiemDanhGia",
       key: "DiemDanhGia",
       width: 150,
+      align: "center",
       render: (diem) => (
-        <Rate disabled defaultValue={diem} style={{ fontSize: 14 }} />
+        <Rate disabled value={Number(diem) || 0} style={{ fontSize: 14 }} />
       ),
     },
     {
       title: "Nội dung",
       dataIndex: "NoiDung",
       key: "NoiDung",
-      width: 300,
+      width: 320,
       render: (text) => (
-        <Tooltip title={text}>
+        <Tooltip title={text || "Không có nội dung"}>
           <div
             style={{
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
-              maxWidth: 280,
+              maxWidth: 300,
             }}
           >
             {text || (
-              <span style={{ color: "#ccc", fontStyle: "italic" }}>
+              <span style={{ color: "#aaa", fontStyle: "italic" }}>
                 Không có nội dung
               </span>
             )}
@@ -242,26 +319,33 @@ const AdminReviews = () => {
       ),
     },
     {
-      title: "Mã Đơn Hàng",
+      title: "Mã đơn hàng",
       key: "MaDonHang",
+      width: 150,
+      align: "center",
       render: (_, record) => {
-        const orderDetail = record.ChiTietDonHang || {};
-        const order = orderDetail.DonHang || {};
+        const order = getOrder(record);
         return order.MaHienThi || order.MaDonHang || "N/A";
       },
     },
     {
       title: "Ngày đánh giá",
-      dataIndex: "NgayGui",
-      key: "NgayGui",
-      render: (date) => (date ? dayjs(date).format("DD/MM/YYYY HH:mm") : "N/A"),
+      key: "NgayDanhGia",
+      width: 170,
+      align: "center",
+      render: (_, record) => {
+        const date = record.NgayDanhGia || record.NgayGui || record.createdAt;
+        return date ? dayjs(date).format("DD/MM/YYYY HH:mm") : "N/A";
+      },
     },
     {
       title: "Trạng thái",
       dataIndex: "TrangThai",
       key: "TrangThai",
+      width: 120,
+      align: "center",
       render: (status) => {
-        return status === 1 ? (
+        return Number(status) === 1 ? (
           <Tag color="green">Hiển thị</Tag>
         ) : (
           <Tag color="default">Đã ẩn</Tag>
@@ -285,10 +369,34 @@ const AdminReviews = () => {
         <Input
           placeholder="Tìm nội dung đánh giá..."
           prefix={<SearchOutlined />}
-          style={{ width: 250, borderRadius: "8px" }}
+          style={{ width: 240, borderRadius: "8px" }}
           value={searchText}
           onChange={(e) => {
             setSearchText(e.target.value);
+            resetPagination();
+          }}
+          allowClear
+        />
+
+        <Input
+          placeholder="Lọc theo tên sản phẩm..."
+          prefix={<SearchOutlined />}
+          style={{ width: 240, borderRadius: "8px" }}
+          value={productName}
+          onChange={(e) => {
+            setProductName(e.target.value);
+            resetPagination();
+          }}
+          allowClear
+        />
+
+        <Input
+          placeholder="Lọc theo tên biến thể..."
+          prefix={<SearchOutlined />}
+          style={{ width: 220, borderRadius: "8px" }}
+          value={variantName}
+          onChange={(e) => {
+            setVariantName(e.target.value);
             resetPagination();
           }}
           allowClear
@@ -358,6 +466,7 @@ const AdminReviews = () => {
             pageSize: pagination.pageSize,
             total: pagination.total,
             showSizeChanger: true,
+            showTotal: (total) => `Tổng ${total} đánh giá`,
           }}
           loading={loadingTable}
           onChange={handleTableChange}
