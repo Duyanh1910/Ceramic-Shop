@@ -134,6 +134,12 @@ export default function AdminLayout() {
         breakpoint="lg"
         onBreakpoint={(broken) => setCollapsed(broken)}
       >
+        <Button
+            type="text"
+            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+            onClick={() => setCollapsed(!collapsed)}
+            className={styles.collapseBtn}
+          />
         <div className={styles.siderLogo} onClick={() => navigate("/")}>
           <ShopOutlined className={styles.logoIcon} />
           {!collapsed && <span className={styles.logoText}>CERAMIC</span>}
@@ -172,12 +178,7 @@ export default function AdminLayout() {
 
       <Layout>
         <Header className={styles.header}>
-          <Button
-            type="text"
-            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-            onClick={() => setCollapsed(!collapsed)}
-            className={styles.collapseBtn}
-          />
+          
           <div className={styles.headerRight}>
             <Dropdown menu={userMenu} placement="bottomRight" arrow>
               <div className={styles.userInfo}>
