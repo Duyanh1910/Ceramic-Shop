@@ -158,10 +158,19 @@ InventoryHistoryModel.belongsTo(VariantModel, { foreignKey: "MaBienThe" });
 
 OrderModel.hasMany(InventoryHistoryModel, {
   foreignKey: "MaThamChieu",
+  sourceKey: "MaDonHang",
   constraints: false,
+  as: "LichSuTonKho",
   scope: {
     LoaiThamChieu: "DonHang",
   },
+});
+
+InventoryHistoryModel.belongsTo(OrderModel, {
+  foreignKey: "MaThamChieu",
+  targetKey: "MaDonHang",
+  constraints: false,
+  as: "DonHang",
 });
 
 // --- QUAN HỆ ĐÁNH GIÁ ---
