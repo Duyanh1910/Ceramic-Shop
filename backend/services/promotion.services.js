@@ -1,14 +1,12 @@
 import {
-  CustomerModel,
   PromotionModel,
-  PromotionTypeModel,
-  PromotionWalletModel,
 } from "../models/index.js";
 import ErrorHandler from "../utils/error_handler.js";
-import { Sequelize, Op } from "sequelize";
+import { Op } from "sequelize";
 
 export const getAllPromotionsService = async () => {
   const now = new Date();
+
   return await PromotionModel.findAll({
     where: {
       TrangThai: 1,
@@ -35,8 +33,14 @@ export const getAllPromotionsAdminService = async () => {
   });
 };
 
-export const getPromotionByIDAdminService = async (id) => {
-  return await PromotionModel.findByPk(id);
+export const getPromotionByIDAdminService = async (MaKhuyenMai) => {
+  const promotion = await PromotionModel.findByPk(MaKhuyenMai);
+
+  if (!promotion) {
+    throw new ErrorHandler("Mã này không tồn tại", 404);
+  }
+
+  return promotion;
 };
 
 export const createPromotionService = async (
@@ -53,33 +57,32 @@ export const createPromotionService = async (
   LoaiVoucher,
   MaDanhMuc,
 ) => {
-  try {
+  if (MaCode) {
     const isExist = await PromotionModel.findOne({
       where: {
-        MaCode: MaCode,
+        MaCode,
       },
     });
+
     if (isExist) {
       throw new ErrorHandler("Mã Code này đã tồn tại", 422);
     }
-    const promotion = await PromotionModel.create({
-      MaLoaiKM,
-      TenKhuyenMai,
-      GiaTri,
-      GiaTriToiThieu,
-      GiamToiDa,
-      NgayBatDau,
-      NgayKetThuc,
-      TrangThai,
-      MaCode,
-      SoLuong,
-      LoaiVoucher,
-      MaDanhMuc,
-    });
-    return promotion;
-  } catch (err) {
-    throw new ErrorHandler("Lỗi! Không thể tạo mới khuyến mãi", 500);
   }
+
+  return await PromotionModel.create({
+    MaLoaiKM,
+    TenKhuyenMai,
+    GiaTri,
+    GiaTriToiThieu,
+    GiamToiDa,
+    NgayBatDau,
+    NgayKetThuc,
+    TrangThai,
+    MaCode,
+    SoLuong,
+    LoaiVoucher,
+    MaDanhMuc,
+  });
 };
 
 export const updatePromotionService = async (
@@ -97,69 +100,72 @@ export const updatePromotionService = async (
   LoaiVoucher,
   MaDanhMuc,
 ) => {
-  try {
-    const isExist = await PromotionModel.findByPk(MaKhuyenMai);
-    if (!isExist) {
-      throw new ErrorHandler("Mã này không tồn tại", 404);
-    }
+  const isExist = await PromotionModel.findByPk(MaKhuyenMai);
+
+  if (!isExist) {
+    throw new ErrorHandler("Mã này không tồn tại", 404);
+  }
+
+  if (MaCode) {
     const promo = await PromotionModel.findOne({
       where: {
-        MaCode: MaCode,
+        MaCode,
         MaKhuyenMai: {
           [Op.ne]: MaKhuyenMai,
         },
       },
     });
+
     if (promo) {
       throw new ErrorHandler("Mã Code này đã tồn tại", 422);
     }
-    const promotion = await PromotionModel.update(
-      {
-        MaLoaiKM,
-        TenKhuyenMai,
-        GiaTri,
-        GiaTriToiThieu,
-        GiamToiDa,
-        NgayBatDau,
-        NgayKetThuc,
-        TrangThai,
-        MaCode,
-        SoLuong,
-        LoaiVoucher,
-        MaDanhMuc,
-      },
-      {
-        where: MaKhuyenMai,
-      },
-    );
-    return promotion;
-  } catch (err) {
-    throw new ErrorHandler("Lỗi! Không thể cập nhật khuyến mãi", 500);
   }
+
+  await PromotionModel.update(
+    {
+      MaLoaiKM,
+      TenKhuyenMai,
+      GiaTri,
+      GiaTriToiThieu,
+      GiamToiDa,
+      NgayBatDau,
+      NgayKetThuc,
+      TrangThai,
+      MaCode,
+      SoLuong,
+      LoaiVoucher,
+      MaDanhMuc,
+    },
+    {
+      where: {
+        MaKhuyenMai,
+      },
+    },
+  );
+
+  return await PromotionModel.findByPk(MaKhuyenMai);
 };
 
 export const updatePromotionStatusService = async (
   MaKhuyenMai,
   TrangThai,
 ) => {
-  try {
-    const isExist = await PromotionModel.findByPk(MaKhuyenMai);
-    if (!isExist) {
-      throw new ErrorHandler("Mã này không tồn tại", 404);
-    }
-    const promotion = await PromotionModel.update(
-      {
-        TrangThai,
-      },
-      {
-        where: MaKhuyenMai,
-      },
-    );
-    return promotion;
-  } catch (err) {
-    throw new ErrorHandler(
-      "Lỗi! Không thể cập nhật trạng thái khuyến mãi",
-      500,
-    );
+  const isExist = await PromotionModel.findByPk(MaKhuyenMai);
+
+  if (!isExist) {
+    throw new ErrorHandler("Mã này không tồn tại", 404);
   }
+
+  await PromotionModel.update(
+    {
+      TrangThai,
+    },
+    {
+      where: {
+        MaKhuyenMai,
+      },
+    },
+  );
+
+  return await PromotionModel.findByPk(MaKhuyenMai);
 };
