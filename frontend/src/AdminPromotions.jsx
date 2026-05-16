@@ -17,6 +17,26 @@ import styles from './AdminPromotions.module.css';
 const API_BASE = 'https://ceramic-shop-u8ak.onrender.com/api/v1';
 const fmt = (v) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(v ?? 0);
 
+const formatInputNumber = (value) => {
+  if (value === undefined || value === null || value === '') return '';
+
+  return `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+};
+
+const parseInputNumber = (value) => {
+  if (value === undefined || value === null || value === '') return undefined;
+
+  const raw = String(value)
+    .replace(/,/g, '')
+    .replace(/[^\d.-]/g, '');
+
+  if (!raw || raw === '-' || raw === '.') return undefined;
+
+  const parsed = Number(raw);
+
+  return Number.isNaN(parsed) ? undefined : parsed;
+};
+
 const token = () => localStorage.getItem('admin_token') || localStorage.getItem('customer_token');
 const authH = () => ({ headers: { Authorization: `Bearer ${token()}` }, withCredentials: true });
 
@@ -183,7 +203,7 @@ export default function AdminPromotions() {
   ).length;
 
   const statsExpired = promos.filter(
-  (p) => Number(p.TrangThai) === 0 || new Date(p.NgayKetThuc) < now,
+    (p) => Number(p.TrangThai) === 0 || new Date(p.NgayKetThuc) < now,
   ).length;
 
   const statsPending = promos.filter(
@@ -543,8 +563,8 @@ export default function AdminPromotions() {
                 min={0}
                 max={kmType === 1 ? 100 : undefined}
                 suffix={kmType === 1 ? '%' : '₫'}
-                formatter={(v) => (kmType === 2 ? `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : v)}
-                parser={(v) => v?.replace(/,/g, '')}
+                formatter={(value) => (kmType === 2 ? formatInputNumber(value) : value)}
+                parser={parseInputNumber}
                 className={styles.inputNum}
                 style={{ width: '100%' }}
               />
@@ -557,8 +577,8 @@ export default function AdminPromotions() {
             >
               <InputNumber
                 min={0}
-                formatter={(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                parser={(v) => v?.replace(/,/g, '')}
+                formatter={formatInputNumber}
+                parser={parseInputNumber}
                 className={styles.inputNum}
                 style={{ width: '100%' }}
                 placeholder="Không giới hạn"
@@ -568,8 +588,8 @@ export default function AdminPromotions() {
             <Form.Item name="GiaTriToiThieu" label="Đơn tối thiểu (VNĐ)">
               <InputNumber
                 min={0}
-                formatter={(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                parser={(v) => v?.replace(/,/g, '')}
+                formatter={formatInputNumber}
+                parser={parseInputNumber}
                 className={styles.inputNum}
                 style={{ width: '100%' }}
                 placeholder="Không yêu cầu"
