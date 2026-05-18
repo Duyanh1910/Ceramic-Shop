@@ -257,3 +257,42 @@
     width: 100%;
   }
 }
+.detailModal :global(.ant-modal-content) {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.detailModal :global(.ant-modal-header) {
+  padding: 18px 22px 12px;
+  margin-bottom: 0;
+  border-bottom: 1px solid #edf0f7;
+}
+
+.detailModal :global(.ant-modal-title) {
+  color: #1b437c;
+  font-weight: 700;
+}
+
+.detailModal :global(.ant-modal-body) {
+  padding: 18px 22px !important;
+  scrollbar-width: thin;
+  scrollbar-color: #9db7d8 #f2f6fb;
+}
+
+.detailModal :global(.ant-modal-body::-webkit-scrollbar) {
+  width: 8px;
+}
+
+.detailModal :global(.ant-modal-body::-webkit-scrollbar-track) {
+  background: #f2f6fb;
+  border-radius: 999px;
+}
+
+.detailModal :global(.ant-modal-body::-webkit-scrollbar-thumb) {
+  background: #9db7d8;
+  border-radius: 999px;
+}
+
+.detailModal :global(.ant-modal-body::-webkit-scrollbar-thumb:hover) {
+  background: #6f92bf;
+}

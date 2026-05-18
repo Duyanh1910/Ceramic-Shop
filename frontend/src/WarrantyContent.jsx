@@ -574,13 +574,27 @@ export default function WarrantyContent({ compact = false }) {
         open={detailOpen}
         title={`Chi tiết phiếu bảo hành #${selectedWarranty?.MaBaoHanh || ''}`}
         onCancel={() => {
-          setDetailOpen(false);
-          setSelectedWarranty(null);
+            setDetailOpen(false);
+            setSelectedWarranty(null);
         }}
         footer={null}
-        width={850}
+        width={900}
+        centered
         destroyOnHidden
-      >
+        maskClosable={false}
+        className={styles.detailModal}
+        styles={{
+            content: {
+            maxHeight: '88vh',
+            overflow: 'hidden',
+            },
+            body: {
+            maxHeight: '72vh',
+            overflowY: 'auto',
+            paddingRight: 10,
+            },
+        }}
+        >
         {detailLoading ? (
           <div className={styles.loadingWrap}>
             <Spin />
