@@ -14,14 +14,17 @@ import {
   Tag,
   Timeline,
   Tooltip,
+  Upload,
 } from 'antd';
 import {
+  DeleteOutlined,
   EyeOutlined,
   FileProtectOutlined,
   ReloadOutlined,
   SearchOutlined,
   SendOutlined,
   SafetyCertificateOutlined,
+  UploadOutlined,
 } from '@ant-design/icons';
 import axios from 'axios';
 import dayjs from 'dayjs';
@@ -30,6 +33,8 @@ import styles from './WarrantyContent.module.css';
 const { TextArea } = Input;
 
 const API_BASE = 'https://ceramic-shop-u8ak.onrender.com/api/v1';
+const CLOUDINARY_CLOUD_NAME = 'dcmwz0uis';
+const CLOUDINARY_UPLOAD_PRESET = 'the_creamy_shop';
 
 const WARRANTY_STATUS = {
   EXPIRED: 0,
@@ -192,6 +197,9 @@ export default function WarrantyContent({ compact = false }) {
   const [requestWarranty, setRequestWarranty] = useState(null);
   const [requestForm] = Form.useForm();
 
+  const [evidenceUploading, setEvidenceUploading] = useState(false);
+  const [evidenceUrl, setEvidenceUrl] = useState('');
+
   const fetchWarranties = async () => {
     setLoading(true);
 
@@ -278,6 +286,7 @@ export default function WarrantyContent({ compact = false }) {
 
   const openRequestModal = (warranty) => {
     setRequestWarranty(warranty);
+    setEvidenceUrl('');
     requestForm.resetFields();
     setRequestOpen(true);
   };
@@ -285,7 +294,60 @@ export default function WarrantyContent({ compact = false }) {
   const closeRequestModal = () => {
     setRequestOpen(false);
     setRequestWarranty(null);
+    setEvidenceUrl('');
     requestForm.resetFields();
+  };
+
+  const handleEvidenceUpload = async (file) => {
+    const isImage = file.type?.startsWith('image/');
+
+    if (!isImage) {
+      message.error('Vui lòng chọn file ảnh!');
+      return Upload.LIST_IGNORE;
+    }
+
+    const isValidSize = file.size / 1024 / 1024 <= 5;
+
+    if (!isValidSize) {
+      message.error('Ảnh minh chứng không được vượt quá 5MB!');
+      return Upload.LIST_IGNORE;
+    }
+
+    setEvidenceUploading(true);
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+
+    try {
+      const res = await axios.post(
+        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+        formData,
+      );
+
+      const secureUrl = res.data.secure_url;
+
+      setEvidenceUrl(secureUrl);
+      requestForm.setFieldsValue({
+        AnhMinhChung: secureUrl,
+      });
+
+      message.success('Tải ảnh minh chứng thành công!');
+    } catch (err) {
+      console.error(err);
+      message.error('Tải ảnh minh chứng thất bại!');
+    } finally {
+      setEvidenceUploading(false);
+    }
+
+    return Upload.LIST_IGNORE;
+  };
+
+  const clearEvidenceImage = () => {
+    setEvidenceUrl('');
+    requestForm.setFieldsValue({
+      AnhMinhChung: null,
+    });
   };
 
   const submitRequest = async (values) => {
@@ -609,6 +671,7 @@ export default function WarrantyContent({ compact = false }) {
                           <Image
                             src={history.AnhMinhChung}
                             width={130}
+                            preview={false}
                             alt="Ảnh minh chứng bảo hành"
                           />
                         </div>
@@ -631,7 +694,7 @@ export default function WarrantyContent({ compact = false }) {
         title={`Gửi yêu cầu bảo hành #${requestWarranty?.MaBaoHanh || ''}`}
         okText="Gửi yêu cầu"
         cancelText="Hủy"
-        confirmLoading={requestSubmitting}
+        confirmLoading={requestSubmitting || evidenceUploading}
         onCancel={closeRequestModal}
         onOk={() => requestForm.submit()}
         destroyOnHidden
@@ -655,12 +718,46 @@ export default function WarrantyContent({ compact = false }) {
             />
           </Form.Item>
 
+          <Form.Item name="AnhMinhChung" hidden>
+            <Input />
+          </Form.Item>
+
           <Form.Item
-            name="AnhMinhChung"
-            label="Link ảnh minh chứng"
-            extra="Hiện tại hệ thống nhận ảnh minh chứng dạng đường dẫn URL."
+            label="Ảnh minh chứng"
+            extra="Bạn có thể chọn ảnh trực tiếp từ máy. Hệ thống sẽ tự tải ảnh lên và gửi kèm yêu cầu bảo hành."
           >
-            <Input placeholder="https://example.com/anh-minh-chung.jpg" />
+            <Upload
+              accept="image/*"
+              maxCount={1}
+              showUploadList={false}
+              beforeUpload={handleEvidenceUpload}
+              disabled={evidenceUploading || requestSubmitting}
+            >
+              <Button icon={<UploadOutlined />} loading={evidenceUploading}>
+                {evidenceUrl ? 'Đổi ảnh minh chứng' : 'Chọn ảnh từ máy'}
+              </Button>
+            </Upload>
+
+            {evidenceUrl && (
+              <div className={styles.requestEvidencePreview}>
+                <Image
+                  src={evidenceUrl}
+                  width={140}
+                  preview={false}
+                  alt="Ảnh minh chứng bảo hành"
+                />
+
+                <Button
+                  danger
+                  size="small"
+                  icon={<DeleteOutlined />}
+                  onClick={clearEvidenceImage}
+                  disabled={requestSubmitting}
+                >
+                  Xóa ảnh
+                </Button>
+              </div>
+            )}
           </Form.Item>
         </Form>
       </Modal>
