@@ -1,5 +1,6 @@
 import sequelize from "../config/database.js";
 import { DataTypes } from "sequelize";
+
 const WarrantyModel = sequelize.define(
   "BaoHanh",
   {
@@ -20,9 +21,6 @@ const WarrantyModel = sequelize.define(
       allowNull: false,
       type: DataTypes.DATE,
     },
-    // 1: active
-    // 2: expired
-    // 3: cancelled
     TrangThai: {
       type: DataTypes.TINYINT.UNSIGNED,
       defaultValue: 1,

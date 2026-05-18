@@ -18,7 +18,7 @@ import {
 } from "../models/index.js";
 import ErrorHandler from "../utils/error_handler.js";
 import { Op } from "sequelize";
-
+import { generateWarrantiesForOrderService } from "./warranty.service.js";
 import calculateShippingFee from "../utils/orders/calculate_shipping_fee.js";
 import calculateOrderDiscount from "../utils/orders/calculate_order_discount.js";
 export const ORDER_STATUS = {
@@ -703,6 +703,10 @@ Thông tin liên hệ:
       await order.save({
         transaction,
       });
+
+      if (Number(newStatus) === ORDER_STATUS.COMPLETED) {
+        await generateWarrantiesForOrderService(order.MaDonHang, transaction);
+      }
     }
     await transaction.commit();
   } catch (err) {

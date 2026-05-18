@@ -6,6 +6,10 @@
 .loadingContainer {
   text-align: center;
   margin-top: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
 }
 
 .sectionTitle {
@@ -15,6 +19,12 @@
 .highlightText {
   color: #1677ff;
   font-weight: 500;
+}
+
+.actionBar {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
 }
 
 .emptyHistory {
@@ -35,7 +45,9 @@
 .timelineHeader {
   display: flex;
   justify-content: space-between;
+  gap: 12px;
   margin-bottom: 4px;
+  flex-wrap: wrap;
 }
 
 .timelinePersonnel {
@@ -49,4 +61,8 @@
   border-radius: 6px;
   font-size: 14px;
   color: #333;
+}
+
+.evidenceWrap {
+  margin-top: 8px;
 }

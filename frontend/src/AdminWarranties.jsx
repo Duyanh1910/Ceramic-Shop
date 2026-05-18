@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Table,
   Tag,
@@ -10,22 +10,72 @@ import {
   Image,
   Tooltip,
   Radio,
-  Badge,
+  message,
 } from "antd";
 import {
   HistoryOutlined,
   SearchOutlined,
   SafetyCertificateOutlined,
+  ReloadOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import axios from "axios";
 
-import "./AdminWarranties.module.css";
-
+import styles from "./AdminWarranties.module.css";
 import WarrantyHistory from "./AdminWarrantyHistory";
 
 const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1";
 const { Title, Text } = Typography;
+const ALL_STATUS = "all";
+
+const WARRANTY_STATUS = {
+  EXPIRED: 0,
+  ACTIVE: 1,
+  REQUESTED: 2,
+  PROCESSING: 3,
+  COMPLETED: 4,
+  REJECTED: 5,
+};
+
+const getToken = () =>
+  localStorage.getItem("admin_token") || localStorage.getItem("customer_token");
+
+const authConfig = () => ({
+  headers: {
+    Authorization: `Bearer ${getToken()}`,
+  },
+  withCredentials: true,
+});
+
+const renderWarrantyStatus = (status) => {
+  const statusNumber = Number(status);
+
+  if (statusNumber === WARRANTY_STATUS.EXPIRED) {
+    return <Tag color="red">Hết hạn</Tag>;
+  }
+
+  if (statusNumber === WARRANTY_STATUS.ACTIVE) {
+    return <Tag color="green">Còn hiệu lực</Tag>;
+  }
+
+  if (statusNumber === WARRANTY_STATUS.REQUESTED) {
+    return <Tag color="gold">Đang yêu cầu</Tag>;
+  }
+
+  if (statusNumber === WARRANTY_STATUS.PROCESSING) {
+    return <Tag color="blue">Đang xử lý</Tag>;
+  }
+
+  if (statusNumber === WARRANTY_STATUS.COMPLETED) {
+    return <Tag color="green">Đã hoàn tất</Tag>;
+  }
+
+  if (statusNumber === WARRANTY_STATUS.REJECTED) {
+    return <Tag color="red">Từ chối</Tag>;
+  }
+
+  return <Tag>{status}</Tag>;
+};
 
 const WarrantyList = () => {
   const [data, setData] = useState([]);
@@ -35,21 +85,19 @@ const WarrantyList = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
-  const [status, setStatus] = useState(undefined);
+  const [status, setStatus] = useState(ALL_STATUS);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [selectedWarrantyId, setSelectedWarrantyId] = useState(null);
 
-  const axiosConfig = { withCredentials: true };
-
   useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
+    const timer = setTimeout(() => {
       if (search !== searchInput) {
         setSearch(searchInput);
         setPage(1);
       }
     }, 500);
 
-    return () => clearTimeout(delayDebounceFn);
+    return () => clearTimeout(timer);
   }, [searchInput, search]);
 
   useEffect(() => {
@@ -58,15 +106,16 @@ const WarrantyList = () => {
 
   const fetchData = async () => {
     setLoading(true);
+
     try {
       const res = await axios.get(`${API_BASE}/admin/after_sales/warranties`, {
         params: {
           page,
           limit: 10,
-          search: search?.toUpperCase().trim(),
-          status,
+          search: search.trim(),
+          status: status === ALL_STATUS ? undefined : status,
         },
-        ...axiosConfig,
+        ...authConfig(),
       });
 
       const raw = res.data?.result?.data || [];
@@ -75,7 +124,9 @@ const WarrantyList = () => {
       setData(normalizeData(raw));
       setTotalItems(total);
     } catch (err) {
-      console.error("Lỗi khi tải danh sách:", err);
+      message.error(
+        err.response?.data?.message || "Không thể tải danh sách bảo hành!",
+      );
     } finally {
       setLoading(false);
     }
@@ -83,7 +134,11 @@ const WarrantyList = () => {
 
   const normalizeData = (rawData) => {
     return rawData.map((item) => {
-      const sp = item.ChiTietDonHang?.BienTheSanPham;
+      const orderDetail = item.ChiTietDonHang;
+      const variant = orderDetail?.BienTheSanPham;
+      const product = variant?.SanPham;
+      const order = orderDetail?.DonHang;
+
       return {
         key: item.MaBaoHanh,
         maBaoHanh: item.MaBaoHanh,
@@ -91,16 +146,31 @@ const WarrantyList = () => {
         ngayKetThuc: item.NgayKetThuc,
         trangThai: item.TrangThai,
         ghiChu: item.GhiChu,
-        maDonHang: item.ChiTietDonHang?.DonHang?.MaHienThi || "N/A",
-        tenSanPham: sp?.SanPham?.TenSanPham || "Sản phẩm không xác định",
-        tenBienThe: sp?.TenBienThe || "",
-        thumbnail: sp?.SanPham?.Thumbnail || "",
+        maDonHang: order?.MaHienThi || "N/A",
+        tenNguoiNhan: order?.TenNguoiNhan || "Không rõ",
+        sdt: order?.SDT || "Không rõ",
+        tenSanPham: product?.TenSanPham || "Sản phẩm không xác định",
+        tenBienThe: variant?.TenBienThe || "",
+        thumbnail: product?.Thumbnail || "",
       };
     });
   };
 
   const handleStatusChange = (e) => {
     setStatus(e.target.value);
+    setPage(1);
+  };
+
+  const handleReload = () => {
+    setSearchInput("");
+
+    if (search === "" && status === ALL_STATUS && page === 1) {
+      fetchData();
+      return;
+    }
+
+    setSearch("");
+    setStatus(ALL_STATUS);
     setPage(1);
   };
 
@@ -124,9 +194,10 @@ const WarrantyList = () => {
             height={64}
             src={record.thumbnail}
             fallback="https://via.placeholder.com/64"
-            className="product-image"
+            className={styles["product-image"]}
           />
-          <div className="product-col-wrapper">
+
+          <div className={styles["product-col-wrapper"]}>
             <div>
               <Text strong style={{ fontSize: "14px" }}>
                 {record.tenSanPham}
@@ -134,7 +205,7 @@ const WarrantyList = () => {
             </div>
 
             <div style={{ marginTop: 2 }}>
-              <Text type="secondary" className="product-variant">
+              <Text type="secondary" className={styles["product-variant"]}>
                 Phân loại: {record.tenBienThe}
               </Text>
             </div>
@@ -145,7 +216,7 @@ const WarrantyList = () => {
                   <Text
                     type="secondary"
                     ellipsis
-                    className="product-note"
+                    className={styles["product-note"]}
                     style={{ margin: 0 }}
                   >
                     {record.ghiChu}
@@ -161,13 +232,20 @@ const WarrantyList = () => {
       title: "Thông tin phiếu",
       key: "info",
       render: (_, record) => (
-        <div className="info-col-wrapper">
+        <div className={styles["info-col-wrapper"]}>
           <Text strong style={{ color: "#1677ff" }}>
             {record.maDonHang}
           </Text>
+
           <div style={{ marginTop: 2 }}>
-            <Text type="secondary" className="info-code">
+            <Text type="secondary" className={styles["info-code"]}>
               Mã BH: #{record.maBaoHanh}
+            </Text>
+          </div>
+
+          <div style={{ marginTop: 2 }}>
+            <Text type="secondary" className={styles["info-code"]}>
+              Khách: {record.tenNguoiNhan}
             </Text>
           </div>
         </div>
@@ -177,13 +255,14 @@ const WarrantyList = () => {
       title: "Thời hạn bảo hành",
       key: "duration",
       render: (_, record) => (
-        <div className="duration-col-wrapper">
+        <div className={styles["duration-col-wrapper"]}>
           <div style={{ marginBottom: 4 }}>
-            <span className="duration-start-label">Bắt đầu:</span>{" "}
+            <span className={styles["duration-start-label"]}>Bắt đầu:</span>{" "}
             {dayjs(record.ngayBatDau).format("DD/MM/YYYY")}
           </div>
+
           <div>
-            <span className="duration-end-label">Kết thúc:</span>{" "}
+            <span className={styles["duration-end-label"]}>Kết thúc:</span>{" "}
             {dayjs(record.ngayKetThuc).format("DD/MM/YYYY")}
           </div>
         </div>
@@ -193,12 +272,7 @@ const WarrantyList = () => {
       title: "Trạng thái",
       dataIndex: "trangThai",
       key: "trangThai",
-      render: (trangThai) => {
-        if (trangThai === 1) return <Tag color="green">Còn hiệu lực</Tag>;
-        if (trangThai === 0) return <Tag color="red">Hết hạn</Tag>;
-        if (trangThai === 2) return <Tag color="default">Đã hủy</Tag>;
-        return <Tag>{trangThai}</Tag>;
-      },
+      render: renderWarrantyStatus,
     },
     {
       title: "Thao tác",
@@ -211,7 +285,7 @@ const WarrantyList = () => {
           icon={<HistoryOutlined />}
           onClick={() => handleViewHistory(record)}
         >
-          Lịch sử
+          Chi tiết
         </Button>
       ),
     },
@@ -220,7 +294,7 @@ const WarrantyList = () => {
   return (
     <Card
       bordered={false}
-      className="warranty-card"
+      className={styles["warranty-card"]}
       title={
         <Space>
           <SafetyCertificateOutlined
@@ -232,27 +306,47 @@ const WarrantyList = () => {
         </Space>
       }
     >
-      {}
-      <div className="warranty-toolbar">
+      <div className={styles["warranty-toolbar"]}>
         <Input
-          placeholder="Tìm mã đơn hàng..."
+          placeholder="Tìm mã đơn hàng, tên khách hoặc số điện thoại..."
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           prefix={<SearchOutlined style={{ color: "#bfbfbf" }} />}
           allowClear
-          className="warranty-search-input"
+          className={styles["warranty-search-input"]}
         />
 
-        <Radio.Group
-          value={status}
-          onChange={handleStatusChange}
-          buttonStyle="solid"
-        >
-          <Radio.Button value={undefined}>Tất cả</Radio.Button>
-          <Radio.Button value={1}>Còn hiệu lực</Radio.Button>
-          <Radio.Button value={0}>Hết hạn</Radio.Button>
-          <Radio.Button value={2}>Đã hủy</Radio.Button>
-        </Radio.Group>
+        <Space wrap>
+          <Radio.Group
+            value={status}
+            onChange={handleStatusChange}
+            buttonStyle="solid"
+          >
+            <Radio.Button value={ALL_STATUS}>Tất cả</Radio.Button>
+            <Radio.Button value={WARRANTY_STATUS.ACTIVE}>
+              Còn hiệu lực
+            </Radio.Button>
+            <Radio.Button value={WARRANTY_STATUS.REQUESTED}>
+              Đang yêu cầu
+            </Radio.Button>
+            <Radio.Button value={WARRANTY_STATUS.PROCESSING}>
+              Đang xử lý
+            </Radio.Button>
+            <Radio.Button value={WARRANTY_STATUS.COMPLETED}>
+              Hoàn tất
+            </Radio.Button>
+            <Radio.Button value={WARRANTY_STATUS.REJECTED}>
+              Từ chối
+            </Radio.Button>
+            <Radio.Button value={WARRANTY_STATUS.EXPIRED}>
+              Hết hạn
+            </Radio.Button>
+          </Radio.Group>
+
+          <Button icon={<ReloadOutlined />} onClick={handleReload}>
+            Tải lại
+          </Button>
+        </Space>
       </div>
 
       <Table
@@ -267,12 +361,17 @@ const WarrantyList = () => {
           showSizeChanger: false,
           showTotal: (total) => `Tổng số: ${total} phiếu`,
         }}
-        rowClassName={(record) => (record.trangThai === 0 ? "row-expired" : "")}
+        rowClassName={(record) =>
+          Number(record.trangThai) === WARRANTY_STATUS.EXPIRED
+            ? styles["row-expired"]
+            : ""
+        }
       />
 
       <WarrantyHistory
         open={isHistoryModalOpen}
         maBaoHanh={selectedWarrantyId}
+        onUpdated={fetchData}
         onCancel={() => {
           setIsHistoryModalOpen(false);
           setSelectedWarrantyId(null);

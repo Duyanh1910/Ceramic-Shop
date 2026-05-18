@@ -11,6 +11,10 @@ const WarrantyHistoryModel = sequelize.define(
     },
     MaBaoHanh: {
       type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    HanhDong: {
+      type: DataTypes.STRING(50),
       allowNull: true,
     },
     NgayXuLy: {
@@ -19,6 +23,14 @@ const WarrantyHistoryModel = sequelize.define(
     },
     NoiDungXuLy: {
       type: DataTypes.STRING(255),
+      allowNull: true,
+    },
+    AnhMinhChung: {
+      type: DataTypes.STRING(500),
+      allowNull: true,
+    },
+    MaNhanVienXuLy: {
+      type: DataTypes.INTEGER,
       allowNull: true,
     },
     TrangThai: {
