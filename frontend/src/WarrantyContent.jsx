@@ -239,6 +239,29 @@ export default function WarrantyContent({ compact = false }) {
     fetchWarranties();
   }, []);
 
+  useEffect(() => {
+    if (!detailOpen && !requestOpen) {
+      return undefined;
+    }
+
+    const html = document.documentElement;
+    const body = document.body;
+
+    const previousHtmlOverflow = html.style.overflow;
+    const previousBodyOverflow = body.style.overflow;
+    const previousBodyPaddingRight = body.style.paddingRight;
+
+    html.style.overflow = 'hidden';
+    body.style.overflow = 'hidden';
+    body.style.paddingRight = '0px';
+
+    return () => {
+      html.style.overflow = previousHtmlOverflow;
+      body.style.overflow = previousBodyOverflow;
+      body.style.paddingRight = previousBodyPaddingRight;
+    };
+  }, [detailOpen, requestOpen]);
+
   const counters = useMemo(() => {
     const result = {
       [WARRANTY_TABS.ACTIVE]: 0,
@@ -296,6 +319,11 @@ export default function WarrantyContent({ compact = false }) {
     setRequestWarranty(null);
     setEvidenceUrl('');
     requestForm.resetFields();
+  };
+
+  const closeDetailModal = () => {
+    setDetailOpen(false);
+    setSelectedWarranty(null);
   };
 
   const handleEvidenceUpload = async (file) => {
@@ -573,134 +601,133 @@ export default function WarrantyContent({ compact = false }) {
       <Modal
         open={detailOpen}
         title={`Chi tiết phiếu bảo hành #${selectedWarranty?.MaBaoHanh || ''}`}
-        onCancel={() => {
-            setDetailOpen(false);
-            setSelectedWarranty(null);
-        }}
+        onCancel={closeDetailModal}
         footer={null}
         width={900}
         centered
         destroyOnHidden
         maskClosable={false}
         className={styles.detailModal}
+        wrapClassName={styles.detailModalWrap}
         styles={{
-            content: {
+          content: {
             maxHeight: '88vh',
             overflow: 'hidden',
-            },
-            body: {
-            maxHeight: '72vh',
-            overflowY: 'auto',
-            paddingRight: 10,
-            },
+          },
+          body: {
+            padding: 0,
+            overflow: 'hidden',
+          },
         }}
-        >
-        {detailLoading ? (
-          <div className={styles.loadingWrap}>
-            <Spin />
-            <span>Đang tải chi tiết bảo hành...</span>
-          </div>
-        ) : selectedWarranty ? (
-          <div className={styles.detailContent}>
-            <Descriptions
-              bordered
-              size="small"
-              column={{ xxl: 2, xl: 2, lg: 2, md: 1, sm: 1, xs: 1 }}
-            >
-              <Descriptions.Item label="Mã đơn hàng">
-                {detailOrder?.MaHienThi || 'Không rõ'}
-              </Descriptions.Item>
+      >
+        <div className={styles.detailModalBody}>
+          {detailLoading ? (
+            <div className={styles.loadingWrap}>
+              <Spin />
+              <span>Đang tải chi tiết bảo hành...</span>
+            </div>
+          ) : selectedWarranty ? (
+            <div className={styles.detailContent}>
+              <Descriptions
+                bordered
+                size="small"
+                column={{ xxl: 2, xl: 2, lg: 2, md: 1, sm: 1, xs: 1 }}
+              >
+                <Descriptions.Item label="Mã đơn hàng">
+                  {detailOrder?.MaHienThi || 'Không rõ'}
+                </Descriptions.Item>
 
-              <Descriptions.Item label="Trạng thái">
-                {renderStatusTag(getEffectiveStatus(selectedWarranty))}
-              </Descriptions.Item>
+                <Descriptions.Item label="Trạng thái">
+                  {renderStatusTag(getEffectiveStatus(selectedWarranty))}
+                </Descriptions.Item>
 
-              <Descriptions.Item label="Sản phẩm">
-                {detailProduct?.TenSanPham || 'Không rõ'}
-              </Descriptions.Item>
+                <Descriptions.Item label="Sản phẩm">
+                  {detailProduct?.TenSanPham || 'Không rõ'}
+                </Descriptions.Item>
 
-              <Descriptions.Item label="Phân loại">
-                {detailVariant?.TenBienThe || 'Không rõ'}
-              </Descriptions.Item>
+                <Descriptions.Item label="Phân loại">
+                  {detailVariant?.TenBienThe || 'Không rõ'}
+                </Descriptions.Item>
 
-              <Descriptions.Item label="Giá mua">
-                {fmt(detailOrderDetail?.GiaBan)} × {detailOrderDetail?.SoLuong || 0}
-              </Descriptions.Item>
+                <Descriptions.Item label="Giá mua">
+                  {fmt(detailOrderDetail?.GiaBan)} × {detailOrderDetail?.SoLuong || 0}
+                </Descriptions.Item>
 
-              <Descriptions.Item label="Thời hạn">
-                {dayjs(selectedWarranty.NgayBatDau).format('DD/MM/YYYY HH:mm')} -{' '}
-                {dayjs(selectedWarranty.NgayKetThuc).format('DD/MM/YYYY HH:mm')}
-              </Descriptions.Item>
+                <Descriptions.Item label="Thời hạn">
+                  {dayjs(selectedWarranty.NgayBatDau).format('DD/MM/YYYY HH:mm')} -{' '}
+                  {dayjs(selectedWarranty.NgayKetThuc).format('DD/MM/YYYY HH:mm')}
+                </Descriptions.Item>
 
-              <Descriptions.Item label="Ghi chú" span={2}>
-                {selectedWarranty.GhiChu || 'Không có'}
-              </Descriptions.Item>
-            </Descriptions>
+                <Descriptions.Item label="Ghi chú" span={2}>
+                  {selectedWarranty.GhiChu || 'Không có'}
+                </Descriptions.Item>
+              </Descriptions>
 
-            {canRequestWarranty(selectedWarranty) && (
-              <div className={styles.detailAction}>
-                <Button
-                  type="primary"
-                  icon={<SendOutlined />}
-                  className={styles.primaryBtn}
-                  onClick={() => openRequestModal(selectedWarranty)}
-                >
-                  Gửi yêu cầu bảo hành
-                </Button>
-              </div>
-            )}
+              {canRequestWarranty(selectedWarranty) && (
+                <div className={styles.detailAction}>
+                  <Button
+                    type="primary"
+                    icon={<SendOutlined />}
+                    className={styles.primaryBtn}
+                    onClick={() => openRequestModal(selectedWarranty)}
+                  >
+                    Gửi yêu cầu bảo hành
+                  </Button>
+                </div>
+              )}
 
-            <h3 className={styles.timelineTitle}>Lịch sử xử lý bảo hành</h3>
+              <h3 className={styles.timelineTitle}>Lịch sử xử lý bảo hành</h3>
 
-            {histories.length > 0 ? (
-              <Timeline
-                items={histories.map((history) => ({
-                  color:
-                    Number(history.TrangThai) === 3
-                      ? 'green'
-                      : Number(history.TrangThai) === 2
-                        ? 'red'
-                        : 'blue',
-                  children: (
-                    <div className={styles.timelineItem}>
-                      <div className={styles.timelineHeader}>
-                        <strong>
-                          {dayjs(history.NgayXuLy).format('DD/MM/YYYY HH:mm')}
-                        </strong>
+              {histories.length > 0 ? (
+                <Timeline
+                  items={histories.map((history) => ({
+                    color:
+                      Number(history.TrangThai) === 3
+                        ? 'green'
+                        : Number(history.TrangThai) === 2
+                          ? 'red'
+                          : 'blue',
+                    children: (
+                      <div className={styles.timelineItem}>
+                        <div className={styles.timelineHeader}>
+                          <strong>
+                            {dayjs(history.NgayXuLy).format('DD/MM/YYYY HH:mm')}
+                          </strong>
 
-                        <Space size={6} wrap>
-                          <Tag color="blue">
-                            {renderHistoryAction(history.HanhDong)}
-                          </Tag>
-                          {renderHistoryStatus(history.TrangThai)}
-                        </Space>
-                      </div>
-
-                      <div className={styles.timelineNote}>
-                        {history.NoiDungXuLy || 'Không có nội dung xử lý'}
-                      </div>
-
-                      {history.AnhMinhChung && (
-                        <div className={styles.evidenceWrap}>
-                          <Image
-                            src={history.AnhMinhChung}
-                            width={130}
-                            preview={false}
-                            alt="Ảnh minh chứng bảo hành"
-                          />
+                          <Space size={6} wrap>
+                            <Tag color="blue">
+                              {renderHistoryAction(history.HanhDong)}
+                            </Tag>
+                            {renderHistoryStatus(history.TrangThai)}
+                          </Space>
                         </div>
-                      )}
-                    </div>
-                  ),
-                }))}
-              />
-            ) : (
-              <Empty description="Chưa có lịch sử xử lý." />
-            )}
-          </div>
-        ) : (
-          <Empty description="Không tìm thấy phiếu bảo hành." />
-        )}
+
+                        <div className={styles.timelineNote}>
+                          {history.NoiDungXuLy || 'Không có nội dung xử lý'}
+                        </div>
+
+                        {history.AnhMinhChung && (
+                          <div className={styles.evidenceWrap}>
+                            <Image
+                              src={history.AnhMinhChung}
+                              width={130}
+                              preview={false}
+                              alt="Ảnh minh chứng bảo hành"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    ),
+                  }))}
+                />
+              ) : (
+                <Empty description="Chưa có lịch sử xử lý." />
+              )}
+            </div>
+          ) : (
+            <Empty description="Không tìm thấy phiếu bảo hành." />
+          )}
+        </div>
       </Modal>
 
       <Modal

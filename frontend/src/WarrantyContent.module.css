@@ -183,7 +183,7 @@
 }
 
 .detailContent {
-  padding-top: 6px;
+  padding-top: 0;
 }
 
 .detailAction {
@@ -224,6 +224,86 @@
   margin-top: 10px;
 }
 
+.requestEvidencePreview {
+  margin-top: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.requestEvidencePreview img {
+  border-radius: 10px;
+  border: 1px solid #edf0f7;
+  object-fit: cover;
+}
+
+.detailModalWrap {
+  overflow: hidden !important;
+}
+
+.detailModalWrap :global(.ant-modal) {
+  max-width: calc(100vw - 32px);
+}
+
+.detailModal :global(.ant-modal-content) {
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.detailModal :global(.ant-modal-header) {
+  flex-shrink: 0;
+  padding: 18px 22px 12px;
+  margin-bottom: 0;
+  border-bottom: 1px solid #edf0f7;
+}
+
+.detailModal :global(.ant-modal-title) {
+  color: #1b437c;
+  font-weight: 700;
+}
+
+.detailModal :global(.ant-modal-close) {
+  top: 18px;
+}
+
+.detailModal :global(.ant-modal-body) {
+  padding: 0 !important;
+  overflow: hidden !important;
+  flex: 1;
+  min-height: 0;
+}
+
+.detailModalBody {
+  max-height: calc(88vh - 62px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 18px 22px;
+  scrollbar-width: thin;
+  scrollbar-color: #9db7d8 #f2f6fb;
+}
+
+.detailModalBody::-webkit-scrollbar {
+  width: 8px;
+}
+
+.detailModalBody::-webkit-scrollbar-track {
+  background: #f2f6fb;
+  border-radius: 999px;
+}
+
+.detailModalBody::-webkit-scrollbar-thumb {
+  background: #9db7d8;
+  border-radius: 999px;
+}
+
+.detailModalBody::-webkit-scrollbar-thumb:hover {
+  background: #6f92bf;
+}
+
 .compact .title {
   font-size: 22px;
 }
@@ -256,43 +336,4 @@
   .searchInput {
     width: 100%;
   }
-}
-.detailModal :global(.ant-modal-content) {
-  border-radius: 16px;
-  overflow: hidden;
-}
-
-.detailModal :global(.ant-modal-header) {
-  padding: 18px 22px 12px;
-  margin-bottom: 0;
-  border-bottom: 1px solid #edf0f7;
-}
-
-.detailModal :global(.ant-modal-title) {
-  color: #1b437c;
-  font-weight: 700;
-}
-
-.detailModal :global(.ant-modal-body) {
-  padding: 18px 22px !important;
-  scrollbar-width: thin;
-  scrollbar-color: #9db7d8 #f2f6fb;
-}
-
-.detailModal :global(.ant-modal-body::-webkit-scrollbar) {
-  width: 8px;
-}
-
-.detailModal :global(.ant-modal-body::-webkit-scrollbar-track) {
-  background: #f2f6fb;
-  border-radius: 999px;
-}
-
-.detailModal :global(.ant-modal-body::-webkit-scrollbar-thumb) {
-  background: #9db7d8;
-  border-radius: 999px;
-}
-
-.detailModal :global(.ant-modal-body::-webkit-scrollbar-thumb:hover) {
-  background: #6f92bf;
 }
