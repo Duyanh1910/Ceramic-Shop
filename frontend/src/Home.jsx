@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { Dropdown, Avatar, Space, Layout, Menu, Input, Select, Row, Col, Pagination, Spin, Badge, message, AutoComplete, Popover, Button, Radio, Rate } from 'antd';
-import { LogoutOutlined, SearchOutlined, ShoppingCartOutlined, DeleteOutlined, ReloadOutlined, AppstoreOutlined, EyeOutlined, UserOutlined, ShoppingOutlined, WalletOutlined } from '@ant-design/icons';
+import { LogoutOutlined, SearchOutlined, ShoppingCartOutlined, DeleteOutlined, ReloadOutlined, AppstoreOutlined, EyeOutlined, UserOutlined, ShoppingOutlined, WalletOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import styles from './Home.module.css';
@@ -202,16 +202,22 @@ function Home() {
     icon: <WalletOutlined />,
     onClick: () => navigate('/vouchers')
   },
-  { type: 'divider' },
   {
     key: '3',
+    label: 'Bảo hành của tôi',
+    icon: <SafetyCertificateOutlined />,
+    onClick: () => navigate('/warranties')
+  },
+  { type: 'divider' },
+  {
+    key: '4',
     label: 'Đơn hàng của tôi',
     icon: <ShoppingOutlined />,
     onClick: () => navigate('/orders')
   },
   { type: 'divider' },
   {
-    key: '4',
+    key: '5',
     danger: true,
     label: 'Đăng xuất',
     icon: <LogoutOutlined />,

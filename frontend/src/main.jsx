@@ -41,6 +41,7 @@ import AdminRisks from "./AdminRisks.jsx";
 import AdminInventories from "./AdminInventories.jsx";
 import AdminReviews from "./AdminReviews.jsx";
 import VoucherWallet from "./VoucherWallet.jsx";
+import CustomerWarranties from "./CustomerWarranties.jsx";
 
 ReactGA.initialize("G-909W1LHHLD");
 
@@ -165,6 +166,14 @@ createRoot(document.getElementById("root")).render(
             element={
               <ProtectedRoute allowedRoles={["Customer", "Admin", "Staff"]}>
                 <VoucherWallet />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/warranties"
+            element={
+              <ProtectedRoute allowedRoles={["Customer"]}>
+                <CustomerWarranties />
               </ProtectedRoute>
             }
           />
