@@ -145,16 +145,40 @@ export const replaceWarrantyProduct = async (req, res, next) => {
       MaNhanVienXuLy,
     } = req.body;
 
-    if (!MaBienTheThayThe) {
+    if (MaBienTheThayThe === undefined || MaBienTheThayThe === null || MaBienTheThayThe === "") {
       throw new ErrorHandler("Vui lòng chọn sản phẩm thay thế!", 422);
+    }
+
+    const variantId = Number(MaBienTheThayThe);
+
+    if (!Number.isInteger(variantId) || variantId <= 0) {
+      throw new ErrorHandler("Sản phẩm thay thế không hợp lệ!", 422);
+    }
+
+    const replaceQuantity =
+      SoLuongThayThe === undefined || SoLuongThayThe === null || SoLuongThayThe === ""
+        ? 1
+        : Number(SoLuongThayThe);
+
+    if (!Number.isInteger(replaceQuantity) || replaceQuantity <= 0) {
+      throw new ErrorHandler("Số lượng thay thế không hợp lệ!", 422);
+    }
+
+    const staffId =
+      MaNhanVienXuLy === undefined || MaNhanVienXuLy === null || MaNhanVienXuLy === ""
+        ? null
+        : Number(MaNhanVienXuLy);
+
+    if (staffId !== null && (!Number.isInteger(staffId) || staffId <= 0)) {
+      throw new ErrorHandler("Nhân viên xử lý không hợp lệ!", 422);
     }
 
     const warranty = await replaceWarrantyProductService(
       MaBaoHanh,
-      Number(MaBienTheThayThe),
-      Number(SoLuongThayThe || 1),
+      variantId,
+      replaceQuantity,
       NoiDungXuLy || null,
-      MaNhanVienXuLy || null,
+      staffId,
     );
 
     res.status(200).json({

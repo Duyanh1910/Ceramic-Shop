@@ -610,12 +610,9 @@ export const replaceWarrantyProductService = async (
       throw new ErrorHandler("Không tìm thấy phiếu bảo hành!", 404);
     }
 
-    if (
-      Number(warranty.TrangThai) !== WARRANTY_STATUS.REQUESTED &&
-      Number(warranty.TrangThai) !== WARRANTY_STATUS.PROCESSING
-    ) {
+    if (Number(warranty.TrangThai) !== WARRANTY_STATUS.PROCESSING) {
       throw new ErrorHandler(
-        "Chỉ có thể đổi mới sản phẩm cho phiếu đang yêu cầu hoặc đang xử lý!",
+        "Chỉ có thể đổi mới sản phẩm cho phiếu đang xử lý!",
         400,
       );
     }
