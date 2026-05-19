@@ -8,7 +8,7 @@ import {
   PlusOutlined, EditOutlined, TagOutlined,
   SearchOutlined, ReloadOutlined, GiftOutlined, TruckOutlined,
   CheckCircleOutlined, ClockCircleOutlined, StopOutlined,
-  CopyOutlined, TagsOutlined
+  CopyOutlined, TagsOutlined, AppstoreOutlined
 } from '@ant-design/icons';
 import axios from 'axios';
 import dayjs from 'dayjs';
@@ -43,6 +43,14 @@ const authH = () => ({ headers: { Authorization: `Bearer ${token()}` }, withCred
 const VOUCHER_TYPE_LABEL = { 1: 'Giảm đơn hàng', 2: 'Freeship' };
 const VOUCHER_TYPE_COLOR = { 1: 'blue', 2: 'cyan' };
 
+const normalizeListResponse = (payload) => {
+  const list = payload?.result || payload?.categories || payload?.data || payload;
+
+  return Array.isArray(list) ? list : [];
+};
+
+const getPromotionCategory = (promo) =>
+  promo?.DanhMucSanPham || promo?.category || promo?.Category || null;
 function statusInfo(promo) {
   const now = new Date();
   const start = new Date(promo.NgayBatDau);
@@ -72,13 +80,46 @@ export default function AdminPromotions() {
   const [searchText, setSearchText] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterType, setFilterType] = useState('all');
+  const [filterCategory, setFilterCategory] = useState('all');
+  const [categories, setCategories] = useState([]);
+  const [categoryLoading, setCategoryLoading] = useState(false);
   const [form] = Form.useForm();
   const kmType = Form.useWatch('MaLoaiKM', form);
 
   useEffect(() => {
     fetchPromos();
+    fetchCategories();
   }, []);
+  const fetchCategories = async () => {
+  setCategoryLoading(true);
 
+  try {
+    const res = await axios.get(`${API_BASE}/categories`);
+    setCategories(normalizeListResponse(res.data));
+  } catch (err) {
+    message.error(err.response?.data?.message || 'Không thể tải danh mục!');
+  } finally {
+    setCategoryLoading(false);
+  }
+};
+
+  const getCategoryName = (promo) => {
+    const relationCategory = getPromotionCategory(promo);
+
+    if (relationCategory?.TenDanhMuc) {
+      return relationCategory.TenDanhMuc;
+    }
+
+    if (!promo?.MaDanhMuc) {
+      return 'Toàn shop';
+    }
+
+    const category = categories.find(
+      (item) => Number(item.MaDanhMuc) === Number(promo.MaDanhMuc),
+    );
+
+    return category?.TenDanhMuc || `Danh mục #${promo.MaDanhMuc}`;
+  };
   const fetchPromos = async () => {
     setLoading(true);
 
@@ -100,17 +141,19 @@ export default function AdminPromotions() {
       LoaiVoucher: 1,
       TrangThai: true,
       SoLuong: 100,
-    });
+      MaDanhMuc: null,
+      });
     setModalOpen(true);
   };
 
   const openEdit = (record) => {
     setEditRecord(record);
     form.setFieldsValue({
-      ...record,
-      TrangThai: Number(record.TrangThai) === 1,
-      NgayBatDau: record.NgayBatDau ? dayjs(record.NgayBatDau) : null,
-      NgayKetThuc: record.NgayKetThuc ? dayjs(record.NgayKetThuc) : null,
+    ...record,
+    TrangThai: Number(record.TrangThai) === 1,
+    MaDanhMuc: record.MaDanhMuc || null,
+    NgayBatDau: record.NgayBatDau ? dayjs(record.NgayBatDau) : null,
+    NgayKetThuc: record.NgayKetThuc ? dayjs(record.NgayKetThuc) : null,
     });
     setModalOpen(true);
   };
@@ -131,7 +174,7 @@ export default function AdminPromotions() {
         SoLuong: Number(values.SoLuong),
         MaLoaiKM: Number(values.MaLoaiKM),
         LoaiVoucher: Number(values.LoaiVoucher),
-        MaDanhMuc: values.MaDanhMuc || null,
+        MaDanhMuc: values.MaDanhMuc ? Number(values.MaDanhMuc) : null,
       };
 
       if (editRecord) {
@@ -213,24 +256,32 @@ export default function AdminPromotions() {
   ).length;
 
   const filtered = promos.filter((p) => {
-    const matchSearch =
-      !searchText ||
-      p.TenKhuyenMai?.toLowerCase().includes(searchText.toLowerCase()) ||
-      p.MaCode?.toLowerCase().includes(searchText.toLowerCase());
+  const categoryName = getCategoryName(p);
 
-    const st = statusInfo(p).label;
+  const matchSearch =
+    !searchText ||
+    p.TenKhuyenMai?.toLowerCase().includes(searchText.toLowerCase()) ||
+    p.MaCode?.toLowerCase().includes(searchText.toLowerCase()) ||
+    categoryName.toLowerCase().includes(searchText.toLowerCase());
 
-    const matchStatus =
-      filterStatus === 'all' ||
-      (filterStatus === 'active' && st === 'Đang chạy') ||
-      (filterStatus === 'pending' && st === 'Chưa bắt đầu') ||
-      (filterStatus === 'expired' && (st === 'Hết hạn' || st === 'Đã tắt'));
+  const st = statusInfo(p).label;
 
-    const matchType =
-      filterType === 'all' || String(p.LoaiVoucher) === filterType;
+  const matchStatus =
+    filterStatus === 'all' ||
+    (filterStatus === 'active' && st === 'Đang chạy') ||
+    (filterStatus === 'pending' && st === 'Chưa bắt đầu') ||
+    (filterStatus === 'expired' && (st === 'Hết hạn' || st === 'Đã tắt'));
 
-    return matchSearch && matchStatus && matchType;
-  });
+  const matchType =
+    filterType === 'all' || String(p.LoaiVoucher) === filterType;
+
+  const matchCategory =
+    filterCategory === 'all' ||
+    (filterCategory === 'shop' && !p.MaDanhMuc) ||
+    String(p.MaDanhMuc) === filterCategory;
+
+  return matchSearch && matchStatus && matchType && matchCategory;
+});
 
   const columns = [
     {
@@ -272,6 +323,19 @@ export default function AdminPromotions() {
             {Number(r.MaLoaiKM) === 1 ? '%' : 'VNĐ'}
           </Tag>
         </div>
+      ),
+    },
+    {
+      title: 'Danh mục',
+      key: 'category',
+      width: 150,
+      render: (_, r) => (
+        <Tag
+          color={r.MaDanhMuc ? 'geekblue' : 'default'}
+          icon={r.MaDanhMuc ? <AppstoreOutlined /> : <TagsOutlined />}
+        >
+          {getCategoryName(r)}
+        </Tag>
       ),
     },
     {
@@ -452,6 +516,25 @@ export default function AdminPromotions() {
           <Select.Option value="1">Giảm đơn hàng</Select.Option>
           <Select.Option value="2">Freeship</Select.Option>
         </Select>
+        <Select
+          value={filterCategory}
+          onChange={setFilterCategory}
+          className={styles.filterSelect}
+          loading={categoryLoading}
+          showSearch
+          optionFilterProp="children"
+        >
+          <Select.Option value="all">Tất cả danh mục</Select.Option>
+          <Select.Option value="shop">Toàn shop</Select.Option>
+          {categories.map((category) => (
+            <Select.Option
+              key={category.MaDanhMuc}
+              value={String(category.MaDanhMuc)}
+            >
+              {category.ParentID ? '— ' : ''}{category.TenDanhMuc}
+            </Select.Option>
+          ))}
+        </Select>
 
         <Button
           icon={<ReloadOutlined />}
@@ -466,7 +549,7 @@ export default function AdminPromotions() {
           dataSource={filtered}
           rowKey="MaKhuyenMai"
           loading={loading}
-          scroll={{ x: 1050 }}
+          scroll={{ x: 1220 }}
           pagination={{
             pageSize: 10,
             showTotal: (total) => `${total} khuyến mãi`,
@@ -545,6 +628,30 @@ export default function AdminPromotions() {
               <Select className={styles.select}>
                 <Select.Option value={1}>Phần trăm (%)</Select.Option>
                 <Select.Option value={2}>Số tiền cố định (VNĐ)</Select.Option>
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              name="MaDanhMuc"
+              label="Danh mục áp dụng"
+              tooltip="Để trống nếu voucher áp dụng cho toàn shop. Chọn danh mục nếu voucher chỉ áp dụng cho sản phẩm thuộc danh mục đó."
+            >
+              <Select
+                allowClear
+                showSearch
+                loading={categoryLoading}
+                placeholder="Toàn shop"
+                optionFilterProp="children"
+                className={styles.select}
+              >
+                {categories.map((category) => (
+                  <Select.Option
+                    key={category.MaDanhMuc}
+                    value={category.MaDanhMuc}
+                  >
+                    {category.ParentID ? '— ' : ''}{category.TenDanhMuc}
+                  </Select.Option>
+                ))}
               </Select>
             </Form.Item>
           </div>

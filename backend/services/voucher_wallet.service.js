@@ -1,4 +1,5 @@
 import {
+  CategoryModel,
   CustomerModel,
   PromotionModel,
   PromotionWalletModel,
@@ -26,6 +27,13 @@ export const getMyVouchersService = async (id, tab = "usable") => {
   const includePromotion = {
     model: PromotionModel,
     required: true,
+    include: [
+      {
+        model: CategoryModel,
+        attributes: ["MaDanhMuc", "TenDanhMuc", "ParentID"],
+        required: false,
+      },
+    ],
   };
 
   if (tab === "used") {
@@ -94,7 +102,7 @@ export const saveVouchersService = async (id, idPromotion) => {
 
   const now = new Date();
 
-  if (promo.TrangThai !== 1) {
+  if (Number(promo.TrangThai) !== 1) {
     throw new ErrorHandler("Voucher đã bị vô hiệu hóa hoặc hết hạn!", 400);
   }
 

@@ -12,6 +12,14 @@ const normalizePromotionCode = (MaCode) => {
   return code ? code.toUpperCase() : null;
 };
 
+const normalizeNullableNumber = (value) => {
+  if (value === null || value === undefined || value === "") {
+    return null;
+  }
+
+  return Number(value);
+};
+
 export const getAllPromotionsAdminController = async (req, res, next) => {
   try {
     const promotions = await getAllPromotionsAdminService();
@@ -65,15 +73,15 @@ export const createPromotionController = async (req, res, next) => {
       Number(MaLoaiKM),
       TenKhuyenMai,
       Number(GiaTri),
-      GiaTriToiThieu === null || GiaTriToiThieu === "" ? null : Number(GiaTriToiThieu),
-      GiamToiDa === null || GiamToiDa === "" ? null : Number(GiamToiDa),
+      normalizeNullableNumber(GiaTriToiThieu),
+      normalizeNullableNumber(GiamToiDa),
       NgayBatDau,
       NgayKetThuc,
       Number(TrangThai),
       normalizePromotionCode(MaCode),
       Number(SoLuong),
       Number(LoaiVoucher),
-      MaDanhMuc || null,
+      normalizeNullableNumber(MaDanhMuc),
     );
 
     res.status(201).json({
@@ -111,15 +119,15 @@ export const updatePromotionController = async (req, res, next) => {
       Number(MaLoaiKM),
       TenKhuyenMai,
       Number(GiaTri),
-      GiaTriToiThieu === null || GiaTriToiThieu === "" ? null : Number(GiaTriToiThieu),
-      GiamToiDa === null || GiamToiDa === "" ? null : Number(GiamToiDa),
+      normalizeNullableNumber(GiaTriToiThieu),
+      normalizeNullableNumber(GiamToiDa),
       NgayBatDau,
       NgayKetThuc,
       Number(TrangThai),
       normalizePromotionCode(MaCode),
       Number(SoLuong),
       Number(LoaiVoucher),
-      MaDanhMuc || null,
+      normalizeNullableNumber(MaDanhMuc),
     );
 
     res.status(200).json({
