@@ -67,6 +67,20 @@ const parseInputNumber = (value) => {
   return Number.isNaN(parsed) ? undefined : parsed;
 };
 
+const toNumberOrUndefined = (value) => {
+  if (value === undefined || value === null || value === "") return undefined;
+
+  const parsed = Number(value);
+
+  return Number.isNaN(parsed) ? undefined : parsed;
+};
+
+const toNumberOrNull = (value) => {
+  const parsed = toNumberOrUndefined(value);
+
+  return parsed === undefined ? null : parsed;
+};
+
 const normalizeDateForApi = (value) => {
   if (!value) return null;
 
@@ -94,7 +108,8 @@ const VOUCHER_TYPE_COLOR = {
 };
 
 const normalizeListResponse = (payload) => {
-  const list = payload?.result || payload?.categories || payload?.data || payload;
+  const list =
+    payload?.result || payload?.categories || payload?.data || payload;
 
   return Array.isArray(list) ? list : [];
 };
@@ -166,7 +181,7 @@ export default function AdminPromotions() {
     }
 
     if (!promo?.MaDanhMuc) {
-      return 'Toàn shop';
+      return "Toàn shop";
     }
 
     const category = categories.find(
@@ -269,10 +284,16 @@ export default function AdminPromotions() {
     setEditRecord(record);
     form.setFieldsValue({
       ...record,
+      MaLoaiKM: toNumberOrUndefined(record.MaLoaiKM),
+      LoaiVoucher: toNumberOrUndefined(record.LoaiVoucher),
+      GiaTri: toNumberOrUndefined(record.GiaTri),
+      GiamToiDa: toNumberOrUndefined(record.GiamToiDa),
+      GiaTriToiThieu: toNumberOrUndefined(record.GiaTriToiThieu),
+      SoLuong: toNumberOrUndefined(record.SoLuong),
       TrangThai: Number(record.TrangThai) === 1,
       NgayBatDau: record.NgayBatDau ? dayjs(record.NgayBatDau) : null,
       NgayKetThuc: record.NgayKetThuc ? dayjs(record.NgayKetThuc) : null,
-      MaDanhMuc: record.MaDanhMuc || null,
+      MaDanhMuc: toNumberOrNull(record.MaDanhMuc),
     });
     setModalOpen(true);
   };
@@ -726,7 +747,8 @@ export default function AdminPromotions() {
               key={category.MaDanhMuc}
               value={String(category.MaDanhMuc)}
             >
-              {category.ParentID ? '— ' : ''}{category.TenDanhMuc}
+              {category.ParentID ? "— " : ""}
+              {category.TenDanhMuc}
             </Select.Option>
           ))}
         </Select>
@@ -813,17 +835,7 @@ export default function AdminPromotions() {
               />
             </Form.Item>
 
-            <Form.Item
-              name="MaCode"
-              label="Mã code (không bắt buộc)"
-              rules={[
-                {
-                  pattern: /^[A-Z0-9_-]{3,30}$/,
-                  message:
-                    "Mã code gồm chữ hoa, số, - hoặc _, từ 3 đến 30 ký tự!",
-                },
-              ]}
-            >
+            <Form.Item name="MaCode" label="Mã code (không bắt buộc)">
               <Input
                 placeholder="VD: SALE50K"
                 className={styles.input}
@@ -902,25 +914,30 @@ export default function AdminPromotions() {
             <Form.Item
               name="GiaTri"
               label={kmType === 1 ? "Giá trị (%)" : "Giá trị (VNĐ)"}
+              dependencies={["MaLoaiKM"]}
               rules={[
                 {
-                  required: true,
-                  message: "Nhập giá trị!",
+                  validator(_, value) {
+                    const currentKmType = Number(
+                      form.getFieldValue("MaLoaiKM"),
+                    );
+                    const numberValue = Number(value);
+
+                    if (value === undefined || value === null || value === "") {
+                      return Promise.reject(new Error("Nhập giá trị!"));
+                    }
+
+                    if (!Number.isFinite(numberValue) || numberValue <= 0) {
+                      return Promise.reject(new Error("Phải > 0!"));
+                    }
+
+                    if (currentKmType === 1 && numberValue > 100) {
+                      return Promise.reject(new Error("Tối đa 100%!"));
+                    }
+
+                    return Promise.resolve();
+                  },
                 },
-                {
-                  type: "number",
-                  min: 0.01,
-                  message: "Phải > 0!",
-                },
-                ...(kmType === 1
-                  ? [
-                      {
-                        type: "number",
-                        max: 100,
-                        message: "Tối đa 100%!",
-                      },
-                    ]
-                  : []),
               ]}
             >
               <InputNumber
