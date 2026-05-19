@@ -4,6 +4,7 @@ import {
   getPromotionByIDAdminService,
   updatePromotionService,
   updatePromotionStatusService,
+  exportPromotionXlsxService,
 } from "../../../services/promotion.services.js";
 
 const normalizePromotionCode = (MaCode) => {
@@ -65,7 +66,9 @@ export const createPromotionController = async (req, res, next) => {
       Number(MaLoaiKM),
       TenKhuyenMai,
       Number(GiaTri),
-      GiaTriToiThieu === null || GiaTriToiThieu === "" ? null : Number(GiaTriToiThieu),
+      GiaTriToiThieu === null || GiaTriToiThieu === ""
+        ? null
+        : Number(GiaTriToiThieu),
       GiamToiDa === null || GiamToiDa === "" ? null : Number(GiamToiDa),
       NgayBatDau,
       NgayKetThuc,
@@ -111,7 +114,9 @@ export const updatePromotionController = async (req, res, next) => {
       Number(MaLoaiKM),
       TenKhuyenMai,
       Number(GiaTri),
-      GiaTriToiThieu === null || GiaTriToiThieu === "" ? null : Number(GiaTriToiThieu),
+      GiaTriToiThieu === null || GiaTriToiThieu === ""
+        ? null
+        : Number(GiaTriToiThieu),
       GiamToiDa === null || GiamToiDa === "" ? null : Number(GiamToiDa),
       NgayBatDau,
       NgayKetThuc,
@@ -151,5 +156,24 @@ export const updatePromotionStatusController = async (req, res, next) => {
   } catch (err) {
     console.error(err);
     next(err);
+  }
+};
+
+export const exportPromotionXlsxController = async (req, res, next) => {
+  try {
+    const buffer = await exportPromotionXlsxService(req.query);
+
+    const fileName = `bao-cao-khuyen-mai-${Date.now()}.xlsx`;
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    );
+
+    res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+
+    return res.status(200).send(buffer);
+  } catch (error) {
+    next(error);
   }
 };

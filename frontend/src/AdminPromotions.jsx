@@ -1,47 +1,96 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import {
-  Table, Button, Modal, Form, Input, InputNumber, Select,
-  DatePicker, Switch, Tag, Tooltip, Popconfirm, message,
-  Space, Row, Col, Divider, Empty
-} from 'antd';
+  Table,
+  Button,
+  Modal,
+  Form,
+  Input,
+  InputNumber,
+  Select,
+  DatePicker,
+  Switch,
+  Tag,
+  Tooltip,
+  Popconfirm,
+  message,
+  Space,
+  Row,
+  Col,
+  Divider,
+  Empty,
+} from "antd";
 import {
-  PlusOutlined, EditOutlined, TagOutlined,
-  SearchOutlined, ReloadOutlined, GiftOutlined, TruckOutlined,
-  CheckCircleOutlined, ClockCircleOutlined, StopOutlined,
-  CopyOutlined, TagsOutlined
-} from '@ant-design/icons';
-import axios from 'axios';
-import dayjs from 'dayjs';
-import styles from './AdminPromotions.module.css';
+  PlusOutlined,
+  EditOutlined,
+  TagOutlined,
+  SearchOutlined,
+  ReloadOutlined,
+  GiftOutlined,
+  TruckOutlined,
+  CheckCircleOutlined,
+  ClockCircleOutlined,
+  StopOutlined,
+  CopyOutlined,
+  TagsOutlined,
+  DownloadOutlined,
+} from "@ant-design/icons";
+import axios from "axios";
+import dayjs from "dayjs";
+import styles from "./AdminPromotions.module.css";
 
-const API_BASE = 'https://ceramic-shop-u8ak.onrender.com/api/v1';
-const fmt = (v) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(v ?? 0);
+const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1";
+
+const fmt = (v) =>
+  new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  }).format(v ?? 0);
 
 const formatInputNumber = (value) => {
-  if (value === undefined || value === null || value === '') return '';
+  if (value === undefined || value === null || value === "") return "";
 
-  return `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
 const parseInputNumber = (value) => {
-  if (value === undefined || value === null || value === '') return undefined;
+  if (value === undefined || value === null || value === "") return undefined;
 
   const raw = String(value)
-    .replace(/,/g, '')
-    .replace(/[^\d.-]/g, '');
+    .replace(/,/g, "")
+    .replace(/[^\d.-]/g, "");
 
-  if (!raw || raw === '-' || raw === '.') return undefined;
+  if (!raw || raw === "-" || raw === ".") return undefined;
 
   const parsed = Number(raw);
 
   return Number.isNaN(parsed) ? undefined : parsed;
 };
 
-const token = () => localStorage.getItem('admin_token') || localStorage.getItem('customer_token');
-const authH = () => ({ headers: { Authorization: `Bearer ${token()}` }, withCredentials: true });
+const normalizeDateForApi = (value) => {
+  if (!value) return null;
 
-const VOUCHER_TYPE_LABEL = { 1: 'Giảm đơn hàng', 2: 'Freeship' };
-const VOUCHER_TYPE_COLOR = { 1: 'blue', 2: 'cyan' };
+  return dayjs(value).format("YYYY-MM-DD HH:mm:ss");
+};
+
+const token = () =>
+  localStorage.getItem("admin_token") || localStorage.getItem("customer_token");
+
+const authH = () => ({
+  headers: {
+    Authorization: `Bearer ${token()}`,
+  },
+  withCredentials: true,
+});
+
+const VOUCHER_TYPE_LABEL = {
+  1: "Giảm đơn hàng",
+  2: "Freeship",
+};
+
+const VOUCHER_TYPE_COLOR = {
+  1: "blue",
+  2: "cyan",
+};
 
 function statusInfo(promo) {
   const now = new Date();
@@ -49,34 +98,54 @@ function statusInfo(promo) {
   const end = new Date(promo.NgayKetThuc);
 
   if (Number(promo.TrangThai) === 0) {
-    return { label: 'Đã tắt', color: 'default', icon: <StopOutlined /> };
+    return {
+      label: "Đã tắt",
+      color: "default",
+      icon: <StopOutlined />,
+    };
   }
 
   if (now < start) {
-    return { label: 'Chưa bắt đầu', color: 'orange', icon: <ClockCircleOutlined /> };
+    return {
+      label: "Chưa bắt đầu",
+      color: "orange",
+      icon: <ClockCircleOutlined />,
+    };
   }
 
   if (now > end) {
-    return { label: 'Hết hạn', color: 'red', icon: <StopOutlined /> };
+    return {
+      label: "Hết hạn",
+      color: "red",
+      icon: <StopOutlined />,
+    };
   }
 
-  return { label: 'Đang chạy', color: 'green', icon: <CheckCircleOutlined /> };
+  return {
+    label: "Đang chạy",
+    color: "green",
+    icon: <CheckCircleOutlined />,
+  };
 }
 
 export default function AdminPromotions() {
   const [promos, setPromos] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [loadingExport, setLoadingExport] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [editRecord, setEditRecord] = useState(null);
-  const [searchText, setSearchText] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [filterType, setFilterType] = useState('all');
+  const [searchText, setSearchText] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterType, setFilterType] = useState("all");
   const [form] = Form.useForm();
-  const kmType = Form.useWatch('MaLoaiKM', form);
+
+  const kmType = Form.useWatch("MaLoaiKM", form);
 
   useEffect(() => {
     fetchPromos();
+    fetchCategories();
   }, []);
 
   const fetchPromos = async () => {
@@ -84,11 +153,86 @@ export default function AdminPromotions() {
 
     try {
       const res = await axios.get(`${API_BASE}/admin/promotions`, authH());
+
       setPromos(res.data?.result || []);
     } catch (err) {
-      message.error(err.response?.data?.message || 'Không thể tải danh sách khuyến mãi!');
+      message.error(
+        err.response?.data?.message || "Không thể tải danh sách khuyến mãi!",
+      );
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const res = await axios.get(`${API_BASE}/categories`, authH());
+
+      setCategories(res.data?.result || []);
+    } catch (err) {
+      message.error(
+        err.response?.data?.message || "Không thể tải danh mục sản phẩm!",
+      );
+    }
+  };
+
+  const categoryOptions = categories.map((category) => ({
+    value: category.MaDanhMuc,
+    label: category.ParentID ? `— ${category.TenDanhMuc}` : category.TenDanhMuc,
+  }));
+
+  const getCategoryName = (MaDanhMuc) => {
+    if (!MaDanhMuc) return "Tất cả";
+
+    return (
+      categories.find(
+        (category) => Number(category.MaDanhMuc) === Number(MaDanhMuc),
+      )?.TenDanhMuc || "Không rõ"
+    );
+  };
+
+  const handleExportReport = async () => {
+    try {
+      setLoadingExport(true);
+
+      const queryParams = new URLSearchParams();
+
+      if (searchText) queryParams.append("search", searchText);
+      if (filterStatus !== "all") queryParams.append("status", filterStatus);
+      if (filterType !== "all") queryParams.append("type", filterType);
+
+      const url = `${API_BASE}/admin/promotions/export?${queryParams.toString()}`;
+
+      const response = await axios.get(url, {
+        responseType: "blob",
+        ...authH(),
+      });
+
+      const blob = new Blob([response.data], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+
+      link.href = downloadUrl;
+      link.setAttribute(
+        "download",
+        `Bao_Cao_Khuyen_Mai_${dayjs().format("DDMMYYYY_HHmm")}.xlsx`,
+      );
+
+      document.body.appendChild(link);
+      link.click();
+
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
+
+      message.success("Tải báo cáo thành công!");
+    } catch (error) {
+      console.error(error);
+      message.error("Có lỗi xảy ra khi tải báo cáo Excel!");
+    } finally {
+      setLoadingExport(false);
     }
   };
 
@@ -100,6 +244,7 @@ export default function AdminPromotions() {
       LoaiVoucher: 1,
       TrangThai: true,
       SoLuong: 100,
+      MaDanhMuc: null,
     });
     setModalOpen(true);
   };
@@ -111,6 +256,7 @@ export default function AdminPromotions() {
       TrangThai: Number(record.TrangThai) === 1,
       NgayBatDau: record.NgayBatDau ? dayjs(record.NgayBatDau) : null,
       NgayKetThuc: record.NgayKetThuc ? dayjs(record.NgayKetThuc) : null,
+      MaDanhMuc: record.MaDanhMuc || null,
     });
     setModalOpen(true);
   };
@@ -119,33 +265,64 @@ export default function AdminPromotions() {
     setSaving(true);
 
     try {
+      const start = values.NgayBatDau;
+      const end = values.NgayKetThuc;
+
+      if (!start || !end) {
+        message.error("Vui lòng chọn ngày bắt đầu và ngày kết thúc!");
+        return;
+      }
+
+      if (!dayjs(end).isAfter(dayjs(start))) {
+        message.error("Ngày kết thúc phải lớn hơn ngày bắt đầu!");
+        return;
+      }
+
       const payload = {
-        ...values,
-        TrangThai: values.TrangThai ? 1 : 0,
-        NgayBatDau: values.NgayBatDau?.toISOString(),
-        NgayKetThuc: values.NgayKetThuc?.toISOString(),
-        GiaTri: Number(values.GiaTri),
-        GiaTriToiThieu: values.GiaTriToiThieu ? Number(values.GiaTriToiThieu) : null,
-        GiamToiDa: values.GiamToiDa ? Number(values.GiamToiDa) : null,
-        MaCode: values.MaCode?.trim() ? values.MaCode.trim().toUpperCase() : null,
-        SoLuong: Number(values.SoLuong),
+        TenKhuyenMai: values.TenKhuyenMai?.trim(),
+        MaCode: values.MaCode?.trim()
+          ? values.MaCode.trim().toUpperCase()
+          : null,
         MaLoaiKM: Number(values.MaLoaiKM),
         LoaiVoucher: Number(values.LoaiVoucher),
+        GiaTri: Number(values.GiaTri),
+        GiaTriToiThieu:
+          values.GiaTriToiThieu === undefined ||
+          values.GiaTriToiThieu === null ||
+          values.GiaTriToiThieu === ""
+            ? null
+            : Number(values.GiaTriToiThieu),
+        GiamToiDa:
+          values.GiamToiDa === undefined ||
+          values.GiamToiDa === null ||
+          values.GiamToiDa === ""
+            ? null
+            : Number(values.GiamToiDa),
+        NgayBatDau: normalizeDateForApi(values.NgayBatDau),
+        NgayKetThuc: normalizeDateForApi(values.NgayKetThuc),
+        TrangThai: values.TrangThai ? 1 : 0,
+        SoLuong: Number(values.SoLuong),
         MaDanhMuc: values.MaDanhMuc || null,
       };
 
       if (editRecord) {
-        await axios.put(`${API_BASE}/admin/promotions/${editRecord.MaKhuyenMai}`, payload, authH());
-        message.success('Cập nhật khuyến mãi thành công!');
+        await axios.put(
+          `${API_BASE}/admin/promotions/${editRecord.MaKhuyenMai}`,
+          payload,
+          authH(),
+        );
+
+        message.success("Cập nhật khuyến mãi thành công!");
       } else {
         await axios.post(`${API_BASE}/admin/promotions`, payload, authH());
-        message.success('Tạo khuyến mãi thành công!');
+
+        message.success("Tạo khuyến mãi thành công!");
       }
 
       setModalOpen(false);
       fetchPromos();
     } catch (err) {
-      message.error(err.response?.data?.message || 'Thao tác thất bại!');
+      message.error(err.response?.data?.message || "Thao tác thất bại!");
     } finally {
       setSaving(false);
     }
@@ -157,14 +334,19 @@ export default function AdminPromotions() {
 
       await axios.patch(
         `${API_BASE}/admin/promotions/${record.MaKhuyenMai}/status`,
-        { TrangThai: newStatus },
+        {
+          TrangThai: newStatus,
+        },
         authH(),
       );
 
-      message.success(newStatus === 1 ? 'Đã bật khuyến mãi!' : 'Đã tắt khuyến mãi!');
+      message.success(
+        newStatus === 1 ? "Đã bật khuyến mãi!" : "Đã tắt khuyến mãi!",
+      );
+
       fetchPromos();
     } catch (err) {
-      message.error(err.response?.data?.message || 'Không thể cập nhật!');
+      message.error(err.response?.data?.message || "Không thể cập nhật!");
     }
   };
 
@@ -172,20 +354,22 @@ export default function AdminPromotions() {
     try {
       await axios.patch(
         `${API_BASE}/admin/promotions/${record.MaKhuyenMai}/status`,
-        { TrangThai: 0 },
+        {
+          TrangThai: 0,
+        },
         authH(),
       );
 
-      message.success('Đã tắt khuyến mãi!');
+      message.success("Đã tắt khuyến mãi!");
       fetchPromos();
     } catch (err) {
-      message.error(err.response?.data?.message || 'Không thể tắt khuyến mãi!');
+      message.error(err.response?.data?.message || "Không thể tắt khuyến mãi!");
     }
   };
 
   const handleCopyCode = (code) => {
     if (!code) {
-      message.warning('Khuyến mãi này chưa có mã code!');
+      message.warning("Khuyến mãi này chưa có mã code!");
       return;
     }
 
@@ -207,35 +391,36 @@ export default function AdminPromotions() {
   ).length;
 
   const statsPending = promos.filter(
-    (p) =>
-      Number(p.TrangThai) === 1 &&
-      new Date(p.NgayBatDau) > now,
+    (p) => Number(p.TrangThai) === 1 && new Date(p.NgayBatDau) > now,
   ).length;
 
   const filtered = promos.filter((p) => {
     const matchSearch =
       !searchText ||
       p.TenKhuyenMai?.toLowerCase().includes(searchText.toLowerCase()) ||
-      p.MaCode?.toLowerCase().includes(searchText.toLowerCase());
+      p.MaCode?.toLowerCase().includes(searchText.toLowerCase()) ||
+      getCategoryName(p.MaDanhMuc)
+        ?.toLowerCase()
+        .includes(searchText.toLowerCase());
 
     const st = statusInfo(p).label;
 
     const matchStatus =
-      filterStatus === 'all' ||
-      (filterStatus === 'active' && st === 'Đang chạy') ||
-      (filterStatus === 'pending' && st === 'Chưa bắt đầu') ||
-      (filterStatus === 'expired' && (st === 'Hết hạn' || st === 'Đã tắt'));
+      filterStatus === "all" ||
+      (filterStatus === "active" && st === "Đang chạy") ||
+      (filterStatus === "pending" && st === "Chưa bắt đầu") ||
+      (filterStatus === "expired" && (st === "Hết hạn" || st === "Đã tắt"));
 
     const matchType =
-      filterType === 'all' || String(p.LoaiVoucher) === filterType;
+      filterType === "all" || String(p.LoaiVoucher) === filterType;
 
     return matchSearch && matchStatus && matchType;
   });
 
   const columns = [
     {
-      title: 'Mã / Tên',
-      key: 'name',
+      title: "Mã / Tên",
+      key: "name",
       width: 220,
       render: (_, r) => (
         <div className={styles.cellName}>
@@ -244,6 +429,7 @@ export default function AdminPromotions() {
           {r.MaCode && (
             <div className={styles.codeRow}>
               <code className={styles.code}>{r.MaCode}</code>
+
               <Tooltip title="Sao chép">
                 <CopyOutlined
                   className={styles.copyIcon}
@@ -256,27 +442,39 @@ export default function AdminPromotions() {
       ),
     },
     {
-      title: 'Loại',
-      key: 'type',
+      title: "Loại",
+      key: "type",
       width: 130,
       render: (_, r) => (
         <div className={styles.cellTags}>
           <Tag
-            color={VOUCHER_TYPE_COLOR[Number(r.LoaiVoucher)] || 'blue'}
-            icon={Number(r.LoaiVoucher) === 2 ? <TruckOutlined /> : <GiftOutlined />}
+            color={VOUCHER_TYPE_COLOR[Number(r.LoaiVoucher)] || "blue"}
+            icon={
+              Number(r.LoaiVoucher) === 2 ? <TruckOutlined /> : <GiftOutlined />
+            }
           >
-            {VOUCHER_TYPE_LABEL[Number(r.LoaiVoucher)] || 'Giảm giá'}
+            {VOUCHER_TYPE_LABEL[Number(r.LoaiVoucher)] || "Giảm giá"}
           </Tag>
 
-          <Tag color={Number(r.MaLoaiKM) === 1 ? 'purple' : 'magenta'}>
-            {Number(r.MaLoaiKM) === 1 ? '%' : 'VNĐ'}
+          <Tag color={Number(r.MaLoaiKM) === 1 ? "purple" : "magenta"}>
+            {Number(r.MaLoaiKM) === 1 ? "%" : "VNĐ"}
           </Tag>
         </div>
       ),
     },
     {
-      title: 'Giá trị',
-      key: 'value',
+      title: "Danh mục",
+      key: "category",
+      width: 150,
+      render: (_, r) => (
+        <Tag color={r.MaDanhMuc ? "geekblue" : "default"}>
+          {getCategoryName(r.MaDanhMuc)}
+        </Tag>
+      ),
+    },
+    {
+      title: "Giá trị",
+      key: "value",
       width: 160,
       render: (_, r) => (
         <div className={styles.cellValue}>
@@ -289,31 +487,37 @@ export default function AdminPromotions() {
           )}
 
           {Number(r.GiaTriToiThieu || 0) > 0 && (
-            <span className={styles.valueSub}>Đơn tối thiểu {fmt(r.GiaTriToiThieu)}</span>
+            <span className={styles.valueSub}>
+              Đơn tối thiểu {fmt(r.GiaTriToiThieu)}
+            </span>
           )}
         </div>
       ),
     },
     {
-      title: 'Thời hạn',
-      key: 'dates',
+      title: "Thời hạn",
+      key: "dates",
       width: 160,
       render: (_, r) => (
         <div className={styles.cellDates}>
-          <div>{dayjs(r.NgayBatDau).format('DD/MM/YYYY')}</div>
+          <div>{dayjs(r.NgayBatDau).format("DD/MM/YYYY")}</div>
           <div className={styles.dateSep}>→</div>
-          <div>{dayjs(r.NgayKetThuc).format('DD/MM/YYYY')}</div>
+          <div>{dayjs(r.NgayKetThuc).format("DD/MM/YYYY")}</div>
         </div>
       ),
     },
     {
-      title: 'Lượt / Còn',
-      key: 'quota',
+      title: "Lượt / Còn",
+      key: "quota",
       width: 100,
-      align: 'center',
+      align: "center",
       render: (_, r) => (
         <div className={styles.cellQuota}>
-          <span className={Number(r.SoLuong) === 0 ? styles.quotaEmpty : styles.quotaOk}>
+          <span
+            className={
+              Number(r.SoLuong) === 0 ? styles.quotaEmpty : styles.quotaOk
+            }
+          >
             {r.SoLuong}
           </span>
           <span className={styles.quotaLabel}>lượt</span>
@@ -321,8 +525,8 @@ export default function AdminPromotions() {
       ),
     },
     {
-      title: 'Trạng thái',
-      key: 'status',
+      title: "Trạng thái",
+      key: "status",
       width: 130,
       render: (_, r) => {
         const st = statusInfo(r);
@@ -344,10 +548,10 @@ export default function AdminPromotions() {
       },
     },
     {
-      title: 'Thao tác',
-      key: 'actions',
+      title: "Thao tác",
+      key: "actions",
       width: 110,
-      fixed: 'right',
+      fixed: "right",
       render: (_, r) => (
         <Space size={4}>
           <Tooltip title="Chỉnh sửa">
@@ -391,7 +595,9 @@ export default function AdminPromotions() {
 
           <div>
             <h1 className={styles.pageTitle}>Quản lý Khuyến mãi</h1>
-            <p className={styles.pageSub}>Tạo và quản lý các mã voucher, chương trình ưu đãi</p>
+            <p className={styles.pageSub}>
+              Tạo và quản lý các mã voucher, chương trình ưu đãi
+            </p>
           </div>
         </div>
 
@@ -407,13 +613,43 @@ export default function AdminPromotions() {
 
       <Row gutter={[14, 14]} className={styles.statsRow}>
         {[
-          { label: 'Tổng', value: promos.length, color: '#1b437c', bg: '#e8f0fe', icon: <TagOutlined /> },
-          { label: 'Đang chạy', value: statsActive, color: '#52c41a', bg: '#f6ffed', icon: <CheckCircleOutlined /> },
-          { label: 'Chờ bắt đầu', value: statsPending, color: '#fa8c16', bg: '#fff7e6', icon: <ClockCircleOutlined /> },
-          { label: 'Hết hạn / Đã tắt', value: statsExpired, color: '#ff4d4f', bg: '#fff1f0', icon: <StopOutlined /> },
+          {
+            label: "Tổng",
+            value: promos.length,
+            color: "#1b437c",
+            bg: "#e8f0fe",
+            icon: <TagOutlined />,
+          },
+          {
+            label: "Đang chạy",
+            value: statsActive,
+            color: "#52c41a",
+            bg: "#f6ffed",
+            icon: <CheckCircleOutlined />,
+          },
+          {
+            label: "Chờ bắt đầu",
+            value: statsPending,
+            color: "#fa8c16",
+            bg: "#fff7e6",
+            icon: <ClockCircleOutlined />,
+          },
+          {
+            label: "Hết hạn / Đã tắt",
+            value: statsExpired,
+            color: "#ff4d4f",
+            bg: "#fff1f0",
+            icon: <StopOutlined />,
+          },
         ].map((s, i) => (
           <Col xs={12} sm={6} key={i}>
-            <div className={styles.statCard} style={{ '--c': s.color, '--bg': s.bg }}>
+            <div
+              className={styles.statCard}
+              style={{
+                "--c": s.color,
+                "--bg": s.bg,
+              }}
+            >
               <div className={styles.statIcon}>{s.icon}</div>
               <div className={styles.statNum}>{s.value}</div>
               <div className={styles.statLabel}>{s.label}</div>
@@ -424,8 +660,8 @@ export default function AdminPromotions() {
 
       <div className={styles.toolbar}>
         <Input
-          prefix={<SearchOutlined style={{ color: '#bbb' }} />}
-          placeholder="Tìm tên hoặc mã voucher..."
+          prefix={<SearchOutlined style={{ color: "#bbb" }} />}
+          placeholder="Tìm tên, mã voucher hoặc danh mục..."
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
           allowClear
@@ -458,6 +694,16 @@ export default function AdminPromotions() {
           onClick={fetchPromos}
           className={styles.btnRefresh}
         />
+
+        <Button
+          type="primary"
+          icon={<DownloadOutlined />}
+          onClick={handleExportReport}
+          loading={loadingExport}
+          style={{ marginLeft: "auto" }}
+        >
+          Xuất báo cáo
+        </Button>
       </div>
 
       <div className={styles.tableWrap}>
@@ -466,7 +712,7 @@ export default function AdminPromotions() {
           dataSource={filtered}
           rowKey="MaKhuyenMai"
           loading={loading}
-          scroll={{ x: 1050 }}
+          scroll={{ x: 1200 }}
           pagination={{
             pageSize: 10,
             showTotal: (total) => `${total} khuyến mãi`,
@@ -490,20 +736,34 @@ export default function AdminPromotions() {
         title={
           <div className={styles.modalTitle}>
             {editRecord ? <EditOutlined /> : <PlusOutlined />}
-            {editRecord ? ' Chỉnh sửa khuyến mãi' : ' Tạo khuyến mãi mới'}
+            {editRecord ? " Chỉnh sửa khuyến mãi" : " Tạo khuyến mãi mới"}
           </div>
         }
         footer={null}
-        width={640}
+        width={680}
         destroyOnHidden
         className={styles.modal}
       >
-        <Form form={form} layout="vertical" onFinish={handleSave} scrollToFirstError>
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleSave}
+          scrollToFirstError
+        >
           <div className={styles.formGrid2}>
             <Form.Item
               name="TenKhuyenMai"
               label="Tên khuyến mãi"
-              rules={[{ required: true, message: 'Nhập tên!' }]}
+              rules={[
+                {
+                  required: true,
+                  message: "Nhập tên!",
+                },
+                {
+                  whitespace: true,
+                  message: "Tên khuyến mãi không được để trống!",
+                },
+              ]}
             >
               <Input
                 placeholder="VD: Giảm 50k cho đơn từ 300k"
@@ -511,12 +771,24 @@ export default function AdminPromotions() {
               />
             </Form.Item>
 
-            <Form.Item name="MaCode" label="Mã code (không bắt buộc)">
+            <Form.Item
+              name="MaCode"
+              label="Mã code (không bắt buộc)"
+              rules={[
+                {
+                  pattern: /^[A-Z0-9_-]{3,30}$/,
+                  message:
+                    "Mã code gồm chữ hoa, số, - hoặc _, từ 3 đến 30 ký tự!",
+                },
+              ]}
+            >
               <Input
                 placeholder="VD: SALE50K"
                 className={styles.input}
-                style={{ textTransform: 'uppercase' }}
-                onChange={(e) => form.setFieldValue('MaCode', e.target.value.toUpperCase())}
+                style={{ textTransform: "uppercase" }}
+                onChange={(e) =>
+                  form.setFieldValue("MaCode", e.target.value.toUpperCase())
+                }
               />
             </Form.Item>
           </div>
@@ -525,12 +797,18 @@ export default function AdminPromotions() {
             <Form.Item
               name="LoaiVoucher"
               label="Loại voucher"
-              rules={[{ required: true, message: 'Chọn loại!' }]}
+              rules={[
+                {
+                  required: true,
+                  message: "Chọn loại!",
+                },
+              ]}
             >
               <Select className={styles.select}>
                 <Select.Option value={1}>
                   <GiftOutlined /> Giảm đơn hàng
                 </Select.Option>
+
                 <Select.Option value={2}>
                   <TruckOutlined /> Freeship
                 </Select.Option>
@@ -540,7 +818,12 @@ export default function AdminPromotions() {
             <Form.Item
               name="MaLoaiKM"
               label="Kiểu giảm giá"
-              rules={[{ required: true, message: 'Chọn kiểu!' }]}
+              rules={[
+                {
+                  required: true,
+                  message: "Chọn kiểu!",
+                },
+              ]}
             >
               <Select className={styles.select}>
                 <Select.Option value={1}>Phần trăm (%)</Select.Option>
@@ -549,38 +832,74 @@ export default function AdminPromotions() {
             </Form.Item>
           </div>
 
+          <Form.Item
+            name="MaDanhMuc"
+            label="Danh mục áp dụng"
+            tooltip="Để trống nếu khuyến mãi áp dụng cho tất cả sản phẩm"
+          >
+            <Select
+              allowClear
+              showSearch
+              placeholder="Tất cả danh mục"
+              className={styles.select}
+              optionFilterProp="label"
+              options={categoryOptions}
+            />
+          </Form.Item>
+
           <div className={styles.formGrid3}>
             <Form.Item
               name="GiaTri"
-              label={kmType === 1 ? 'Giá trị (%)' : 'Giá trị (VNĐ)'}
+              label={kmType === 1 ? "Giá trị (%)" : "Giá trị (VNĐ)"}
               rules={[
-                { required: true, message: 'Nhập giá trị!' },
-                { type: 'number', min: 0.01, message: 'Phải > 0!' },
-                ...(kmType === 1 ? [{ type: 'number', max: 100, message: 'Tối đa 100%!' }] : []),
+                {
+                  required: true,
+                  message: "Nhập giá trị!",
+                },
+                {
+                  type: "number",
+                  min: 0.01,
+                  message: "Phải > 0!",
+                },
+                ...(kmType === 1
+                  ? [
+                      {
+                        type: "number",
+                        max: 100,
+                        message: "Tối đa 100%!",
+                      },
+                    ]
+                  : []),
               ]}
             >
               <InputNumber
                 min={0}
                 max={kmType === 1 ? 100 : undefined}
-                suffix={kmType === 1 ? '%' : '₫'}
-                formatter={(value) => (kmType === 2 ? formatInputNumber(value) : value)}
+                suffix={kmType === 1 ? "%" : "₫"}
+                formatter={(value) =>
+                  kmType === 2 ? formatInputNumber(value) : value
+                }
                 parser={parseInputNumber}
                 className={styles.inputNum}
-                style={{ width: '100%' }}
+                style={{ width: "100%" }}
               />
             </Form.Item>
 
             <Form.Item
               name="GiamToiDa"
               label="Giảm tối đa (VNĐ)"
-              tooltip={kmType === 1 ? 'Áp dụng khi giảm %' : 'Để trống nếu không giới hạn'}
+              tooltip={
+                kmType === 1
+                  ? "Áp dụng khi giảm %"
+                  : "Để trống nếu không giới hạn"
+              }
             >
               <InputNumber
                 min={0}
                 formatter={formatInputNumber}
                 parser={parseInputNumber}
                 className={styles.inputNum}
-                style={{ width: '100%' }}
+                style={{ width: "100%" }}
                 placeholder="Không giới hạn"
               />
             </Form.Item>
@@ -591,7 +910,7 @@ export default function AdminPromotions() {
                 formatter={formatInputNumber}
                 parser={parseInputNumber}
                 className={styles.inputNum}
-                style={{ width: '100%' }}
+                style={{ width: "100%" }}
                 placeholder="Không yêu cầu"
               />
             </Form.Item>
@@ -601,26 +920,54 @@ export default function AdminPromotions() {
             <Form.Item
               name="NgayBatDau"
               label="Ngày bắt đầu"
-              rules={[{ required: true, message: 'Chọn ngày!' }]}
+              rules={[
+                {
+                  required: true,
+                  message: "Chọn ngày!",
+                },
+              ]}
             >
               <DatePicker
                 showTime
                 format="DD/MM/YYYY HH:mm"
                 placeholder="Chọn ngày bắt đầu"
-                style={{ width: '100%' }}
+                style={{ width: "100%" }}
               />
             </Form.Item>
 
             <Form.Item
               name="NgayKetThuc"
               label="Ngày kết thúc"
-              rules={[{ required: true, message: 'Chọn ngày!' }]}
+              dependencies={["NgayBatDau"]}
+              rules={[
+                {
+                  required: true,
+                  message: "Chọn ngày!",
+                },
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    const start = getFieldValue("NgayBatDau");
+
+                    if (
+                      !value ||
+                      !start ||
+                      dayjs(value).isAfter(dayjs(start))
+                    ) {
+                      return Promise.resolve();
+                    }
+
+                    return Promise.reject(
+                      new Error("Ngày kết thúc phải lớn hơn ngày bắt đầu!"),
+                    );
+                  },
+                }),
+              ]}
             >
               <DatePicker
                 showTime
                 format="DD/MM/YYYY HH:mm"
                 placeholder="Chọn ngày kết thúc"
-                style={{ width: '100%' }}
+                style={{ width: "100%" }}
               />
             </Form.Item>
           </div>
@@ -629,23 +976,44 @@ export default function AdminPromotions() {
             <Form.Item
               name="SoLuong"
               label="Số lượt dùng"
-              rules={[{ required: true, message: 'Nhập số lượt!' }]}
+              rules={[
+                {
+                  required: true,
+                  message: "Nhập số lượt!",
+                },
+                {
+                  type: "integer",
+                  min: 1,
+                  message: "Số lượt phải là số nguyên lớn hơn 0!",
+                },
+              ]}
             >
               <InputNumber
                 min={1}
-                style={{ width: '100%' }}
+                precision={0}
+                style={{ width: "100%" }}
                 className={styles.inputNum}
               />
             </Form.Item>
 
-            <Form.Item name="TrangThai" label="Kích hoạt" valuePropName="checked">
+            <Form.Item
+              name="TrangThai"
+              label="Kích hoạt"
+              valuePropName="checked"
+            >
               <Switch checkedChildren="Bật" unCheckedChildren="Tắt" />
             </Form.Item>
           </div>
 
-          <Divider style={{ margin: '8px 0 16px' }} />
+          <Divider style={{ margin: "8px 0 16px" }} />
 
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+          <div
+            style={{
+              display: "flex",
+              gap: 10,
+              justifyContent: "flex-end",
+            }}
+          >
             <Button onClick={() => setModalOpen(false)}>Huỷ</Button>
 
             <Button
@@ -654,7 +1022,7 @@ export default function AdminPromotions() {
               loading={saving}
               className={styles.btnSave}
             >
-              {editRecord ? 'Lưu thay đổi' : 'Tạo khuyến mãi'}
+              {editRecord ? "Lưu thay đổi" : "Tạo khuyến mãi"}
             </Button>
           </div>
         </Form>

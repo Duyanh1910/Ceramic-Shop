@@ -5,10 +5,12 @@ import {
   getPromotionByIDAdminController,
   updatePromotionController,
   updatePromotionStatusController,
+  exportPromotionXlsxController,
 } from "../../controllers/admin/promotions/adminPromotions.controller.js";
 
 const router = express.Router();
 
+router.get("/export", exportPromotionXlsxController);
 router.get("/", getAllPromotionsAdminController);
 router.get("/:id", getPromotionByIDAdminController);
 router.post("/", createPromotionController);

@@ -505,7 +505,7 @@ export const exportCustomerFeedbackXlsxService = async ({
 
     worksheet.addImage(logoId, {
       tl: { col: 0.15, row: 0.32 },
-      ext: { width: 72, height: 52 },
+      ext: { width: 100, height: 100 },
       editAs: "oneCell",
     });
   } catch (error) {
