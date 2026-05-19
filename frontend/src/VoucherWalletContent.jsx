@@ -46,6 +46,23 @@ const fmt = (value) =>
 
 const getPromo = (item) => item?.KhuyenMai || item;
 
+const getPromoCategory = (promo) =>
+  promo?.DanhMucSanPham || promo?.category || promo?.Category || null;
+
+const getCategoryName = (promo) => {
+  const category = getPromoCategory(promo);
+
+  if (category?.TenDanhMuc) {
+    return category.TenDanhMuc;
+  }
+
+  if (promo?.MaDanhMuc) {
+    return `Danh mục #${promo.MaDanhMuc}`;
+  }
+
+  return 'Toàn shop';
+};
+
 const getVoucherType = (promo) => {
   if (Number(promo?.LoaiVoucher) === 2) {
     return {
@@ -168,7 +185,8 @@ export default function VoucherWalletContent({ compact = false }) {
 
     return (
       promo?.TenKhuyenMai?.toLowerCase().includes(q) ||
-      promo?.MaCode?.toLowerCase().includes(q)
+      promo?.MaCode?.toLowerCase().includes(q) ||
+      getCategoryName(promo).toLowerCase().includes(q)
     );
   });
 
@@ -349,7 +367,7 @@ export default function VoucherWalletContent({ compact = false }) {
                     {Number(promo.GiamToiDa || 0) > 0 && (
                       <span>Giảm tối đa {fmt(promo.GiamToiDa)}</span>
                     )}
-
+                    <span>Áp dụng: {getCategoryName(promo)}</span>
                     <span>{getExpireText(promo)}</span>
                   </div>
 

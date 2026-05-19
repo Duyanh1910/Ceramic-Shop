@@ -20,7 +20,7 @@ function Profile() {
   const [avatarUrl, setAvatarUrl] = useState('');
   
   const [activeTab, setActiveTab] = useState('profile');
-
+  const isCustomer = localStorage.getItem('customer_session_active') === 'true';
   const CLOUDINARY_CLOUD_NAME = 'dcmwz0uis';
   const CLOUDINARY_UPLOAD_PRESET = 'the_creamy_shop';
 
@@ -172,12 +172,14 @@ function Profile() {
                 >
                   <WalletOutlined /> Ví khuyến mại
                 </li>
+              {isCustomer && (
                 <li 
                   className={activeTab === 'warranties' ? styles.active : ''} 
                   onClick={() => setActiveTab('warranties')}
                 >
                   <SafetyCertificateOutlined /> Bảo hành của tôi
                 </li>
+                )}
                 <li 
                   className={activeTab === 'orders' ? styles.active : ''} 
                   onClick={() => setActiveTab('orders')}

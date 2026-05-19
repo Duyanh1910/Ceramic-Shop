@@ -40,12 +40,18 @@ const WARRANTY_STATUS = {
 const getToken = () =>
   localStorage.getItem("admin_token") || localStorage.getItem("customer_token");
 
-const authConfig = () => ({
-  headers: {
-    Authorization: `Bearer ${getToken()}`,
-  },
-  withCredentials: true,
-});
+const authConfig = () => {
+  const token = getToken();
+
+  return {
+    headers: token
+      ? {
+          Authorization: `Bearer ${token}`,
+        }
+      : {},
+    withCredentials: true,
+  };
+};
 
 const renderWarrantyStatus = (status) => {
   const statusNumber = Number(status);
