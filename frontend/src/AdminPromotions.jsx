@@ -835,7 +835,17 @@ export default function AdminPromotions() {
               />
             </Form.Item>
 
-            <Form.Item name="MaCode" label="Mã code (không bắt buộc)">
+            <Form.Item
+              name="MaCode"
+              label="Mã code (không bắt buộc)"
+              rules={[
+                {
+                  pattern: /^[A-Z0-9_-]{3,30}$/,
+                  message:
+                    "Mã code gồm chữ hoa, số, - hoặc _, từ 3 đến 30 ký tự!",
+                },
+              ]}
+            >
               <Input
                 placeholder="VD: SALE50K"
                 className={styles.input}
