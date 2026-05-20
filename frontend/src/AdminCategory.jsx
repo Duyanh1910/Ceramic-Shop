@@ -24,8 +24,7 @@ import styles from "./AdminTable.module.css";
 const { TextArea } = Input;
 const { Option } = Select;
 
-const API_BASE =
-  "https://ceramic-shop-u8ak.onrender.com/api/v1/admin/categories";
+const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1";
 
 const lineClampStyle = {
   display: "-webkit-box",
@@ -44,16 +43,17 @@ const normalizeParentID = (value) => {
 };
 
 const getResultData = (response) => {
-  const result = response?.data?.result;
+  const apiData = response?.data;
 
-  if (Array.isArray(result)) {
-    return result;
+  if (apiData && Array.isArray(apiData.result)) {
+    return apiData.result;
   }
-
-  if (Array.isArray(result?.data)) {
-    return result.data;
+  if (apiData && Array.isArray(apiData.data)) {
+    return apiData.data;
   }
-
+  if (Array.isArray(apiData)) {
+    return apiData;
+  }
   return [];
 };
 
@@ -121,7 +121,7 @@ const AdminCategories = () => {
     try {
       setLoadingTable(true);
 
-      const response = await axios.get(`${API_BASE}`, {
+      const response = await axios.get(`${API_BASE}/categories`, {
         withCredentials: true,
       });
 
@@ -226,13 +226,17 @@ const AdminCategories = () => {
       };
 
       if (editingCategory) {
-        await axios.put(`${API_BASE}/${editingCategory.MaDanhMuc}`, payload, {
-          withCredentials: true,
-        });
+        await axios.put(
+          `${API_BASE}/admin/categories/${editingCategory.MaDanhMuc}`,
+          payload,
+          {
+            withCredentials: true,
+          },
+        );
 
         message.success("Cập nhật danh mục sản phẩm thành công!");
       } else {
-        await axios.post(API_BASE, payload, {
+        await axios.post(`${API_BASE}/admin/categories`, payload, {
           withCredentials: true,
         });
 
@@ -265,7 +269,7 @@ const AdminCategories = () => {
     try {
       setLoadingDeleteId(record.MaDanhMuc);
 
-      await axios.delete(`${API_BASE}/${record.MaDanhMuc}`, {
+      await axios.delete(`${API_BASE}/admin/categories/${record.MaDanhMuc}`, {
         withCredentials: true,
       });
 
@@ -445,6 +449,7 @@ const AdminCategories = () => {
 
       <div className={styles.tableCard}>
         <Table
+          key={treeData.length > 0 ? "has-data" : "empty-data"}
           className={styles.table}
           columns={columns}
           dataSource={treeData}
