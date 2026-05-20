@@ -3,21 +3,15 @@ import {
   CustomerModel,
   OrderModel,
   OrderDetailModel,
-  
+  CategoryModel,
 } from "./models/index.js";
 import { Op } from "sequelize";
-const row = await CustomerModel.findOne({
-  include: [
-    {
-      model: AccountModel,
-      as: "TaiKhoan",
-      where: {
-        Username: {
-          [Op.like]: "khachhang1",
-        },
-      },
+const rows = await CategoryModel.findAll({
+  where: {
+    ParentID: {
+      [Op.ne]: null,
     },
-  ],
+  },
 });
 
-console.log(row);
+console.log(rows);

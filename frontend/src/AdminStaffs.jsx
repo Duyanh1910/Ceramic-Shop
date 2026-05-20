@@ -14,7 +14,6 @@ import {
 } from "antd";
 import {
   SearchOutlined,
-  EyeOutlined,
   PlusOutlined,
   ReloadOutlined,
   DeleteOutlined,
@@ -123,6 +122,7 @@ export default function AdminStaffs() {
   const showEditModal = (record) => {
     setCurrentEditId(record.MaNhanVien);
     editForm.setFieldsValue({
+      TenNhanVien: record.TenNhanVien,
       SDT: record.SDT,
       DiaChi: record.DiaChi,
       NgaySinh: record.NgaySinh ? dayjs(record.NgaySinh) : null,
@@ -134,6 +134,7 @@ export default function AdminStaffs() {
     setEditSubmitLoading(true);
     try {
       const payload = {
+        TenNhanVien: values.TenNhanVien,
         SDT: values.SDT,
         DiaChi: values.DiaChi,
         NgaySinh: values.NgaySinh ? values.NgaySinh.format("YYYY-MM-DD") : null,
@@ -254,7 +255,6 @@ export default function AdminStaffs() {
 
   return (
     <div className={styles.wrapper}>
-      {/* Gộp nút Thêm nhân viên vào trong pageHeader */}
       <div className={styles.pageHeader}>
         <div>
           <h1 className={styles.pageTitle}>Quản lý nhân viên</h1>
@@ -312,6 +312,7 @@ export default function AdminStaffs() {
           locale={{ emptyText: "Không có dữ liệu" }}
         />
       </div>
+
       <Modal
         title={<span className={styles.modalTitle}>Thêm nhân viên mới</span>}
         open={isModalVisible}
@@ -376,7 +377,23 @@ export default function AdminStaffs() {
               name="dob"
               label="Ngày sinh"
               style={{ flex: 1 }}
-              rules={[{ required: true, message: "Vui lòng chọn ngày sinh!" }]}
+              rules={[
+                { required: true, message: "Vui lòng chọn ngày sinh!" },
+                {
+                  validator: (_, value) => {
+                    if (!value) return Promise.resolve();
+
+                    const age = dayjs().diff(value, "year");
+
+                    if (age < 18) {
+                      return Promise.reject(
+                        new Error("Nhân viên phải từ 18 tuổi trở lên!"),
+                      );
+                    }
+                    return Promise.resolve();
+                  },
+                },
+              ]}
             >
               <DatePicker
                 format="DD/MM/YYYY"
@@ -412,6 +429,7 @@ export default function AdminStaffs() {
           </div>
         </Form>
       </Modal>
+
       <Modal
         title={
           <span className={styles.modalTitle}>
@@ -429,6 +447,16 @@ export default function AdminStaffs() {
           onFinish={handleEditSubmit}
           className={styles.modalForm}
         >
+          <Form.Item
+            name="TenNhanVien"
+            label="Họ và tên nhân viên"
+            rules={[
+              { required: true, message: "Vui lòng nhập tên nhân viên!" },
+            ]}
+          >
+            <Input placeholder="Ví dụ: Nguyễn Văn A" />
+          </Form.Item>
+
           <div style={{ display: "flex", gap: "16px" }}>
             <Form.Item
               name="SDT"
@@ -441,11 +469,27 @@ export default function AdminStaffs() {
             >
               <Input placeholder="Ví dụ: 0912345111" />
             </Form.Item>
+
             <Form.Item
               name="NgaySinh"
               label="Ngày sinh"
               style={{ flex: 1 }}
-              rules={[{ required: true, message: "Vui lòng chọn ngày sinh!" }]}
+              rules={[
+                { required: true, message: "Vui lòng chọn ngày sinh!" },
+                {
+                  validator: (_, value) => {
+                    if (!value) return Promise.resolve();
+                    const age = dayjs().diff(value, "year");
+
+                    if (age < 18) {
+                      return Promise.reject(
+                        new Error("Nhân viên phải từ 18 tuổi trở lên!"),
+                      );
+                    }
+                    return Promise.resolve();
+                  },
+                },
+              ]}
             >
               <DatePicker
                 format="DD/MM/YYYY"
@@ -457,6 +501,7 @@ export default function AdminStaffs() {
               />
             </Form.Item>
           </div>
+
           <Form.Item
             name="DiaChi"
             label="Địa chỉ"
@@ -464,6 +509,7 @@ export default function AdminStaffs() {
           >
             <Input.TextArea rows={2} placeholder="Ví dụ: Hai Bà Trưng" />
           </Form.Item>
+
           <div className={styles.modalFooter}>
             <Button
               onClick={() => setIsEditModalVisible(false)}

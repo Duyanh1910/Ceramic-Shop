@@ -16,6 +16,7 @@ import {
   Divider,
   Empty,
   Image,
+  Typography,
 } from "antd";
 import {
   PlusOutlined,
@@ -33,6 +34,7 @@ import {
   PictureOutlined,
   LinkOutlined,
   CodeOutlined,
+  EyeOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
 import dayjs from "dayjs";
@@ -51,7 +53,10 @@ const CDN_PRESET = "the_creamy_shop";
 
 const authH = () => ({
   headers: {
-    Authorization: `Bearer ${localStorage.getItem("customer_token") || localStorage.getItem("admin_token")}`,
+    Authorization: `Bearer ${
+      localStorage.getItem("customer_token") ||
+      localStorage.getItem("admin_token")
+    }`,
   },
   withCredentials: true,
 });
@@ -222,6 +227,14 @@ const TiptapEditor = ({ value, onChange }) => {
           </Tooltip>
         </Space>
       </div>
+
+      <style>{`
+        .ProseMirror ul { list-style-type: disc !important; padding-left: 24px !important; margin-bottom: 1em; }
+        .ProseMirror ol { list-style-type: decimal !important; padding-left: 24px !important; margin-bottom: 1em; }
+        .ProseMirror li { display: list-item !important; }
+        .ProseMirror a { color: #1677ff !important; text-decoration: underline !important; cursor: pointer; }
+      `}</style>
+
       <EditorContent editor={editor} className={styles.tiptapEditorArea} />
     </div>
   );
@@ -231,12 +244,20 @@ export default function AdminNews() {
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
   const [modalOpen, setModalOpen] = useState(false);
   const [editRecord, setEditRecord] = useState(null);
+
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [viewRecord, setViewRecord] = useState(null);
+  const [sortOrder, setSortOrder] = useState("newest");
+
   const [search, setSearch] = useState("");
   const [uploading, setUploading] = useState(false);
   const [imgPreview, setImgPreview] = useState("");
   const [form] = Form.useForm();
+
+  const [statusFilter, setStatusFilter] = useState(null);
 
   useEffect(() => {
     fetchNews();
@@ -272,6 +293,11 @@ export default function AdminNews() {
       TrangThai: record.TrangThai === 1,
     });
     setModalOpen(true);
+  };
+
+  const openView = (record) => {
+    setViewRecord(record);
+    setViewModalOpen(true);
   };
 
   const handleUploadImage = async (info) => {
@@ -351,9 +377,24 @@ export default function AdminNews() {
     }
   };
 
-  const filtered = news.filter(
-    (n) => !search || n.TieuDe?.toLowerCase().includes(search.toLowerCase()),
-  );
+  const filteredAndSorted = news
+    .filter((n) => {
+      const matchesSearch =
+        !search || n.TieuDe?.toLowerCase().includes(search.toLowerCase());
+      const matchesStatus =
+        statusFilter === null || n.TrangThai === statusFilter;
+      return matchesSearch && matchesStatus;
+    })
+    .sort((a, b) => {
+      const dateA = dayjs(a.NgayTao).valueOf();
+      const dateB = dayjs(b.NgayTao).valueOf();
+
+      if (sortOrder === "newest") {
+        return dateB - dateA;
+      } else {
+        return dateA - dateB;
+      }
+    });
 
   const columns = [
     {
@@ -405,10 +446,17 @@ export default function AdminNews() {
     {
       title: "Thao tác",
       key: "actions",
-      width: 90,
+      width: 120,
       fixed: "right",
       render: (_, r) => (
         <Space size={4}>
+          <Tooltip title="Xem">
+            <Button
+              type="text"
+              icon={<EyeOutlined />}
+              onClick={() => openView(r)}
+            />
+          </Tooltip>
           <Tooltip title="Sửa">
             <Button
               type="text"
@@ -449,33 +497,63 @@ export default function AdminNews() {
             value: news.length,
             color: "#1b437c",
             bg: "#e8f0fe",
+            status: null,
           },
           {
             label: "Đang hiện",
             value: news.filter((n) => n.TrangThai === 1).length,
             color: "#52c41a",
             bg: "#f6ffed",
+            status: 1,
           },
           {
             label: "Đang ẩn",
             value: news.filter((n) => n.TrangThai === 0).length,
             color: "#888",
             bg: "#f5f5f5",
+            status: 0,
           },
         ].map((s, i) => (
-          <Col xs={12} sm={6} key={i}>
+          <Col xs={24} sm={8} key={i}>
             <div
               className={styles.statCard}
-              style={{ "--c": s.color, "--bg": s.bg }}
+              style={{
+                "--c": s.color,
+                "--bg": s.bg,
+                cursor: "pointer",
+                border:
+                  statusFilter === s.status
+                    ? `2px solid ${s.color}`
+                    : "1px solid rgba(0, 0, 0, 0.04)",
+                boxShadow:
+                  statusFilter === s.status
+                    ? "0 4px 12px rgba(0,0,0,0.12)"
+                    : "none",
+                transform:
+                  statusFilter === s.status ? "translateY(-2px)" : "none",
+                transition: "all 0.2s ease",
+              }}
+              onClick={() => {
+                if (s.status === null) {
+                  setStatusFilter(null);
+                } else {
+                  setStatusFilter((prev) =>
+                    prev === s.status ? null : s.status,
+                  );
+                }
+              }}
             >
               <div className={styles.statNum}>{s.value}</div>
-              <div className={styles.statLabel}>{s.label}</div>
+              <div className={styles.statLabel}>
+                {s.label}{" "}
+                {statusFilter === s.status && s.status !== null && "• Đang lọc"}
+              </div>
             </div>
           </Col>
         ))}
       </Row>
 
-      <div className={styles.toolbar}>
+      <div className={styles.toolbar} style={{ display: "flex", gap: "8px" }}>
         <Input
           prefix={<SearchOutlined style={{ color: "#bbb" }} />}
           placeholder="Tìm kiếm tiêu đề..."
@@ -483,7 +561,20 @@ export default function AdminNews() {
           onChange={(e) => setSearch(e.target.value)}
           allowClear
           className={styles.searchInput}
+          style={{ flex: 1 }} // Để ô tìm kiếm chiếm phần lớn diện tích
         />
+
+        {/* Nút thả xuống để chọn sắp xếp */}
+        <Select
+          value={sortOrder}
+          onChange={(value) => setSortOrder(value)}
+          style={{ width: 140 }}
+          options={[
+            { value: "newest", label: "Mới nhất" },
+            { value: "oldest", label: "Cũ nhất" },
+          ]}
+        />
+
         <Button
           icon={<ReloadOutlined />}
           onClick={fetchNews}
@@ -494,7 +585,7 @@ export default function AdminNews() {
       <div className={styles.tableWrap}>
         <Table
           columns={columns}
-          dataSource={filtered}
+          dataSource={filteredAndSorted}
           rowKey="MaTinTuc"
           loading={loading}
           scroll={{ x: 700 }}
@@ -503,7 +594,11 @@ export default function AdminNews() {
           locale={{
             emptyText: (
               <Empty
-                description="Chưa có tin tức nào"
+                description={
+                  statusFilter !== null
+                    ? "Không tìm thấy tin tức nào khớp với trạng thái lựa chọn"
+                    : "Chưa có tin tức nào"
+                }
                 image={Empty.PRESENTED_IMAGE_SIMPLE}
               />
             ),
@@ -514,6 +609,7 @@ export default function AdminNews() {
       <Modal
         open={modalOpen}
         onCancel={() => setModalOpen(false)}
+        centered
         title={
           <div className={styles.modalTitle}>
             {editRecord ? <EditOutlined /> : <PlusOutlined />}
@@ -521,7 +617,7 @@ export default function AdminNews() {
           </div>
         }
         footer={null}
-        width={800}
+        width={1000}
         destroyOnHidden
         className={styles.modal}
       >
@@ -599,6 +695,60 @@ export default function AdminNews() {
             </Button>
           </div>
         </Form>
+      </Modal>
+
+      {/* Modal Xem chi tiết bài viết */}
+      <Modal
+        open={viewModalOpen}
+        onCancel={() => setViewModalOpen(false)}
+        centered // Căn giữa modal
+        footer={[
+          <Button key="close" onClick={() => setViewModalOpen(false)}>
+            Đóng
+          </Button>,
+        ]}
+        width={1000} // Cùng kích thước lớn với Modal Sửa
+        title="Xem trước bài viết"
+        destroyOnClose
+      >
+        {viewRecord && (
+          <div style={{ padding: "20px 0" }}>
+            <Typography.Title level={2}>{viewRecord.TieuDe}</Typography.Title>
+            <div style={{ color: "gray", marginBottom: "20px" }}>
+              <span>
+                {dayjs(viewRecord.NgayTao).format("DD/MM/YYYY HH:mm")}
+              </span>
+              {viewRecord.NhanVien?.TenNhanVien && (
+                <span> - Đăng bởi: {viewRecord.NhanVien.TenNhanVien}</span>
+              )}
+            </div>
+            {viewRecord.HinhAnh && (
+              <div style={{ textAlign: "center", marginBottom: "20px" }}>
+                <img
+                  src={viewRecord.HinhAnh}
+                  alt={viewRecord.TieuDe}
+                  style={{
+                    maxWidth: "100%",
+                    maxHeight: "400px",
+                    objectFit: "contain",
+                    borderRadius: "8px",
+                  }}
+                />
+              </div>
+            )}
+
+            <div className="view-content-html">
+              <style>{`
+                .view-content-html ul { list-style-type: disc; padding-left: 24px; margin-bottom: 1em; }
+                .view-content-html ol { list-style-type: decimal; padding-left: 24px; margin-bottom: 1em; }
+                .view-content-html li { display: list-item; }
+                .view-content-html a { color: #1677ff; text-decoration: underline; }
+                .view-content-html img { max-width: 100%; height: auto; }
+              `}</style>
+              <div dangerouslySetInnerHTML={{ __html: viewRecord.NoiDung }} />
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   );

@@ -19,6 +19,7 @@ import {
   AlertOutlined,
   AuditOutlined,
   CommentOutlined,
+  AppstoreOutlined,
 } from "@ant-design/icons";
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import axios from "axios";
@@ -29,6 +30,11 @@ const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1";
 const STAFF_MENU = [
   { key: "/admin", icon: <DashboardOutlined />, label: "Tổng quan" },
   { key: "/admin/products", icon: <ShoppingOutlined />, label: "Sản phẩm" },
+  {
+    key: "/admin/categories",
+    icon: <AppstoreOutlined />,
+    label: "Danh mục sản phẩm",
+  },
   { key: "/admin/customers", icon: <TeamOutlined />, label: "Khách hàng" },
   { key: "/admin/promotions", icon: <TagsOutlined />, label: "Khuyến mãi" },
   { key: "/admin/news", icon: <FileTextOutlined />, label: "Tin tức" },
@@ -49,6 +55,11 @@ const STAFF_MENU = [
 const ADMIN_MENU = [
   { key: "/admin", icon: <DashboardOutlined />, label: "Tổng quan" },
   { key: "/admin/products", icon: <ShoppingOutlined />, label: "Sản phẩm" },
+  {
+    key: "/admin/categories",
+    icon: <AppstoreOutlined />,
+    label: "Danh mục sản phẩm",
+  },
   { key: "/admin/customers", icon: <TeamOutlined />, label: "Khách hàng" },
   { key: "/admin/staffs", icon: <UserOutlined />, label: "Nhân viên" },
   { key: "/admin/promotions", icon: <TagsOutlined />, label: "Khuyến mãi" },
@@ -135,11 +146,11 @@ export default function AdminLayout() {
         onBreakpoint={(broken) => setCollapsed(broken)}
       >
         <Button
-            type="text"
-            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-            onClick={() => setCollapsed(!collapsed)}
-            className={styles.collapseBtn}
-          />
+          type="text"
+          icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+          onClick={() => setCollapsed(!collapsed)}
+          className={styles.collapseBtn}
+        />
         <div className={styles.siderLogo} onClick={() => navigate("/")}>
           <ShopOutlined className={styles.logoIcon} />
           {!collapsed && <span className={styles.logoText}>CERAMIC</span>}
@@ -178,7 +189,6 @@ export default function AdminLayout() {
 
       <Layout>
         <Header className={styles.header}>
-          
           <div className={styles.headerRight}>
             <Dropdown menu={userMenu} placement="bottomRight" arrow>
               <div className={styles.userInfo}>

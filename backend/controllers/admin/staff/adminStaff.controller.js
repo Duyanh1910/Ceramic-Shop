@@ -84,7 +84,7 @@ export const getMyInfo = async (req, res, next) => {
 
 export const updateStaffInfo = async (req, res, next) => {
   try {
-    const { SDT, NgaySinh, DiaChi } = req.body;
+    const { TenNhanVien, SDT, DiaChi, NgaySinh } = req.body;
     const id = Number(req.params.id);
     if (!isStringEmpty(SDT) && !isValidPhoneNumber(SDT)) {
       return next(new ErrorHandler("Số điện thoại không hợp lệ!", 422));
@@ -94,11 +94,13 @@ export const updateStaffInfo = async (req, res, next) => {
     }
     if (
       !isStringEmpty(NgaySinh) &&
-      (!isValidDate(NgaySinh) || new Date(NgaySinh) >= new Date())
+      (!isValidDate(NgaySinh) ||
+        new Date(NgaySinh) >= new Date() ||
+        Date.now().getFullYear - new Date(NgaySinh).getFullYear < 18)
     ) {
       return next(new ErrorHandler("Ngày sinh không hợp lệ!", 422));
     }
-    const data = { SDT, NgaySinh, DiaChi };
+    const data = { TenNhanVien, SDT, NgaySinh, DiaChi };
     const result = await updateStaffService(id, data);
     res.status(200).json({
       success: true,
@@ -129,7 +131,7 @@ export const createNewStaff = async (req, res, next) => {
       return next(new ErrorHandler("Email không hợp lệ!", 422));
     }
     if (!isStringEmpty(name) && name.length > 100) {
-      return next(new ErrorHandler("Tên khách hàng không hợp lệ!", 422));
+      return next(new ErrorHandler("Tên không hợp lệ!", 422));
     }
     if (!isValidUsername(username)) {
       return next(new ErrorHandler("Định dạng username không hợp lệ!", 422));

@@ -10,7 +10,11 @@ export const updateStaffMe = async (req, res, next) => {
     }
     if (NgaySinh !== undefined) {
       const dob = new Date(NgaySinh);
-      if (!isValidDate(dob) || dob > Date.now()) {
+      if (
+        !isValidDate(dob) ||
+        dob >= Date.now() ||
+        Date.now().getFullYear - dob.getFullYear < 18
+      ) {
         return next(new ErrorHandler("Ngày sinh không hợp lệ!", 400));
       }
     }

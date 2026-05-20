@@ -1,7 +1,7 @@
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 15px;
+  padding: 0 20px;
   width: 100%;
   box-sizing: border-box;
 }
@@ -9,22 +9,22 @@
 .footer {
   background-color: #2c3e50;
   color: #ecf0f1;
-  padding: 60px 0 20px;
+  padding: 70px 0 20px;
   width: 100%;
 }
 
 .footerGrid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 40px;
-  margin-bottom: 40px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 60px;
+  margin-bottom: 50px;
 }
 
 .footerCol h3 {
   font-size: 16px;
   font-weight: 700;
   color: #fff;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   text-transform: uppercase;
   letter-spacing: 1px;
 }
@@ -36,57 +36,10 @@
 }
 
 .footerCol ul li {
-  margin-bottom: 12px;
+  margin-bottom: 14px;
   color: #bdc3c7;
   font-size: 14px;
   line-height: 1.6;
-}
-
-.footerCol ul li a {
-  text-decoration: none;
-  color: inherit;
-  transition: color 0.3s;
-}
-
-.footerCol ul li a:hover {
-  color: #BB9244;
-}
-
-.footerText {
-  color: #bdc3c7;
-  font-size: 14px;
-  margin-bottom: 15px;
-  line-height: 1.6;
-}
-
-.subscribeBox {
-  display: flex;
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.subscribeBox input {
-  flex: 1;
-  border: none;
-  padding: 12px 15px;
-  outline: none;
-  font-family: 'Arsenal', sans-serif;
-  font-size: 14px;
-}
-
-.subscribeBox button {
-  background: #BB9244;
-  color: #fff;
-  border: none;
-  padding: 0 25px;
-  font-family: 'Arsenal', sans-serif;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-.subscribeBox button:hover {
-  background: #a37d36;
 }
 
 .copyright {
@@ -99,22 +52,28 @@
 
 .footerLink {
   cursor: pointer;
-  transition: color 0.3s;
+  transition: color 0.3s ease;
+  display: inline-block;
 }
 
 .footerLink:hover {
-  color: #BB9244;
+  color: #bb9244;
 }
 
 @media (max-width: 768px) {
-  .footerGrid { 
-      grid-template-columns: repeat(2, 1fr); 
-      gap: 30px; 
+  .footerGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 40px;
   }
 }
 
 @media (max-width: 576px) {
-  .footerGrid { 
-      grid-template-columns: 1fr; 
+  .footerGrid {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  .footer {
+    padding: 50px 0 20px;
   }
 }
