@@ -92,9 +92,21 @@ export default function AdminCustomers() {
     {
       title: "Địa chỉ",
       dataIndex: "DiaChi",
+      width: 350,
+      ellipsis: true,
       render: (v) => (
-        <Tooltip title={v}>
-          <span className={styles.address}>{v || "—"}</span>
+        <Tooltip title={v} placement="topLeft">
+          <span
+            className={styles.address}
+            style={{
+              display: "block",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {v || <span style={{ color: "#ccc" }}>Chưa cập nhật</span>}
+          </span>
         </Tooltip>
       ),
     },

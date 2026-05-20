@@ -188,6 +188,7 @@ createRoot(document.getElementById("root")).render(
           >
             <Route index element={<AdminDashboard />} />
             <Route path="products" element={<AdminProducts />} />
+            <Route path="categories" element={<AdminCategories />} />
             <Route path="adminprofile" element={<AdminProfile />} />
             <Route path="reports" element={<AdminReports />} />
             <Route path="customers" element={<AdminCustomers />} />
