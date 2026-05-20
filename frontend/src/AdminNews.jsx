@@ -36,11 +36,19 @@ import {
   LinkOutlined,
   CodeOutlined,
   EyeOutlined,
+  FontSizeOutlined,
+  AlignLeftOutlined,
+  AlignCenterOutlined,
+  AlignRightOutlined,
+  MenuOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
 import dayjs from "dayjs";
 
 import { useEditor, EditorContent } from "@tiptap/react";
+import { Extension } from "@tiptap/core";
+import TextStyle from "@tiptap/extension-text-style";
+import TextAlign from "@tiptap/extension-text-align";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import TiptapImage from "@tiptap/extension-image";
@@ -159,6 +167,86 @@ const TiptapEditor = ({ value, onChange }) => {
             >
               H2
             </Button>
+            <Tooltip title="Cỡ chữ">
+              <Select
+                size="small"
+                placeholder={<FontSizeOutlined />}
+                style={{ width: 92 }}
+                value={editor.getAttributes("textStyle").fontSize || undefined}
+                onChange={(value) => {
+                  if (!value) {
+                    editor.chain().focus().unsetFontSize().run();
+                  } else {
+                    editor.chain().focus().setFontSize(value).run();
+                  }
+                }}
+                options={[
+                  { value: null, label: "Mặc định" },
+                  { value: "12px", label: "12" },
+                  { value: "14px", label: "14" },
+                  { value: "16px", label: "16" },
+                  { value: "18px", label: "18" },
+                  { value: "20px", label: "20" },
+                  { value: "24px", label: "24" },
+                  { value: "28px", label: "28" },
+                  { value: "32px", label: "32" },
+                ]}
+              />
+            </Tooltip>
+
+            <Divider type="vertical" />
+
+            <Tooltip title="Căn trái">
+              <Button
+                size="small"
+                type={
+                  editor.isActive({ textAlign: "left" }) ? "primary" : "text"
+                }
+                onClick={() =>
+                  editor.chain().focus().setTextAlign("left").run()
+                }
+                icon={<AlignLeftOutlined />}
+              />
+            </Tooltip>
+
+            <Tooltip title="Căn giữa">
+              <Button
+                size="small"
+                type={
+                  editor.isActive({ textAlign: "center" }) ? "primary" : "text"
+                }
+                onClick={() =>
+                  editor.chain().focus().setTextAlign("center").run()
+                }
+                icon={<AlignCenterOutlined />}
+              />
+            </Tooltip>
+
+            <Tooltip title="Căn phải">
+              <Button
+                size="small"
+                type={
+                  editor.isActive({ textAlign: "right" }) ? "primary" : "text"
+                }
+                onClick={() =>
+                  editor.chain().focus().setTextAlign("right").run()
+                }
+                icon={<AlignRightOutlined />}
+              />
+            </Tooltip>
+
+            <Tooltip title="Căn đều">
+              <Button
+                size="small"
+                type={
+                  editor.isActive({ textAlign: "justify" }) ? "primary" : "text"
+                }
+                onClick={() =>
+                  editor.chain().focus().setTextAlign("justify").run()
+                }
+                icon={<MenuOutlined />}
+              />
+            </Tooltip>
           </Tooltip>
           <Tooltip title="In đậm">
             <Button

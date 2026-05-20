@@ -328,6 +328,21 @@
   border-radius: 6px;
   overflow-x: auto;
 }
+.ProseMirror span {
+  line-height: inherit;
+}
+
+.ProseMirror p {
+  margin-bottom: 1em;
+}
+
+.view-content-html span {
+  line-height: inherit;
+}
+
+.view-content-html p {
+  margin-bottom: 1em;
+}
 @media (max-width: 640px) {
   .page {
     padding: 14px;

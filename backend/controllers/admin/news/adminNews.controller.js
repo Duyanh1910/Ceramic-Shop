@@ -10,6 +10,8 @@ import { isValidUrl } from "../../../utils/helpers.js";
 import ErrorHandler from "../../../utils/error_handler.js";
 const allowedTags = [
   "p",
+  "span",
+  "br",
   "h1",
   "h2",
   "h3",
@@ -25,8 +27,10 @@ const allowedTags = [
   "code",
   "pre",
 ];
+
 const allowedAttributes = {
-  a: ["href"],
+  "*": ["style"],
+  a: ["href", "target", "rel"],
   img: ["src", "alt"],
 };
 const allowedSchemes = ["http", "https", "mailto"];
