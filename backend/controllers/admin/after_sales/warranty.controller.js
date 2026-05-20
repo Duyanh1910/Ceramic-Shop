@@ -4,6 +4,7 @@ import {
   getWarrantyByIdService,
   replaceWarrantyProductService,
   updateWarrantyStatusService,
+  exportWarrantyXlsxService,
 } from "../../../services/warranty.service.js";
 import ErrorHandler from "../../../utils/error_handler.js";
 
@@ -70,13 +71,8 @@ export const createWarrantyHistory = async (req, res, next) => {
   try {
     const MaBaoHanh = parseIdParam(req.params.id);
 
-    const {
-      HanhDong,
-      NoiDungXuLy,
-      TrangThai,
-      AnhMinhChung,
-      MaNhanVienXuLy,
-    } = req.body;
+    const { HanhDong, NoiDungXuLy, TrangThai, AnhMinhChung, MaNhanVienXuLy } =
+      req.body;
 
     const history = await createWarrantyHistoryService(
       MaBaoHanh,
@@ -102,13 +98,8 @@ export const updateWarrantyStatus = async (req, res, next) => {
   try {
     const MaBaoHanh = parseIdParam(req.params.id);
 
-    const {
-      TrangThai,
-      NoiDungXuLy,
-      HanhDong,
-      AnhMinhChung,
-      MaNhanVienXuLy,
-    } = req.body;
+    const { TrangThai, NoiDungXuLy, HanhDong, AnhMinhChung, MaNhanVienXuLy } =
+      req.body;
 
     if (TrangThai === undefined || TrangThai === "") {
       throw new ErrorHandler("Vui lòng truyền trạng thái bảo hành!", 422);
@@ -138,14 +129,14 @@ export const replaceWarrantyProduct = async (req, res, next) => {
   try {
     const MaBaoHanh = parseIdParam(req.params.id);
 
-    const {
-      MaBienTheThayThe,
-      SoLuongThayThe,
-      NoiDungXuLy,
-      MaNhanVienXuLy,
-    } = req.body;
+    const { MaBienTheThayThe, SoLuongThayThe, NoiDungXuLy, MaNhanVienXuLy } =
+      req.body;
 
-    if (MaBienTheThayThe === undefined || MaBienTheThayThe === null || MaBienTheThayThe === "") {
+    if (
+      MaBienTheThayThe === undefined ||
+      MaBienTheThayThe === null ||
+      MaBienTheThayThe === ""
+    ) {
       throw new ErrorHandler("Vui lòng chọn sản phẩm thay thế!", 422);
     }
 
@@ -156,7 +147,9 @@ export const replaceWarrantyProduct = async (req, res, next) => {
     }
 
     const replaceQuantity =
-      SoLuongThayThe === undefined || SoLuongThayThe === null || SoLuongThayThe === ""
+      SoLuongThayThe === undefined ||
+      SoLuongThayThe === null ||
+      SoLuongThayThe === ""
         ? 1
         : Number(SoLuongThayThe);
 
@@ -165,7 +158,9 @@ export const replaceWarrantyProduct = async (req, res, next) => {
     }
 
     const staffId =
-      MaNhanVienXuLy === undefined || MaNhanVienXuLy === null || MaNhanVienXuLy === ""
+      MaNhanVienXuLy === undefined ||
+      MaNhanVienXuLy === null ||
+      MaNhanVienXuLy === ""
         ? null
         : Number(MaNhanVienXuLy);
 
@@ -189,5 +184,24 @@ export const replaceWarrantyProduct = async (req, res, next) => {
   } catch (err) {
     console.error(err);
     next(err);
+  }
+};
+
+export const exportWarrantyXlsxController = async (req, res, next) => {
+  try {
+    const buffer = await exportWarrantyXlsxService(req.query);
+
+    const fileName = `bao-cao-bao-hanh-${Date.now()}.xlsx`;
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    );
+
+    res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+
+    return res.status(200).send(buffer);
+  } catch (error) {
+    next(error);
   }
 };

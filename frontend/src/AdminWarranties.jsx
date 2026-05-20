@@ -17,6 +17,7 @@ import {
   SearchOutlined,
   SafetyCertificateOutlined,
   ReloadOutlined,
+  DownloadOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import axios from "axios";
@@ -86,7 +87,7 @@ const renderWarrantyStatus = (status) => {
 const WarrantyList = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
-
+  const [loadingExport, setLoadingExport] = useState(false);
   const [page, setPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [search, setSearch] = useState("");
@@ -135,6 +136,55 @@ const WarrantyList = () => {
       );
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleExportReport = async () => {
+    try {
+      setLoadingExport(true);
+
+      const queryParams = new URLSearchParams();
+
+      if (search.trim()) {
+        queryParams.append("search", search.trim());
+      }
+
+      if (status !== ALL_STATUS) {
+        queryParams.append("status", status);
+      }
+
+      const url = `${API_BASE}/admin/after_sales/warranties/export?${queryParams.toString()}`;
+
+      const response = await axios.get(url, {
+        responseType: "blob",
+        ...authConfig(),
+      });
+
+      const blob = new Blob([response.data], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+
+      link.href = downloadUrl;
+      link.setAttribute(
+        "download",
+        `Bao_Cao_Bao_Hanh_${dayjs().format("DDMMYYYY_HHmm")}.xlsx`,
+      );
+
+      document.body.appendChild(link);
+      link.click();
+
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
+
+      message.success("Tải báo cáo bảo hành thành công!");
+    } catch (error) {
+      console.error(error);
+      message.error("Có lỗi xảy ra khi tải báo cáo Excel!");
+    } finally {
+      setLoadingExport(false);
     }
   };
 
@@ -344,13 +394,20 @@ const WarrantyList = () => {
             <Radio.Button value={WARRANTY_STATUS.REJECTED}>
               Từ chối
             </Radio.Button>
-            <Radio.Button value={WARRANTY_STATUS.EXPIRED}>
-              Hết hạn
-            </Radio.Button>
+            <Radio.Button value={WARRANTY_STATUS.EXPIRED}>Hết hạn</Radio.Button>
           </Radio.Group>
 
           <Button icon={<ReloadOutlined />} onClick={handleReload}>
             Tải lại
+          </Button>
+
+          <Button
+            type="primary"
+            icon={<DownloadOutlined />}
+            onClick={handleExportReport}
+            loading={loadingExport}
+          >
+            Xuất báo cáo
           </Button>
         </Space>
       </div>
