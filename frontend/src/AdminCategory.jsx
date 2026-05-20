@@ -18,9 +18,10 @@ import {
   EditOutlined,
   PlusOutlined,
   SearchOutlined,
+  SubnodeOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
-import styles from "./AdminTable.module.css";
+import styles from "./AdminCategory.module.css";
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -34,8 +35,7 @@ const lineClampStyle = {
   WebkitBoxOrient: "vertical",
   overflow: "hidden",
   textOverflow: "ellipsis",
-  lineHeight: "20px",
-  maxHeight: "40px",
+  lineHeight: "22px",
   whiteSpace: "normal",
 };
 
@@ -49,27 +49,15 @@ const hasParentID = (value) => {
 
 const normalizeParentID = (value) => {
   if (isEmptyParentID(value)) return null;
-
   const numberValue = Number(value);
-
   return Number.isNaN(numberValue) ? null : numberValue;
 };
 
 const getResultData = (response) => {
   const apiData = response?.data;
-
-  if (apiData && Array.isArray(apiData.result)) {
-    return apiData.result;
-  }
-
-  if (apiData && Array.isArray(apiData.data)) {
-    return apiData.data;
-  }
-
-  if (Array.isArray(apiData)) {
-    return apiData;
-  }
-
+  if (apiData && Array.isArray(apiData.result)) return apiData.result;
+  if (apiData && Array.isArray(apiData.data)) return apiData.data;
+  if (Array.isArray(apiData)) return apiData;
   return [];
 };
 
@@ -78,20 +66,15 @@ const buildTree = (flatData) => {
   const tree = [];
 
   flatData.forEach((item) => {
-    map.set(Number(item.MaDanhMuc), {
-      ...item,
-      children: [],
-    });
+    map.set(Number(item.MaDanhMuc), { ...item, children: [] });
   });
 
   flatData.forEach((item) => {
     const node = map.get(Number(item.MaDanhMuc));
-
     if (!node) return;
 
     if (hasParentID(item.ParentID)) {
       const parent = map.get(Number(item.ParentID));
-
       if (parent) {
         parent.children.push(node);
       } else {
@@ -113,43 +96,32 @@ const buildTree = (flatData) => {
   };
 
   cleanEmptyChildren(tree);
-
   return tree;
 };
 
 const AdminCategories = () => {
   const [form] = Form.useForm();
-
   const [data, setData] = useState([]);
   const [parentOptions, setParentOptions] = useState([]);
-
   const [loadingTable, setLoadingTable] = useState(false);
   const [loadingSubmit, setLoadingSubmit] = useState(false);
   const [loadingDeleteId, setLoadingDeleteId] = useState(null);
-
   const [searchText, setSearchText] = useState("");
   const [filterType, setFilterType] = useState(null);
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
 
   const fetchAllCategories = useCallback(async () => {
     try {
       setLoadingTable(true);
-
-      const response = await axios.get(API_BASE, {
-        withCredentials: true,
-      });
+      const response = await axios.get(API_BASE, { withCredentials: true });
 
       if (response.data?.success) {
         const categories = getResultData(response);
-
         setData(categories);
-
         const rootCategories = categories.filter((item) =>
           isEmptyParentID(item.ParentID),
         );
-
         setParentOptions(rootCategories);
       } else {
         message.error(
@@ -158,12 +130,10 @@ const AdminCategories = () => {
       }
     } catch (error) {
       console.error("Lỗi khi tải danh sách danh mục:", error);
-
-      const errorMessage =
+      message.error(
         error?.response?.data?.message ||
-        "Lỗi khi tải dữ liệu danh mục sản phẩm!";
-
-      message.error(errorMessage);
+          "Lỗi khi tải dữ liệu danh mục sản phẩm!",
+      );
     } finally {
       setLoadingTable(false);
     }
@@ -175,13 +145,9 @@ const AdminCategories = () => {
 
   const filteredData = useMemo(() => {
     const keyword = searchText.trim().toLowerCase();
-
     return data.filter((item) => {
       const matchSearch =
         !keyword ||
-        String(item.MaDanhMuc || "")
-          .toLowerCase()
-          .includes(keyword) ||
         String(item.TenDanhMuc || "")
           .toLowerCase()
           .includes(keyword) ||
@@ -198,13 +164,10 @@ const AdminCategories = () => {
     });
   }, [data, searchText, filterType]);
 
-  const treeData = useMemo(() => {
-    return buildTree(filteredData);
-  }, [filteredData]);
+  const treeData = useMemo(() => buildTree(filteredData), [filteredData]);
 
   const editingCategoryHasChildren = useMemo(() => {
     if (!editingCategory) return false;
-
     return data.some(
       (item) => Number(item.ParentID) === Number(editingCategory.MaDanhMuc),
     );
@@ -213,7 +176,6 @@ const AdminCategories = () => {
   const parentSelectOptions = useMemo(() => {
     return parentOptions.filter((item) => {
       if (!editingCategory) return true;
-
       return Number(item.MaDanhMuc) !== Number(editingCategory.MaDanhMuc);
     });
   }, [parentOptions, editingCategory]);
@@ -226,19 +188,16 @@ const AdminCategories = () => {
 
   const handleOpenEditModal = (record) => {
     setEditingCategory(record);
-
     form.setFieldsValue({
       TenDanhMuc: record.TenDanhMuc,
       MoTa: record.MoTa,
       ParentID: record.ParentID ?? null,
     });
-
     setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
     if (loadingSubmit) return;
-
     setIsModalOpen(false);
     setEditingCategory(null);
     form.resetFields();
@@ -247,7 +206,6 @@ const AdminCategories = () => {
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
-
       setLoadingSubmit(true);
 
       const payload = {
@@ -262,33 +220,21 @@ const AdminCategories = () => {
         await axios.put(`${API_BASE}/${editingCategory.MaDanhMuc}`, payload, {
           withCredentials: true,
         });
-
         message.success("Cập nhật danh mục sản phẩm thành công!");
       } else {
-        await axios.post(API_BASE, payload, {
-          withCredentials: true,
-        });
-
+        await axios.post(API_BASE, payload, { withCredentials: true });
         message.success("Thêm danh mục sản phẩm thành công!");
       }
 
       setIsModalOpen(false);
       setEditingCategory(null);
       form.resetFields();
-
       await fetchAllCategories();
     } catch (error) {
       if (error?.errorFields) return;
-
-      console.error("Lỗi khi lưu danh mục:", error);
-
-      const errorMessage =
-        error?.response?.data?.message ||
-        (editingCategory
-          ? "Lỗi khi cập nhật danh mục sản phẩm!"
-          : "Lỗi khi thêm danh mục sản phẩm!");
-
-      message.error(errorMessage);
+      message.error(
+        error?.response?.data?.message || "Lỗi khi xử lý danh mục sản phẩm!",
+      );
     } finally {
       setLoadingSubmit(false);
     }
@@ -297,108 +243,101 @@ const AdminCategories = () => {
   const handleDelete = async (record) => {
     try {
       setLoadingDeleteId(record.MaDanhMuc);
-
       await axios.delete(`${API_BASE}/${record.MaDanhMuc}`, {
         withCredentials: true,
       });
-
       message.success("Xóa danh mục sản phẩm thành công!");
-
       await fetchAllCategories();
     } catch (error) {
-      console.error("Lỗi khi xóa danh mục:", error);
-
-      const errorMessage =
-        error?.response?.data?.message || "Không thể xóa danh mục sản phẩm!";
-
-      message.error(errorMessage);
+      message.error(
+        error?.response?.data?.message || "Không thể xóa danh mục sản phẩm!",
+      );
     } finally {
       setLoadingDeleteId(null);
     }
   };
 
+  // Đã bỏ cột Mã DM
   const columns = [
-    {
-      title: "Mã DM",
-      dataIndex: "MaDanhMuc",
-      key: "MaDanhMuc",
-      width: 90,
-      align: "center",
-    },
     {
       title: "Tên danh mục",
       dataIndex: "TenDanhMuc",
       key: "TenDanhMuc",
-      width: 280,
-      render: (text) => (
-        <Tooltip title={text}>
-          <div
-            style={{
-              ...lineClampStyle,
-              fontWeight: 600,
-              color: "#173B63",
-            }}
-          >
-            {text}
+      width: 300,
+      render: (text, record) => {
+        const isChild = hasParentID(record.ParentID);
+        return (
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            {/* Thêm icon phụ để nhấn mạnh danh mục con khi đã ẩn dấu + */}
+            {isChild && <SubnodeOutlined style={{ color: "#a3aed1" }} />}
+            <span
+              style={{
+                fontWeight: isChild
+                  ? 400
+                  : 600 /* Danh mục cha in đậm, con in thường */,
+                color: isChild ? "#4a5568" : "#2b3674",
+                fontSize: isChild ? "14px" : "15px",
+              }}
+            >
+              {text}
+            </span>
           </div>
-        </Tooltip>
-      ),
+        );
+      },
     },
     {
-      title: "Loại danh mục",
+      title: "Cấp độ",
       key: "LoaiDanhMuc",
       width: 150,
       align: "center",
       render: (_, record) =>
         hasParentID(record.ParentID) ? (
-          <Tag color="blue">Danh mục con</Tag>
+          <Tag color="cyan" bordered={false}>
+            Danh mục con
+          </Tag>
         ) : (
-          <Tag color="green">Danh mục cha</Tag>
+          <Tag color="blue" bordered={false}>
+            Danh mục cha
+          </Tag>
         ),
     },
     {
       title: "Mô tả",
       dataIndex: "MoTa",
       key: "MoTa",
-      width: 420,
       render: (text) => {
-        const content = text || "Không có mô tả";
-
+        const content = text || "Chưa có mô tả";
         return (
-          <Tooltip title={content}>
-            <div
-              style={{
-                ...lineClampStyle,
-                color: text ? "inherit" : "#aaa",
-                fontStyle: text ? "normal" : "italic",
-              }}
-            >
-              {content}
-            </div>
-          </Tooltip>
+          <div
+            style={{
+              ...lineClampStyle,
+              color: text ? "#4a5568" : "#a0aec0",
+              fontStyle: text ? "normal" : "italic",
+            }}
+          >
+            {content}
+          </div>
         );
       },
     },
     {
       title: "Thao tác",
       key: "actions",
-      width: 150,
-      align: "center",
-      fixed: "right",
+      width: 120,
+      align: "right",
       render: (_, record) => (
-        <Space>
-          <Tooltip title="Sửa danh mục">
+        <Space size="middle">
+          <Tooltip title="Chỉnh sửa">
             <Button
-              type="primary"
-              ghost
-              icon={<EditOutlined />}
+              type="text"
+              icon={<EditOutlined style={{ color: "#3182ce" }} />}
               onClick={() => handleOpenEditModal(record)}
             />
           </Tooltip>
 
-          <Tooltip title="Xóa danh mục">
+          <Tooltip title="Xóa">
             <Popconfirm
-              title="Xóa danh mục sản phẩm"
+              title="Xóa danh mục"
               description="Bạn có chắc chắn muốn xóa danh mục này?"
               okText="Xóa"
               cancelText="Hủy"
@@ -406,6 +345,7 @@ const AdminCategories = () => {
               onConfirm={() => handleDelete(record)}
             >
               <Button
+                type="text"
                 danger
                 icon={<DeleteOutlined />}
                 loading={loadingDeleteId === record.MaDanhMuc}
@@ -421,9 +361,9 @@ const AdminCategories = () => {
     <div className={styles.wrapper}>
       <div className={styles.pageHeader}>
         <div>
-          <h1 className={styles.pageTitle}>Quản lý Danh mục sản phẩm</h1>
+          <h1 className={styles.pageTitle}>Danh mục sản phẩm</h1>
           <p className={styles.pageSub}>
-            Thêm, cập nhật và quản lý danh mục cha - con của sản phẩm
+            Quản lý và tổ chức hệ thống cây danh mục
           </p>
         </div>
 
@@ -433,118 +373,106 @@ const AdminCategories = () => {
           onClick={handleOpenCreateModal}
           style={{
             borderRadius: 8,
-            height: 38,
-            whiteSpace: "nowrap",
+            height: 40,
+            padding: "0 20px",
+            fontWeight: 500,
+            boxShadow: "0 2px 6px rgba(24, 144, 255, 0.2)",
           }}
         >
           Thêm danh mục
         </Button>
       </div>
 
-      <div
-        className={styles.toolbar}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          flexWrap: "nowrap",
-          gap: 12,
-          width: "100%",
-        }}
-      >
+      <div className={styles.toolbar} style={{ display: "flex", gap: 16 }}>
         <Input
-          placeholder="Tìm theo mã, tên danh mục, mô tả..."
-          prefix={<SearchOutlined />}
-          style={{
-            flex: "1 1 420px",
-            minWidth: 320,
-            borderRadius: 8,
-          }}
+          placeholder="Tìm kiếm danh mục..."
+          prefix={<SearchOutlined style={{ color: "#a0aec0" }} />}
+          style={{ flex: 1, borderRadius: 8, padding: "8px 12px" }}
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
           allowClear
         />
 
         <Select
-          placeholder="Loại danh mục"
-          style={{ width: 180 }}
+          placeholder="Lọc theo cấp độ"
+          style={{ width: 200 }}
           value={filterType}
           onChange={(val) => setFilterType(val)}
           allowClear
+          size="large"
         >
-          <Option value="parent">Danh mục cha</Option>
-          <Option value="child">Danh mục con</Option>
+          <Option value="parent">Chỉ danh mục cha</Option>
+          <Option value="child">Chỉ danh mục con</Option>
         </Select>
       </div>
 
       <div className={styles.tableCard}>
         <Table
+          key={treeData.length > 0 ? "has-data" : "empty-data"}
           className={styles.table}
           columns={columns}
           dataSource={treeData}
           pagination={false}
           loading={loadingTable}
           rowKey="MaDanhMuc"
-          scroll={{ x: "max-content" }}
-          defaultExpandAllRows
+          scroll={{ x: 800 }}
+          /* Phần này giúp ẩn icon + và tự động mở toàn bộ dòng */
+          expandable={{
+            expandIcon: () => null,
+            defaultExpandAllRows: true,
+          }}
         />
       </div>
 
+      {/* Modal giữ nguyên */}
       <Modal
         title={
-          editingCategory
-            ? "Cập nhật danh mục sản phẩm"
-            : "Thêm danh mục sản phẩm"
+          <span style={{ fontSize: 18, fontWeight: 600, color: "#2b3674" }}>
+            {editingCategory ? "Cập nhật danh mục" : "Thêm danh mục mới"}
+          </span>
         }
         open={isModalOpen}
         onCancel={handleCloseModal}
         onOk={handleSubmit}
-        okText={editingCategory ? "Cập nhật" : "Thêm mới"}
+        okText={editingCategory ? "Lưu thay đổi" : "Thêm mới"}
         cancelText="Hủy"
         confirmLoading={loadingSubmit}
         destroyOnClose
+        centered
+        maskClosable={false}
       >
-        <Form form={form} layout="vertical">
+        <Form form={form} layout="vertical" style={{ marginTop: 24 }}>
           <Form.Item
-            label="Tên danh mục"
+            label={<span style={{ fontWeight: 500 }}>Tên danh mục</span>}
             name="TenDanhMuc"
             rules={[
-              {
-                required: true,
-                message: "Vui lòng nhập tên danh mục",
-              },
-              {
-                validator: (_, value) => {
-                  if (!value || !value.trim()) {
-                    return Promise.reject(
-                      new Error("Tên danh mục không được để trống"),
-                    );
-                  }
-
-                  return Promise.resolve();
-                },
-              },
+              { required: true, message: "Vui lòng nhập tên danh mục" },
               {
                 max: 100,
                 message: "Tên danh mục không được vượt quá 100 ký tự",
               },
             ]}
           >
-            <Input placeholder="Nhập tên danh mục sản phẩm" />
+            <Input size="large" placeholder="Ví dụ: Bát đĩa gốm sứ..." />
           </Form.Item>
 
           {editingCategoryHasChildren && (
             <Alert
               type="warning"
               showIcon
-              style={{ marginBottom: 16 }}
-              message="Danh mục này đang có danh mục con"
-              description="Bạn không thể chuyển danh mục này thành danh mục con của danh mục khác. Nếu muốn chuyển, hãy xử lý các danh mục con trước."
+              style={{ marginBottom: 16, borderRadius: 8 }}
+              message="Danh mục này đang chứa các danh mục con"
+              description="Bạn không thể biến nó thành danh mục con của một danh mục khác trừ khi bạn xóa hoặc di chuyển các danh mục con bên trong nó đi nơi khác."
             />
           )}
 
-          <Form.Item label="Danh mục cha" name="ParentID">
+          <Form.Item
+            label={<span style={{ fontWeight: 500 }}>Danh mục cha</span>}
+            name="ParentID"
+          >
             <Select
-              placeholder="Không chọn nếu đây là danh mục cha"
+              size="large"
+              placeholder="Để trống nếu đây là danh mục gốc (Level 1)"
               allowClear
               disabled={editingCategoryHasChildren}
             >
@@ -557,20 +485,18 @@ const AdminCategories = () => {
           </Form.Item>
 
           <Form.Item
-            label="Mô tả"
+            label={<span style={{ fontWeight: 500 }}>Mô tả ngắn</span>}
             name="MoTa"
             rules={[
-              {
-                max: 255,
-                message: "Mô tả không được vượt quá 255 ký tự",
-              },
+              { max: 255, message: "Mô tả không được vượt quá 255 ký tự" },
             ]}
           >
             <TextArea
               rows={4}
-              placeholder="Nhập mô tả ngắn cho danh mục sản phẩm"
+              placeholder="Nhập mô tả..."
               showCount
               maxLength={255}
+              style={{ resize: "none" }}
             />
           </Form.Item>
         </Form>

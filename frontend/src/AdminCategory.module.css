@@ -1,0 +1,73 @@
+.wrapper {
+  padding: 24px;
+  background-color: #f4f7fe;
+  min-height: 100vh;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.pageTitle {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #2b3674;
+  letter-spacing: -0.5px;
+}
+
+.pageSub {
+  margin: 6px 0 0 0;
+  color: #a3aed1;
+  font-size: 14.5px;
+}
+
+.toolbar {
+  background: #ffffff;
+  padding: 16px 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  margin-bottom: 24px;
+}
+
+.tableCard {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+}
+
+.table :global(.ant-table) {
+  font-size: 14.5px;
+}
+
+.table :global(.ant-table-thead > tr > th) {
+  background-color: #f8f9fc !important;
+  color: #687182 !important;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 12.5px;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #edf2f7;
+  padding: 16px;
+}
+
+.table :global(.ant-table-tbody > tr > td) {
+  padding: 16px;
+  border-bottom: 1px solid #f0f2f5;
+  transition: all 0.2s ease;
+}
+
+.table :global(.ant-table-tbody > tr:hover > td) {
+  background-color: #f8fafc !important;
+}
+
+.table :global(.ant-table-row-level-1 > td) {
+  background-color: #fafbfd;
+}
