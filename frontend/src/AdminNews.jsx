@@ -7,7 +7,6 @@ import {
   Input,
   Switch,
   Tooltip,
-  Popconfirm,
   message,
   Space,
   Select,
@@ -70,29 +69,99 @@ const authH = () => ({
   withCredentials: true,
 });
 
+const FontSize = Extension.create({
+  name: "fontSize",
+
+  addOptions() {
+    return {
+      types: ["textStyle"],
+    };
+  },
+
+  addGlobalAttributes() {
+    return [
+      {
+        types: this.options.types,
+        attributes: {
+          fontSize: {
+            default: null,
+            parseHTML: (element) => element.style.fontSize || null,
+            renderHTML: (attributes) => {
+              if (!attributes.fontSize) {
+                return {};
+              }
+
+              return {
+                style: `font-size: ${attributes.fontSize}`,
+              };
+            },
+          },
+        },
+      },
+    ];
+  },
+
+  addCommands() {
+    return {
+      setFontSize:
+        (fontSize) =>
+        ({ chain }) => {
+          return chain().setMark("textStyle", { fontSize }).run();
+        },
+
+      unsetFontSize:
+        () =>
+        ({ chain }) => {
+          return chain()
+            .setMark("textStyle", { fontSize: null })
+            .removeEmptyTextStyle()
+            .run();
+        },
+    };
+  },
+});
+
 const TiptapEditor = ({ value, onChange }) => {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        heading: { levels: [1, 2, 3] },
+        heading: {
+          levels: [1, 2, 3],
+        },
       }),
+
+      TextStyle,
+
+      FontSize,
+
+      TextAlign.configure({
+        types: ["heading", "paragraph"],
+        alignments: ["left", "center", "right", "justify"],
+      }),
+
       Underline,
+
       TiptapImage.configure({
         inline: true,
       }),
+
       Link.configure({
         openOnClick: false,
+        autolink: true,
+        linkOnPaste: true,
       }),
     ],
+
     content: value || "",
+
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML());
     },
   });
 
   useEffect(() => {
-    if (editor && value && editor.getHTML() !== value) {
-      editor.commands.setContent(value);
+    if (editor && value !== undefined && editor.getHTML() !== value) {
+      editor.commands.setContent(value || "");
     }
   }, [value, editor]);
 
@@ -100,42 +169,64 @@ const TiptapEditor = ({ value, onChange }) => {
 
   const handleImageUpload = () => {
     const input = document.createElement("input");
+
     input.type = "file";
     input.accept = "image/*";
-    input.onchange = async () => {
-      const file = input.files[0];
-      if (file) {
-        const hideMsg = message.loading("Đang tải ảnh lên...", 0);
-        try {
-          const fd = new FormData();
-          fd.append("file", file);
-          fd.append("upload_preset", CDN_PRESET);
 
-          const res = await axios.post(
-            `https://api.cloudinary.com/v1_1/${CDN_CLOUD}/image/upload`,
-            fd,
-          );
-          editor.chain().focus().setImage({ src: res.data.secure_url }).run();
-          hideMsg();
-        } catch (error) {
-          hideMsg();
-          console.error(error);
-          message.error("Lỗi khi tải ảnh lên!");
-        }
+    input.onchange = async () => {
+      const file = input.files?.[0];
+
+      if (!file) return;
+
+      const hideMsg = message.loading("Đang tải ảnh lên...", 0);
+
+      try {
+        const fd = new FormData();
+
+        fd.append("file", file);
+        fd.append("upload_preset", CDN_PRESET);
+
+        const res = await axios.post(
+          `https://api.cloudinary.com/v1_1/${CDN_CLOUD}/image/upload`,
+          fd,
+        );
+
+        editor.chain().focus().setImage({ src: res.data.secure_url }).run();
+
+        hideMsg();
+        message.success("Tải ảnh thành công!");
+      } catch (error) {
+        hideMsg();
+        console.error(error);
+        message.error("Lỗi khi tải ảnh lên!");
       }
     };
+
     input.click();
   };
 
   const setLink = () => {
-    const previousUrl = editor.getAttributes("link").href;
+    const previousUrl = editor.getAttributes("link").href || "";
     const url = window.prompt("Nhập URL:", previousUrl);
+
     if (url === null) return;
-    if (url === "") {
+
+    if (url.trim() === "") {
       editor.chain().focus().extendMarkRange("link").unsetLink().run();
       return;
     }
-    editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
+
+    const finalUrl =
+      url.startsWith("http://") || url.startsWith("https://")
+        ? url
+        : `https://${url}`;
+
+    editor
+      .chain()
+      .focus()
+      .extendMarkRange("link")
+      .setLink({ href: finalUrl })
+      .run();
   };
 
   return (
@@ -155,6 +246,7 @@ const TiptapEditor = ({ value, onChange }) => {
               H1
             </Button>
           </Tooltip>
+
           <Tooltip title="Heading 2">
             <Button
               size="small"
@@ -167,87 +259,99 @@ const TiptapEditor = ({ value, onChange }) => {
             >
               H2
             </Button>
-            <Tooltip title="Cỡ chữ">
-              <Select
-                size="small"
-                placeholder={<FontSizeOutlined />}
-                style={{ width: 92 }}
-                value={editor.getAttributes("textStyle").fontSize || undefined}
-                onChange={(value) => {
-                  if (!value) {
-                    editor.chain().focus().unsetFontSize().run();
-                  } else {
-                    editor.chain().focus().setFontSize(value).run();
-                  }
-                }}
-                options={[
-                  { value: null, label: "Mặc định" },
-                  { value: "12px", label: "12" },
-                  { value: "14px", label: "14" },
-                  { value: "16px", label: "16" },
-                  { value: "18px", label: "18" },
-                  { value: "20px", label: "20" },
-                  { value: "24px", label: "24" },
-                  { value: "28px", label: "28" },
-                  { value: "32px", label: "32" },
-                ]}
-              />
-            </Tooltip>
-
-            <Divider type="vertical" />
-
-            <Tooltip title="Căn trái">
-              <Button
-                size="small"
-                type={
-                  editor.isActive({ textAlign: "left" }) ? "primary" : "text"
-                }
-                onClick={() =>
-                  editor.chain().focus().setTextAlign("left").run()
-                }
-                icon={<AlignLeftOutlined />}
-              />
-            </Tooltip>
-
-            <Tooltip title="Căn giữa">
-              <Button
-                size="small"
-                type={
-                  editor.isActive({ textAlign: "center" }) ? "primary" : "text"
-                }
-                onClick={() =>
-                  editor.chain().focus().setTextAlign("center").run()
-                }
-                icon={<AlignCenterOutlined />}
-              />
-            </Tooltip>
-
-            <Tooltip title="Căn phải">
-              <Button
-                size="small"
-                type={
-                  editor.isActive({ textAlign: "right" }) ? "primary" : "text"
-                }
-                onClick={() =>
-                  editor.chain().focus().setTextAlign("right").run()
-                }
-                icon={<AlignRightOutlined />}
-              />
-            </Tooltip>
-
-            <Tooltip title="Căn đều">
-              <Button
-                size="small"
-                type={
-                  editor.isActive({ textAlign: "justify" }) ? "primary" : "text"
-                }
-                onClick={() =>
-                  editor.chain().focus().setTextAlign("justify").run()
-                }
-                icon={<MenuOutlined />}
-              />
-            </Tooltip>
           </Tooltip>
+
+          <Tooltip title="Heading 3">
+            <Button
+              size="small"
+              type={
+                editor.isActive("heading", { level: 3 }) ? "primary" : "text"
+              }
+              onClick={() =>
+                editor.chain().focus().toggleHeading({ level: 3 }).run()
+              }
+            >
+              H3
+            </Button>
+          </Tooltip>
+
+          <Tooltip title="Cỡ chữ">
+            <Select
+              size="small"
+              placeholder={<FontSizeOutlined />}
+              style={{ width: 96 }}
+              value={editor.getAttributes("textStyle").fontSize || undefined}
+              onChange={(value) => {
+                if (!value) {
+                  editor.chain().focus().unsetFontSize().run();
+                } else {
+                  editor.chain().focus().setFontSize(value).run();
+                }
+              }}
+              options={[
+                { value: "", label: "Mặc định" },
+                { value: "12px", label: "12" },
+                { value: "14px", label: "14" },
+                { value: "16px", label: "16" },
+                { value: "18px", label: "18" },
+                { value: "20px", label: "20" },
+                { value: "24px", label: "24" },
+                { value: "28px", label: "28" },
+                { value: "32px", label: "32" },
+              ]}
+            />
+          </Tooltip>
+
+          <Divider type="vertical" />
+
+          <Tooltip title="Căn trái">
+            <Button
+              size="small"
+              type={editor.isActive({ textAlign: "left" }) ? "primary" : "text"}
+              onClick={() => editor.chain().focus().setTextAlign("left").run()}
+              icon={<AlignLeftOutlined />}
+            />
+          </Tooltip>
+
+          <Tooltip title="Căn giữa">
+            <Button
+              size="small"
+              type={
+                editor.isActive({ textAlign: "center" }) ? "primary" : "text"
+              }
+              onClick={() =>
+                editor.chain().focus().setTextAlign("center").run()
+              }
+              icon={<AlignCenterOutlined />}
+            />
+          </Tooltip>
+
+          <Tooltip title="Căn phải">
+            <Button
+              size="small"
+              type={
+                editor.isActive({ textAlign: "right" }) ? "primary" : "text"
+              }
+              onClick={() => editor.chain().focus().setTextAlign("right").run()}
+              icon={<AlignRightOutlined />}
+            />
+          </Tooltip>
+
+          <Tooltip title="Căn đều">
+            <Button
+              size="small"
+              type={
+                editor.isActive({ textAlign: "justify" }) ? "primary" : "text"
+              }
+              onClick={() =>
+                editor.chain().focus().setTextAlign("justify").run()
+              }
+              icon={<MenuOutlined />}
+            />
+          </Tooltip>
+
+          <Divider type="vertical" />
+
           <Tooltip title="In đậm">
             <Button
               size="small"
@@ -256,6 +360,7 @@ const TiptapEditor = ({ value, onChange }) => {
               icon={<BoldOutlined />}
             />
           </Tooltip>
+
           <Tooltip title="In nghiêng">
             <Button
               size="small"
@@ -264,6 +369,7 @@ const TiptapEditor = ({ value, onChange }) => {
               icon={<ItalicOutlined />}
             />
           </Tooltip>
+
           <Tooltip title="Gạch chân">
             <Button
               size="small"
@@ -272,7 +378,9 @@ const TiptapEditor = ({ value, onChange }) => {
               icon={<UnderlineOutlined />}
             />
           </Tooltip>
+
           <Divider type="vertical" />
+
           <Tooltip title="Danh sách chấm">
             <Button
               size="small"
@@ -281,6 +389,7 @@ const TiptapEditor = ({ value, onChange }) => {
               icon={<UnorderedListOutlined />}
             />
           </Tooltip>
+
           <Tooltip title="Danh sách số">
             <Button
               size="small"
@@ -289,8 +398,10 @@ const TiptapEditor = ({ value, onChange }) => {
               icon={<OrderedListOutlined />}
             />
           </Tooltip>
+
           <Divider type="vertical" />
-          <Tooltip title="Chèn Link">
+
+          <Tooltip title="Chèn link">
             <Button
               size="small"
               type={editor.isActive("link") ? "primary" : "text"}
@@ -298,6 +409,7 @@ const TiptapEditor = ({ value, onChange }) => {
               icon={<LinkOutlined />}
             />
           </Tooltip>
+
           <Tooltip title="Chèn code">
             <Button
               size="small"
@@ -306,6 +418,7 @@ const TiptapEditor = ({ value, onChange }) => {
               icon={<CodeOutlined />}
             />
           </Tooltip>
+
           <Tooltip title="Chèn ảnh">
             <Button
               size="small"
@@ -318,10 +431,52 @@ const TiptapEditor = ({ value, onChange }) => {
       </div>
 
       <style>{`
-        .ProseMirror ul { list-style-type: disc !important; padding-left: 24px !important; margin-bottom: 1em; }
-        .ProseMirror ol { list-style-type: decimal !important; padding-left: 24px !important; margin-bottom: 1em; }
-        .ProseMirror li { display: list-item !important; }
-        .ProseMirror a { color: #1677ff !important; text-decoration: underline !important; cursor: pointer; }
+        .ProseMirror {
+          min-height: 280px;
+          outline: none;
+        }
+
+        .ProseMirror ul {
+          list-style-type: disc !important;
+          padding-left: 24px !important;
+          margin-bottom: 1em;
+        }
+
+        .ProseMirror ol {
+          list-style-type: decimal !important;
+          padding-left: 24px !important;
+          margin-bottom: 1em;
+        }
+
+        .ProseMirror li {
+          display: list-item !important;
+        }
+
+        .ProseMirror a {
+          color: #1677ff !important;
+          text-decoration: underline !important;
+          cursor: pointer;
+        }
+
+        .ProseMirror img {
+          max-width: 100%;
+          height: auto;
+          border-radius: 8px;
+          margin: 8px 0;
+        }
+
+        .ProseMirror pre {
+          background: #f5f5f5;
+          padding: 12px;
+          border-radius: 8px;
+          overflow-x: auto;
+        }
+
+        .ProseMirror code {
+          background: #f5f5f5;
+          padding: 2px 5px;
+          border-radius: 4px;
+        }
       `}</style>
 
       <EditorContent editor={editor} className={styles.tiptapEditorArea} />
@@ -354,8 +509,10 @@ export default function AdminNews() {
 
   const fetchNews = async () => {
     setLoading(true);
+
     try {
       const res = await axios.get(`${API_BASE}/news`, authH());
+
       setNews(res.data?.result || []);
     } catch {
       message.error("Không thể tải danh sách tin tức!");
@@ -368,19 +525,24 @@ export default function AdminNews() {
     setEditRecord(null);
     setImgPreview("");
     form.resetFields();
-    form.setFieldsValue({ TrangThai: true, NoiDung: "" });
+    form.setFieldsValue({
+      TrangThai: true,
+      NoiDung: "",
+    });
     setModalOpen(true);
   };
 
   const openEdit = (record) => {
     setEditRecord(record);
     setImgPreview(record.HinhAnh || "");
+
     form.setFieldsValue({
       TieuDe: record.TieuDe,
-      NoiDung: record.NoiDung,
+      NoiDung: record.NoiDung || "",
       HinhAnh: record.HinhAnh,
       TrangThai: record.TrangThai === 1,
     });
+
     setModalOpen(true);
   };
 
@@ -391,22 +553,32 @@ export default function AdminNews() {
 
   const handleUploadImage = async (info) => {
     const file = info.file;
+
+    if (!file) return;
+
     if (file.size > 5 * 1024 * 1024) {
       message.error("Ảnh tối đa 5MB!");
       return;
     }
+
     setUploading(true);
+
     try {
       const fd = new FormData();
+
       fd.append("file", file);
       fd.append("upload_preset", CDN_PRESET);
+
       const res = await axios.post(
         `https://api.cloudinary.com/v1_1/${CDN_CLOUD}/image/upload`,
         fd,
       );
+
       const url = res.data.secure_url;
+
       form.setFieldValue("HinhAnh", url);
       setImgPreview(url);
+
       message.success("Tải ảnh thành công!");
     } catch {
       message.error("Tải ảnh thất bại!");
@@ -417,6 +589,7 @@ export default function AdminNews() {
 
   const handleSave = async (values) => {
     setSaving(true);
+
     try {
       const payload = {
         title: values.TieuDe,
@@ -431,11 +604,14 @@ export default function AdminNews() {
           payload,
           authH(),
         );
+
         message.success("Cập nhật tin tức thành công!");
       } else {
         await axios.post(`${API_BASE}/news`, payload, authH());
+
         message.success("Tạo tin tức thành công!");
       }
+
       setModalOpen(false);
       fetchNews();
     } catch (err) {
@@ -447,16 +623,24 @@ export default function AdminNews() {
 
   const handleStatusChange = async (checked, record) => {
     const newStatus = checked ? 1 : 0;
+
     try {
       await axios.patch(
         `${API_BASE}/news/${record.MaTinTuc}/status`,
         { status: newStatus },
         authH(),
       );
+
       message.success(`Đã ${checked ? "hiển thị" : "ẩn"} bài viết!`);
+
       setNews((prevNews) =>
-        prevNews.map((n) =>
-          n.MaTinTuc === record.MaTinTuc ? { ...n, TrangThai: newStatus } : n,
+        prevNews.map((item) =>
+          item.MaTinTuc === record.MaTinTuc
+            ? {
+                ...item,
+                TrangThai: newStatus,
+              }
+            : item,
         ),
       );
     } catch (err) {
@@ -467,11 +651,13 @@ export default function AdminNews() {
   };
 
   const filteredAndSorted = news
-    .filter((n) => {
+    .filter((item) => {
       const matchesSearch =
-        !search || n.TieuDe?.toLowerCase().includes(search.toLowerCase());
+        !search || item.TieuDe?.toLowerCase().includes(search.toLowerCase());
+
       const matchesStatus =
-        statusFilter === null || n.TrangThai === statusFilter;
+        statusFilter === null || item.TrangThai === statusFilter;
+
       return matchesSearch && matchesStatus;
     })
     .sort((a, b) => {
@@ -480,9 +666,9 @@ export default function AdminNews() {
 
       if (sortOrder === "newest") {
         return dateB - dateA;
-      } else {
-        return dateA - dateB;
       }
+
+      return dateA - dateB;
     });
 
   const columns = [
@@ -490,13 +676,16 @@ export default function AdminNews() {
       title: "Ảnh",
       key: "img",
       width: 80,
-      render: (_, r) =>
-        r.HinhAnh ? (
+      render: (_, record) =>
+        record.HinhAnh ? (
           <Image
-            src={r.HinhAnh}
+            src={record.HinhAnh}
             width={56}
             height={42}
-            style={{ objectFit: "cover", borderRadius: 6 }}
+            style={{
+              objectFit: "cover",
+              borderRadius: 6,
+            }}
           />
         ) : (
           <div className={styles.noImg}>
@@ -507,14 +696,14 @@ export default function AdminNews() {
     {
       title: "Tiêu đề",
       key: "title",
-      render: (_, r) => (
+      render: (_, record) => (
         <div className={styles.cellTitle}>
-          <div className={styles.titleText}>{r.TieuDe}</div>
+          <div className={styles.titleText}>{record.TieuDe}</div>
           <div className={styles.titleMeta}>
-            {r.NhanVien?.TenNhanVien && (
-              <span>{r.NhanVien.TenNhanVien} · </span>
+            {record.NhanVien?.TenNhanVien && (
+              <span>{record.NhanVien.TenNhanVien} · </span>
             )}
-            <span>{dayjs(r.NgayTao).format("DD/MM/YYYY")}</span>
+            <span>{dayjs(record.NgayTao).format("DD/MM/YYYY")}</span>
           </div>
         </div>
       ),
@@ -523,10 +712,10 @@ export default function AdminNews() {
       title: "Trạng thái",
       key: "status",
       width: 120,
-      render: (_, r) => (
+      render: (_, record) => (
         <Switch
-          checked={r.TrangThai === 1}
-          onChange={(checked) => handleStatusChange(checked, r)}
+          checked={record.TrangThai === 1}
+          onChange={(checked) => handleStatusChange(checked, record)}
           checkedChildren="Hiện"
           unCheckedChildren="Ẩn"
         />
@@ -537,21 +726,22 @@ export default function AdminNews() {
       key: "actions",
       width: 120,
       fixed: "right",
-      render: (_, r) => (
+      render: (_, record) => (
         <Space size={4}>
           <Tooltip title="Xem">
             <Button
               type="text"
               icon={<EyeOutlined />}
-              onClick={() => openView(r)}
+              onClick={() => openView(record)}
             />
           </Tooltip>
+
           <Tooltip title="Sửa">
             <Button
               type="text"
               icon={<EditOutlined />}
               className={styles.btnEdit}
-              onClick={() => openEdit(r)}
+              onClick={() => openEdit(record)}
             />
           </Tooltip>
         </Space>
@@ -569,6 +759,7 @@ export default function AdminNews() {
             <p className={styles.pageSub}>Tạo và chỉnh sửa bài viết tin tức</p>
           </div>
         </div>
+
         <Button
           type="primary"
           icon={<PlusOutlined />}
@@ -590,59 +781,67 @@ export default function AdminNews() {
           },
           {
             label: "Đang hiện",
-            value: news.filter((n) => n.TrangThai === 1).length,
+            value: news.filter((item) => item.TrangThai === 1).length,
             color: "#52c41a",
             bg: "#f6ffed",
             status: 1,
           },
           {
             label: "Đang ẩn",
-            value: news.filter((n) => n.TrangThai === 0).length,
+            value: news.filter((item) => item.TrangThai === 0).length,
             color: "#888",
             bg: "#f5f5f5",
             status: 0,
           },
-        ].map((s, i) => (
-          <Col xs={24} sm={8} key={i}>
+        ].map((item, index) => (
+          <Col xs={24} sm={8} key={index}>
             <div
               className={styles.statCard}
               style={{
-                "--c": s.color,
-                "--bg": s.bg,
+                "--c": item.color,
+                "--bg": item.bg,
                 cursor: "pointer",
                 border:
-                  statusFilter === s.status
-                    ? `2px solid ${s.color}`
+                  statusFilter === item.status
+                    ? `2px solid ${item.color}`
                     : "1px solid rgba(0, 0, 0, 0.04)",
                 boxShadow:
-                  statusFilter === s.status
+                  statusFilter === item.status
                     ? "0 4px 12px rgba(0,0,0,0.12)"
                     : "none",
                 transform:
-                  statusFilter === s.status ? "translateY(-2px)" : "none",
+                  statusFilter === item.status ? "translateY(-2px)" : "none",
                 transition: "all 0.2s ease",
               }}
               onClick={() => {
-                if (s.status === null) {
+                if (item.status === null) {
                   setStatusFilter(null);
                 } else {
                   setStatusFilter((prev) =>
-                    prev === s.status ? null : s.status,
+                    prev === item.status ? null : item.status,
                   );
                 }
               }}
             >
-              <div className={styles.statNum}>{s.value}</div>
+              <div className={styles.statNum}>{item.value}</div>
               <div className={styles.statLabel}>
-                {s.label}{" "}
-                {statusFilter === s.status && s.status !== null && "• Đang lọc"}
+                {item.label}{" "}
+                {statusFilter === item.status &&
+                  item.status !== null &&
+                  "• Đang lọc"}
               </div>
             </div>
           </Col>
         ))}
       </Row>
 
-      <div className={styles.toolbar} style={{ display: "flex", gap: "8px" }}>
+      <div
+        className={styles.toolbar}
+        style={{
+          display: "flex",
+          gap: "8px",
+        }}
+      >
         <Input
           prefix={<SearchOutlined style={{ color: "#bbb" }} />}
           placeholder="Tìm kiếm tiêu đề..."
@@ -650,17 +849,22 @@ export default function AdminNews() {
           onChange={(e) => setSearch(e.target.value)}
           allowClear
           className={styles.searchInput}
-          style={{ flex: 1 }} // Để ô tìm kiếm chiếm phần lớn diện tích
+          style={{ flex: 1 }}
         />
 
-        {/* Nút thả xuống để chọn sắp xếp */}
         <Select
           value={sortOrder}
           onChange={(value) => setSortOrder(value)}
           style={{ width: 140 }}
           options={[
-            { value: "newest", label: "Mới nhất" },
-            { value: "oldest", label: "Cũ nhất" },
+            {
+              value: "newest",
+              label: "Mới nhất",
+            },
+            {
+              value: "oldest",
+              label: "Cũ nhất",
+            },
           ]}
         />
 
@@ -678,7 +882,10 @@ export default function AdminNews() {
           rowKey="MaTinTuc"
           loading={loading}
           scroll={{ x: 700 }}
-          pagination={{ pageSize: 10, showTotal: (t) => `${t} tin tức` }}
+          pagination={{
+            pageSize: 10,
+            showTotal: (total) => `${total} tin tức`,
+          }}
           className={styles.table}
           locale={{
             emptyText: (
@@ -714,7 +921,12 @@ export default function AdminNews() {
           <Form.Item
             name="TieuDe"
             label="Tiêu đề"
-            rules={[{ required: true, message: "Nhập tiêu đề!" }]}
+            rules={[
+              {
+                required: true,
+                message: "Nhập tiêu đề!",
+              },
+            ]}
           >
             <Input placeholder="Tiêu đề tin tức..." className={styles.input} />
           </Form.Item>
@@ -728,6 +940,7 @@ export default function AdminNews() {
                   className={styles.imgPreview}
                 />
               )}
+
               <Upload
                 showUploadList={false}
                 beforeUpload={() => false}
@@ -742,6 +955,7 @@ export default function AdminNews() {
                   {uploading ? "Đang tải..." : "Chọn ảnh"}
                 </Button>
               </Upload>
+
               <Form.Item name="HinhAnh" noStyle>
                 <Input
                   placeholder="Hoặc dán URL ảnh..."
@@ -756,7 +970,12 @@ export default function AdminNews() {
           <Form.Item
             name="NoiDung"
             label="Nội dung"
-            rules={[{ required: true, message: "Nhập nội dung bài viết!" }]}
+            rules={[
+              {
+                required: true,
+                message: "Nhập nội dung bài viết!",
+              },
+            ]}
           >
             <TiptapEditor />
           </Form.Item>
@@ -772,8 +991,16 @@ export default function AdminNews() {
           </div>
 
           <Divider style={{ margin: "8px 0 16px" }} />
-          <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+
+          <div
+            style={{
+              display: "flex",
+              gap: 10,
+              justifyContent: "flex-end",
+            }}
+          >
             <Button onClick={() => setModalOpen(false)}>Huỷ</Button>
+
             <Button
               type="primary"
               htmlType="submit"
@@ -786,33 +1013,40 @@ export default function AdminNews() {
         </Form>
       </Modal>
 
-      {/* Modal Xem chi tiết bài viết */}
       <Modal
         open={viewModalOpen}
         onCancel={() => setViewModalOpen(false)}
-        centered // Căn giữa modal
+        centered
         footer={[
           <Button key="close" onClick={() => setViewModalOpen(false)}>
             Đóng
           </Button>,
         ]}
-        width={1000} // Cùng kích thước lớn với Modal Sửa
+        width={1000}
         title="Xem trước bài viết"
         destroyOnClose
       >
         {viewRecord && (
           <div style={{ padding: "20px 0" }}>
             <Typography.Title level={2}>{viewRecord.TieuDe}</Typography.Title>
+
             <div style={{ color: "gray", marginBottom: "20px" }}>
               <span>
                 {dayjs(viewRecord.NgayTao).format("DD/MM/YYYY HH:mm")}
               </span>
+
               {viewRecord.NhanVien?.TenNhanVien && (
                 <span> - Đăng bởi: {viewRecord.NhanVien.TenNhanVien}</span>
               )}
             </div>
+
             {viewRecord.HinhAnh && (
-              <div style={{ textAlign: "center", marginBottom: "20px" }}>
+              <div
+                style={{
+                  textAlign: "center",
+                  marginBottom: "20px",
+                }}
+              >
                 <img
                   src={viewRecord.HinhAnh}
                   alt={viewRecord.TieuDe}
@@ -828,12 +1062,47 @@ export default function AdminNews() {
 
             <div className="view-content-html">
               <style>{`
-                .view-content-html ul { list-style-type: disc; padding-left: 24px; margin-bottom: 1em; }
-                .view-content-html ol { list-style-type: decimal; padding-left: 24px; margin-bottom: 1em; }
-                .view-content-html li { display: list-item; }
-                .view-content-html a { color: #1677ff; text-decoration: underline; }
-                .view-content-html img { max-width: 100%; height: auto; }
+                .view-content-html ul {
+                  list-style-type: disc;
+                  padding-left: 24px;
+                  margin-bottom: 1em;
+                }
+
+                .view-content-html ol {
+                  list-style-type: decimal;
+                  padding-left: 24px;
+                  margin-bottom: 1em;
+                }
+
+                .view-content-html li {
+                  display: list-item;
+                }
+
+                .view-content-html a {
+                  color: #1677ff;
+                  text-decoration: underline;
+                }
+
+                .view-content-html img {
+                  max-width: 100%;
+                  height: auto;
+                  border-radius: 8px;
+                }
+
+                .view-content-html pre {
+                  background: #f5f5f5;
+                  padding: 12px;
+                  border-radius: 8px;
+                  overflow-x: auto;
+                }
+
+                .view-content-html code {
+                  background: #f5f5f5;
+                  padding: 2px 5px;
+                  border-radius: 4px;
+                }
               `}</style>
+
               <div dangerouslySetInnerHTML={{ __html: viewRecord.NoiDung }} />
             </div>
           </div>

@@ -11,6 +11,7 @@ import {
   Table,
   Tag,
   Tooltip,
+  Alert,
 } from "antd";
 import {
   DeleteOutlined,
@@ -24,7 +25,8 @@ import styles from "./AdminTable.module.css";
 const { TextArea } = Input;
 const { Option } = Select;
 
-const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1";
+const API_BASE =
+  "https://ceramic-shop-u8ak.onrender.com/api/v1/admin/categories";
 
 const lineClampStyle = {
   display: "-webkit-box",
@@ -37,9 +39,20 @@ const lineClampStyle = {
   whiteSpace: "normal",
 };
 
+const isEmptyParentID = (value) => {
+  return value === undefined || value === null || value === "";
+};
+
+const hasParentID = (value) => {
+  return value !== undefined && value !== null && value !== "";
+};
+
 const normalizeParentID = (value) => {
-  if (value === undefined || value === null || value === "") return null;
-  return Number(value);
+  if (isEmptyParentID(value)) return null;
+
+  const numberValue = Number(value);
+
+  return Number.isNaN(numberValue) ? null : numberValue;
 };
 
 const getResultData = (response) => {
@@ -48,12 +61,15 @@ const getResultData = (response) => {
   if (apiData && Array.isArray(apiData.result)) {
     return apiData.result;
   }
+
   if (apiData && Array.isArray(apiData.data)) {
     return apiData.data;
   }
+
   if (Array.isArray(apiData)) {
     return apiData;
   }
+
   return [];
 };
 
@@ -73,7 +89,7 @@ const buildTree = (flatData) => {
 
     if (!node) return;
 
-    if (item.ParentID) {
+    if (hasParentID(item.ParentID)) {
       const parent = map.get(Number(item.ParentID));
 
       if (parent) {
@@ -121,23 +137,33 @@ const AdminCategories = () => {
     try {
       setLoadingTable(true);
 
-      const response = await axios.get(`${API_BASE}/categories`, {
+      const response = await axios.get(API_BASE, {
         withCredentials: true,
       });
 
-      if (response.data.success) {
+      if (response.data?.success) {
         const categories = getResultData(response);
+
         setData(categories);
 
-        const rootCategories = categories.filter(
-          (item) => item.ParentID === null || item.ParentID === undefined,
+        const rootCategories = categories.filter((item) =>
+          isEmptyParentID(item.ParentID),
         );
 
         setParentOptions(rootCategories);
+      } else {
+        message.error(
+          response.data?.message || "Không thể tải danh mục sản phẩm!",
+        );
       }
     } catch (error) {
       console.error("Lỗi khi tải danh sách danh mục:", error);
-      message.error("Lỗi khi tải dữ liệu danh mục sản phẩm!");
+
+      const errorMessage =
+        error?.response?.data?.message ||
+        "Lỗi khi tải dữ liệu danh mục sản phẩm!";
+
+      message.error(errorMessage);
     } finally {
       setLoadingTable(false);
     }
@@ -165,11 +191,8 @@ const AdminCategories = () => {
 
       const matchType =
         !filterType ||
-        (filterType === "parent" &&
-          (item.ParentID === null || item.ParentID === undefined)) ||
-        (filterType === "child" &&
-          item.ParentID !== null &&
-          item.ParentID !== undefined);
+        (filterType === "parent" && isEmptyParentID(item.ParentID)) ||
+        (filterType === "child" && hasParentID(item.ParentID));
 
       return matchSearch && matchType;
     });
@@ -178,6 +201,14 @@ const AdminCategories = () => {
   const treeData = useMemo(() => {
     return buildTree(filteredData);
   }, [filteredData]);
+
+  const editingCategoryHasChildren = useMemo(() => {
+    if (!editingCategory) return false;
+
+    return data.some(
+      (item) => Number(item.ParentID) === Number(editingCategory.MaDanhMuc),
+    );
+  }, [data, editingCategory]);
 
   const parentSelectOptions = useMemo(() => {
     return parentOptions.filter((item) => {
@@ -222,21 +253,19 @@ const AdminCategories = () => {
       const payload = {
         TenDanhMuc: values.TenDanhMuc.trim(),
         MoTa: values.MoTa?.trim() || null,
-        ParentID: normalizeParentID(values.ParentID),
+        ParentID: editingCategoryHasChildren
+          ? null
+          : normalizeParentID(values.ParentID),
       };
 
       if (editingCategory) {
-        await axios.put(
-          `${API_BASE}/admin/categories/${editingCategory.MaDanhMuc}`,
-          payload,
-          {
-            withCredentials: true,
-          },
-        );
+        await axios.put(`${API_BASE}/${editingCategory.MaDanhMuc}`, payload, {
+          withCredentials: true,
+        });
 
         message.success("Cập nhật danh mục sản phẩm thành công!");
       } else {
-        await axios.post(`${API_BASE}/admin/categories`, payload, {
+        await axios.post(API_BASE, payload, {
           withCredentials: true,
         });
 
@@ -269,7 +298,7 @@ const AdminCategories = () => {
     try {
       setLoadingDeleteId(record.MaDanhMuc);
 
-      await axios.delete(`${API_BASE}/admin/categories/${record.MaDanhMuc}`, {
+      await axios.delete(`${API_BASE}/${record.MaDanhMuc}`, {
         withCredentials: true,
       });
 
@@ -321,7 +350,7 @@ const AdminCategories = () => {
       width: 150,
       align: "center",
       render: (_, record) =>
-        record.ParentID ? (
+        hasParentID(record.ParentID) ? (
           <Tag color="blue">Danh mục con</Tag>
         ) : (
           <Tag color="green">Danh mục cha</Tag>
@@ -449,7 +478,6 @@ const AdminCategories = () => {
 
       <div className={styles.tableCard}>
         <Table
-          key={treeData.length > 0 ? "has-data" : "empty-data"}
           className={styles.table}
           columns={columns}
           dataSource={treeData}
@@ -485,6 +513,17 @@ const AdminCategories = () => {
                 message: "Vui lòng nhập tên danh mục",
               },
               {
+                validator: (_, value) => {
+                  if (!value || !value.trim()) {
+                    return Promise.reject(
+                      new Error("Tên danh mục không được để trống"),
+                    );
+                  }
+
+                  return Promise.resolve();
+                },
+              },
+              {
                 max: 100,
                 message: "Tên danh mục không được vượt quá 100 ký tự",
               },
@@ -493,8 +532,22 @@ const AdminCategories = () => {
             <Input placeholder="Nhập tên danh mục sản phẩm" />
           </Form.Item>
 
+          {editingCategoryHasChildren && (
+            <Alert
+              type="warning"
+              showIcon
+              style={{ marginBottom: 16 }}
+              message="Danh mục này đang có danh mục con"
+              description="Bạn không thể chuyển danh mục này thành danh mục con của danh mục khác. Nếu muốn chuyển, hãy xử lý các danh mục con trước."
+            />
+          )}
+
           <Form.Item label="Danh mục cha" name="ParentID">
-            <Select placeholder="Không chọn nếu đây là danh mục cha" allowClear>
+            <Select
+              placeholder="Không chọn nếu đây là danh mục cha"
+              allowClear
+              disabled={editingCategoryHasChildren}
+            >
               {parentSelectOptions.map((item) => (
                 <Option key={item.MaDanhMuc} value={item.MaDanhMuc}>
                   {item.TenDanhMuc}

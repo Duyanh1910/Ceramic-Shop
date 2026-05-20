@@ -1,4 +1,6 @@
 import {
+  getAllCategoriesService,
+  getCategoryService,
   createCategoryService,
   deleteCategoryService,
   updateCategoryService,
