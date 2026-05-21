@@ -7,7 +7,6 @@ import {
   Navigate,
   useLocation,
 } from "react-router-dom";
-import ReactGA from "react-ga4";
 import { HelmetProvider } from "react-helmet-async";
 
 // --- CUSTOMER ---
@@ -50,8 +49,6 @@ import AdminRisks from "./Admin/AdminRisks.jsx";
 import AdminInventories from "./Admin/AdminInventories.jsx";
 import AdminReviews from "./Admin/AdminReviews.jsx";
 import AdminCategories from "./Admin/AdminCategory.jsx";
-
-ReactGA.initialize("G-909W1LHHLD");
 
 const AnalyticsTracker = () => {
   const location = useLocation();

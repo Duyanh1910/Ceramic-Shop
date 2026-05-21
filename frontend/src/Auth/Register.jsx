@@ -9,7 +9,7 @@ import {
   ArrowLeftOutlined, SafetyOutlined, ArrowRightOutlined,
   HomeFilled, ShopFilled
 } from '@ant-design/icons';
-import Chibi from './Chibi.jsx';
+import Chibi from '../Utility/Chibi.jsx';
 
 const { Text, Link } = Typography;
 const API_BASE = 'https://ceramic-shop-u8ak.onrender.com/api/v1';

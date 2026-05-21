@@ -22,7 +22,7 @@ import {
 } from '@ant-design/icons';
 import styles from './LandingPage.module.css';
 import { saveSession } from '../Utility/useAuth.js';
-import Footer from './Footer'; 
+import Footer from '../Utility/Footer'; 
 
 const bannerSlides = [
     {
