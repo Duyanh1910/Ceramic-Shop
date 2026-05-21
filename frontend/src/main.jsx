@@ -19,6 +19,7 @@ import VoucherWallet from "./Customer/VoucherWallet.jsx";
 import CustomerWarranties from "./Customer/CustomerWarranties.jsx";
 import SupportPage from "./Customer/Supportpage.jsx";
 import NewsDetail from "./Customer/NewsDetails.jsx";
+import CustomerReturns from "./Customer/CustomerReturns.jsx";
 
 // --- AUTH ---
 import Login from "./Auth/Login.jsx";
@@ -49,6 +50,7 @@ import AdminRisks from "./Admin/AdminRisks.jsx";
 import AdminInventories from "./Admin/AdminInventories.jsx";
 import AdminReviews from "./Admin/AdminReviews.jsx";
 import AdminCategories from "./Admin/AdminCategory.jsx";
+import AdminReturns from "./Admin/AdminReturns.jsx";
 
 const AnalyticsTracker = () => {
   const location = useLocation();
@@ -183,6 +185,14 @@ createRoot(document.getElementById("root")).render(
             }
           />
           <Route
+            path="/returns"
+            element={
+              <ProtectedRoute allowedRoles={["Customer"]}>
+                <CustomerReturns />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/admin"
             element={
               <ProtectedRoute allowedRoles={["Admin", "Staff"]}>
@@ -208,6 +218,7 @@ createRoot(document.getElementById("root")).render(
             />
             <Route path="warranties" element={<AdminWarranties />} />
             <Route path="risks" element={<AdminRisks />} />
+            <Route path="returns" element={<AdminReturns />} />
             <Route
               path="promotions"
               element={

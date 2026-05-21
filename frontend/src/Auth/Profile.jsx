@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Layout, Form, Input, Button, Avatar, message, Upload, Divider } from 'antd';
-import { UserOutlined, ArrowLeftOutlined, UploadOutlined, ProfileOutlined, ShoppingOutlined, LockOutlined, WalletOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
+import { UserOutlined, ArrowLeftOutlined, UploadOutlined, ProfileOutlined, ShoppingOutlined, LockOutlined, WalletOutlined, SafetyCertificateOutlined, SwapOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
@@ -10,6 +10,7 @@ import ChangePassword from './ChangePassword';
 import OrderTrackingMini from '../Utility/OrderTrackingMini';
 import VoucherWalletContent from '../Customer/VoucherWalletContent';
 import WarrantyContent from '../Customer/WarrantyContent';
+import CustomerReturns from '../Customer/CustomerReturns';
 
 const { Header, Content, Sider } = Layout;
 
@@ -180,6 +181,14 @@ function Profile() {
                   <SafetyCertificateOutlined /> Bảo hành của tôi
                 </li>
                 )}
+              {isCustomer && (
+            <li
+              className={activeTab === 'returns' ? styles.active : ''}
+              onClick={() => setActiveTab('returns')}
+            >
+              <SwapOutlined /> Đổi trả của tôi
+            </li>
+                )}
                 <li 
                   className={activeTab === 'orders' ? styles.active : ''} 
                   onClick={() => setActiveTab('orders')}
@@ -282,6 +291,9 @@ function Profile() {
                 <WarrantyContent compact />
               )}
 
+              {activeTab === 'returns' && (
+                <CustomerReturns compact />
+              )}
             </Content>
           </Layout>
         </div>

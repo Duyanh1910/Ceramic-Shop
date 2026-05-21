@@ -1,0 +1,26 @@
+.productBox {
+  padding: 12px 14px;
+  border: 1px solid #edf0f7;
+  border-radius: 10px;
+  background: #fafcff;
+  margin-bottom: 12px;
+}
+
+.muted {
+  color: #777;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.alert {
+  margin-bottom: 16px;
+}
+
+.form {
+  margin-top: 8px;
+}
+
+.footer {
+  width: 100%;
+  justify-content: flex-end;
+}

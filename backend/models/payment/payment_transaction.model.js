@@ -17,15 +17,27 @@ const PaymentTransactionModel = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    LoaiGiaoDich: {
+      type: DataTypes.STRING(30),
+      defaultValue: "THANH_TOAN",
+    },
+    MaGiaoDichGoc: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    MaDoiTra: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
     MaThamChieu: {
       type: DataTypes.STRING(100),
       allowNull: false,
-      unique: true, // Đảm bảo mã gửi lên VNPAY/MoMo là duy nhất
+      unique: true,
     },
     MaGiaoDichDoiTac: {
       type: DataTypes.STRING(100),
       allowNull: true,
-      unique: true, // Mã trả về từ Gateway
+      unique: true,
     },
     SoTien: {
       type: DataTypes.DECIMAL(15, 2),
@@ -34,7 +46,7 @@ const PaymentTransactionModel = sequelize.define(
     TrangThai: {
       type: DataTypes.STRING(20),
       allowNull: false,
-      defaultValue: "PENDING", // PENDING, SUCCESS, FAILED
+      defaultValue: "PENDING",
     },
     MaLoi: {
       type: DataTypes.STRING(50),
@@ -59,6 +71,12 @@ const PaymentTransactionModel = sequelize.define(
       },
       {
         fields: ["TrangThai"],
+      },
+      {
+        fields: ["LoaiGiaoDich"],
+      },
+      {
+        fields: ["MaDoiTra"],
       },
     ],
   },

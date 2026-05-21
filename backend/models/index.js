@@ -36,6 +36,8 @@ import NewsModel from "./news.model.js";
 import WarrantyHistoryModel from "./warranty_history.model.js";
 import WarrantyModel from "./warranty.model.js";
 import RiskModel from "./risk.model.js";
+import ReturnModel from "./return.model.js";
+import ReturnProcessModel from "./return_process.model.js";
 
 // --- QUAN HỆ TÀI KHOẢN & PHÂN QUYỀN ---
 RoleModel.hasMany(AccountModel, {
@@ -232,6 +234,43 @@ WarrantyModel.hasMany(WarrantyHistoryModel, {
 WarrantyHistoryModel.belongsTo(WarrantyModel, {
   foreignKey: "MaBaoHanh",
 });
+// --- QUAN HỆ ĐỔI TRẢ ---
+OrderDetailModel.hasMany(ReturnModel, {
+  foreignKey: "MaCTDH",
+});
+ReturnModel.belongsTo(OrderDetailModel, {
+  foreignKey: "MaCTDH",
+});
+
+VariantModel.hasMany(ReturnModel, {
+  foreignKey: "MaBienTheDoi",
+  as: "YeuCauDoiTraThayThe",
+});
+ReturnModel.belongsTo(VariantModel, {
+  foreignKey: "MaBienTheDoi",
+  as: "BienTheDoi",
+});
+
+StaffModel.hasMany(ReturnModel, {
+  foreignKey: "MaNhanVienXuLy",
+});
+ReturnModel.belongsTo(StaffModel, {
+  foreignKey: "MaNhanVienXuLy",
+});
+
+ReturnModel.hasMany(ReturnProcessModel, {
+  foreignKey: "MaDoiTra",
+});
+ReturnProcessModel.belongsTo(ReturnModel, {
+  foreignKey: "MaDoiTra",
+});
+
+ReturnModel.hasMany(PaymentTransactionModel, {
+  foreignKey: "MaDoiTra",
+});
+PaymentTransactionModel.belongsTo(ReturnModel, {
+  foreignKey: "MaDoiTra",
+});
 export {
   sequelize,
   AccountModel,
@@ -264,4 +303,6 @@ export {
   RiskModel,
   WarrantyHistoryModel,
   WarrantyModel,
+  ReturnModel,
+  ReturnProcessModel,
 };
