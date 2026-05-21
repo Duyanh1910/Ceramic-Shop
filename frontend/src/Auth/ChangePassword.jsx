@@ -3,7 +3,7 @@ import { Form, Input, Button, message, Steps, Spin, Divider } from 'antd';
 import { LockOutlined, CheckCircleFilled } from '@ant-design/icons';
 import axios from 'axios';
 import styles from './ChangePassword.module.css';
-import SetPasswordModal from './SetPasswordModal.jsx';
+import SetPasswordModal from './Utility/SetPasswordModal.jsx';
 
 const API_BASE = 'https://ceramic-shop-u8ak.onrender.com/api/v1';
 

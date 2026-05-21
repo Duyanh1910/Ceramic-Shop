@@ -6,7 +6,7 @@ import { SearchOutlined,ShoppingOutlined, ShoppingCartOutlined, UserOutlined, Lo
 import { Helmet } from 'react-helmet-async';
 import styles from './productDetail.module.css';
 import { clearSession } from '../Utility/useAuth.js';
-import Breadcrumb from './Breadcrumb.jsx';
+import Breadcrumb from './Utility/Breadcrumb.jsx';
 import ProductReview from './ProductReview.jsx';
 
 const { Header, Content } = Layout;

@@ -5,8 +5,8 @@ import { LogoutOutlined, SearchOutlined, ShoppingCartOutlined, DeleteOutlined, R
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import styles from './Home.module.css';
-import { useAutoLogout, clearSession } from '../useAuth.js';
-import Footer from './Footer'; 
+import { useAutoLogout, clearSession } from '../Utility/useAuth.js';
+import Footer from './Utility/Footer'; 
 
 const { Header, Sider, Content } = Layout;
 

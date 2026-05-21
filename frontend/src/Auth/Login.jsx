@@ -6,7 +6,7 @@ import styles from './Login.module.css';
 import { UserOutlined, LockOutlined, HomeFilled, ShopFilled, ArrowLeftOutlined, ArrowRightOutlined } from '@ant-design/icons';
 import { Helmet } from 'react-helmet-async';
 import { saveSession } from '../Utility/useAuth.js';
-import Chibi from './Chibi.jsx'; 
+import Chibi from './Utility/Chibi.jsx'; 
 
 const { Text, Link } = Typography;
 

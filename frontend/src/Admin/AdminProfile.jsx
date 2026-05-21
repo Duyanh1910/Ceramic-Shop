@@ -6,7 +6,7 @@ import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
 import styles from './Profile.module.css';
 
-import ChangePassword from '../ChangePassword'; 
+import ChangePassword from '../Utility/ChangePassword'; 
 
 const { Header, Content, Sider } = Layout;
 

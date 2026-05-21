@@ -6,8 +6,8 @@ import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
 import styles from './Profile.module.css';
 
-import ChangePassword from './ChangePassword'; 
-import OrderTrackingMini from './OrderTrackingMini';
+import ChangePassword from './Utility/ChangePassword'; 
+import OrderTrackingMini from './Utility/OrderTrackingMini';
 import VoucherWalletContent from '../Customer/VoucherWalletContent';
 import WarrantyContent from '../Customer/WarrantyContent';
 
