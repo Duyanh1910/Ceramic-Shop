@@ -2,7 +2,7 @@ import { Button, Layout } from 'antd';
 import { ArrowLeftOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
-import WarrantyContent from './WarrantyContent';
+import WarrantyContent from '../WarrantyContent';
 import styles from './CustomerWarranties.module.css';
 
 const { Header, Content } = Layout;

@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { message, Spin } from 'antd';
 import axios from 'axios';
-import { saveSession } from './useAuth.js';
+import { saveSession } from '../useAuth.js';
 import { Helmet } from 'react-helmet-async';
 
 const BACKEND_URL = 'https://ceramic-shop-u8ak.onrender.com';

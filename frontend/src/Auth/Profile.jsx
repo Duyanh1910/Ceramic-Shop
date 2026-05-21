@@ -8,8 +8,8 @@ import styles from './Profile.module.css';
 
 import ChangePassword from './ChangePassword'; 
 import OrderTrackingMini from './OrderTrackingMini';
-import VoucherWalletContent from './VoucherWalletContent';
-import WarrantyContent from './WarrantyContent';
+import VoucherWalletContent from '../Customer/VoucherWalletContent';
+import WarrantyContent from '../Customer/WarrantyContent';
 
 const { Header, Content, Sider } = Layout;
 
