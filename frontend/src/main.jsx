@@ -10,39 +10,46 @@ import {
 import ReactGA from "react-ga4";
 import { HelmetProvider } from "react-helmet-async";
 
-import LandingPage from "./LandingPage.jsx";
-import Home from "./Home.jsx";
-import Login from "./Login.jsx";
-import Register from "./Register.jsx";
-import ProductDetail from "./productDetail.jsx";
-import Profile from "./Profile.jsx";
-import Cart from "./Cart.jsx";
-import ChatBot from "./ChatBot";
-import ContactIcons from "./ContactIcons.jsx";
-import ForgotPassword from "./ForgotPassword.jsx";
-import LoginSuccess from "./LoginSuccess.jsx";
-import AdminLayout from "./AdminLayout.jsx";
-import AdminDashboard from "./AdminDashboard.jsx";
-import AdminProducts from "./AdminProducts.jsx";
-import AdminCustomers from "./AdminCustomers.jsx";
-import AdminStaffs from "./AdminStaffs.jsx";
-import PaymentSuccess from "./PaymentSuccess.jsx";
-import OrderTracking from "./OrderTracking.jsx";
-import SupportPage from "./Supportpage.jsx";
-import NewsDetail from "./NewsDetails.jsx";
-import AdminReports from "./AdminReports.jsx";
-import Checkout from "./Checkout.jsx";
-import PaymentResult from "./PaymentResult.jsx";
-import AdminProfile from "./AdminProfile.jsx";
-import AdminPromotions from "./AdminPromotions.jsx";
-import AdminNews from "./AdminNews.jsx";
-import AdminWarranties from "./AdminWarranties.jsx";
-import AdminRisks from "./AdminRisks.jsx";
-import AdminInventories from "./AdminInventories.jsx";
-import AdminReviews from "./AdminReviews.jsx";
-import VoucherWallet from "./VoucherWallet.jsx";
-import CustomerWarranties from "./CustomerWarranties.jsx";
-import AdminCategories from "./AdminCategory.jsx";
+// --- CUSTOMER ---
+import LandingPage from "./Customer/LandingPage.jsx";
+import Home from "./Customer/Home.jsx";
+import ProductDetail from "./Customer/productDetail.jsx";
+import Cart from "./Customer/Cart.jsx";
+import Checkout from "./Customer/Checkout.jsx";
+import VoucherWallet from "./Customer/VoucherWallet.jsx";
+import CustomerWarranties from "./Customer/CustomerWarranties.jsx";
+import SupportPage from "./Customer/Supportpage.jsx";
+import NewsDetail from "./Customer/NewsDetails.jsx";
+
+// --- AUTH ---
+import Login from "./Auth/Login.jsx";
+import Register from "./Auth/Register.jsx";
+import Profile from "./Auth/Profile.jsx";
+import ForgotPassword from "./Auth/ForgotPassword.jsx";
+import LoginSuccess from "./Auth/LoginSuccess.jsx";
+
+// --- UTILITY ---
+import ChatBot from "./Utility/ChatBot.jsx";
+import ContactIcons from "./Utility/ContactIcons.jsx";
+import PaymentSuccess from "./Utility/PaymentSuccess.jsx";
+import PaymentResult from "./Utility/PaymentResult.jsx";
+import OrderTracking from "./Utility/OrderTracking.jsx";
+
+// --- ADMIN ---
+import AdminLayout from "./Admin/AdminLayout.jsx";
+import AdminDashboard from "./Admin/AdminDashboard.jsx";
+import AdminProducts from "./Admin/AdminProducts.jsx";
+import AdminCustomers from "./Admin/AdminCustomers.jsx";
+import AdminStaffs from "./Admin/AdminStaffs.jsx";
+import AdminReports from "./Admin/AdminReports.jsx";
+import AdminProfile from "./Admin/AdminProfile.jsx";
+import AdminPromotions from "./Admin/AdminPromotions.jsx";
+import AdminNews from "./Admin/AdminNews.jsx";
+import AdminWarranties from "./Admin/AdminWarranties.jsx";
+import AdminRisks from "./Admin/AdminRisks.jsx";
+import AdminInventories from "./Admin/AdminInventories.jsx";
+import AdminReviews from "./Admin/AdminReviews.jsx";
+import AdminCategories from "./Admin/AdminCategory.jsx";
 
 ReactGA.initialize("G-909W1LHHLD");
 
