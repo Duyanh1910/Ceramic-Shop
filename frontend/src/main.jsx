@@ -52,19 +52,6 @@ import AdminReviews from "./Admin/AdminReviews.jsx";
 import AdminCategories from "./Admin/AdminCategory.jsx";
 import AdminReturns from "./Admin/AdminReturns.jsx";
 
-const AnalyticsTracker = () => {
-  const location = useLocation();
-
-  useEffect(() => {
-    ReactGA.send({
-      hitType: "pageview",
-      page: location.pathname + location.search,
-    });
-  }, [location]);
-
-  return null;
-};
-
 const PublicRoute = ({ children }) => {
   const isCustomerActive =
     localStorage.getItem("customer_session_active") === "true";
@@ -122,7 +109,6 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <HelmetProvider>
       <BrowserRouter>
-        <AnalyticsTracker />
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
