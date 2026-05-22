@@ -6,6 +6,7 @@ import {
   OrderModel,
   VariantModel,
   ProductModel,
+  VariantImageModel,
 } from "../models/index.js";
 import { adminGetOrderDetailService } from "../services/order.services.js";
 
@@ -14,6 +15,8 @@ export const getAllInventoryHistoryService = async (
   limit = 10,
   search = "",
   order = "DESC",
+  startDate,
+  endDate,
 ) => {
   const currentPage = Math.max(Number(page) || 1, 1);
   const currentLimit = Math.max(Number(limit) || 10, 1);
@@ -21,9 +24,26 @@ export const getAllInventoryHistoryService = async (
 
   const sortOrder = String(order).toUpperCase() === "ASC" ? "ASC" : "DESC";
   const keyword = search.trim();
+  const whereCondition = {};
+
+  if (startDate || endDate) {
+    whereCondition.NgayTao = {};
+
+    if (startDate) {
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      whereCondition.NgayTao[Op.gte] = start;
+    }
+
+    if (endDate) {
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      whereCondition.NgayTao[Op.lte] = end;
+    }
+  }
 
   const { rows, count } = await InventoryHistoryModel.findAndCountAll({
-    LoaiThamChieu: { [Op.ne]: "Phiếu Nhập" },
+    where: whereCondition,
     include: [
       {
         model: OrderModel,
@@ -36,6 +56,21 @@ export const getAllInventoryHistoryService = async (
             }
           : undefined,
         required: !!keyword,
+      },
+      {
+        model: VariantModel,
+        attributes: ["MaBienThe", "TenBienThe"],
+        required: false,
+        include: [
+          {
+            model: ProductModel,
+            attributes: ["MaSanPham", "TenSanPham"],
+            required: false,
+          },
+          {
+            model: VariantImageModel,
+          },
+        ],
       },
     ],
     order: [["MaLichSu", sortOrder]],
@@ -59,12 +94,26 @@ export const showInventoryHistoryService = async (idInventory) => {
   const history = await InventoryHistoryModel.findOne({
     where: {
       MaLichSu: idInventory,
-      LoaiThamChieu: { [Op.ne]: "Phiếu Nhập" },
     },
     include: [
       {
         model: OrderModel,
         as: "DonHang",
+      },
+      {
+        model: VariantModel,
+        attributes: ["MaBienThe", "TenBienThe"],
+        required: false,
+        include: [
+          {
+            model: ProductModel,
+            attributes: ["MaSanPham", "TenSanPham"],
+            required: false,
+          },
+          {
+            model: VariantImageModel,
+          },
+        ],
       },
     ],
   });
@@ -128,11 +177,7 @@ export const exportInventoryHistoryXlsxService = async (
   const sortOrder = String(order).toUpperCase() === "ASC" ? "ASC" : "DESC";
   const keyword = String(search || "").trim();
 
-  const whereCondition = {
-    LoaiThamChieu: {
-      [Op.ne]: "Phiếu Nhập",
-    },
-  };
+  const whereCondition = {};
 
   if (startDate || endDate) {
     whereCondition.NgayTao = {};
