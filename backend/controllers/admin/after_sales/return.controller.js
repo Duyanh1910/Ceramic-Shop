@@ -1,6 +1,8 @@
 import {
+  confirmReturnRefundAdminService,
   getAllReturnsAdminService,
   getReturnByIdAdminService,
+  getReturnVariantOptionsAdminService,
   processReturnAdminService,
   updateReturnStatusAdminService,
 } from "../../../services/return.service.js";
@@ -64,6 +66,22 @@ export const getAllReturns = async (req, res, next) => {
   }
 };
 
+export const getReturnVariantOptions = async (req, res, next) => {
+  try {
+    const { search = "" } = req.query;
+    const result = await getReturnVariantOptionsAdminService(search);
+
+    res.status(200).json({
+      success: true,
+      message: "Lấy danh sách biến thể thành công!",
+      result,
+    });
+  } catch (err) {
+    console.error(err);
+    next(err);
+  }
+};
+
 export const getReturnById = async (req, res, next) => {
   try {
     const MaDoiTra = parseIdParam(req.params.id);
@@ -115,6 +133,28 @@ export const processReturn = async (req, res, next) => {
     res.status(200).json({
       success: true,
       message: "Xử lý yêu cầu đổi trả thành công!",
+      result,
+    });
+  } catch (err) {
+    console.error(err);
+    next(err);
+  }
+};
+
+export const confirmReturnRefund = async (req, res, next) => {
+  try {
+    const MaDoiTra = parseIdParam(req.params.id);
+    const { GhiChu, NoiDungXuLy, MaNhanVienXuLy } = req.body;
+
+    const result = await confirmReturnRefundAdminService(
+      MaDoiTra,
+      NoiDungXuLy || GhiChu || null,
+      normalizeNullableStaffId(MaNhanVienXuLy),
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Xác nhận hoàn tiền thành công!",
       result,
     });
   } catch (err) {

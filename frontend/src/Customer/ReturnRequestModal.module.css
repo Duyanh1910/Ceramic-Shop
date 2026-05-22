@@ -24,3 +24,17 @@
   width: 100%;
   justify-content: flex-end;
 }
+
+.uploadBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.previewImage {
+  margin-top: 8px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid #edf0f7;
+}

@@ -32,6 +32,7 @@ import dayjs from "dayjs";
 import styles from "./AdminReturns.module.css";
 
 const { Title, Text } = Typography;
+
 const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1";
 const ALL_STATUS = "all";
 const ALL_TYPE = "all";
@@ -148,12 +149,29 @@ const renderStatus = (status) => {
   return <Tag>{status}</Tag>;
 };
 
+const renderPaymentStatus = (status) => {
+  if (status === "PENDING") {
+    return <Tag color="gold">Chờ xác nhận</Tag>;
+  }
+
+  if (status === "SUCCESS") {
+    return <Tag color="green">Thành công</Tag>;
+  }
+
+  if (status === "FAILED") {
+    return <Tag color="red">Thất bại</Tag>;
+  }
+
+  return <Tag>{status || "Không rõ"}</Tag>;
+};
+
 const getDetail = (item) => item?.ChiTietDonHang || {};
 const getOrder = (item) => getDetail(item)?.DonHang || {};
 const getVariant = (item) => getDetail(item)?.BienTheSanPham || {};
 const getProduct = (item) => getVariant(item)?.SanPham || {};
+
 const getHistories = (item) =>
-  item?.XuLyDoiTras || item?.XuLyDoiTras || item?.ReturnProcessModels || [];
+  item?.XuLyDoiTras || item?.ReturnProcessModels || [];
 
 const getTransactions = (item) =>
   item?.GiaoDichThanhToans ||
@@ -170,6 +188,10 @@ export default function AdminReturns() {
   const [detailLoading, setDetailLoading] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const [confirmingRefund, setConfirmingRefund] = useState(false);
+
+  const [variantOptions, setVariantOptions] = useState([]);
+  const [variantLoading, setVariantLoading] = useState(false);
 
   const [page, setPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
@@ -180,6 +202,7 @@ export default function AdminReturns() {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
 
   const selectedProcessType = Form.useWatch("HinhThucXuLy", form);
+  const selectedQuantity = Form.useWatch("SoLuongDoiTra", form);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -195,6 +218,16 @@ export default function AdminReturns() {
   useEffect(() => {
     fetchData();
   }, [page, search, status, type]);
+
+  useEffect(() => {
+    if (!detail) return;
+    if (selectedProcessType !== "HOAN_TIEN_TOAN_PHAN") return;
+
+    const unitPrice = Number(detail?.ChiTietDonHang?.GiaBan || 0);
+    const quantity = Number(selectedQuantity || detail.SoLuongDoiTra || 1);
+
+    form.setFieldValue("SoTienHoan", unitPrice * quantity);
+  }, [selectedProcessType, selectedQuantity, detail, form]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -242,10 +275,40 @@ export default function AdminReturns() {
     }
   };
 
+  const fetchVariantOptions = async (keyword = "") => {
+    setVariantLoading(true);
+
+    try {
+      const res = await axios.get(
+        `${API_BASE}/admin/after_sales/returns/variants`,
+        {
+          params: {
+            search: keyword,
+          },
+          ...authConfig(),
+        },
+      );
+
+      const options = (res.data?.result || []).map((item) => ({
+        value: item.MaBienThe,
+        label: item.label,
+        raw: item,
+      }));
+
+      setVariantOptions(options);
+    } catch (err) {
+      message.error(
+        err.response?.data?.message || "Không thể tải danh sách biến thể!",
+      );
+    } finally {
+      setVariantLoading(false);
+    }
+  };
+
   const openDetail = async (record) => {
     setDetail(null);
     setIsDetailOpen(true);
-    await fetchDetail(record.MaDoiTra);
+    await Promise.all([fetchDetail(record.MaDoiTra), fetchVariantOptions()]);
   };
 
   const closeDetail = () => {
@@ -294,7 +357,16 @@ export default function AdminReturns() {
         authConfig(),
       );
 
-      message.success(res.data?.message || "Xử lý đổi trả thành công!");
+      const isRefundProcess =
+        values.HinhThucXuLy === "HOAN_TIEN_MOT_PHAN" ||
+        values.HinhThucXuLy === "HOAN_TIEN_TOAN_PHAN";
+
+      message.success(
+        isRefundProcess
+          ? "Đã tạo giao dịch hoàn tiền, chờ xác nhận đã thanh toán cho khách!"
+          : res.data?.message || "Xử lý đổi trả thành công!",
+      );
+
       setDetail(res.data?.result || null);
       form.resetFields();
       await fetchData();
@@ -304,6 +376,32 @@ export default function AdminReturns() {
       );
     } finally {
       setProcessing(false);
+    }
+  };
+
+  const confirmRefund = async () => {
+    if (!detail?.MaDoiTra) return;
+
+    setConfirmingRefund(true);
+
+    try {
+      const res = await axios.patch(
+        `${API_BASE}/admin/after_sales/returns/${detail.MaDoiTra}/confirm-refund`,
+        {
+          NoiDungXuLy: "Admin xác nhận đã hoàn tiền cho khách",
+        },
+        authConfig(),
+      );
+
+      message.success(res.data?.message || "Đã xác nhận hoàn tiền!");
+      setDetail(res.data?.result || null);
+      await fetchData();
+    } catch (err) {
+      message.error(
+        err.response?.data?.message || "Không thể xác nhận hoàn tiền!",
+      );
+    } finally {
+      setConfirmingRefund(false);
     }
   };
 
@@ -420,6 +518,16 @@ export default function AdminReturns() {
   const detailOrderItem = detail ? getDetail(detail) : {};
   const histories = detail ? getHistories(detail) : [];
   const transactions = detail ? getTransactions(detail) : [];
+
+  const pendingRefund = transactions.find(
+    (transaction) =>
+      transaction.LoaiGiaoDich === "HOAN_TIEN" &&
+      transaction.TrangThai === "PENDING",
+  );
+
+  const isRefundProcess =
+    selectedProcessType === "HOAN_TIEN_MOT_PHAN" ||
+    selectedProcessType === "HOAN_TIEN_TOAN_PHAN";
 
   return (
     <Card
@@ -695,131 +803,166 @@ export default function AdminReturns() {
                     </Button>
                   </>
                 )}
+
+                {pendingRefund && (
+                  <Button
+                    type="primary"
+                    loading={confirmingRefund}
+                    onClick={confirmRefund}
+                  >
+                    Xác nhận đã hoàn tiền
+                  </Button>
+                )}
               </Space>
             </div>
 
-            {Number(detail.TrangThai) === RETURN_STATUS.PROCESSING && (
-              <Card
-                title="Hoàn tất xử lý"
-                size="small"
-                className={styles.processCard}
-              >
-                <Form form={form} layout="vertical">
-                  <div className={styles.formGrid}>
-                    <Form.Item
-                      name="HinhThucXuLy"
-                      label="Hình thức xử lý"
-                      rules={[
-                        {
-                          required: true,
-                          message: "Vui lòng chọn hình thức xử lý!",
-                        },
-                      ]}
-                    >
-                      <Select options={PROCESS_OPTIONS} />
-                    </Form.Item>
+            {pendingRefund && (
+              <Alert
+                type="warning"
+                showIcon
+                message="Yêu cầu này đã tạo giao dịch hoàn tiền và đang chờ admin xác nhận đã thanh toán cho khách."
+              />
+            )}
 
-                    <Form.Item
-                      name="SoLuongDoiTra"
-                      label="Số lượng xử lý"
-                      initialValue={detail.SoLuongDoiTra}
-                      rules={[
-                        {
-                          required: true,
-                          message: "Vui lòng nhập số lượng xử lý!",
-                        },
-                      ]}
-                    >
-                      <InputNumber
-                        min={1}
-                        max={Number(detail.SoLuongDoiTra)}
-                        style={{ width: "100%" }}
-                      />
-                    </Form.Item>
-
-                    {(selectedProcessType === "DOI_SAN_PHAM" ||
-                      selectedProcessType === "GUI_BO_SUNG") && (
+            {Number(detail.TrangThai) === RETURN_STATUS.PROCESSING &&
+              !pendingRefund && (
+                <Card
+                  title={isRefundProcess ? "Tạo giao dịch hoàn tiền" : "Hoàn tất xử lý"}
+                  size="small"
+                  className={styles.processCard}
+                >
+                  <Form form={form} layout="vertical">
+                    <div className={styles.formGrid}>
                       <Form.Item
-                        name="MaBienTheDoi"
-                        label="Mã biến thể gửi cho khách"
+                        name="HinhThucXuLy"
+                        label="Hình thức xử lý"
                         rules={[
                           {
                             required: true,
-                            message: "Vui lòng nhập mã biến thể!",
+                            message: "Vui lòng chọn hình thức xử lý!",
                           },
                         ]}
-                        tooltip="Nhập MaBienThe của sản phẩm/biến thể sẽ gửi đổi hoặc gửi bổ sung cho khách."
                       >
-                        <InputNumber min={1} style={{ width: "100%" }} />
+                        <Select options={PROCESS_OPTIONS} />
                       </Form.Item>
-                    )}
 
-                    {(selectedProcessType === "HOAN_TIEN_MOT_PHAN" ||
-                      selectedProcessType === "HOAN_TIEN_TOAN_PHAN") && (
                       <Form.Item
-                        name="SoTienHoan"
-                        label="Số tiền hoàn"
+                        name="SoLuongDoiTra"
+                        label="Số lượng xử lý"
+                        initialValue={detail.SoLuongDoiTra}
                         rules={[
                           {
                             required: true,
-                            message: "Vui lòng nhập số tiền hoàn!",
+                            message: "Vui lòng nhập số lượng xử lý!",
                           },
                         ]}
                       >
                         <InputNumber
                           min={1}
-                          max={
-                            Number(detailOrderItem?.GiaBan || 0) *
-                            Number(detail.SoLuongDoiTra || 1)
-                          }
-                          formatter={(value) =>
-                            `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                          }
-                          parser={(value) => value.replace(/\$\s?|(,*)/g, "")}
+                          max={Number(detail.SoLuongDoiTra)}
                           style={{ width: "100%" }}
                         />
                       </Form.Item>
-                    )}
+
+                      {(selectedProcessType === "DOI_SAN_PHAM" ||
+                        selectedProcessType === "GUI_BO_SUNG") && (
+                        <Form.Item
+                          name="MaBienTheDoi"
+                          label="Biến thể gửi cho khách"
+                          rules={[
+                            {
+                              required: true,
+                              message: "Vui lòng chọn biến thể gửi cho khách!",
+                            },
+                          ]}
+                          tooltip="Chọn sản phẩm/biến thể sẽ gửi đổi hoặc gửi bổ sung cho khách."
+                        >
+                          <Select
+                            showSearch
+                            allowClear
+                            filterOption={false}
+                            loading={variantLoading}
+                            options={variantOptions}
+                            placeholder="Tìm theo tên sản phẩm, tên biến thể hoặc mã biến thể..."
+                            onSearch={fetchVariantOptions}
+                            onFocus={() => fetchVariantOptions()}
+                          />
+                        </Form.Item>
+                      )}
+
+                      {(selectedProcessType === "HOAN_TIEN_MOT_PHAN" ||
+                        selectedProcessType === "HOAN_TIEN_TOAN_PHAN") && (
+                        <Form.Item
+                          name="SoTienHoan"
+                          label="Số tiền hoàn"
+                          rules={[
+                            {
+                              required: true,
+                              message: "Vui lòng nhập số tiền hoàn!",
+                            },
+                          ]}
+                        >
+                          <InputNumber
+                            min={1}
+                            max={
+                              Number(detailOrderItem?.GiaBan || 0) *
+                              Number(selectedQuantity || detail.SoLuongDoiTra || 1)
+                            }
+                            disabled={
+                              selectedProcessType === "HOAN_TIEN_TOAN_PHAN"
+                            }
+                            formatter={(value) =>
+                              `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                            }
+                            parser={(value) =>
+                              String(value || "").replace(/\$\s?|(,*)/g, "")
+                            }
+                            style={{ width: "100%" }}
+                          />
+                        </Form.Item>
+                      )}
+
+                      <Form.Item
+                        name="CoNhapLaiKho"
+                        label="Nhập lại hàng cũ vào kho"
+                        valuePropName="checked"
+                        tooltip="Chỉ bật nếu hàng khách trả còn đủ điều kiện nhập lại kho."
+                      >
+                        <Switch />
+                      </Form.Item>
+                    </div>
 
                     <Form.Item
-                      name="CoNhapLaiKho"
-                      label="Nhập lại hàng cũ vào kho"
-                      valuePropName="checked"
-                      tooltip="Chỉ bật nếu hàng khách trả còn đủ điều kiện nhập lại kho."
+                      name="NoiDungXuLy"
+                      label="Ghi chú xử lý"
+                      rules={[
+                        {
+                          required: true,
+                          message: "Vui lòng nhập nội dung xử lý!",
+                        },
+                      ]}
                     >
-                      <Switch />
+                      <Input.TextArea
+                        rows={3}
+                        placeholder="Mô tả kết quả kiểm tra, cách xử lý..."
+                      />
                     </Form.Item>
-                  </div>
 
-                  <Form.Item
-                    name="NoiDungXuLy"
-                    label="Ghi chú xử lý"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Vui lòng nhập nội dung xử lý!",
-                      },
-                    ]}
-                  >
-                    <Input.TextArea
-                      rows={3}
-                      placeholder="Mô tả kết quả kiểm tra, cách xử lý..."
-                    />
-                  </Form.Item>
-
-                  <Tooltip title="Khi hoàn tất, hệ thống sẽ tự ghi lịch sử đổi trả, nhập/xuất kho, hoàn tiền và tạo rủi ro nếu cần.">
-                    <Button
-                      type="primary"
-                      icon={<CheckCircleOutlined />}
-                      loading={processing}
-                      onClick={submitProcess}
-                    >
-                      Hoàn tất xử lý
-                    </Button>
-                  </Tooltip>
-                </Form>
-              </Card>
-            )}
+                    <Tooltip title="Nếu là hoàn tiền, hệ thống chỉ tạo giao dịch chờ xác nhận. Sau khi admin thanh toán thực tế cho khách, bấm xác nhận đã hoàn tiền.">
+                      <Button
+                        type="primary"
+                        icon={<CheckCircleOutlined />}
+                        loading={processing}
+                        onClick={submitProcess}
+                      >
+                        {isRefundProcess
+                          ? "Tạo giao dịch hoàn tiền"
+                          : "Hoàn tất xử lý"}
+                      </Button>
+                    </Tooltip>
+                  </Form>
+                </Card>
+              )}
 
             <Card
               title="Lịch sử xử lý"
@@ -869,7 +1012,7 @@ export default function AdminReturns() {
                         </Text>
 
                         <div className={styles.muted}>
-                          Trạng thái: {transaction.TrangThai || "Không rõ"}
+                          Trạng thái: {renderPaymentStatus(transaction.TrangThai)}
                         </div>
 
                         <div className={styles.muted}>
