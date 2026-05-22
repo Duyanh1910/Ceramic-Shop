@@ -403,8 +403,18 @@
   table-layout: fixed;
 }
 
-.table :global(.ant-table-container) {
-  overflow-x: auto;
+.table :global(.ant-table-container),
+.table :global(.ant-table-content) {
+  overflow-x: hidden !important;
+}
+
+.table :global(.ant-table) {
+  width: 100% !important;
+  table-layout: fixed;
+}
+
+.table :global(.ant-table-cell) {
+  overflow: hidden;
 }
 
 .table :global(.ant-table-thead > tr > th) {

@@ -781,7 +781,6 @@ export default function AdminPromotions() {
           rowKey="MaKhuyenMai"
           loading={loading}
           tableLayout="fixed"
-          scroll={{ x: 980 }}
           pagination={{
             pageSize: 10,
             showTotal: (total) => `${total} khuyến mãi`,
