@@ -36,7 +36,7 @@ export const getCartService = async (id) => {
               include: [
                 {
                   model: ProductModel,
-                  attributes: ["TenSanPham", "Thumbnail"],
+                  attributes: ["TenSanPham", "Thumbnail", "MaDanhMuc"],
                 },
                 {
                   model: VariantImageModel,

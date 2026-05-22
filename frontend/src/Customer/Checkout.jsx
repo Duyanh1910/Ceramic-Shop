@@ -63,7 +63,6 @@ export default function Checkout() {
   const [appliedShippingVoucher, setAppliedShippingVoucher] = useState(
       applyVoucher && Number(applyVoucher.LoaiVoucher) === 2 ? applyVoucher : null
   );
-  const activeVoucherIds = [appliedProductVoucher?.MaKhuyenMai, appliedShippingVoucher?.MaKhuyenMai].filter(Boolean);
   const [voucherLoading, setVoucherLoading] = useState(false);
   const [myVouchers, setMyVouchers] = useState([]);
   const [orderId, setOrderId] = useState(null);
@@ -87,8 +86,68 @@ export default function Checkout() {
     return sum + price * qty;
   }, 0);
 
+  const getItemCategoryId = (item) => (
+    Number(
+      item?.categoryId ||
+      item?.MaDanhMuc ||
+      item?.SanPham?.MaDanhMuc ||
+      item?.DanhMuc?.MaDanhMuc ||
+      item?.DanhMucSanPham?.MaDanhMuc ||
+      0
+    ) || null
+  );
+
+  const getPromoCategoryId = (promo) => (
+    Number(
+      promo?.MaDanhMuc ||
+      promo?.DanhMuc?.MaDanhMuc ||
+      promo?.DanhMucSanPham?.MaDanhMuc ||
+      promo?.category?.MaDanhMuc ||
+      0
+    ) || null
+  );
+
+  const orderCategoryIds = new Set(orderItems.map(getItemCategoryId).filter(Boolean));
+
+  const getVoucherEligibility = (promo) => {
+    const minOrderValue = Number(promo?.GiaTriToiThieu || 0);
+    const promoCategoryId = getPromoCategoryId(promo);
+    const meetsMinOrder = !minOrderValue || subtotal >= minOrderValue;
+    const matchesCategory = !promoCategoryId || orderCategoryIds.has(promoCategoryId);
+
+    if (!matchesCategory) {
+      return {
+        eligible: false,
+        reason: 'Không có sản phẩm thuộc danh mục áp dụng',
+      };
+    }
+
+    if (!meetsMinOrder) {
+      return {
+        eligible: false,
+        reason: `Đơn tối thiểu ${fmt(minOrderValue)}`,
+      };
+    }
+
+    return {
+      eligible: true,
+      reason: 'Đủ điều kiện',
+    };
+  };
+
+  const productVoucherEligible = appliedProductVoucher
+    ? getVoucherEligibility(appliedProductVoucher).eligible
+    : false;
+  const shippingVoucherEligible = appliedShippingVoucher
+    ? getVoucherEligibility(appliedShippingVoucher).eligible
+    : false;
+  const activeVoucherIds = [
+    productVoucherEligible ? appliedProductVoucher?.MaKhuyenMai : null,
+    shippingVoucherEligible ? appliedShippingVoucher?.MaKhuyenMai : null,
+  ].filter(Boolean);
+
   let productDiscount = 0;
-  if(appliedProductVoucher && subtotal >= (appliedProductVoucher.GiaTriToiThieu || 0)){
+  if(appliedProductVoucher && productVoucherEligible){
     if(Number(appliedProductVoucher.MaLoaiKM) === 1){
       const calculateDiscount = (subtotal * Number(appliedProductVoucher.GiaTri || 0))/100;
       productDiscount = appliedProductVoucher.GiamToiDa ? Math.min(calculateDiscount, Number(appliedProductVoucher.GiamToiDa)) : calculateDiscount;
@@ -100,7 +159,7 @@ export default function Checkout() {
   productDiscount = Math.min(productDiscount, subtotal);
 
   let shippingDiscount = 0;
-  if(appliedShippingVoucher && subtotal >= (appliedShippingVoucher.GiaTriToiThieu ||0 )){
+  if(appliedShippingVoucher && shippingVoucherEligible){
     if (Number(appliedShippingVoucher.MaLoaiKM) === 1) {
       const calculateDiscount = (shippingFee * Number(appliedShippingVoucher.GiaTri || 0)) / 100;
       shippingDiscount = appliedShippingVoucher.GiamToiDa ? Math.min(calculateDiscount, Number(appliedShippingVoucher.GiamToiDa)) : calculateDiscount;
@@ -114,6 +173,15 @@ export default function Checkout() {
   const total = Math.max(0, subtotal - productDiscount + shippingFee - shippingDiscount);
 
   const selectedPayment = ACTIVE_PAYMENT_METHODS.find((m) => m.id === paymentMethod);
+
+  useEffect(() => {
+    if (appliedProductVoucher && !productVoucherEligible) {
+      setAppliedProductVoucher(null);
+    }
+    if (appliedShippingVoucher && !shippingVoucherEligible) {
+      setAppliedShippingVoucher(null);
+    }
+  }, [appliedProductVoucher, appliedShippingVoucher, productVoucherEligible, shippingVoucherEligible]);
 
   useEffect(() => {
     if (cartItems.length === 0) {
@@ -204,8 +272,9 @@ export default function Checkout() {
   };
 
   const applySpecificVoucher = (promo) => {
-    if(promo.GiaTriToiThieu && subtotal < Number(promo.GiaTriToiThieu)){
-      message.warning(`Đơn tối thiểu ${fmt(promo.GiaTriToiThieu)} để dùng mã này`);
+    const { eligible, reason } = getVoucherEligibility(promo);
+    if(!eligible){
+      message.warning(reason);
       return false;
     }
     if(Number(promo.LoaiVoucher) === 1){
@@ -557,7 +626,7 @@ export default function Checkout() {
                                   .slice(0, 5)
                                   .map((v, i) => {
                                     const promo = v.KhuyenMai || v;
-                                    const eligible = !promo.GiaTriToiThieu || subtotal >= Number(promo.GiaTriToiThieu);
+                                    const { eligible, reason } = getVoucherEligibility(promo);
                                     return (
                                       <div key={`discount-${i}`}
                                         className={`${styles.voucherCard} ${!eligible ? styles.voucherDisabled : ''}`}
@@ -568,11 +637,9 @@ export default function Checkout() {
                                           <div className={styles.voucherCardValue}>
                                             {getVoucherValueText(promo)}
                                           </div>
-                                          {promo.GiaTriToiThieu && (
-                                            <div className={styles.voucherCardMin}>
-                                              {eligible ? '✓ Đủ điều kiện' : `Đơn tối thiểu ${fmt(promo.GiaTriToiThieu)}`}
-                                            </div>
-                                          )}
+                                          <div className={styles.voucherCardMin}>
+                                            {eligible ? '✓ ' : ''}{reason}
+                                          </div>
                                         </div>
                                       </div>
                                     );
@@ -590,7 +657,7 @@ export default function Checkout() {
                                   .slice(0, 3)
                                   .map((v, i) => {
                                     const promo = v.KhuyenMai || v;
-                                    const eligible = !promo.GiaTriToiThieu || subtotal >= Number(promo.GiaTriToiThieu);
+                                    const { eligible, reason } = getVoucherEligibility(promo);
                                     return (
                                       <div key={`free-${i}`}
                                         className={`${styles.voucherCard} ${!eligible ? styles.voucherDisabled : ''}`}
@@ -603,11 +670,9 @@ export default function Checkout() {
                                           <div className={styles.voucherCardValue} style={{ color: '#0f9d58' }}>
                                             {getShippingVoucherValueText(promo)}
                                           </div>
-                                          {promo.GiaTriToiThieu && (
-                                            <div className={styles.voucherCardMin}>
-                                              {eligible ? '✓ Đủ điều kiện' : `Đơn tối thiểu ${fmt(promo.GiaTriToiThieu)}`}
-                                            </div>
-                                          )}
+                                          <div className={styles.voucherCardMin}>
+                                            {eligible ? '✓ ' : ''}{reason}
+                                          </div>
                                         </div>
                                       </div>
                                     );

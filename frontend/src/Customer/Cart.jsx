@@ -53,6 +53,8 @@ function Cart() {
           price: Number(item.BienTheSanPham.Gia),
           quantity: item.SoLuong,
           maxStock: item.BienTheSanPham.SoLuong,
+          categoryId: item.BienTheSanPham.SanPham?.MaDanhMuc,
+          MaDanhMuc: item.BienTheSanPham.SanPham?.MaDanhMuc,
           image: item.BienTheSanPham.HinhAnhBienThes?.[0]?.DuongDan || item.BienTheSanPham.SanPham?.Thumbnail || ''
         }));
         setCart(dbCart);

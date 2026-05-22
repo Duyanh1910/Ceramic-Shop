@@ -91,6 +91,8 @@ function Home() {
           price: Number(item.BienTheSanPham.Gia),
           quantity: item.SoLuong,
           maxStock: item.BienTheSanPham.SoLuong,
+          categoryId: item.BienTheSanPham.SanPham?.MaDanhMuc,
+          MaDanhMuc: item.BienTheSanPham.SanPham?.MaDanhMuc,
           image: item.BienTheSanPham.HinhAnhBienThes?.[0]?.DuongDan || item.BienTheSanPham.SanPham?.Thumbnail || ''
         }));
         setCart(dbCart);
@@ -269,6 +271,8 @@ function Home() {
           price: price, 
           image: image,
           quantity: 1,
+          categoryId: product.MaDanhMuc || product.DanhMuc?.MaDanhMuc || product.DanhMucSanPham?.MaDanhMuc,
+          MaDanhMuc: product.MaDanhMuc || product.DanhMuc?.MaDanhMuc || product.DanhMucSanPham?.MaDanhMuc,
           maxStock: variant.SoLuong
         }];
       });
