@@ -45,6 +45,10 @@ export const createZaloPayPaymentUrl = async (maDonHang) => {
       throw new ErrorHandler("Đơn hàng không tồn tại hoặc đã thanh toán", 404);
     }
 
+    if (Number(donHang.TrangThaiDonHang) === 4) {
+      throw new ErrorHandler("Don hang da bi huy, khong the thanh toan lai", 400);
+    }
+
     const amount = Math.round(Number(donHang.TongThanhToan));
     console.log("Số tiền thanh toán:", amount);
 

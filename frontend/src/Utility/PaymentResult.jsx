@@ -147,9 +147,9 @@ export default function PaymentResult() {
                 block
                 size="large"
                 className={styles.btnRetry}
-                onClick={() => navigate('/cart')}
+                onClick={() => navigate('/orders')}
               >
-                Quay lại giỏ hàng
+                Thanh toán lại trong đơn hàng
               </Button>
             )}
 

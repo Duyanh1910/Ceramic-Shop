@@ -7,6 +7,7 @@ import {
   ShoppingOutlined, ArrowLeftOutlined, EyeOutlined,
   CloseCircleOutlined, FileTextOutlined, CarOutlined,
   CheckCircleOutlined, ClockCircleOutlined, StopOutlined,
+  CreditCardOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -62,6 +63,7 @@ export default function OrderTracking() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [cancelLoading, setCancelLoading] = useState(false);
+  const [paymentLoadingOrder, setPaymentLoadingOrder] = useState(null);
 
   const statusFilter = activeTab === 'all' ? undefined : Number(activeTab);
 
@@ -133,6 +135,40 @@ export default function OrderTracking() {
         }
       },
     });
+  };
+
+  const canRetryPayment = (order) =>
+    Number(order?.TrangThaiThanhToan) !== 1 &&
+    Number(order?.TrangThaiDonHang) !== 4 &&
+    [4, 5].includes(Number(order?.MaPhuongThuc));
+
+  const handleRetryPayment = async (order) => {
+    const maDonHang = order?.MaDonHang;
+
+    if (!maDonHang) {
+      message.error('Không tìm thấy mã đơn hàng để thanh toán lại!');
+      return;
+    }
+
+    setPaymentLoadingOrder(maDonHang);
+    try {
+      const endpoint =
+        Number(order.MaPhuongThuc) === 4
+          ? `${API_BASE}/payment/momo-create`
+          : `${API_BASE}/payment/zalo-create`;
+      const res = await axios.post(endpoint, { maDonHang }, authHeader);
+      const payUrl = res.data?.paymentUrl || res.data?.payUrl;
+
+      if (!payUrl) {
+        throw new Error('Không nhận được link thanh toán');
+      }
+
+      window.location.href = payUrl;
+    } catch (err) {
+      message.error(err.response?.data?.message || err.message || 'Không thể tạo lại thanh toán!');
+    } finally {
+      setPaymentLoadingOrder(null);
+    }
   };
 
   const getTimelineStep = (status) => {
@@ -214,6 +250,17 @@ export default function OrderTracking() {
             className={styles.btnView}>
             Chi tiết
           </Button>
+          {canRetryPayment(row) && (
+            <Button
+              size="small"
+              type="primary"
+              icon={<CreditCardOutlined />}
+              loading={paymentLoadingOrder === row.MaDonHang}
+              onClick={() => handleRetryPayment(row)}
+            >
+              Thanh toán
+            </Button>
+          )}
           {row.TrangThaiDonHang === 0 && (
             <Button size="small" danger icon={<CloseCircleOutlined />}
               onClick={() => handleCancelOrder(row.MaHienThi)}>
@@ -409,6 +456,19 @@ export default function OrderTracking() {
                 <span className={styles.totalAmount}>{fmt(selectedOrder.TongThanhToan)}</span>
               </div>
             </div>
+
+            {canRetryPayment(selectedOrder) && (
+              <Button
+                type="primary"
+                block
+                icon={<CreditCardOutlined />}
+                loading={paymentLoadingOrder === selectedOrder.MaDonHang}
+                onClick={() => handleRetryPayment(selectedOrder)}
+                style={{ marginBottom: 10 }}
+              >
+                Thanh toán lại
+              </Button>
+            )}
 
             {selectedOrder.TrangThaiDonHang === 0 &&(
                   <Button
