@@ -19,7 +19,6 @@ import voucherRoutes from "./voucher.route.js";
 import promotionRoutes from "./promotion.route.js";
 import orderRoutes from "./order.route.js";
 import ratingRoutes from "./rating.route.js";
-import vnpayRoutes from "./payment/vnpay.route.js";
 import momoRoutes from "./payment/momo.route.js";
 import newsRoutes from "./news.route.js";
 import warrantyRoutes from "./warranty.route.js";

@@ -23,7 +23,7 @@ const MOMO_CONFIG = {
 export const createMomoPaymentUrl = async (maDonHang) => {
   return await sequelize.transaction(async (t) => {
     const donHang = await OrderModel.findOne({
-      where: { MaDonHang: maDonHang, TrangThaiThanhToan: 0 },
+      where: { MaDonHang: maDonHang, TrangThaiThanhToan: 0, MaPhuongThuc: 4 },
       lock: true,
       transaction: t,
     });
@@ -129,13 +129,48 @@ export const verifyAndUpdateIpn = async (momoData) => {
       return;
     }
 
+    if (Math.round(Number(giaoDich.SoTien)) !== Math.round(Number(amount))) {
+      await giaoDich.update(
+        {
+          TrangThai: "FAILED",
+          MaGiaoDichDoiTac: transId?.toString(),
+          MaLoi: "AMOUNT_MISMATCH",
+          DuLieuPhanHoi: momoData,
+        },
+        { transaction: t },
+      );
+      return;
+    }
+
+    const currentOrder = await OrderModel.findByPk(giaoDich.MaDonHang, {
+      transaction: t,
+      lock: t.LOCK.UPDATE,
+    });
+
+    if (
+      !currentOrder ||
+      Number(currentOrder.TrangThaiDonHang) === 4 ||
+      Number(currentOrder.MaPhuongThuc) !== 4
+    ) {
+      await giaoDich.update(
+        {
+          TrangThai: "FAILED",
+          MaGiaoDichDoiTac: transId?.toString(),
+          MaLoi: "ORDER_CANCELED_OR_INVALID",
+          DuLieuPhanHoi: momoData,
+        },
+        { transaction: t },
+      );
+      return;
+    }
+
     const isSuccess = resultCode === 0;
 
     await giaoDich.update(
       {
         TrangThai: isSuccess ? "SUCCESS" : "FAILED",
-        MaGiaoDichDoiTac: transId.toString(),
-        MaLoi: resultCode.toString(),
+        MaGiaoDichDoiTac: transId?.toString(),
+        MaLoi: resultCode?.toString(),
         DuLieuPhanHoi: momoData,
       },
       { transaction: t },

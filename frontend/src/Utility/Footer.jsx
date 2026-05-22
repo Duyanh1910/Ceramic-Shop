@@ -61,9 +61,8 @@ function Footer() {
             <h3>PHƯƠNG THỨC THANH TOÁN</h3>
             <ul>
               <li>💵 Thanh toán COD (Tiền mặt)</li>
-              <li>🏦 VNPay (Quét mã QR)</li>
-              <li>📱 Ví điện tử (MoMo / ZaloPay)</li>
-              <li>💳 Chuyển khoản ngân hàng</li>
+              <li>📱 Ví điện tử Momo</li>
+              <li>📱 Ví điện tử ZaloPay</li>
             </ul>
           </div>
 

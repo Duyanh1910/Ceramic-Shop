@@ -789,10 +789,7 @@ function ProductDetail() {
                       <h3>PHƯƠNG THỨC THANH TOÁN</h3>
                       <ul>
                           <li>💵 Thanh toán COD (Tiền mặt)</li>
-                          <li>🏦 VNPay (Quét mã QR)</li>
                           <li>📱 Ví điện tử (MoMo / ZaloPay)</li>
-                          <li>🔗 Tiền điện tử (MetaMask)</li>
-                          <li>💳 Chuyển khoản ngân hàng</li>
                       </ul>
                   </div>
 

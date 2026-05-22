@@ -33,11 +33,10 @@ const getShippingVoucherValueText = (promo) => {
   return `Giảm phí ship ${fmt(promo?.GiaTri)}${promo?.GiamToiDa ? ` (tối đa ${fmt(promo.GiamToiDa)})` : ''}`;
 };
 
-const PAYMENT_METHODS = [
+const ACTIVE_PAYMENT_METHODS = [
   { id: 1, icon: '💵', name: 'Thanh toán khi nhận hàng (COD)', desc: 'Trả tiền mặt khi nhận được hàng', gateway: null },
-  { id: 2, icon: '🏦', name: 'Chuyển khoản ngân hàng', desc: 'Chuyển khoản trước — đơn xử lý sau khi xác nhận', gateway: null },
-  { id: 3, icon: null, name: 'MoMo', desc: 'Thanh toán qua ví MoMo — chuyển hướng tới cổng thanh toán', gateway: 'momo', logo: 'https://w7.pngwing.com/pngs/924/499/png-transparent-momo-hd-logo-thumbnail.png' },
-  { id: 4, icon: null, name: 'ZaloPay', desc: 'Thanh toán qua ZaloPay — chuyển hướng tới cổng thanh toán', gateway: 'zalopay', logo: 'https://cdn.haitrieu.com/wp-content/uploads/2022/10/Logo-ZaloPay-Square.png' },
+  { id: 4, icon: null, name: 'MoMo', desc: 'Thanh toán qua ví MoMo, chuyển hướng tới cổng thanh toán', gateway: 'momo', logo: 'https://w7.pngwing.com/pngs/924/499/png-transparent-momo-hd-logo-thumbnail.png' },
+  { id: 5, icon: null, name: 'ZaloPay', desc: 'Thanh toán qua ZaloPay, chuyển hướng tới cổng thanh toán', gateway: 'zalopay', logo: 'https://cdn.haitrieu.com/wp-content/uploads/2022/10/Logo-ZaloPay-Square.png' },
 ];
 
 export default function Checkout() {
@@ -68,6 +67,7 @@ export default function Checkout() {
   const [voucherLoading, setVoucherLoading] = useState(false);
   const [myVouchers, setMyVouchers] = useState([]);
   const [orderId, setOrderId] = useState(null);
+  const [orderCode, setOrderCode] = useState(null);
   const [redirectingModal, setRedirectingModal] = useState(false);
 
   const [shippingMethod, setShippingMethod] = useState(1); 
@@ -113,7 +113,7 @@ export default function Checkout() {
   const totalDiscount = productDiscount + shippingDiscount;
   const total = Math.max(0, subtotal - productDiscount + shippingFee - shippingDiscount);
 
-  const selectedPayment = PAYMENT_METHODS.find((m) => m.id === paymentMethod);
+  const selectedPayment = ACTIVE_PAYMENT_METHODS.find((m) => m.id === paymentMethod);
 
   useEffect(() => {
     if (cartItems.length === 0) {
@@ -275,7 +275,11 @@ export default function Checkout() {
     };
 
     const res = await axios.post(`${API_BASE}/orders`, payload, authHeader);
-    return res.data?.result?.data?.orderID || res.data?.result?.orderID || res.data?.result?.MaDonHang;
+    const data = res.data?.result?.data || res.data?.result || {};
+    return {
+      orderID: data.orderID || data.MaDonHang,
+      orderCode: data.orderCode || data.MaHienThi,
+    };
   };
 
   const handleOrder = async (values) => {
@@ -291,26 +295,27 @@ export default function Checkout() {
     setLoading(true);
 
     try {
-      const newOrderId = await createOrder(values);
-      setOrderId(newOrderId);
+      const newOrder = await createOrder(values);
+      setOrderId(newOrder.orderID);
+      setOrderCode(newOrder.orderCode);
 
-      if (paymentMethod === 1 || paymentMethod === 2) {
+      if (paymentMethod === 1) {
         setStep(1);
         message.success('Đặt hàng thành công!');
         return;
       }
 
-      if (paymentMethod === 3) {
+      if (paymentMethod === 4) {
         setRedirectingModal(true);
-        const payUrl = await createMomoPayment(newOrderId);
+        const payUrl = await createMomoPayment(newOrder.orderID);
         if (payUrl) window.location.href = payUrl;
         else throw new Error('Không nhận được link thanh toán MoMo');
         return;
       }
 
-      if (paymentMethod === 4) {
+      if (paymentMethod === 5) {
         setRedirectingModal(true);
-        const payUrl = await createZaloPayPayment(newOrderId);
+        const payUrl = await createZaloPayPayment(newOrder.orderID);
         if (payUrl) window.location.href = payUrl;
         else throw new Error('Không nhận được link thanh toán ZaloPay');
         return;
@@ -355,22 +360,11 @@ export default function Checkout() {
           <div className={styles.successCard}>
             <CheckCircleFilled className={styles.successIcon} />
             <h2 className={styles.successTitle}>Đặt hàng thành công!</h2>
-            {orderId && <p className={styles.successOrderId}>Mã đơn hàng: <strong>#{orderId}</strong></p>}
+            {(orderCode || orderId) && <p className={styles.successOrderId}>Mã đơn hàng: <strong>{orderCode || `#${orderId}`}</strong></p>}
             <p className={styles.successSub}>
               Cảm ơn bạn đã mua sắm tại Ceramic Shop!<br />
               Chúng tôi sẽ xử lý và liên hệ sớm nhất.
             </p>
-
-            {paymentMethod === 2 && (
-              <div className={styles.bankInfo}>
-                <div className={styles.bankTitle}>Thông tin chuyển khoản</div>
-                <div className={styles.bankRow}><span>Ngân hàng</span><strong>Vietcombank</strong></div>
-                <div className={styles.bankRow}><span>Số tài khoản</span><strong>1234567890</strong></div>
-                <div className={styles.bankRow}><span>Chủ tài khoản</span><strong>CERAMIC SHOP</strong></div>
-                <div className={styles.bankRow}><span>Số tiền</span><strong style={{ color: '#d0021b' }}>{fmt(total)}</strong></div>
-                <div className={styles.bankRow}><span>Nội dung</span><strong>DH{orderId}</strong></div>
-              </div>
-            )}
 
             <div className={styles.successActions}>
               <Button className={styles.btnOrders} onClick={() => navigate('/orders')}>
@@ -493,7 +487,7 @@ export default function Checkout() {
                   <div className={styles.section}>
                     <div className={styles.sectionTitle}><CreditCardOutlined /> Phương thức thanh toán</div>
                     <div className={styles.paymentList}>
-                      {PAYMENT_METHODS.map((pm) => (
+                      {ACTIVE_PAYMENT_METHODS.map((pm) => (
                         <div key={pm.id}
                           className={`${styles.paymentOption} ${paymentMethod === pm.id ? styles.paymentActive : ''}`}
                           onClick={() => setPaymentMethod(pm.id)}>

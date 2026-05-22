@@ -17,7 +17,7 @@ import {
   PaymentTransactionModel,
 } from "../models/index.js";
 import ErrorHandler from "../utils/error_handler.js";
-import { Op } from "sequelize";
+import { Op, literal } from "sequelize";
 import { generateWarrantiesForOrderService } from "./warranty.service.js";
 import calculateShippingFee from "../utils/orders/calculate_shipping_fee.js";
 import calculateOrderDiscount from "../utils/orders/calculate_order_discount.js";
@@ -27,6 +27,20 @@ export const ORDER_STATUS = {
   SHIPPING: 2,
   COMPLETED: 3,
   CANCELED: 4,
+};
+
+const PAYMENT_METHOD = {
+  COD: 1,
+  MOMO: 4,
+  ZALOPAY: 5,
+};
+
+const ACTIVE_PAYMENT_METHOD_IDS = Object.values(PAYMENT_METHOD);
+
+const VALID_ORDER_TRANSITIONS = {
+  [ORDER_STATUS.PENDING]: [ORDER_STATUS.PREPARING, ORDER_STATUS.CANCELED],
+  [ORDER_STATUS.PREPARING]: [ORDER_STATUS.SHIPPING, ORDER_STATUS.CANCELED],
+  [ORDER_STATUS.SHIPPING]: [ORDER_STATUS.COMPLETED],
 };
 
 const generateOrderCode = () => {
@@ -45,6 +59,17 @@ export const checkOutService = async (
     throw new ErrorHandler("Vui lòng chọn ít nhất 1 sản phẩm!", 400);
   }
 
+  const uniqueSelectedVariantIds = [
+    ...new Set(selectedVariantIds.map((id) => Number(id))),
+  ];
+
+  if (
+    uniqueSelectedVariantIds.length === 0 ||
+    uniqueSelectedVariantIds.some((id) => !Number.isInteger(id) || id <= 0)
+  ) {
+    throw new ErrorHandler("Danh sach san pham duoc chon khong hop le!", 400);
+  }
+
   const transaction = await sequelize.transaction();
 
   try {
@@ -59,6 +84,10 @@ export const checkOutService = async (
       GhiChu,
     } = orderData;
 
+    if (!ACTIVE_PAYMENT_METHOD_IDS.includes(Number(MaPhuongThuc))) {
+      throw new ErrorHandler("Phuong thuc thanh toan khong hop le!", 400);
+    }
+
     const customer = await CustomerModel.findOne({
       where: { MaTaiKhoan: idAccount },
     });
@@ -69,7 +98,7 @@ export const checkOutService = async (
       include: [
         {
           model: CartInfoModel,
-          where: { MaBienThe: { [Op.in]: selectedVariantIds } },
+          where: { MaBienThe: { [Op.in]: uniqueSelectedVariantIds } },
           include: [
             {
               model: VariantModel,
@@ -91,6 +120,13 @@ export const checkOutService = async (
     if (!cartItems || cartItems.length === 0) {
       throw new ErrorHandler(
         "Sản phẩm không hợp lệ, không đủ số lượng hoặc đã bị xóa khỏi giỏ!",
+        400,
+      );
+    }
+
+    if (cartItems.length !== uniqueSelectedVariantIds.length) {
+      throw new ErrorHandler(
+        "Mot so san pham da bi xoa khoi gio hoac khong hop le!",
         400,
       );
     }
@@ -124,8 +160,6 @@ export const checkOutService = async (
     }
 
     let totalShippingFee = 0;
-    let shippingDetails = null;
-
     if (addressObj && MaPhi) {
       const shipResult = await calculateShippingFee(
         trustedItems,
@@ -134,7 +168,6 @@ export const checkOutService = async (
         totalProductPrice,
       );
       totalShippingFee = shipResult.data.total;
-      shippingDetails = shipResult.data.ghnDetails;
     }
 
     const discountResult = await calculateOrderDiscount(
@@ -162,8 +195,8 @@ export const checkOutService = async (
         SDT,
         TrangThaiDonHang: ORDER_STATUS.PENDING,
         TrangThaiThanhToan: 0,
-        MaPhuongThuc,
-        MaLoaiPhi: MaPhi,
+        MaPhuongThuc: Number(MaPhuongThuc),
+        MaLoaiPhi: MaPhi ? Number(MaPhi) : null,
         GhiChu,
       },
       { transaction },
@@ -185,20 +218,39 @@ export const checkOutService = async (
         ThanhTien: unitPrice * quantity,
       });
 
+      const [affectedRows] = await VariantModel.update(
+        { SoLuong: literal(`SoLuong - ${quantity}`) },
+        {
+          where: {
+            MaBienThe: variant.MaBienThe,
+            SoLuong: { [Op.gte]: quantity },
+          },
+          transaction,
+        },
+      );
+
+      if (affectedRows !== 1) {
+        throw new ErrorHandler(
+          `San pham ${variant.TenBienThe} khong du so luong trong kho!`,
+          400,
+        );
+      }
+
+      const updatedVariant = await VariantModel.findByPk(variant.MaBienThe, {
+        attributes: ["SoLuong"],
+        transaction,
+      });
+
       inventoryHistories.push({
         MaBienThe: variant.MaBienThe,
         LoaiGiaoDich: "Xuất Bán",
         SoLuongThayDoi: -quantity,
-        TonKhoHienTai: variant.SoLuong - quantity,
+        TonKhoHienTai: updatedVariant.SoLuong,
         LoaiThamChieu: "Đơn Hàng",
         MaThamChieu: newOrder.MaDonHang,
         GhiChu: `Khách hàng đặt mua đơn ${newOrder.MaHienThi}`,
       });
 
-      await VariantModel.update(
-        { SoLuong: variant.SoLuong - quantity },
-        { where: { MaBienThe: variant.MaBienThe }, transaction },
-      );
     }
 
     await OrderDetailModel.bulkCreate(orderDetails, { transaction });
@@ -219,22 +271,39 @@ export const checkOutService = async (
           SoTienChietKhau: discountApplied,
         });
 
-        await PromotionWalletModel.update(
+        const [walletAffectedRows] = await PromotionWalletModel.update(
           { TrangThaiSuDung: 1 },
           {
             where: {
               MaKhachHang: customer.MaKhachHang,
               MaKhuyenMai: p.MaKhuyenMai,
+              TrangThaiSuDung: 0,
             },
             transaction,
           },
         );
 
-        await PromotionModel.decrement("SoLuong", {
-          by: 1,
-          where: { MaKhuyenMai: p.MaKhuyenMai },
-          transaction,
-        });
+        if (walletAffectedRows !== 1) {
+          throw new ErrorHandler(
+            "Ma khuyen mai khong hop le hoac da duoc su dung!",
+            400,
+          );
+        }
+
+        const [promoAffectedRows] = await PromotionModel.update(
+          { SoLuong: literal("SoLuong - 1") },
+          {
+            where: {
+              MaKhuyenMai: p.MaKhuyenMai,
+              SoLuong: { [Op.gt]: 0 },
+            },
+            transaction,
+          },
+        );
+
+        if (promoAffectedRows !== 1) {
+          throw new ErrorHandler("Ma khuyen mai da het luot su dung!", 400);
+        }
       }
       await OrderPromotionModel.bulkCreate(orderPromotions, { transaction });
     }
@@ -242,7 +311,7 @@ export const checkOutService = async (
     await CartInfoModel.destroy({
       where: {
         MaGioHang: cart.MaGioHang,
-        MaBienThe: { [Op.in]: selectedVariantIds },
+        MaBienThe: { [Op.in]: uniqueSelectedVariantIds },
       },
       transaction,
     });
@@ -312,6 +381,10 @@ export const getMyOrderInfoService = async (idAccount, orderCode) => {
       where: { MaTaiKhoan: idAccount },
     });
 
+    if (!customer) {
+      throw new ErrorHandler("Khong tim thay khach hang nay!", 404);
+    }
+
     const order = await OrderModel.findOne({
       where: {
         MaHienThi: orderCode,
@@ -367,9 +440,11 @@ export const cancelOrderService = async (idAccount, orderCode, reason) => {
     const order = await OrderModel.findOne({
       where: { MaHienThi: orderCode, MaKhachHang: customer.MaKhachHang },
       include: [{ model: OrderDetailModel }, { model: OrderPromotionModel }],
+      transaction,
+      lock: transaction.LOCK.UPDATE,
     });
     if (!order) throw new ErrorHandler("Không tìm thấy đơn hàng!", 404);
-    if (order.TrangThaiDonHang !== ORDER_STATUS.PENDING) {
+    if (Number(order.TrangThaiDonHang) !== ORDER_STATUS.PENDING) {
       throw new ErrorHandler(
         "Chỉ có thể hủy đơn hàng khi đang ở trạng thái Chờ xác nhận!",
         400,
@@ -383,21 +458,22 @@ export const cancelOrderService = async (idAccount, orderCode, reason) => {
     await order.save({ transaction });
     const inventoryHistories = [];
     for (const detail of order.ChiTietDonHangs) {
-      const variant = await VariantModel.findByPk(detail.MaBienThe);
+      const variant = await VariantModel.findByPk(detail.MaBienThe, {
+        attributes: ["MaBienThe", "SoLuong"],
+        transaction,
+        lock: transaction.LOCK.UPDATE,
+      });
 
       if (variant) {
-        const newQuantity = variant.SoLuong + detail.SoLuong;
+        const restoredQuantity = Number(variant.SoLuong) + Number(detail.SoLuong);
 
-        await VariantModel.update(
-          { SoLuong: newQuantity },
-          { where: { MaBienThe: variant.MaBienThe }, transaction },
-        );
+        await variant.update({ SoLuong: restoredQuantity }, { transaction });
 
         inventoryHistories.push({
           MaBienThe: variant.MaBienThe,
           LoaiGiaoDich: "Hoàn trả hàng / Hủy đơn",
           SoLuongThayDoi: detail.SoLuong,
-          TonKhoHienTai: newQuantity,
+          TonKhoHienTai: restoredQuantity,
           LoaiThamChieu: "Đơn Hàng",
           MaThamChieu: order.MaDonHang,
           GhiChu: `Hoàn tồn kho do khách hủy đơn ${order.MaHienThi}`,
@@ -591,11 +667,18 @@ export const adminUpdateOrderStatusService = async (
           model: OrderPromotionModel,
         },
       ],
+      transaction,
+      lock: transaction.LOCK.UPDATE,
     });
     if (!order) {
       throw new ErrorHandler("Không tìm thấy đơn hàng này!", 400);
     }
-    const currentStatus = order.TrangThaiDonHang;
+    const currentStatus = Number(order.TrangThaiDonHang);
+    const nextStatus = Number(newStatus);
+
+    if (!Object.values(ORDER_STATUS).includes(nextStatus)) {
+      throw new ErrorHandler("Trang thai don hang khong hop le!", 400);
+    }
     if (
       currentStatus === ORDER_STATUS.COMPLETED ||
       currentStatus === ORDER_STATUS.CANCELED
@@ -604,14 +687,21 @@ export const adminUpdateOrderStatusService = async (
     }
     if (
       currentStatus === ORDER_STATUS.SHIPPING &&
-      newStatus === ORDER_STATUS.CANCELED
+      nextStatus === ORDER_STATUS.CANCELED
     ) {
       throw new ErrorHandler(
         "Đơn hàng đang được giao, vui lòng thông báo với bưu cục hoàn hàng!",
         400,
       );
     }
-    if (newStatus === ORDER_STATUS.CANCELED) {
+    if (!VALID_ORDER_TRANSITIONS[currentStatus]?.includes(nextStatus)) {
+      throw new ErrorHandler(
+        "Khong the chuyen trang thai don hang theo buoc nay!",
+        400,
+      );
+    }
+
+    if (nextStatus === ORDER_STATUS.CANCELED) {
       const now = new Date().toLocaleString("vi-VN", {
         timeZone: "Asia/Ho_Chi_Minh",
         hour12: false,
@@ -620,7 +710,7 @@ export const adminUpdateOrderStatusService = async (
       order.GhiChu = order.GhiChu
         ? `${order.GhiChu}\n[${now}]Admin hủy: ${note}`
         : `[${now}]Admin hủy: ${note}`;
-      if (order.TrangThaiThanhToan === 1) {
+      if (Number(order.TrangThaiThanhToan) === 1) {
         order.GhiChu += `\nVui lòng inbox/đến trực tiếp cửa hàng để yêu cầu hoàn tiền.
 Thông tin liên hệ:
 📍 Địa chỉ: 484 Lạch Tray, Lê Chân, Hải Phòng.
@@ -635,19 +725,28 @@ Thông tin liên hệ:
       const orderDetails = order.ChiTietDonHangs;
       const inventoryLogs = [];
       for (const detail of orderDetails) {
-        await VariantModel.increment(
-          { SoLuong: detail.SoLuong },
-          { where: { MaBienThe: detail.MaBienThe }, transaction },
-        );
         const variantUpdated = await VariantModel.findByPk(detail.MaBienThe, {
+          attributes: ["MaBienThe", "SoLuong"],
           transaction,
-          attributes: ["SoLuong"],
+          lock: transaction.LOCK.UPDATE,
         });
+
+        if (!variantUpdated) {
+          continue;
+        }
+
+        const restoredQuantity =
+          Number(variantUpdated.SoLuong) + Number(detail.SoLuong);
+
+        await variantUpdated.update(
+          { SoLuong: restoredQuantity },
+          { transaction },
+        );
         inventoryLogs.push({
           MaBienThe: detail.MaBienThe,
           LoaiGiaoDich: "Hủy Đơn",
           SoLuongThayDoi: detail.SoLuong,
-          TonKhoHienTai: variantUpdated.SoLuong,
+          TonKhoHienTai: restoredQuantity,
           LoaiThamChieu: "Đơn Hàng",
           MaThamChieu: order.MaDonHang,
           GhiChu: `Admin hủy đơn ${order.MaHienThi}`,
@@ -678,10 +777,10 @@ Thông tin liên hệ:
         });
       }
     } else {
-      let finalPaymentStatus = order.TrangThaiThanhToan;
+      let finalPaymentStatus = Number(order.TrangThaiThanhToan);
 
       if (
-        order.MaPhuongThuc === 1 &&
+        Number(order.MaPhuongThuc) === PAYMENT_METHOD.COD &&
         newPaymentStatus !== undefined &&
         newPaymentStatus !== null
       ) {
@@ -690,7 +789,7 @@ Thông tin liên hệ:
       }
 
       if (
-        Number(newStatus) === ORDER_STATUS.COMPLETED &&
+        nextStatus === ORDER_STATUS.COMPLETED &&
         finalPaymentStatus === 0
       ) {
         throw new ErrorHandler(
@@ -699,12 +798,12 @@ Thông tin liên hệ:
         );
       }
 
-      order.TrangThaiDonHang = Number(newStatus);
+      order.TrangThaiDonHang = nextStatus;
       await order.save({
         transaction,
       });
 
-      if (Number(newStatus) === ORDER_STATUS.COMPLETED) {
+      if (nextStatus === ORDER_STATUS.COMPLETED) {
         await generateWarrantiesForOrderService(order.MaDonHang, transaction);
       }
     }

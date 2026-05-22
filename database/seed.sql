@@ -1608,7 +1608,7 @@ INSERT INTO `PhieuNhap` (`MaPhieuNhap`, `MaNhaCC`, `MaNhanVien`, `NgayNhap`, `To
 --
 
 INSERT INTO `PhuongThucThanhToan` (`MaPhuongThuc`, `TenPhuongThuc`, `MoTa`, `TrangThai`) VALUES (1,'COD','Thanh toán tiền mặt khi nhận hàng',1);
-INSERT INTO `PhuongThucThanhToan` (`MaPhuongThuc`, `TenPhuongThuc`, `MoTa`, `TrangThai`) VALUES (2,'VNPay','Thanh toán qua quét mã QR VNPay',1);
+INSERT INTO `PhuongThucThanhToan` (`MaPhuongThuc`, `TenPhuongThuc`, `MoTa`, `TrangThai`) VALUES (2,'VNPay','Thanh toán qua quét mã QR VNPay',0);
 INSERT INTO `PhuongThucThanhToan` (`MaPhuongThuc`, `TenPhuongThuc`, `MoTa`, `TrangThai`) VALUES (3,'MetaMask','Thanh toán bằng Crypto qua ví MetaMask',1);
 INSERT INTO `PhuongThucThanhToan` (`MaPhuongThuc`, `TenPhuongThuc`, `MoTa`, `TrangThai`) VALUES (4,'Momo','Thanh toán qua ví điện tử Momo',1);
 INSERT INTO `PhuongThucThanhToan` (`MaPhuongThuc`, `TenPhuongThuc`, `MoTa`, `TrangThai`) VALUES (5,'ZaloPay','Thanh toán qua ví điện tử ZaloPay',1);

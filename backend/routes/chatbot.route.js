@@ -1332,7 +1332,7 @@ router.post("/webhook", async (req, res) => {
                     "📞 Hotline: 0329.835.725",
                     "✉️ Email: theceramicshop24@gmail.com",
                     "🅿️ Chỗ để xe: Có bãi đậu xe ô tô rộng rãi, nhân viên hỗ trợ bê đồ gốm ra tận xe an toàn.",
-                    "💳 Thanh toán: Tiền mặt, Chuyển khoản (QR Code), Quẹt thẻ và VNPay.",
+                    "💳 Thanh toán: Tiền mặt khi nhận hàng, MoMo và ZaloPay.",
                   ],
                 },
                 {

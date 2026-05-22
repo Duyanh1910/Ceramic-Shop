@@ -349,8 +349,9 @@ export default function OrderTracking() {
                   {selectedOrder.DiaChiGiaoHang}
                 </Descriptions.Item>
                 <Descriptions.Item label="Thanh toán">
-                  {selectedOrder.MaPhuongThuc === 1 ? 'Thanh toán COD' : 
-                   selectedOrder.MaPhuongThuc === 2 ? 'Chuyển khoản' : 'Ví điện tử'}
+                  {selectedOrder.MaPhuongThuc === 1 ? 'Thanh toán COD' :
+                   selectedOrder.MaPhuongThuc === 4 ? 'MoMo' :
+                   selectedOrder.MaPhuongThuc === 5 ? 'ZaloPay' : 'Không rõ'}
                 </Descriptions.Item>
                 {selectedOrder.GhiChu && (
                   <Descriptions.Item label="Ghi chú">

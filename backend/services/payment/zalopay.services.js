@@ -34,7 +34,7 @@ export const createZaloPayPaymentUrl = async (maDonHang) => {
 
   return await sequelize.transaction(async (t) => {
     const donHang = await OrderModel.findOne({
-      where: { MaDonHang: maDonHang, TrangThaiThanhToan: 0 },
+      where: { MaDonHang: maDonHang, TrangThaiThanhToan: 0, MaPhuongThuc: 5 },
       lock: true,
       transaction: t,
     });
@@ -176,6 +176,44 @@ export const verifyAndUpdateCallback = async (zaloPayBody) => {
       console.log("⚠️ Giao dịch không tồn tại hoặc đã được xử lý từ trước.");
       return;
     }
+    if (
+      Math.round(Number(giaoDich.SoTien)) !==
+      Math.round(Number(dataJson.amount))
+    ) {
+      await giaoDich.update(
+        {
+          TrangThai: "FAILED",
+          MaGiaoDichDoiTac: zp_trans_id?.toString(),
+          MaLoi: "AMOUNT_MISMATCH",
+          DuLieuPhanHoi: dataJson,
+        },
+        { transaction: t },
+      );
+      return;
+    }
+
+    const currentOrder = await OrderModel.findByPk(giaoDich.MaDonHang, {
+      transaction: t,
+      lock: t.LOCK.UPDATE,
+    });
+
+    if (
+      !currentOrder ||
+      Number(currentOrder.TrangThaiDonHang) === 4 ||
+      Number(currentOrder.MaPhuongThuc) !== 5
+    ) {
+      await giaoDich.update(
+        {
+          TrangThai: "FAILED",
+          MaGiaoDichDoiTac: zp_trans_id?.toString(),
+          MaLoi: "ORDER_CANCELED_OR_INVALID",
+          DuLieuPhanHoi: dataJson,
+        },
+        { transaction: t },
+      );
+      return;
+    }
+
     await giaoDich.update(
       {
         TrangThai: "SUCCESS",
@@ -244,6 +282,26 @@ export const queryZaloPayTransaction = async (app_trans_id) => {
         });
 
         if (giaoDich) {
+          const currentOrder = await OrderModel.findByPk(giaoDich.MaDonHang, {
+            transaction: t,
+            lock: t.LOCK.UPDATE,
+          });
+
+          if (
+            !currentOrder ||
+            Number(currentOrder.TrangThaiDonHang) === 4 ||
+            Number(currentOrder.MaPhuongThuc) !== 5
+          ) {
+            await giaoDich.update(
+              {
+                TrangThai: "FAILED",
+                MaLoi: "ORDER_CANCELED_OR_INVALID",
+              },
+              { transaction: t },
+            );
+            return;
+          }
+
           await giaoDich.update(
             { TrangThai: "SUCCESS", MaLoi: "1" },
             { transaction: t },

@@ -53,17 +53,8 @@ const PAGES = {
         <h3>1. Thanh toán khi nhận hàng (COD)</h3>
         <p>Bạn thanh toán bằng tiền mặt trực tiếp cho nhân viên giao hàng khi nhận được sản phẩm. Áp dụng cho tất cả đơn hàng trong nước.</p>
 
-        <h3>2. Chuyển khoản ngân hàng</h3>
-        <p>Chuyển khoản trước vào tài khoản của Ceramic Shop. Đơn hàng sẽ được xử lý sau khi xác nhận thanh toán (thường trong 1-2 giờ làm việc).</p>
-        <div className={styles.bankBox}>
-          <div><strong>Ngân hàng:</strong> Vietcombank</div>
-          <div><strong>Số tài khoản:</strong> 1234567890</div>
-          <div><strong>Chủ tài khoản:</strong> CERAMIC SHOP</div>
-          <div><strong>Nội dung:</strong> [Mã đơn hàng]</div>
-        </div>
-
-        <h3>3. Ví điện tử (MoMo / ZaloPay)</h3>
-        <p>Chuyển khoản qua ví điện tử MoMo hoặc ZaloPay đến số <strong>0329 835 725</strong>. Ghi rõ mã đơn hàng trong nội dung chuyển tiền.</p>
+        <h3>2. Ví điện tử (MoMo / ZaloPay)</h3>
+        <p>Bạn sẽ được chuyển sang cổng thanh toán MoMo hoặc ZaloPay sau khi xác nhận đơn hàng.</p>
 
         <h3>Lưu ý quan trọng</h3>
         <ul>

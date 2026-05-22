@@ -271,7 +271,7 @@ export default function OrderTrackingMini() {
                 <Descriptions.Item label="Số điện thoại">{selectedOrder.SDT}</Descriptions.Item>
                 <Descriptions.Item label="Địa chỉ">{selectedOrder.DiaChiGiaoHang}</Descriptions.Item>
                 <Descriptions.Item label="Thanh toán">
-                  {selectedOrder.MaPhuongThuc === 1 ? 'Thanh toán COD' : selectedOrder.MaPhuongThuc === 2 ? 'Chuyển khoản' : 'Ví điện tử'}
+                  {selectedOrder.MaPhuongThuc === 1 ? 'Thanh toán COD' : selectedOrder.MaPhuongThuc === 4 ? 'MoMo' : selectedOrder.MaPhuongThuc === 5 ? 'ZaloPay' : 'Không rõ'}
                 </Descriptions.Item>
               </Descriptions>
             </div>
