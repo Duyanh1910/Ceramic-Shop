@@ -45,7 +45,6 @@ export const RETURN_PROCESS_TYPE = {
   GUI_BO_SUNG: "GUI_BO_SUNG",
   HOAN_TIEN_MOT_PHAN: "HOAN_TIEN_MOT_PHAN",
   HOAN_TIEN_TOAN_PHAN: "HOAN_TIEN_TOAN_PHAN",
-  TU_CHOI: "TU_CHOI",
 };
 
 const ORDER_STATUS_COMPLETED = 3;
@@ -53,13 +52,7 @@ const PAYMENT_STATUS_PAID = 1;
 
 const validRequestTypes = Object.values(RETURN_REQUEST_TYPE);
 const validConditions = Object.values(RETURN_CONDITION);
-
-const validCompleteProcessTypes = [
-  RETURN_PROCESS_TYPE.DOI_SAN_PHAM,
-  RETURN_PROCESS_TYPE.GUI_BO_SUNG,
-  RETURN_PROCESS_TYPE.HOAN_TIEN_MOT_PHAN,
-  RETURN_PROCESS_TYPE.HOAN_TIEN_TOAN_PHAN,
-];
+const validCompleteProcessTypes = Object.values(RETURN_PROCESS_TYPE);
 
 const evidenceRequiredTypes = [
   RETURN_REQUEST_TYPE.VO_HONG_VAN_CHUYEN,
@@ -313,9 +306,12 @@ const createRefundTransaction = async ({
       MaThamChieu: `REFUND_${returnRequest.MaDoiTra}_${Date.now()}`,
       MaGiaoDichDoiTac: null,
       SoTien: amount,
-      TrangThai: "SUCCESS",
+      TrangThai: "PENDING",
       MaLoi: null,
-      DuLieuPhanHoi: null,
+      DuLieuPhanHoi: {
+        message:
+          "Đã tạo giao dịch hoàn tiền, chờ admin xác nhận đã thanh toán cho khách.",
+      },
       ThoiGianGiaoDich: new Date(),
     },
     { transaction },
@@ -359,8 +355,7 @@ const createRiskIfNeeded = async ({
       MoTa: note || `Phát sinh từ yêu cầu đổi trả #${returnRequest.MaDoiTra}`,
       TrangThai: 0,
       GhiChu: `Tự động tạo từ yêu cầu đổi trả #${returnRequest.MaDoiTra}`,
-      MaNhanVienPhuTrach:
-        staffId || returnRequest.MaNhanVienXuLy || null,
+      MaNhanVienPhuTrach: staffId || returnRequest.MaNhanVienXuLy || null,
     },
     { transaction },
   );
@@ -668,6 +663,54 @@ export const getReturnByIdAdminService = async (MaDoiTra) => {
   return await findReturnById(MaDoiTra);
 };
 
+export const getReturnVariantOptionsAdminService = async (search = "") => {
+  const keyword = String(search || "").trim().toLowerCase();
+
+  const variants = await VariantModel.findAll({
+    where: {
+      SoLuong: {
+        [Op.gt]: 0,
+      },
+    },
+    include: [
+      {
+        model: ProductModel,
+        required: false,
+      },
+    ],
+    order: [["MaBienThe", "DESC"]],
+    limit: 200,
+  });
+
+  return variants
+    .map((variant) => {
+      const plain = variant.get({ plain: true });
+      const product = plain.SanPham || plain.Product || {};
+
+      return {
+        MaBienThe: plain.MaBienThe,
+        TenBienThe: plain.TenBienThe,
+        SoLuong: plain.SoLuong,
+        Gia: plain.Gia,
+        MaSanPham: product.MaSanPham || plain.MaSanPham,
+        TenSanPham: product.TenSanPham || "Sản phẩm",
+        Thumbnail: product.Thumbnail || null,
+        label: `${product.TenSanPham || "Sản phẩm"} - ${plain.TenBienThe} | Kho: ${plain.SoLuong}`,
+        value: plain.MaBienThe,
+      };
+    })
+    .filter((item) => {
+      if (!keyword) return true;
+
+      return (
+        item.TenSanPham.toLowerCase().includes(keyword) ||
+        item.TenBienThe.toLowerCase().includes(keyword) ||
+        String(item.MaBienThe).includes(keyword)
+      );
+    })
+    .slice(0, 50);
+};
+
 export const updateReturnStatusAdminService = async (
   MaDoiTra,
   nextStatus,
@@ -694,6 +737,7 @@ export const updateReturnStatusAdminService = async (
 
     const currentStatus = Number(returnRequest.TrangThai);
     const normalizedNextStatus = Number(nextStatus);
+
     const validTransitions = {
       [RETURN_STATUS.WAITING]: [
         RETURN_STATUS.APPROVED,
@@ -714,6 +758,24 @@ export const updateReturnStatusAdminService = async (
         "Không thể chuyển trạng thái đổi trả theo luồng này!",
         400,
       );
+    }
+
+    if (normalizedNextStatus === RETURN_STATUS.REJECTED) {
+      const pendingRefund = await PaymentTransactionModel.findOne({
+        where: {
+          MaDoiTra,
+          LoaiGiaoDich: "HOAN_TIEN",
+          TrangThai: "PENDING",
+        },
+        transaction,
+      });
+
+      if (pendingRefund) {
+        throw new ErrorHandler(
+          "Yêu cầu này đã có giao dịch hoàn tiền đang chờ xác nhận, không thể từ chối!",
+          400,
+        );
+      }
     }
 
     returnRequest.TrangThai = normalizedNextStatus;
@@ -795,6 +857,22 @@ export const processReturnAdminService = async (MaDoiTra, payload) => {
       );
     }
 
+    const pendingRefundTransaction = await PaymentTransactionModel.findOne({
+      where: {
+        MaDoiTra,
+        LoaiGiaoDich: "HOAN_TIEN",
+        TrangThai: "PENDING",
+      },
+      transaction,
+    });
+
+    if (pendingRefundTransaction) {
+      throw new ErrorHandler(
+        "Yêu cầu này đã có giao dịch hoàn tiền đang chờ xác nhận!",
+        400,
+      );
+    }
+
     const HinhThucXuLy = payload.HinhThucXuLy;
 
     if (!validCompleteProcessTypes.includes(HinhThucXuLy)) {
@@ -805,7 +883,10 @@ export const processReturnAdminService = async (MaDoiTra, payload) => {
     const order = orderDetail?.DonHang;
 
     if (!order) {
-      throw new ErrorHandler("Không tìm thấy đơn hàng gốc của yêu cầu đổi trả!", 404);
+      throw new ErrorHandler(
+        "Không tìm thấy đơn hàng gốc của yêu cầu đổi trả!",
+        404,
+      );
     }
 
     const quantity = parsePositiveInteger(
@@ -827,34 +908,45 @@ export const processReturnAdminService = async (MaDoiTra, payload) => {
 
     const note = payload.NoiDungXuLy || "Admin xử lý yêu cầu đổi trả";
     const CoNhapLaiKho = payload.CoNhapLaiKho ? 1 : 0;
-    let refundAmount = normalizeMoney(payload.SoTienHoan);
 
-    if (
-    HinhThucXuLy !== RETURN_PROCESS_TYPE.HOAN_TIEN_MOT_PHAN &&
-    HinhThucXuLy !== RETURN_PROCESS_TYPE.HOAN_TIEN_TOAN_PHAN
-    ) {
-    refundAmount = 0;
-    }
+    const isRefundProcess =
+      HinhThucXuLy === RETURN_PROCESS_TYPE.HOAN_TIEN_MOT_PHAN ||
+      HinhThucXuLy === RETURN_PROCESS_TYPE.HOAN_TIEN_TOAN_PHAN;
+
     const maxRefundAmount = Number(orderDetail.GiaBan || 0) * quantity;
 
+    let refundAmount =
+      HinhThucXuLy === RETURN_PROCESS_TYPE.HOAN_TIEN_TOAN_PHAN
+        ? maxRefundAmount
+        : normalizeMoney(payload.SoTienHoan);
+
+    if (!isRefundProcess) {
+      refundAmount = 0;
+    }
+
     const cannotRestock =
-        returnRequest.LoaiYeuCau === RETURN_REQUEST_TYPE.VO_HONG_VAN_CHUYEN ||
-        returnRequest.LoaiYeuCau === RETURN_REQUEST_TYPE.THIEU_HANG ||
-        returnRequest.TinhTrangHangTra === RETURN_CONDITION.VO_HONG ||
-        returnRequest.TinhTrangHangTra === RETURN_CONDITION.LOI_SAN_XUAT ||
-        returnRequest.TinhTrangHangTra === RETURN_CONDITION.KHONG_NHAN_LAI;
+      returnRequest.LoaiYeuCau === RETURN_REQUEST_TYPE.VO_HONG_VAN_CHUYEN ||
+      returnRequest.LoaiYeuCau === RETURN_REQUEST_TYPE.THIEU_HANG ||
+      returnRequest.TinhTrangHangTra === RETURN_CONDITION.VO_HONG ||
+      returnRequest.TinhTrangHangTra === RETURN_CONDITION.LOI_SAN_XUAT ||
+      returnRequest.TinhTrangHangTra === RETURN_CONDITION.KHONG_NHAN_LAI;
 
     if (CoNhapLaiKho && cannotRestock) {
-    throw new ErrorHandler(
+      throw new ErrorHandler(
         "Trường hợp này không được nhập lại hàng vào kho!",
         400,
-    );
+      );
     }
+
     if (refundAmount > maxRefundAmount) {
       throw new ErrorHandler(
         `Số tiền hoàn không được vượt quá ${maxRefundAmount.toLocaleString()}đ!`,
         400,
       );
+    }
+
+    if (isRefundProcess && refundAmount <= 0) {
+      throw new ErrorHandler("Vui lòng nhập số tiền hoàn lớn hơn 0!", 422);
     }
 
     if (CoNhapLaiKho) {
@@ -900,7 +992,10 @@ export const processReturnAdminService = async (MaDoiTra, payload) => {
       );
 
       if (!replacementVariant) {
-        throw new ErrorHandler("Không tìm thấy biến thể sản phẩm gửi cho khách!", 404);
+        throw new ErrorHandler(
+          "Không tìm thấy biến thể sản phẩm gửi cho khách!",
+          404,
+        );
       }
 
       if (Number(replacementVariant.SoLuong) < quantity) {
@@ -927,14 +1022,7 @@ export const processReturnAdminService = async (MaDoiTra, payload) => {
       returnRequest.MaBienTheDoi = replacementVariantId;
     }
 
-    if (
-      HinhThucXuLy === RETURN_PROCESS_TYPE.HOAN_TIEN_MOT_PHAN ||
-      HinhThucXuLy === RETURN_PROCESS_TYPE.HOAN_TIEN_TOAN_PHAN
-    ) {
-      if (refundAmount <= 0) {
-        throw new ErrorHandler("Vui lòng nhập số tiền hoàn lớn hơn 0!", 422);
-      }
-
+    if (isRefundProcess) {
       await createRefundTransaction({
         order,
         returnRequest,
@@ -951,15 +1039,31 @@ export const processReturnAdminService = async (MaDoiTra, payload) => {
       transaction,
     });
 
-    returnRequest.TrangThai = RETURN_STATUS.COMPLETED;
     returnRequest.HinhThucXuLy = HinhThucXuLy;
     returnRequest.CoNhapLaiKho = CoNhapLaiKho;
     returnRequest.SoTienHoan = refundAmount;
     returnRequest.MaNhanVienXuLy = staffId || returnRequest.MaNhanVienXuLy || null;
-    returnRequest.NgayHoanTat = new Date();
-    await returnRequest.save({ transaction });
 
-    await createReturnProcess(MaDoiTra, HinhThucXuLy, note, transaction);
+    if (isRefundProcess) {
+      returnRequest.TrangThai = RETURN_STATUS.PROCESSING;
+      returnRequest.NgayHoanTat = null;
+
+      await returnRequest.save({ transaction });
+
+      await createReturnProcess(
+        MaDoiTra,
+        "TAO_GIAO_DICH_HOAN_TIEN",
+        `${note}. Đã tạo giao dịch hoàn tiền chờ xác nhận.`,
+        transaction,
+      );
+    } else {
+      returnRequest.TrangThai = RETURN_STATUS.COMPLETED;
+      returnRequest.NgayHoanTat = new Date();
+
+      await returnRequest.save({ transaction });
+
+      await createReturnProcess(MaDoiTra, HinhThucXuLy, note, transaction);
+    }
 
     await transaction.commit();
 
@@ -975,5 +1079,86 @@ export const processReturnAdminService = async (MaDoiTra, payload) => {
 
     console.error(err);
     throw new ErrorHandler("Lỗi server! Không thể xử lý yêu cầu đổi trả!", 500);
+  }
+};
+
+export const confirmReturnRefundAdminService = async (
+  MaDoiTra,
+  note,
+  staffId,
+) => {
+  const transaction = await sequelize.transaction();
+
+  try {
+    const returnRequest = await ReturnModel.findByPk(MaDoiTra, {
+      transaction,
+      lock: transaction.LOCK.UPDATE,
+    });
+
+    if (!returnRequest) {
+      throw new ErrorHandler("Không tìm thấy yêu cầu đổi trả!", 404);
+    }
+
+    if (Number(returnRequest.TrangThai) !== RETURN_STATUS.PROCESSING) {
+      throw new ErrorHandler(
+        "Chỉ có thể xác nhận hoàn tiền khi yêu cầu đang ở trạng thái Đang xử lý!",
+        400,
+      );
+    }
+
+    const refundTransaction = await PaymentTransactionModel.findOne({
+      where: {
+        MaDoiTra,
+        LoaiGiaoDich: "HOAN_TIEN",
+        TrangThai: "PENDING",
+      },
+      transaction,
+      lock: transaction.LOCK.UPDATE,
+    });
+
+    if (!refundTransaction) {
+      throw new ErrorHandler(
+        "Không tìm thấy giao dịch hoàn tiền đang chờ xác nhận!",
+        404,
+      );
+    }
+
+    refundTransaction.TrangThai = "SUCCESS";
+    refundTransaction.ThoiGianGiaoDich = new Date();
+    refundTransaction.DuLieuPhanHoi = {
+      message: note || "Admin xác nhận đã hoàn tiền cho khách.",
+      confirmedAt: new Date(),
+      confirmedBy: staffId || null,
+    };
+
+    await refundTransaction.save({ transaction });
+
+    returnRequest.TrangThai = RETURN_STATUS.COMPLETED;
+    returnRequest.MaNhanVienXuLy = staffId || returnRequest.MaNhanVienXuLy || null;
+    returnRequest.NgayHoanTat = new Date();
+
+    await returnRequest.save({ transaction });
+
+    await createReturnProcess(
+      MaDoiTra,
+      "XAC_NHAN_HOAN_TIEN",
+      note || "Admin xác nhận đã hoàn tiền cho khách",
+      transaction,
+    );
+
+    await transaction.commit();
+
+    return await getReturnByIdAdminService(MaDoiTra);
+  } catch (err) {
+    if (!transaction.finished) {
+      await transaction.rollback();
+    }
+
+    if (err.statusCode) {
+      throw err;
+    }
+
+    console.error(err);
+    throw new ErrorHandler("Lỗi server! Không thể xác nhận hoàn tiền!", 500);
   }
 };

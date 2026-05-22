@@ -9,8 +9,10 @@ import {
 } from "../../controllers/admin/after_sales/warranty.controller.js";
 import { getAllRisks } from "../../controllers/admin/after_sales/risk.controller.js";
 import {
+  confirmReturnRefund,
   getAllReturns,
   getReturnById,
+  getReturnVariantOptions,
   processReturn,
   updateReturnStatus,
 } from "../../controllers/admin/after_sales/return.controller.js";
@@ -25,9 +27,11 @@ router.patch("/warranties/:id/status", updateWarrantyStatus);
 router.post("/warranties/:id/replace-product", replaceWarrantyProduct);
 
 router.get("/returns", getAllReturns);
+router.get("/returns/variants", getReturnVariantOptions);
 router.get("/returns/:id", getReturnById);
 router.patch("/returns/:id/status", updateReturnStatus);
 router.post("/returns/:id/process", processReturn);
+router.patch("/returns/:id/confirm-refund", confirmReturnRefund);
 
 router.get("/risks", getAllRisks);
 

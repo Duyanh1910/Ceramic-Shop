@@ -6,8 +6,177 @@ import {
   OrderModel,
   VariantModel,
   ProductModel,
+  ReturnModel,
+  OrderDetailModel,
 } from "../models/index.js";
 import { adminGetOrderDetailService } from "../services/order.services.js";
+
+const normalizeText = (value) =>
+  String(value || "")
+    .trim()
+    .toLowerCase();
+
+const normalizeReferenceType = (value) =>
+  String(value || "")
+    .trim()
+    .replace(/\s+/g, "")
+    .toUpperCase();
+
+const isReturnInventoryReference = (history) => {
+  const referenceType = normalizeReferenceType(history.LoaiThamChieu);
+  const transactionType = normalizeReferenceType(history.LoaiGiaoDich);
+
+  return (
+    referenceType === "DOITRA" ||
+    referenceType === "DOI_TRA" ||
+    transactionType === "XUAT_DOI_HANG" ||
+    transactionType === "XUAT_GUI_BO_SUNG" ||
+    transactionType === "NHAP_LAI_DOI_TRA"
+  );
+};
+
+const toPlain = (row) =>
+  row && typeof row.get === "function" ? row.get({ plain: true }) : row;
+
+const enrichInventoryHistories = async (rows) => {
+  const histories = rows.map(toPlain).filter(Boolean);
+
+  const returnIds = [
+    ...new Set(
+      histories
+        .filter(isReturnInventoryReference)
+        .map((history) => Number(history.MaThamChieu))
+        .filter((id) => Number.isInteger(id) && id > 0),
+    ),
+  ];
+
+  if (returnIds.length === 0) {
+    return histories.map((history) => ({
+      ...history,
+      MaDonHangLienQuan: history.DonHang?.MaDonHang || null,
+      MaHienThiLienQuan: history.DonHang?.MaHienThi || null,
+    }));
+  }
+
+  const returns = await ReturnModel.findAll({
+    where: {
+      MaDoiTra: {
+        [Op.in]: returnIds,
+      },
+    },
+    include: [
+      {
+        model: OrderDetailModel,
+        required: false,
+        include: [
+          {
+            model: OrderModel,
+            required: false,
+          },
+        ],
+      },
+    ],
+  });
+
+  const returnMap = new Map(
+    returns.map((item) => {
+      const plain = item.get({ plain: true });
+      return [Number(plain.MaDoiTra), plain];
+    }),
+  );
+
+  return histories.map((history) => {
+    if (!isReturnInventoryReference(history)) {
+      return {
+        ...history,
+        MaDonHangLienQuan: history.DonHang?.MaDonHang || null,
+        MaHienThiLienQuan: history.DonHang?.MaHienThi || null,
+      };
+    }
+
+    const returnRequest = returnMap.get(Number(history.MaThamChieu));
+    const relatedOrder =
+      returnRequest?.ChiTietDonHang?.DonHang ||
+      returnRequest?.OrderDetail?.DonHang ||
+      null;
+
+    return {
+      ...history,
+      DoiTra: returnRequest || null,
+      DonHang: history.DonHang || relatedOrder || null,
+      MaDonHangLienQuan:
+        history.DonHang?.MaDonHang || relatedOrder?.MaDonHang || null,
+      MaHienThiLienQuan:
+        history.DonHang?.MaHienThi || relatedOrder?.MaHienThi || null,
+    };
+  });
+};
+
+const filterInventoryHistoryByKeyword = (histories, keyword) => {
+  const normalizedKeyword = normalizeText(keyword);
+
+  if (!normalizedKeyword) {
+    return histories;
+  }
+
+  return histories.filter((history) => {
+    const variant =
+      history.BienTheSanPham ||
+      history.Variant ||
+      history.VariantModel ||
+      history.variant ||
+      {};
+
+    const product =
+      variant.SanPham ||
+      variant.Product ||
+      variant.ProductModel ||
+      variant.product ||
+      {};
+
+    const searchableValues = [
+      history.DonHang?.MaHienThi,
+      history.MaHienThiLienQuan,
+      history.MaThamChieu,
+      history.LoaiGiaoDich,
+      history.LoaiThamChieu,
+      history.GhiChu,
+      variant.TenBienThe,
+      product.TenSanPham,
+    ];
+
+    return searchableValues.some((value) =>
+      normalizeText(value).includes(normalizedKeyword),
+    );
+  });
+};
+
+const getProductDisplay = (history) => {
+  const variant =
+    history.BienTheSanPham ||
+    history.Variant ||
+    history.VariantModel ||
+    history.variant ||
+    {};
+
+  const product =
+    variant.SanPham ||
+    variant.Product ||
+    variant.ProductModel ||
+    variant.product ||
+    {};
+
+  const productName = product.TenSanPham || "";
+  const variantName = variant.TenBienThe || "";
+
+  return (
+    [productName, variantName].filter(Boolean).join(" - ") ||
+    `Biến thể #${history.MaBienThe || ""}`
+  );
+};
+
+const getRelatedOrderCode = (history) =>
+  history.DonHang?.MaHienThi || history.MaHienThiLienQuan || "";
 
 export const getAllInventoryHistoryService = async (
   page = 1,
@@ -18,65 +187,102 @@ export const getAllInventoryHistoryService = async (
   const currentPage = Math.max(Number(page) || 1, 1);
   const currentLimit = Math.max(Number(limit) || 10, 1);
   const offset = (currentPage - 1) * currentLimit;
-
   const sortOrder = String(order).toUpperCase() === "ASC" ? "ASC" : "DESC";
-  const keyword = search.trim();
+  const keyword = String(search || "").trim();
 
-  const { rows, count } = await InventoryHistoryModel.findAndCountAll({
-    LoaiThamChieu: { [Op.ne]: "Phiếu Nhập" },
+  const rows = await InventoryHistoryModel.findAll({
+    where: {
+      LoaiThamChieu: {
+        [Op.ne]: "Phiếu Nhập",
+      },
+    },
     include: [
       {
         model: OrderModel,
         as: "DonHang",
-        where: keyword
-          ? {
-              MaHienThi: {
-                [Op.like]: `%${keyword}%`,
-              },
-            }
-          : undefined,
-        required: !!keyword,
+        required: false,
+      },
+      {
+        model: VariantModel,
+        attributes: ["MaBienThe", "TenBienThe"],
+        required: false,
+        include: [
+          {
+            model: ProductModel,
+            attributes: ["MaSanPham", "TenSanPham"],
+            required: false,
+          },
+        ],
       },
     ],
     order: [["MaLichSu", sortOrder]],
-    limit: currentLimit,
-    offset,
-    distinct: true,
   });
 
+  const enrichedHistories = await enrichInventoryHistories(rows);
+  const filteredHistories = filterInventoryHistoryByKeyword(
+    enrichedHistories,
+    keyword,
+  );
+
+  const paginatedHistories = filteredHistories.slice(
+    offset,
+    offset + currentLimit,
+  );
+
   return {
-    data: rows,
+    data: paginatedHistories,
     pagination: {
-      total: count,
+      total: filteredHistories.length,
       page: currentPage,
       limit: currentLimit,
-      totalPages: Math.ceil(count / currentLimit),
+      totalPages: Math.ceil(filteredHistories.length / currentLimit),
     },
   };
 };
 
 export const showInventoryHistoryService = async (idInventory) => {
-  const history = await InventoryHistoryModel.findOne({
+  const historyRow = await InventoryHistoryModel.findOne({
     where: {
       MaLichSu: idInventory,
-      LoaiThamChieu: { [Op.ne]: "Phiếu Nhập" },
+      LoaiThamChieu: {
+        [Op.ne]: "Phiếu Nhập",
+      },
     },
     include: [
       {
         model: OrderModel,
         as: "DonHang",
+        required: false,
+      },
+      {
+        model: VariantModel,
+        attributes: ["MaBienThe", "TenBienThe"],
+        required: false,
+        include: [
+          {
+            model: ProductModel,
+            attributes: ["MaSanPham", "TenSanPham"],
+            required: false,
+          },
+        ],
       },
     ],
   });
 
-  const orderID = history?.DonHang?.MaHienThi;
+  const [history] = await enrichInventoryHistories(
+    historyRow ? [historyRow] : [],
+  );
+
+  const orderID = history
+    ? history.DonHang?.MaHienThi || history.MaHienThiLienQuan
+    : null;
 
   const orderDetail = orderID
     ? await adminGetOrderDetailService(orderID)
     : null;
 
   return {
-    history,
+    history: history || null,
     orderDetail,
   };
 };
@@ -150,20 +356,13 @@ export const exportInventoryHistoryXlsxService = async (
     }
   }
 
-  const histories = await InventoryHistoryModel.findAll({
+  const rows = await InventoryHistoryModel.findAll({
     where: whereCondition,
     include: [
       {
         model: OrderModel,
         as: "DonHang",
-        where: keyword
-          ? {
-              MaHienThi: {
-                [Op.like]: `%${keyword}%`,
-              },
-            }
-          : undefined,
-        required: !!keyword,
+        required: false,
       },
       {
         model: VariantModel,
@@ -180,6 +379,12 @@ export const exportInventoryHistoryXlsxService = async (
     ],
     order: [["MaLichSu", sortOrder]],
   });
+
+  const enrichedHistories = await enrichInventoryHistories(rows);
+  const histories = filterInventoryHistoryByKeyword(
+    enrichedHistories,
+    keyword,
+  );
 
   const workbook = new ExcelJS.Workbook();
 
@@ -295,9 +500,11 @@ export const exportInventoryHistoryXlsxService = async (
   };
 
   worksheet.mergeCells("A4:J4");
-  const dividerCell = worksheet.getCell("A4");
-  dividerCell.border = {
-    bottom: { style: "medium", color: { argb: "FF2F6B3F" } },
+  worksheet.getCell("A4").border = {
+    bottom: {
+      style: "medium",
+      color: { argb: "FF2F6B3F" },
+    },
   };
 
   worksheet.mergeCells("A5:J5");
@@ -331,7 +538,9 @@ export const exportInventoryHistoryXlsxService = async (
   let dateRangeText = "Thời gian dữ liệu: Tất cả";
 
   if (startDate && endDate) {
-    dateRangeText = `Thời gian dữ liệu: Từ ${formatDateOnlyVN(startDate)} đến ${formatDateOnlyVN(endDate)}`;
+    dateRangeText = `Thời gian dữ liệu: Từ ${formatDateOnlyVN(
+      startDate,
+    )} đến ${formatDateOnlyVN(endDate)}`;
   } else if (startDate) {
     dateRangeText = `Thời gian dữ liệu: Từ ${formatDateOnlyVN(startDate)}`;
   } else if (endDate) {
@@ -397,41 +606,18 @@ export const exportInventoryHistoryXlsxService = async (
     };
   });
 
-  histories.forEach((item, index) => {
-    const history = item.get({ plain: true });
-
-    const variant =
-      history.BienTheSanPham ||
-      history.Variant ||
-      history.VariantModel ||
-      history.variant ||
-      {};
-
-    const product =
-      variant.SanPham ||
-      variant.Product ||
-      variant.ProductModel ||
-      variant.product ||
-      {};
-
-    const productName = product.TenSanPham || "";
-    const variantName = variant.TenBienThe || "";
-
-    const productDisplay = [productName, variantName]
-      .filter(Boolean)
-      .join(" - ");
-
+  histories.forEach((history, index) => {
     const row = worksheet.getRow(10 + index);
 
     row.values = [
       history.MaLichSu,
-      productDisplay || `Biến thể #${history.MaBienThe || ""}`,
+      getProductDisplay(history),
       history.LoaiGiaoDich || "",
       history.SoLuongThayDoi ?? 0,
       history.TonKhoHienTai ?? 0,
       history.LoaiThamChieu || "",
       history.MaThamChieu || "",
-      history.DonHang?.MaHienThi || "",
+      getRelatedOrderCode(history),
       history.NgayTao ? formatDateTimeVN(history.NgayTao) : "",
       history.GhiChu || "",
     ];
@@ -446,7 +632,9 @@ export const exportInventoryHistoryXlsxService = async (
 
       cell.alignment = {
         vertical: "middle",
-        horizontal: [1, 4, 5, 7, 8, 9].includes(colNumber) ? "center" : "left",
+        horizontal: [1, 4, 5, 7, 8, 9].includes(colNumber)
+          ? "center"
+          : "left",
         wrapText: true,
       };
 
@@ -461,10 +649,7 @@ export const exportInventoryHistoryXlsxService = async (
 
   worksheet.getColumn(4).numFmt = "#,##0";
   worksheet.getColumn(5).numFmt = "#,##0";
-
   worksheet.autoFilter = "A9:J9";
 
-  const buffer = await workbook.xlsx.writeBuffer();
-
-  return buffer;
+  return await workbook.xlsx.writeBuffer();
 };

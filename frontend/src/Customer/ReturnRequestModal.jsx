@@ -1,8 +1,26 @@
-import { Modal, Form, Input, InputNumber, Select, Button, Alert, Space, Typography } from "antd";
-import { useEffect } from "react";
+import {
+  Modal,
+  Form,
+  Input,
+  InputNumber,
+  Select,
+  Button,
+  Alert,
+  Space,
+  Typography,
+  Upload,
+  Image,
+  message,
+} from "antd";
+import { UploadOutlined } from "@ant-design/icons";
+import axios from "axios";
+import { useEffect, useState } from "react";
 import styles from "./ReturnRequestModal.module.css";
 
 const { Text } = Typography;
+
+const CLOUDINARY_CLOUD_NAME = "dcmwz0uis";
+const CLOUDINARY_UPLOAD_PRESET = "the_creamy_shop";
 
 const REQUEST_TYPES = [
   { value: "DOI_HANG", label: "Đổi hàng" },
@@ -27,9 +45,18 @@ const evidenceRequiredTypes = [
   "SAI_SAN_PHAM",
 ];
 
-export default function ReturnRequestModal({ open, item, loading, onCancel, onSubmit }) {
+export default function ReturnRequestModal({
+  open,
+  item,
+  loading,
+  onCancel,
+  onSubmit,
+}) {
   const [form] = Form.useForm();
   const requestType = Form.useWatch("LoaiYeuCau", form);
+  const evidenceUrl = Form.useWatch("AnhMinhChung", form);
+  const [uploading, setUploading] = useState(false);
+
   const maxQuantity = Number(item?.SoLuong || item?.quantity || 1);
 
   useEffect(() => {
@@ -39,13 +66,46 @@ export default function ReturnRequestModal({ open, item, loading, onCancel, onSu
         LoaiYeuCau: "TRA_HANG",
         SoLuongDoiTra: 1,
         TinhTrangHangTra: "CON_NGUYEN",
+        AnhMinhChung: null,
       });
     }
 
     if (!open) {
       form.resetFields();
+      setUploading(false);
     }
   }, [open, item, form]);
+
+  const uploadEvidence = async ({ file, onSuccess, onError }) => {
+    if (file.size > 5 * 1024 * 1024) {
+      message.error("Dung lượng ảnh không được vượt quá 5MB!");
+      onError?.(new Error("File too large"));
+      return;
+    }
+
+    setUploading(true);
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+
+    try {
+      const res = await axios.post(
+        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+        formData,
+      );
+
+      form.setFieldValue("AnhMinhChung", res.data.secure_url);
+      message.success("Upload ảnh minh chứng thành công!");
+      onSuccess?.(res.data);
+    } catch (error) {
+      console.error(error);
+      message.error("Upload ảnh minh chứng thất bại!");
+      onError?.(error);
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const submit = async () => {
     const values = await form.validateFields();
@@ -70,7 +130,10 @@ export default function ReturnRequestModal({ open, item, loading, onCancel, onSu
           </Text>
 
           <div className={styles.muted}>
-            Phân loại: {item?.BienTheSanPham?.TenBienThe || item?.TenBienThe || "Không rõ"}
+            Phân loại:{" "}
+            {item?.BienTheSanPham?.TenBienThe ||
+              item?.TenBienThe ||
+              "Không rõ"}
           </div>
 
           <div className={styles.muted}>Số lượng đã mua: {maxQuantity}</div>
@@ -126,16 +189,42 @@ export default function ReturnRequestModal({ open, item, loading, onCancel, onSu
 
         <Form.Item
           name="AnhMinhChung"
-          label="Ảnh minh chứng (URL)"
-          tooltip="Có thể dán link ảnh đã upload. Bắt buộc với vỡ/hỏng vận chuyển, thiếu hàng, sai sản phẩm."
+          hidden
           rules={
             evidenceRequiredTypes.includes(requestType)
-              ? [{ required: true, message: "Vui lòng nhập ảnh minh chứng!" }]
+              ? [{ required: true, message: "Vui lòng upload ảnh minh chứng!" }]
               : []
           }
         >
-          <Input placeholder="https://..." />
+          <Input />
         </Form.Item>
+
+        <div className={styles.uploadBlock}>
+          <Text strong>Ảnh minh chứng</Text>
+          <div className={styles.muted}>
+            Bắt buộc với vỡ/hỏng vận chuyển, thiếu hàng, sai sản phẩm.
+          </div>
+
+          <Upload
+            accept="image/*"
+            maxCount={1}
+            showUploadList={false}
+            customRequest={uploadEvidence}
+          >
+            <Button icon={<UploadOutlined />} loading={uploading}>
+              Chọn ảnh từ máy
+            </Button>
+          </Upload>
+
+          {evidenceUrl && (
+            <Image
+              width={120}
+              height={120}
+              src={evidenceUrl}
+              className={styles.previewImage}
+            />
+          )}
+        </div>
 
         <Space className={styles.footer}>
           <Button onClick={onCancel}>Hủy</Button>
