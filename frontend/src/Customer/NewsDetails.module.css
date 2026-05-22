@@ -191,18 +191,8 @@
   font-size: 18px;
   line-height: 1.9;
   color: #2d3748;
-}
-
-.htmlContent p:first-of-type::first-letter {
-  float: left;
-  font-size: 4.5rem;
-  line-height: 0.8;
-  padding-top: 4px;
-  padding-right: 12px;
-  padding-left: 3px;
-  font-weight: 700;
-  color: #1b437c;
-  font-family: "Playfair Display", serif;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .htmlContent p {
@@ -266,31 +256,41 @@
   line-height: 1.6;
 }
 
+.htmlContent ul,
+.htmlContent ol {
+  padding-left: 32px !important;
+  margin: 16px 0 24px !important;
+}
+
 .htmlContent ul {
-  list-style: disc outside !important;
-  padding-left: 28px !important;
-  margin: 12px 0 24px !important;
+  list-style-type: disc !important;
 }
 
 .htmlContent ol {
-  list-style: decimal outside !important;
-  padding-left: 28px !important;
-  margin: 12px 0 24px !important;
+  list-style-type: decimal !important;
 }
 
 .htmlContent li {
   display: list-item !important;
   margin-bottom: 10px;
+  padding-left: 4px;
+  line-height: 1.8;
 }
 
 .htmlContent li p {
-  margin: 0;
-  text-align: inherit;
+  margin: 0 !important;
+  text-align: left;
+}
+
+.htmlContent li::marker {
+  color: #2d3748;
+  font-size: 1em;
 }
 
 .htmlContent a {
   color: #1677ff;
   text-decoration: underline;
+  word-break: break-word;
 }
 
 .htmlContent pre {
@@ -448,10 +448,6 @@
 
   .htmlContent {
     font-size: 16px;
-  }
-
-  .htmlContent p:first-of-type::first-letter {
-    font-size: 3.5rem;
   }
 
   .articleFooter {
