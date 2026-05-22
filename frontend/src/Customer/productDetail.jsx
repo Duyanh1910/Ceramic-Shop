@@ -2,7 +2,18 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Layout, Input, Dropdown, Avatar, Space, Badge, Popover, Button, Spin, Row, Col, message, AutoComplete, Rate } from 'antd';
-import { SearchOutlined,ShoppingOutlined, ShoppingCartOutlined, UserOutlined, LogoutOutlined, ArrowLeftOutlined, DeleteOutlined } from '@ant-design/icons';
+import {
+  SearchOutlined,
+  ShoppingOutlined,
+  ShoppingCartOutlined,
+  UserOutlined,
+  LogoutOutlined,
+  ArrowLeftOutlined,
+  DeleteOutlined,
+  WalletOutlined,
+  SafetyCertificateOutlined,
+  SwapOutlined,
+} from "@ant-design/icons";
 import { Helmet } from 'react-helmet-async';
 import styles from './productDetail.module.css';
 import { clearSession } from '../Utility/useAuth.js';
@@ -238,21 +249,50 @@ function ProductDetail() {
   };
 
   const userMenu = [
-    { 
-      key: '1', 
-      label: 'Tài khoản', 
-      icon: <UserOutlined />,
-      onClick: () => navigate('/profile') 
-    },
-    { type: 'divider' },
-    {key:'2',
-      label:'Đơn hàng của tôi',
-      icon: <ShoppingOutlined />,
-      onClick: ()=> navigate('/orders')
-    },
-    {type: 'divider'},
-    { key: '3', danger: true, label: 'Đăng xuất', icon: <LogoutOutlined />, onClick: handleLogout },
-  ];
+  {
+    key: "profile",
+    label: "Tài khoản",
+    icon: <UserOutlined />,
+    onClick: () => navigate("/profile"),
+  },
+  {
+    key: "vouchers",
+    label: "Ví của tôi",
+    icon: <WalletOutlined />,
+    onClick: () => navigate("/vouchers"),
+  },
+  {
+    key: "warranties",
+    label: "Bảo hành của tôi",
+    icon: <SafetyCertificateOutlined />,
+    onClick: () => navigate("/warranties"),
+  },
+  {
+    key: "returns",
+    label: "Đổi trả của tôi",
+    icon: <SwapOutlined />,
+    onClick: () => navigate("/returns"),
+  },
+  {
+    type: "divider",
+  },
+  {
+    key: "orders",
+    label: "Đơn hàng của tôi",
+    icon: <ShoppingOutlined />,
+    onClick: () => navigate("/orders"),
+  },
+  {
+    type: "divider",
+  },
+  {
+    key: "logout",
+    danger: true,
+    label: "Đăng xuất",
+    icon: <LogoutOutlined />,
+    onClick: handleLogout,
+  },
+];
 
   const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price || 0);
 

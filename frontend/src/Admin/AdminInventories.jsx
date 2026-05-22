@@ -22,6 +22,27 @@ import styles from "./AdminTable.module.css";
 const { RangePicker } = DatePicker;
 const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1/admin";
 
+const isExportTransaction = (value) => {
+  const normalizedValue = String(value || "").toUpperCase();
+  return normalizedValue.includes("XUAT") || normalizedValue.includes("XUẤT");
+};
+
+const getInventoryOrderCode = (record) =>
+  record.DonHang?.MaHienThi || record.MaHienThiLienQuan || "N/A";
+
+const getInventoryProductName = (record) => {
+  const productName = record.BienTheSanPham?.SanPham?.TenSanPham;
+  const variantName = record.BienTheSanPham?.TenBienThe;
+
+  return (
+    [productName, variantName].filter(Boolean).join(" - ") ||
+    `Biến thể #${record.MaBienThe}`
+  );
+};
+
+const getInventoryProductImage = (record) =>
+  record.BienTheSanPham?.HinhAnhBienThes?.[0]?.DuongDan;
+
 const InventoryHistory = () => {
   const [data, setData] = useState([]);
   const [searchText, setSearchText] = useState("");
@@ -107,6 +128,7 @@ const InventoryHistory = () => {
   const handleExportReport = async () => {
     try {
       setLoadingExport(true);
+
       let startDate = "";
       let endDate = "";
 
@@ -131,6 +153,7 @@ const InventoryHistory = () => {
       const blob = new Blob([response.data], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
+
       const downloadUrl = window.URL.createObjectURL(blob);
 
       const link = document.createElement("a");
@@ -159,10 +182,12 @@ const InventoryHistory = () => {
     setIsModalOpen(true);
     setLoadingDetail(true);
     setDetailData(null);
+
     try {
       const response = await axios.get(`${API_BASE}/inventories/${id}`, {
         withCredentials: true,
       });
+
       if (response.data.success) {
         setDetailData(response.data.result);
       }
@@ -179,7 +204,6 @@ const InventoryHistory = () => {
     setDetailData(null);
   };
 
-  // CẬP NHẬT CỘT DỮ LIỆU TẠI ĐÂY
   const columns = [
     {
       title: "Mã LS",
@@ -190,54 +214,25 @@ const InventoryHistory = () => {
     {
       title: "Sản phẩm",
       key: "SanPham",
+      width: 360,
       render: (_, record) => {
-        const productName = record.BienTheSanPham?.SanPham?.TenSanPham;
-        const variantName = record.BienTheSanPham?.TenBienThe;
-
-        // Format chuỗi hiển thị theo yêu cầu
-        const productDisplay = [productName, variantName]
-          .filter(Boolean)
-          .join(" - ");
-
-        // Lấy ảnh đầu tiên của biến thể
-        const imageUrl = record.BienTheSanPham?.HinhAnhBienThes?.[0]?.DuongDan;
+        const productDisplay = getInventoryProductName(record);
+        const imageUrl = getInventoryProductImage(record);
 
         return (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "12px",
-              minWidth: "250px",
-            }}
-          >
+          <div className={styles.inventoryProductCell}>
             {imageUrl ? (
               <img
                 src={imageUrl}
                 alt="variant"
-                style={{
-                  width: 44,
-                  height: 44,
-                  objectFit: "cover",
-                  borderRadius: "6px",
-                  border: "1px solid #f0f0f0",
-                  flexShrink: 0,
-                }}
+                className={styles.inventoryProductImage}
               />
             ) : (
-              <div
-                style={{
-                  width: 44,
-                  height: 44,
-                  backgroundColor: "#fafafa",
-                  borderRadius: "6px",
-                  border: "1px solid #f0f0f0",
-                  flexShrink: 0,
-                }}
-              />
+              <div className={styles.inventoryProductImagePlaceholder} />
             )}
-            <span style={{ fontWeight: 500, lineHeight: 1.4 }}>
-              {productDisplay || `Biến thể #${record.MaBienThe}`}
+
+            <span className={styles.inventoryProductName}>
+              {productDisplay}
             </span>
           </div>
         );
@@ -247,19 +242,25 @@ const InventoryHistory = () => {
       title: "Loại giao dịch",
       dataIndex: "LoaiGiaoDich",
       key: "LoaiGiaoDich",
-      render: (text) => {
-        let color = text.includes("Xuất") ? "volcano" : "green";
-        return <Tag color={color}>{text}</Tag>;
-      },
+      width: 160,
+      render: (text) => (
+        <Tag color={isExportTransaction(text) ? "volcano" : "green"}>
+          {text}
+        </Tag>
+      ),
     },
     {
       title: "SL Thay đổi",
       dataIndex: "SoLuongThayDoi",
       key: "SoLuongThayDoi",
+      width: 120,
       render: (val) => (
         <span
           className={styles.price}
-          style={{ color: val > 0 ? "green" : "#d0021b", fontWeight: "bold" }}
+          style={{
+            color: val > 0 ? "green" : "#d0021b",
+            fontWeight: "bold",
+          }}
         >
           {val > 0 ? `+${val}` : val}
         </span>
@@ -269,21 +270,25 @@ const InventoryHistory = () => {
       title: "Tồn kho",
       dataIndex: "TonKhoHienTai",
       key: "TonKhoHienTai",
+      width: 100,
     },
     {
       title: "Mã đơn hàng",
       key: "MaHienThi",
-      render: (_, record) => record.DonHang?.MaHienThi || "N/A",
+      width: 140,
+      render: (_, record) => getInventoryOrderCode(record),
     },
     {
       title: "Ngày tạo",
       dataIndex: "NgayTao",
       key: "NgayTao",
+      width: 160,
       render: (date) => dayjs(date).format("DD/MM/YYYY HH:mm"),
     },
     {
       title: "Thao tác",
       key: "action",
+      width: 120,
       render: (_, record) => (
         <Button
           type="link"
@@ -358,7 +363,7 @@ const InventoryHistory = () => {
           loading={loadingTable}
           onChange={handleTableChange}
           rowKey="MaLichSu"
-          scroll={{ x: "max-content" }} // Đảm bảo bảng không bị tràn khung khi cột Sản phẩm dài
+          scroll={{ x: 1200 }}
         />
       </div>
 
@@ -373,7 +378,7 @@ const InventoryHistory = () => {
             Đóng
           </Button>,
         ]}
-        width={700}
+        width={760}
       >
         <Spin spinning={loadingDetail}>
           {detailData && (
@@ -381,19 +386,7 @@ const InventoryHistory = () => {
               <div className={styles.variantSection}>
                 <h3 className={styles.variantTitle}>Thông tin giao dịch</h3>
 
-                {/* HIỂN THỊ SẢN PHẨM CỦA LỊCH SỬ TỒN KHO NÀY */}
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "16px",
-                    marginBottom: "20px",
-                    padding: "12px",
-                    backgroundColor: "#f9f9f9",
-                    borderRadius: "8px",
-                    border: "1px solid #f0f0f0",
-                  }}
-                >
+                <div className={styles.inventoryDetailProductBox}>
                   {detailData.history.BienTheSanPham?.HinhAnhBienThes?.[0]
                     ?.DuongDan ? (
                     <img
@@ -402,43 +395,23 @@ const InventoryHistory = () => {
                           .DuongDan
                       }
                       alt="variant"
-                      style={{
-                        width: 64,
-                        height: 64,
-                        objectFit: "cover",
-                        borderRadius: "6px",
-                        border: "1px solid #e8e8e8",
-                        flexShrink: 0,
-                      }}
+                      className={styles.inventoryDetailProductImage}
                     />
                   ) : (
-                    <div
-                      style={{
-                        width: 64,
-                        height: 64,
-                        backgroundColor: "#e8e8e8",
-                        borderRadius: "6px",
-                        flexShrink: 0,
-                      }}
-                    />
+                    <div className={styles.inventoryDetailImagePlaceholder} />
                   )}
+
                   <div>
-                    <div
-                      style={{
-                        fontSize: "16px",
-                        fontWeight: "600",
-                        color: "#173b63",
-                        marginBottom: "4px",
-                        lineHeight: 1.4,
-                      }}
-                    >
+                    <div className={styles.inventoryDetailProductName}>
                       {[
                         detailData.history.BienTheSanPham?.SanPham?.TenSanPham,
                         detailData.history.BienTheSanPham?.TenBienThe,
                       ]
                         .filter(Boolean)
-                        .join(" - ")}
+                        .join(" - ") ||
+                        `Biến thể #${detailData.history.MaBienThe}`}
                     </div>
+
                     <div style={{ color: "#666" }}>
                       Mã biến thể:{" "}
                       <strong>#{detailData.history.MaBienThe}</strong>
@@ -450,15 +423,17 @@ const InventoryHistory = () => {
                   <Descriptions.Item label="Mã lịch sử">
                     <strong>{detailData.history.MaLichSu}</strong>
                   </Descriptions.Item>
+
                   <Descriptions.Item label="Ngày tạo">
                     {dayjs(detailData.history.NgayTao).format(
                       "DD/MM/YYYY HH:mm",
                     )}
                   </Descriptions.Item>
+
                   <Descriptions.Item label="Loại giao dịch">
                     <Tag
                       color={
-                        detailData.history.LoaiGiaoDich.includes("Xuất")
+                        isExportTransaction(detailData.history.LoaiGiaoDich)
                           ? "volcano"
                           : "green"
                       }
@@ -466,9 +441,17 @@ const InventoryHistory = () => {
                       {detailData.history.LoaiGiaoDich}
                     </Tag>
                   </Descriptions.Item>
+
                   <Descriptions.Item label="Mã tham chiếu">
                     {detailData.history.MaThamChieu}
                   </Descriptions.Item>
+
+                  <Descriptions.Item label="Mã đơn hàng">
+                    {detailData.history.DonHang?.MaHienThi ||
+                      detailData.history.MaHienThiLienQuan ||
+                      "N/A"}
+                  </Descriptions.Item>
+
                   <Descriptions.Item label="Số lượng thay đổi">
                     <span
                       style={{
@@ -484,9 +467,11 @@ const InventoryHistory = () => {
                       {detailData.history.SoLuongThayDoi}
                     </span>
                   </Descriptions.Item>
+
                   <Descriptions.Item label="Tồn kho hiện tại">
                     <strong>{detailData.history.TonKhoHienTai}</strong>
                   </Descriptions.Item>
+
                   <Descriptions.Item label="Ghi chú" span={2}>
                     {detailData.history.GhiChu || "Không có"}
                   </Descriptions.Item>
@@ -501,16 +486,20 @@ const InventoryHistory = () => {
                   <h3 className={styles.variantTitle}>
                     Thông tin đơn hàng liên quan
                   </h3>
+
                   <Descriptions column={2} size="small">
                     <Descriptions.Item label="Mã đơn hàng">
                       <strong>{detailData.orderDetail.MaHienThi}</strong>
                     </Descriptions.Item>
+
                     <Descriptions.Item label="Khách hàng">
                       {detailData.orderDetail.KhachHang?.TenKhachHang || "N/A"}
                     </Descriptions.Item>
+
                     <Descriptions.Item label="SĐT">
                       {detailData.orderDetail.SDT || "N/A"}
                     </Descriptions.Item>
+
                     <Descriptions.Item label="Tổng tiền">
                       <span
                         className={styles.price}
@@ -522,24 +511,19 @@ const InventoryHistory = () => {
                         VNĐ
                       </span>
                     </Descriptions.Item>
+
                     <Descriptions.Item label="Địa chỉ giao hàng" span={2}>
                       {detailData.orderDetail.DiaChiGiaoHang}
                     </Descriptions.Item>
                   </Descriptions>
 
-                  {/* HIỂN THỊ DANH SÁCH SẢN PHẨM TRONG ĐƠN CÓ ẢNH */}
                   {detailData.orderDetail.ChiTietDonHangs?.length > 0 && (
                     <div style={{ marginTop: 16 }}>
                       <strong style={{ display: "block", marginBottom: 12 }}>
                         Sản phẩm trong đơn:
                       </strong>
-                      <div
-                        style={{
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: "10px",
-                        }}
-                      >
+
+                      <div className={styles.inventoryOrderItems}>
                         {detailData.orderDetail.ChiTietDonHangs.map((item) => {
                           const productDisplay = [
                             item.BienTheSanPham?.SanPham?.TenSanPham,
@@ -547,73 +531,46 @@ const InventoryHistory = () => {
                           ]
                             .filter(Boolean)
                             .join(" - ");
+
                           const imgUrl =
                             item.BienTheSanPham?.HinhAnhBienThes?.[0]?.DuongDan;
 
                           return (
                             <div
                               key={item.MaCTDH}
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "12px",
-                                padding: "10px",
-                                border: "1px solid #f0f0f0",
-                                borderRadius: "8px",
-                              }}
+                              className={styles.inventoryOrderItem}
                             >
                               {imgUrl ? (
                                 <img
                                   src={imgUrl}
                                   alt="product"
-                                  style={{
-                                    width: 50,
-                                    height: 50,
-                                    objectFit: "cover",
-                                    borderRadius: "4px",
-                                    border: "1px solid #f0f0f0",
-                                    flexShrink: 0,
-                                  }}
+                                  className={styles.inventoryOrderItemImage}
                                 />
                               ) : (
                                 <div
-                                  style={{
-                                    width: 50,
-                                    height: 50,
-                                    backgroundColor: "#fafafa",
-                                    borderRadius: "4px",
-                                    border: "1px solid #f0f0f0",
-                                    flexShrink: 0,
-                                  }}
+                                  className={
+                                    styles.inventoryOrderItemImagePlaceholder
+                                  }
                                 />
                               )}
-                              <div style={{ flex: 1 }}>
-                                <div
-                                  style={{ fontWeight: 500, lineHeight: 1.4 }}
-                                >
+
+                              <div className={styles.inventoryOrderItemInfo}>
+                                <div className={styles.inventoryOrderItemName}>
                                   {productDisplay}
                                 </div>
-                                <div
-                                  style={{
-                                    color: "#666",
-                                    fontSize: "13px",
-                                    marginTop: "4px",
-                                  }}
-                                >
+
+                                <div className={styles.inventoryOrderItemQty}>
                                   Số lượng:{" "}
                                   <strong style={{ color: "#333" }}>
                                     x{item.SoLuong}
                                   </strong>
                                 </div>
                               </div>
-                              <div
-                                style={{
-                                  fontWeight: 600,
-                                  color: "#173b63",
-                                  flexShrink: 0,
-                                }}
-                              >
-                                {Number(item.ThanhTien).toLocaleString("vi-VN")}{" "}
+
+                              <div className={styles.inventoryOrderItemPrice}>
+                                {Number(item.ThanhTien).toLocaleString(
+                                  "vi-VN",
+                                )}{" "}
                                 ₫
                               </div>
                             </div>
