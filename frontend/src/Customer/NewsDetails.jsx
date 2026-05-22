@@ -97,7 +97,7 @@ function NewsDetail() {
   return (
     <Layout className={styles.wrapper}>
       <Helmet>
-        <title>{news.TieuDe} - CeramicShop</title>
+        <title>{news.TieuDe} | Ceramic Shop</title>
         <meta name="description" content={news.TieuDe} />
         <meta property="og:title" content={news.TieuDe} />
         <meta property="og:description" content="Khám phá góc nhìn nghệ thuật và tinh hoa gốm sứ Bát Tràng cùng CeramicShop." />

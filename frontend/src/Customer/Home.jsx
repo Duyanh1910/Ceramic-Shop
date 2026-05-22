@@ -745,7 +745,7 @@ function Home() {
   return (
     <Layout className={styles.homeWrapper}>
       <Helmet>
-        <title>Trang chủ | The Ceramic Shop</title>
+        <title>Trang chủ | Ceramic Shop</title>
       </Helmet>
 
       <Header className={styles.topHeader}>

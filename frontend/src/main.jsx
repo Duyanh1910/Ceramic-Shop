@@ -7,7 +7,8 @@ import {
   Navigate,
   useLocation,
 } from "react-router-dom";
-import { HelmetProvider } from "react-helmet-async";
+import { Helmet, HelmetProvider } from "react-helmet-async";
+import { getPageTitle } from "./pageTitles.js";
 
 // --- CUSTOMER ---
 import LandingPage from "./Customer/LandingPage.jsx";
@@ -105,10 +106,21 @@ const ConditionalContactIcons = () => {
   return isAllowed ? <ContactIcons /> : null;
 };
 
+const RouteTitle = () => {
+  const location = useLocation();
+
+  return (
+    <Helmet>
+      <title>{getPageTitle(location.pathname)}</title>
+    </Helmet>
+  );
+};
+
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <HelmetProvider>
       <BrowserRouter>
+        <RouteTitle />
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />

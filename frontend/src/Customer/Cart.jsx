@@ -197,7 +197,7 @@ function Cart() {
   return (
     <Layout className={styles.cartWrapper}>
       <Helmet>
-        <title>Giỏ hàng | The Ceramic Shop</title>
+        <title>Giỏ hàng | Ceramic Shop</title>
       </Helmet>
 
       <Header className={styles.topHeader}>

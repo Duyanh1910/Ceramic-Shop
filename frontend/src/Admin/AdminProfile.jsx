@@ -123,7 +123,7 @@ function AdminProfile() {
   return (
     <Layout className={styles.profileWrapper}>
       <Helmet>
-        <title>Hồ Sơ | Admin Ceramic Shop</title>
+        <title>Hồ sơ quản trị | Ceramic Shop</title>
       </Helmet>
 
       <Content className={styles.mainContent}>
