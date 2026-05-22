@@ -29,7 +29,7 @@ const { Header, Sider, Content } = Layout;
 const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1";
 
 const STAFF_MENU = [
-  { key: "/admin", icon: <DashboardOutlined />, label: "Tổng quan" },
+  { key: "/admin", icon: <DashboardOutlined />, label: "Đơn hàng" },
   { key: "/admin/products", icon: <ShoppingOutlined />, label: "Sản phẩm" },
   {
     key: "/admin/categories",
@@ -55,7 +55,7 @@ const STAFF_MENU = [
 ];
 
 const ADMIN_MENU = [
-  { key: "/admin", icon: <DashboardOutlined />, label: "Tổng quan" },
+  { key: "/admin", icon: <DashboardOutlined />, label: "Đơn hàng" },
   { key: "/admin/products", icon: <ShoppingOutlined />, label: "Sản phẩm" },
   {
     key: "/admin/categories",
@@ -65,7 +65,7 @@ const ADMIN_MENU = [
   { key: "/admin/customers", icon: <TeamOutlined />, label: "Khách hàng" },
   { key: "/admin/staffs", icon: <UserOutlined />, label: "Nhân viên" },
   { key: "/admin/promotions", icon: <TagsOutlined />, label: "Khuyến mãi" },
-  { key: "/admin/reports", icon: <BarChartOutlined />, label: "Báo cáo" },
+  { key: "/admin/reports", icon: <BarChartOutlined />, label: "Báo cáo và Thống kê" },
   { key: "/admin/news", icon: <FileTextOutlined />, label: "Tin tức" },
   { key: "/admin/warranties", icon: <SafetyOutlined />, label: "Bảo hành" },
   { key: "/admin/risks", icon: <AlertOutlined />, label: "Rủi ro" },

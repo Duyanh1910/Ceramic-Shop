@@ -459,177 +459,181 @@ export default function AdminPromotions() {
   });
 
   const columns = [
-    {
-      title: "Mã / Tên",
-      key: "name",
-      width: 220,
-      render: (_, r) => (
-        <div className={styles.cellName}>
-          <div className={styles.cellTitle}>{r.TenKhuyenMai}</div>
+  {
+    title: "Mã / Tên",
+    key: "name",
+    width: 190,
+    render: (_, r) => (
+      <div className={styles.cellName}>
+        <div className={styles.cellTitle}>{r.TenKhuyenMai}</div>
 
-          {r.MaCode && (
-            <div className={styles.codeRow}>
-              <code className={styles.code}>{r.MaCode}</code>
+        {r.MaCode && (
+          <div className={styles.codeRow}>
+            <code className={styles.code}>{r.MaCode}</code>
 
-              <Tooltip title="Sao chép">
-                <CopyOutlined
-                  className={styles.copyIcon}
-                  onClick={() => handleCopyCode(r.MaCode)}
-                />
-              </Tooltip>
-            </div>
-          )}
-        </div>
-      ),
-    },
-    {
-      title: "Loại",
-      key: "type",
-      width: 130,
-      render: (_, r) => (
-        <div className={styles.cellTags}>
-          <Tag
-            color={VOUCHER_TYPE_COLOR[Number(r.LoaiVoucher)] || "blue"}
-            icon={
-              Number(r.LoaiVoucher) === 2 ? <TruckOutlined /> : <GiftOutlined />
-            }
-          >
-            {VOUCHER_TYPE_LABEL[Number(r.LoaiVoucher)] || "Giảm giá"}
-          </Tag>
-
-          <Tag color={Number(r.MaLoaiKM) === 1 ? "purple" : "magenta"}>
-            {Number(r.MaLoaiKM) === 1 ? "%" : "VNĐ"}
-          </Tag>
-        </div>
-      ),
-    },
-    {
-      title: "Danh mục",
-      key: "category",
-      width: 150,
-      render: (_, r) => (
-        <Tag
-          color={r.MaDanhMuc ? "geekblue" : "default"}
-          icon={r.MaDanhMuc ? <AppstoreOutlined /> : <TagsOutlined />}
-        >
-          {getCategoryName(r)}
-        </Tag>
-      ),
-    },
-    {
-      title: "Giá trị",
-      key: "value",
-      width: 160,
-      render: (_, r) => (
-        <div className={styles.cellValue}>
-          <span className={styles.valueMain}>
-            {Number(r.MaLoaiKM) === 1 ? `${Number(r.GiaTri)}%` : fmt(r.GiaTri)}
-          </span>
-
-          {Number(r.GiamToiDa || 0) > 0 && (
-            <span className={styles.valueSub}>Tối đa {fmt(r.GiamToiDa)}</span>
-          )}
-
-          {Number(r.GiaTriToiThieu || 0) > 0 && (
-            <span className={styles.valueSub}>
-              Đơn tối thiểu {fmt(r.GiaTriToiThieu)}
-            </span>
-          )}
-        </div>
-      ),
-    },
-    {
-      title: "Thời hạn",
-      key: "dates",
-      width: 160,
-      render: (_, r) => (
-        <div className={styles.cellDates}>
-          <div>{dayjs(r.NgayBatDau).format("DD/MM/YYYY")}</div>
-          <div className={styles.dateSep}>→</div>
-          <div>{dayjs(r.NgayKetThuc).format("DD/MM/YYYY")}</div>
-        </div>
-      ),
-    },
-    {
-      title: "Lượt / Còn",
-      key: "quota",
-      width: 100,
-      align: "center",
-      render: (_, r) => (
-        <div className={styles.cellQuota}>
-          <span
-            className={
-              Number(r.SoLuong) === 0 ? styles.quotaEmpty : styles.quotaOk
-            }
-          >
-            {r.SoLuong}
-          </span>
-          <span className={styles.quotaLabel}>lượt</span>
-        </div>
-      ),
-    },
-    {
-      title: "Trạng thái",
-      key: "status",
-      width: 130,
-      render: (_, r) => {
-        const st = statusInfo(r);
-
-        return (
-          <div className={styles.cellStatus}>
-            <Tag color={st.color} icon={st.icon}>
-              {st.label}
-            </Tag>
-
-            <Switch
-              size="small"
-              checked={Number(r.TrangThai) === 1}
-              onChange={() => handleToggleStatus(r)}
-              className={styles.statusSwitch}
-            />
+            <Tooltip title="Sao chép">
+              <CopyOutlined
+                className={styles.copyIcon}
+                onClick={() => handleCopyCode(r.MaCode)}
+              />
+            </Tooltip>
           </div>
-        );
-      },
-    },
-    {
-      title: "Thao tác",
-      key: "actions",
-      width: 110,
-      fixed: "right",
-      render: (_, r) => (
-        <Space size={4}>
-          <Tooltip title="Chỉnh sửa">
-            <Button
-              type="text"
-              icon={<EditOutlined />}
-              className={styles.btnEdit}
-              onClick={() => openEdit(r)}
-            />
-          </Tooltip>
+        )}
+      </div>
+    ),
+  },
+  {
+    title: "Loại",
+    key: "type",
+    width: 115,
+    render: (_, r) => (
+      <div className={styles.cellTags}>
+        <Tag
+          className={styles.compactTag}
+          color={VOUCHER_TYPE_COLOR[Number(r.LoaiVoucher)] || "blue"}
+          icon={
+            Number(r.LoaiVoucher) === 2 ? <TruckOutlined /> : <GiftOutlined />
+          }
+        >
+          {VOUCHER_TYPE_LABEL[Number(r.LoaiVoucher)] || "Giảm giá"}
+        </Tag>
 
-          {Number(r.TrangThai) === 1 && (
-            <Popconfirm
-              title="Tắt khuyến mãi này?"
-              description="Khuyến mãi sẽ không còn hiển thị cho khách hàng."
-              onConfirm={() => handleDisablePromotion(r)}
-              okText="Tắt"
-              cancelText="Huỷ"
-              okButtonProps={{ danger: true }}
-            >
-              <Tooltip title="Tắt khuyến mãi">
-                <Button
-                  type="text"
-                  danger
-                  icon={<StopOutlined />}
-                  className={styles.btnDisable}
-                />
-              </Tooltip>
-            </Popconfirm>
-          )}
-        </Space>
-      ),
+        <Tag
+          className={styles.compactTag}
+          color={Number(r.MaLoaiKM) === 1 ? "purple" : "magenta"}
+        >
+          {Number(r.MaLoaiKM) === 1 ? "%" : "VNĐ"}
+        </Tag>
+      </div>
+    ),
+  },
+  {
+    title: "Danh mục",
+    key: "category",
+    width: 120,
+    render: (_, r) => (
+      <Tag
+        className={styles.categoryTag}
+        color={r.MaDanhMuc ? "geekblue" : "default"}
+        icon={r.MaDanhMuc ? <AppstoreOutlined /> : <TagsOutlined />}
+      >
+        {getCategoryName(r)}
+      </Tag>
+    ),
+  },
+  {
+    title: "Giá trị",
+    key: "value",
+    width: 145,
+    render: (_, r) => (
+      <div className={styles.cellValue}>
+        <span className={styles.valueMain}>
+          {Number(r.MaLoaiKM) === 1 ? `${Number(r.GiaTri)}%` : fmt(r.GiaTri)}
+        </span>
+
+        {Number(r.GiamToiDa || 0) > 0 && (
+          <span className={styles.valueSub}>Tối đa {fmt(r.GiamToiDa)}</span>
+        )}
+
+        {Number(r.GiaTriToiThieu || 0) > 0 && (
+          <span className={styles.valueSub}>
+            Đơn tối thiểu {fmt(r.GiaTriToiThieu)}
+          </span>
+        )}
+      </div>
+    ),
+  },
+  {
+    title: "Thời hạn",
+    key: "dates",
+    width: 110,
+    render: (_, r) => (
+      <div className={styles.cellDates}>
+        <div>{dayjs(r.NgayBatDau).format("DD/MM/YYYY")}</div>
+        <div>{dayjs(r.NgayKetThuc).format("DD/MM/YYYY")}</div>
+      </div>
+    ),
+  },
+  {
+    title: "Lượt còn",
+    key: "quota",
+    width: 80,
+    align: "center",
+    render: (_, r) => (
+      <div className={styles.cellQuota}>
+        <span
+          className={
+            Number(r.SoLuong) === 0 ? styles.quotaEmpty : styles.quotaOk
+          }
+        >
+          {r.SoLuong}
+        </span>
+        <span className={styles.quotaLabel}>lượt</span>
+      </div>
+    ),
+  },
+  {
+    title: "Trạng thái",
+    key: "status",
+    width: 115,
+    render: (_, r) => {
+      const st = statusInfo(r);
+
+      return (
+        <div className={styles.cellStatus}>
+          <Tag className={styles.statusTag} color={st.color} icon={st.icon}>
+            {st.label}
+          </Tag>
+
+          <Switch
+            size="small"
+            checked={Number(r.TrangThai) === 1}
+            onChange={() => handleToggleStatus(r)}
+            className={styles.statusSwitch}
+          />
+        </div>
+      );
     },
-  ];
+  },
+  {
+    title: "Thao tác",
+    key: "actions",
+    width: 80,
+    align: "center",
+    render: (_, r) => (
+      <Space size={2} className={styles.actionSpace}>
+        <Tooltip title="Chỉnh sửa">
+          <Button
+            type="text"
+            icon={<EditOutlined />}
+            className={styles.btnEdit}
+            onClick={() => openEdit(r)}
+          />
+        </Tooltip>
+
+        {Number(r.TrangThai) === 1 && (
+          <Popconfirm
+            title="Tắt khuyến mãi này?"
+            description="Khuyến mãi sẽ không còn hiển thị cho khách hàng."
+            onConfirm={() => handleDisablePromotion(r)}
+            okText="Tắt"
+            cancelText="Huỷ"
+            okButtonProps={{ danger: true }}
+          >
+            <Tooltip title="Tắt khuyến mãi">
+              <Button
+                type="text"
+                danger
+                icon={<StopOutlined />}
+                className={styles.btnDisable}
+              />
+            </Tooltip>
+          </Popconfirm>
+        )}
+      </Space>
+    ),
+  },
+];
 
   return (
     <div className={styles.page}>
@@ -776,7 +780,8 @@ export default function AdminPromotions() {
           dataSource={filtered}
           rowKey="MaKhuyenMai"
           loading={loading}
-          scroll={{ x: 1220 }}
+          tableLayout="fixed"
+          scroll={{ x: 980 }}
           pagination={{
             pageSize: 10,
             showTotal: (total) => `${total} khuyến mãi`,
