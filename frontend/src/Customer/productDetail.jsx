@@ -5,8 +5,8 @@ import { Layout, Input, Dropdown, Avatar, Space, Badge, Popover, Button, Spin, R
 import { SearchOutlined,ShoppingOutlined, ShoppingCartOutlined, UserOutlined, LogoutOutlined, ArrowLeftOutlined, DeleteOutlined } from '@ant-design/icons';
 import { Helmet } from 'react-helmet-async';
 import styles from './productDetail.module.css';
-import { clearSession } from './useAuth.js';
-import Breadcrumb from './Breadcrumb.jsx';
+import { clearSession } from '../Utility/useAuth.js';
+import Breadcrumb from '../Utility/Breadcrumb.jsx';
 import ProductReview from './ProductReview.jsx';
 
 const { Header, Content } = Layout;

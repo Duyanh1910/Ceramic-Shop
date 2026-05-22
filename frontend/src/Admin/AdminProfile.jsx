@@ -1,37 +1,41 @@
 import React, { useState, useEffect } from 'react';
 import { Layout, Form, Input, Button, Avatar, message, Upload, Divider } from 'antd';
-import { UserOutlined, ArrowLeftOutlined, UploadOutlined, ProfileOutlined, ShoppingOutlined, LockOutlined, WalletOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
+import { UserOutlined, ArrowLeftOutlined, UploadOutlined, ProfileOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
-import styles from './Profile.module.css';
+import styles from '../Auth/Profile.module.css';
 
-import ChangePassword from './ChangePassword'; 
-import OrderTrackingMini from './OrderTrackingMini';
-import VoucherWalletContent from './VoucherWalletContent';
-import WarrantyContent from './WarrantyContent';
+import ChangePassword from '../Auth/ChangePassword'; 
 
 const { Header, Content, Sider } = Layout;
 
-function Profile() {
+function AdminProfile() {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState('');
   
   const [activeTab, setActiveTab] = useState('profile');
-  const isCustomer = localStorage.getItem('customer_session_active') === 'true';
+
   const CLOUDINARY_CLOUD_NAME = 'dcmwz0uis';
   const CLOUDINARY_UPLOAD_PRESET = 'the_creamy_shop';
+  const token = localStorage.getItem('admin_token') || localStorage.getItem('token');
+  const role = localStorage.getItem('admin_role') || localStorage.getItem('role');
 
   useEffect(() => {
-    fetchUserProfile();
-  }, []); 
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+    fetchAdminProfile();
+  }, [token, navigate]); 
 
-  const fetchUserProfile = async () => {
+  const fetchAdminProfile = async () => {
     try {
       const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/me', {
-       withCredentials: true
+        headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true
       });
 
       const userData = res.data.user || res.data.result;
@@ -41,7 +45,7 @@ function Profile() {
         setAvatarUrl(profileData?.Avatar || 'https://res.cloudinary.com/dcmwz0uis/image/upload/v1773107213/default_avatar_gojcul.png');
 
         form.setFieldsValue({
-          FullName: profileData?.TenKhachHang,
+          FullName: profileData?.TenNhanVien,
           Email: userData?.email || userData?.Email,
           SDT: profileData?.SDT,
           Diachi: profileData?.DiaChi || profileData?.Diachi, 
@@ -52,10 +56,8 @@ function Profile() {
       console.error(error);
       message.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
       
-      localStorage.removeItem('username');
-      localStorage.removeItem('name');
-      localStorage.removeItem('role');
-      localStorage.removeItem('avatar');
+      localStorage.clear();
+      navigate('/login');
     }
   };
 
@@ -91,21 +93,24 @@ function Profile() {
     setLoading(true);
     try {
       const payload = {
-        TenKhachHang: values.FullName,
+        TenNhanVien: values.FullName,
         SDT: values.SDT,
         DiaChi: values.Diachi,
         Avatar: values.Avatar || avatarUrl,
       };
 
-      const res = await axios.patch('https://ceramic-shop-u8ak.onrender.com/api/v1/customers/me', payload, {
-        withCredentials:true
+      const res = await axios.patch('https://ceramic-shop-u8ak.onrender.com/api/v1/staffs/me', payload, {
+        headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true
       });
 
       message.success('Cập nhật hồ sơ thành công!');
       
       const updatedData = res.data.result;
-      localStorage.setItem('name', updatedData?.TenKhachHang || values.FullName);
-      localStorage.setItem('avatar', updatedData?.Avatar || values.Avatar || avatarUrl);
+      localStorage.setItem('admin_username', updatedData?.TenNhanVien || values.FullName);
+      localStorage.setItem('admin_avatar', updatedData?.Avatar || values.Avatar || avatarUrl);
+
+      window.dispatchEvent(new Event('storage'));
       
     } catch (error) {
       const errorMsg = error.response?.data?.message || 'Cập nhật thất bại!';
@@ -118,27 +123,8 @@ function Profile() {
   return (
     <Layout className={styles.profileWrapper}>
       <Helmet>
-        <title>Hồ Sơ Của Tôi | Ceramic Shop</title>
+        <title>Hồ Sơ | Admin Ceramic Shop</title>
       </Helmet>
-
-      <Header className={styles.topHeader}>
-        <div className={styles.logoBox} onClick={() => navigate('/')}>
-          <img 
-            src="https://res.cloudinary.com/dcmwz0uis/image/upload/v1774819165/IMG_20260330_041641_qwo8lc.jpg" 
-            alt="Ceramic Shop Logo" 
-            className={styles.logoImg} 
-          />
-          <div className={styles.logoTextWrap}>
-            <h1 className={styles.logoText}>CERAMIC-SHOP</h1>
-            <span className={styles.logoSub}>TINH HOA GỐM SỨ VIỆT</span>
-          </div>
-        </div>
-        <div className={styles.headerActions}>
-          <Button type="link" icon={<ArrowLeftOutlined />} onClick={() => navigate('/home')} className={styles.btnBack}>
-            Quay về trang chủ
-          </Button>
-        </div>
-      </Header>
 
       <Content className={styles.mainContent}>
         <div className={styles.container}>
@@ -149,7 +135,7 @@ function Profile() {
                 <Avatar src={avatarUrl} size={60} className={styles.avatarMini} />
                 <div className={styles.userNameMini}>
                   <strong>{form.getFieldValue('FullName')}</strong>
-                  <span><UserOutlined /> Thành viên</span>
+                  <span><UserOutlined /> {role === 'Admin' ? 'Quản trị viên' : 'Nhân viên'}</span>
                 </div>
               </div>
               
@@ -166,26 +152,6 @@ function Profile() {
                 >
                   <LockOutlined /> Đổi mật khẩu
                 </li>
-                <li 
-                  className={activeTab === 'vouchers' ? styles.active : ''} 
-                  onClick={() => setActiveTab('vouchers')}
-                >
-                  <WalletOutlined /> Ví khuyến mại
-                </li>
-              {isCustomer && (
-                <li 
-                  className={activeTab === 'warranties' ? styles.active : ''} 
-                  onClick={() => setActiveTab('warranties')}
-                >
-                  <SafetyCertificateOutlined /> Bảo hành của tôi
-                </li>
-                )}
-                <li 
-                  className={activeTab === 'orders' ? styles.active : ''} 
-                  onClick={() => setActiveTab('orders')}
-                >
-                  <ShoppingOutlined /> Đơn hàng của tôi
-                </li>
               </ul>
             </Sider>
 
@@ -194,8 +160,8 @@ function Profile() {
               {activeTab === 'profile' && (
                 <>
                   <div className={styles.formHeader}>
-                    <h2 className={styles.formTitle}>Hồ Sơ Của Tôi</h2>
-                    <p className={styles.formSub}>Quản lý thông tin hồ sơ để bảo mật tài khoản</p>
+                    <h2 className={styles.formTitle}>Hồ Sơ Nhân Sự</h2>
+                    <p className={styles.formSub}>Quản lý thông tin hồ sơ và bảo mật tài khoản nội bộ</p>
                   </div>
                   <Divider className={styles.divider} />
 
@@ -270,18 +236,6 @@ function Profile() {
                 <ChangePassword />
               )}
 
-              {activeTab === 'orders' && (
-                <OrderTrackingMini />
-              )}
-
-              {activeTab === 'vouchers' && (
-                <VoucherWalletContent compact />
-              )}
-
-              {activeTab === 'warranties' && (
-                <WarrantyContent compact />
-              )}
-
             </Content>
           </Layout>
         </div>
@@ -290,4 +244,4 @@ function Profile() {
   );
 }
 
-export default Profile;
+export default AdminProfile;

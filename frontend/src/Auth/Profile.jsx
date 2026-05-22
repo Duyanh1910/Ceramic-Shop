@@ -1,41 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import { Layout, Form, Input, Button, Avatar, message, Upload, Divider } from 'antd';
-import { UserOutlined, ArrowLeftOutlined, UploadOutlined, ProfileOutlined, LockOutlined } from '@ant-design/icons';
+import { UserOutlined, ArrowLeftOutlined, UploadOutlined, ProfileOutlined, ShoppingOutlined, LockOutlined, WalletOutlined, SafetyCertificateOutlined, SwapOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
 import styles from './Profile.module.css';
 
 import ChangePassword from './ChangePassword'; 
+import OrderTrackingMini from '../Utility/OrderTrackingMini';
+import VoucherWalletContent from '../Customer/VoucherWalletContent';
+import WarrantyContent from '../Customer/WarrantyContent';
+import CustomerReturns from '../Customer/CustomerReturns';
 
 const { Header, Content, Sider } = Layout;
 
-function AdminProfile() {
+function Profile() {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState('');
   
   const [activeTab, setActiveTab] = useState('profile');
-
+  const isCustomer = localStorage.getItem('customer_session_active') === 'true';
   const CLOUDINARY_CLOUD_NAME = 'dcmwz0uis';
   const CLOUDINARY_UPLOAD_PRESET = 'the_creamy_shop';
-  const token = localStorage.getItem('admin_token') || localStorage.getItem('token');
-  const role = localStorage.getItem('admin_role') || localStorage.getItem('role');
 
   useEffect(() => {
-    if (!token) {
-      navigate('/login');
-      return;
-    }
-    fetchAdminProfile();
-  }, [token, navigate]); 
+    fetchUserProfile();
+  }, []); 
 
-  const fetchAdminProfile = async () => {
+  const fetchUserProfile = async () => {
     try {
       const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/me', {
-        headers: { Authorization: `Bearer ${token}` },
-        withCredentials: true
+       withCredentials: true
       });
 
       const userData = res.data.user || res.data.result;
@@ -45,7 +42,7 @@ function AdminProfile() {
         setAvatarUrl(profileData?.Avatar || 'https://res.cloudinary.com/dcmwz0uis/image/upload/v1773107213/default_avatar_gojcul.png');
 
         form.setFieldsValue({
-          FullName: profileData?.TenNhanVien,
+          FullName: profileData?.TenKhachHang,
           Email: userData?.email || userData?.Email,
           SDT: profileData?.SDT,
           Diachi: profileData?.DiaChi || profileData?.Diachi, 
@@ -56,8 +53,10 @@ function AdminProfile() {
       console.error(error);
       message.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
       
-      localStorage.clear();
-      navigate('/login');
+      localStorage.removeItem('username');
+      localStorage.removeItem('name');
+      localStorage.removeItem('role');
+      localStorage.removeItem('avatar');
     }
   };
 
@@ -93,24 +92,21 @@ function AdminProfile() {
     setLoading(true);
     try {
       const payload = {
-        TenNhanVien: values.FullName,
+        TenKhachHang: values.FullName,
         SDT: values.SDT,
         DiaChi: values.Diachi,
         Avatar: values.Avatar || avatarUrl,
       };
 
-      const res = await axios.patch('https://ceramic-shop-u8ak.onrender.com/api/v1/staffs/me', payload, {
-        headers: { Authorization: `Bearer ${token}` },
-        withCredentials: true
+      const res = await axios.patch('https://ceramic-shop-u8ak.onrender.com/api/v1/customers/me', payload, {
+        withCredentials:true
       });
 
       message.success('Cập nhật hồ sơ thành công!');
       
       const updatedData = res.data.result;
-      localStorage.setItem('admin_username', updatedData?.TenNhanVien || values.FullName);
-      localStorage.setItem('admin_avatar', updatedData?.Avatar || values.Avatar || avatarUrl);
-
-      window.dispatchEvent(new Event('storage'));
+      localStorage.setItem('name', updatedData?.TenKhachHang || values.FullName);
+      localStorage.setItem('avatar', updatedData?.Avatar || values.Avatar || avatarUrl);
       
     } catch (error) {
       const errorMsg = error.response?.data?.message || 'Cập nhật thất bại!';
@@ -123,8 +119,27 @@ function AdminProfile() {
   return (
     <Layout className={styles.profileWrapper}>
       <Helmet>
-        <title>Hồ Sơ | Admin Ceramic Shop</title>
+        <title>Hồ Sơ Của Tôi | Ceramic Shop</title>
       </Helmet>
+
+      <Header className={styles.topHeader}>
+        <div className={styles.logoBox} onClick={() => navigate('/')}>
+          <img 
+            src="https://res.cloudinary.com/dcmwz0uis/image/upload/v1774819165/IMG_20260330_041641_qwo8lc.jpg" 
+            alt="Ceramic Shop Logo" 
+            className={styles.logoImg} 
+          />
+          <div className={styles.logoTextWrap}>
+            <h1 className={styles.logoText}>CERAMIC-SHOP</h1>
+            <span className={styles.logoSub}>TINH HOA GỐM SỨ VIỆT</span>
+          </div>
+        </div>
+        <div className={styles.headerActions}>
+          <Button type="link" icon={<ArrowLeftOutlined />} onClick={() => navigate('/home')} className={styles.btnBack}>
+            Quay về trang chủ
+          </Button>
+        </div>
+      </Header>
 
       <Content className={styles.mainContent}>
         <div className={styles.container}>
@@ -135,7 +150,7 @@ function AdminProfile() {
                 <Avatar src={avatarUrl} size={60} className={styles.avatarMini} />
                 <div className={styles.userNameMini}>
                   <strong>{form.getFieldValue('FullName')}</strong>
-                  <span><UserOutlined /> {role === 'Admin' ? 'Quản trị viên' : 'Nhân viên'}</span>
+                  <span><UserOutlined /> Thành viên</span>
                 </div>
               </div>
               
@@ -152,6 +167,34 @@ function AdminProfile() {
                 >
                   <LockOutlined /> Đổi mật khẩu
                 </li>
+                <li 
+                  className={activeTab === 'vouchers' ? styles.active : ''} 
+                  onClick={() => setActiveTab('vouchers')}
+                >
+                  <WalletOutlined /> Ví khuyến mại
+                </li>
+              {isCustomer && (
+                <li 
+                  className={activeTab === 'warranties' ? styles.active : ''} 
+                  onClick={() => setActiveTab('warranties')}
+                >
+                  <SafetyCertificateOutlined /> Bảo hành của tôi
+                </li>
+                )}
+              {isCustomer && (
+            <li
+              className={activeTab === 'returns' ? styles.active : ''}
+              onClick={() => setActiveTab('returns')}
+            >
+              <SwapOutlined /> Đổi trả của tôi
+            </li>
+                )}
+                <li 
+                  className={activeTab === 'orders' ? styles.active : ''} 
+                  onClick={() => setActiveTab('orders')}
+                >
+                  <ShoppingOutlined /> Đơn hàng của tôi
+                </li>
               </ul>
             </Sider>
 
@@ -160,8 +203,8 @@ function AdminProfile() {
               {activeTab === 'profile' && (
                 <>
                   <div className={styles.formHeader}>
-                    <h2 className={styles.formTitle}>Hồ Sơ Nhân Sự</h2>
-                    <p className={styles.formSub}>Quản lý thông tin hồ sơ và bảo mật tài khoản nội bộ</p>
+                    <h2 className={styles.formTitle}>Hồ Sơ Của Tôi</h2>
+                    <p className={styles.formSub}>Quản lý thông tin hồ sơ để bảo mật tài khoản</p>
                   </div>
                   <Divider className={styles.divider} />
 
@@ -236,6 +279,21 @@ function AdminProfile() {
                 <ChangePassword />
               )}
 
+              {activeTab === 'orders' && (
+                <OrderTrackingMini />
+              )}
+
+              {activeTab === 'vouchers' && (
+                <VoucherWalletContent compact />
+              )}
+
+              {activeTab === 'warranties' && (
+                <WarrantyContent compact />
+              )}
+
+              {activeTab === 'returns' && (
+                <CustomerReturns compact />
+              )}
             </Content>
           </Layout>
         </div>
@@ -244,4 +302,4 @@ function AdminProfile() {
   );
 }
 
-export default AdminProfile;
+export default Profile;

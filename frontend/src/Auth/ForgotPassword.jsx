@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
 import styles from './ForgotPassword.module.css';
-import Chibi from './Chibi.jsx';
+import Chibi from '../Utility/Chibi.jsx';
 
 const API_BASE = 'https://ceramic-shop-u8ak.onrender.com/api/v1';
 const OTP_LENGTH = 6;

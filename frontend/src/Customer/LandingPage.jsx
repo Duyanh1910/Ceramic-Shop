@@ -21,8 +21,8 @@ import {
     HeartOutlined
 } from '@ant-design/icons';
 import styles from './LandingPage.module.css';
-import { saveSession } from './useAuth.js';
-import Footer from './Footer'; 
+import { saveSession } from '../Utility/useAuth.js';
+import Footer from '../Utility/Footer'; 
 
 const bannerSlides = [
     {

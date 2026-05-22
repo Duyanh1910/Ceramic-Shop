@@ -23,6 +23,7 @@ import vnpayRoutes from "./payment/vnpay.route.js";
 import momoRoutes from "./payment/momo.route.js";
 import newsRoutes from "./news.route.js";
 import warrantyRoutes from "./warranty.route.js";
+import returnRoutes from "./return.route.js";
 
 import statisticsRoutes from "./admin/statistics.route.js";
 import afterSalesRoutes from "./admin/after_sales.route.js";
@@ -96,6 +97,8 @@ router.use(
 );
 
 router.use("/warranties", jwtMiddleware, checkRole("Customer"), warrantyRoutes);
+
+router.use("/returns", jwtMiddleware, checkRole("Customer"), returnRoutes);
 
 router.use(
   "/admin/statistics",

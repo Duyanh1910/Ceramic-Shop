@@ -11,7 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import axios from 'axios';
 import styles from './Cart.module.css';
-import AddressSelector from './AddressSelector';
+import AddressSelector from '../Utility/AddressSelector';
 
 const { Header, Content } = Layout;
 
