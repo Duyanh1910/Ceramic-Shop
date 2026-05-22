@@ -6,13 +6,22 @@ import {
 
 export const ListInventoryHistoryController = async (req, res, next) => {
   try {
-    const { page = 1, limit = 10, search = "", order = "DESC" } = req.query;
+    const {
+      page = 1,
+      limit = 10,
+      search = "",
+      order = "DESC",
+      startDate,
+      endDate,
+    } = req.query;
 
     const histories = await getAllInventoryHistoryService(
       Number(page),
       Number(limit),
       search,
       order,
+      startDate,
+      endDate,
     );
 
     return res.status(200).json({

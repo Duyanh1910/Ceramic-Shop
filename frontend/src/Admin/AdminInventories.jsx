@@ -179,12 +179,69 @@ const InventoryHistory = () => {
     setDetailData(null);
   };
 
+  // CẬP NHẬT CỘT DỮ LIỆU TẠI ĐÂY
   const columns = [
     {
       title: "Mã LS",
       dataIndex: "MaLichSu",
       key: "MaLichSu",
-      width: 100,
+      width: 90,
+    },
+    {
+      title: "Sản phẩm",
+      key: "SanPham",
+      render: (_, record) => {
+        const productName = record.BienTheSanPham?.SanPham?.TenSanPham;
+        const variantName = record.BienTheSanPham?.TenBienThe;
+
+        // Format chuỗi hiển thị theo yêu cầu
+        const productDisplay = [productName, variantName]
+          .filter(Boolean)
+          .join(" - ");
+
+        // Lấy ảnh đầu tiên của biến thể
+        const imageUrl = record.BienTheSanPham?.HinhAnhBienThes?.[0]?.DuongDan;
+
+        return (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              minWidth: "250px",
+            }}
+          >
+            {imageUrl ? (
+              <img
+                src={imageUrl}
+                alt="variant"
+                style={{
+                  width: 44,
+                  height: 44,
+                  objectFit: "cover",
+                  borderRadius: "6px",
+                  border: "1px solid #f0f0f0",
+                  flexShrink: 0,
+                }}
+              />
+            ) : (
+              <div
+                style={{
+                  width: 44,
+                  height: 44,
+                  backgroundColor: "#fafafa",
+                  borderRadius: "6px",
+                  border: "1px solid #f0f0f0",
+                  flexShrink: 0,
+                }}
+              />
+            )}
+            <span style={{ fontWeight: 500, lineHeight: 1.4 }}>
+              {productDisplay || `Biến thể #${record.MaBienThe}`}
+            </span>
+          </div>
+        );
+      },
     },
     {
       title: "Loại giao dịch",
@@ -202,7 +259,7 @@ const InventoryHistory = () => {
       render: (val) => (
         <span
           className={styles.price}
-          style={{ color: val > 0 ? "green" : "#d0021b" }}
+          style={{ color: val > 0 ? "green" : "#d0021b", fontWeight: "bold" }}
         >
           {val > 0 ? `+${val}` : val}
         </span>
@@ -301,6 +358,7 @@ const InventoryHistory = () => {
           loading={loadingTable}
           onChange={handleTableChange}
           rowKey="MaLichSu"
+          scroll={{ x: "max-content" }} // Đảm bảo bảng không bị tràn khung khi cột Sản phẩm dài
         />
       </div>
 
@@ -322,6 +380,72 @@ const InventoryHistory = () => {
             <>
               <div className={styles.variantSection}>
                 <h3 className={styles.variantTitle}>Thông tin giao dịch</h3>
+
+                {/* HIỂN THỊ SẢN PHẨM CỦA LỊCH SỬ TỒN KHO NÀY */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "16px",
+                    marginBottom: "20px",
+                    padding: "12px",
+                    backgroundColor: "#f9f9f9",
+                    borderRadius: "8px",
+                    border: "1px solid #f0f0f0",
+                  }}
+                >
+                  {detailData.history.BienTheSanPham?.HinhAnhBienThes?.[0]
+                    ?.DuongDan ? (
+                    <img
+                      src={
+                        detailData.history.BienTheSanPham.HinhAnhBienThes[0]
+                          .DuongDan
+                      }
+                      alt="variant"
+                      style={{
+                        width: 64,
+                        height: 64,
+                        objectFit: "cover",
+                        borderRadius: "6px",
+                        border: "1px solid #e8e8e8",
+                        flexShrink: 0,
+                      }}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        width: 64,
+                        height: 64,
+                        backgroundColor: "#e8e8e8",
+                        borderRadius: "6px",
+                        flexShrink: 0,
+                      }}
+                    />
+                  )}
+                  <div>
+                    <div
+                      style={{
+                        fontSize: "16px",
+                        fontWeight: "600",
+                        color: "#173b63",
+                        marginBottom: "4px",
+                        lineHeight: 1.4,
+                      }}
+                    >
+                      {[
+                        detailData.history.BienTheSanPham?.SanPham?.TenSanPham,
+                        detailData.history.BienTheSanPham?.TenBienThe,
+                      ]
+                        .filter(Boolean)
+                        .join(" - ")}
+                    </div>
+                    <div style={{ color: "#666" }}>
+                      Mã biến thể:{" "}
+                      <strong>#{detailData.history.MaBienThe}</strong>
+                    </div>
+                  </div>
+                </div>
+
                 <Descriptions column={2} size="small">
                   <Descriptions.Item label="Mã lịch sử">
                     <strong>{detailData.history.MaLichSu}</strong>
@@ -353,6 +477,7 @@ const InventoryHistory = () => {
                             ? "green"
                             : "#d0021b",
                         fontWeight: "bold",
+                        fontSize: "15px",
                       }}
                     >
                       {detailData.history.SoLuongThayDoi > 0 ? "+" : ""}
@@ -369,7 +494,10 @@ const InventoryHistory = () => {
               </div>
 
               {detailData.orderDetail && (
-                <div className={styles.variantSection}>
+                <div
+                  className={styles.variantSection}
+                  style={{ marginTop: 24 }}
+                >
                   <h3 className={styles.variantTitle}>
                     Thông tin đơn hàng liên quan
                   </h3>
@@ -384,7 +512,10 @@ const InventoryHistory = () => {
                       {detailData.orderDetail.SDT || "N/A"}
                     </Descriptions.Item>
                     <Descriptions.Item label="Tổng tiền">
-                      <span className={styles.price}>
+                      <span
+                        className={styles.price}
+                        style={{ color: "#d0021b", fontWeight: "bold" }}
+                      >
                         {Number(
                           detailData.orderDetail.TongThanhToan,
                         ).toLocaleString("vi-VN")}{" "}
@@ -396,17 +527,99 @@ const InventoryHistory = () => {
                     </Descriptions.Item>
                   </Descriptions>
 
+                  {/* HIỂN THỊ DANH SÁCH SẢN PHẨM TRONG ĐƠN CÓ ẢNH */}
                   {detailData.orderDetail.ChiTietDonHangs?.length > 0 && (
-                    <div style={{ marginTop: 12 }}>
-                      <strong>Sản phẩm trong đơn:</strong>
-                      <ul style={{ paddingLeft: 20, marginTop: 8 }}>
-                        {detailData.orderDetail.ChiTietDonHangs.map((item) => (
-                          <li key={item.MaCTDH} style={{ marginBottom: 4 }}>
-                            {item.BienTheSanPham?.SanPham?.TenSanPham} -{" "}
-                            {item.BienTheSanPham?.TenBienThe} (x{item.SoLuong})
-                          </li>
-                        ))}
-                      </ul>
+                    <div style={{ marginTop: 16 }}>
+                      <strong style={{ display: "block", marginBottom: 12 }}>
+                        Sản phẩm trong đơn:
+                      </strong>
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "10px",
+                        }}
+                      >
+                        {detailData.orderDetail.ChiTietDonHangs.map((item) => {
+                          const productDisplay = [
+                            item.BienTheSanPham?.SanPham?.TenSanPham,
+                            item.BienTheSanPham?.TenBienThe,
+                          ]
+                            .filter(Boolean)
+                            .join(" - ");
+                          const imgUrl =
+                            item.BienTheSanPham?.HinhAnhBienThes?.[0]?.DuongDan;
+
+                          return (
+                            <div
+                              key={item.MaCTDH}
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "12px",
+                                padding: "10px",
+                                border: "1px solid #f0f0f0",
+                                borderRadius: "8px",
+                              }}
+                            >
+                              {imgUrl ? (
+                                <img
+                                  src={imgUrl}
+                                  alt="product"
+                                  style={{
+                                    width: 50,
+                                    height: 50,
+                                    objectFit: "cover",
+                                    borderRadius: "4px",
+                                    border: "1px solid #f0f0f0",
+                                    flexShrink: 0,
+                                  }}
+                                />
+                              ) : (
+                                <div
+                                  style={{
+                                    width: 50,
+                                    height: 50,
+                                    backgroundColor: "#fafafa",
+                                    borderRadius: "4px",
+                                    border: "1px solid #f0f0f0",
+                                    flexShrink: 0,
+                                  }}
+                                />
+                              )}
+                              <div style={{ flex: 1 }}>
+                                <div
+                                  style={{ fontWeight: 500, lineHeight: 1.4 }}
+                                >
+                                  {productDisplay}
+                                </div>
+                                <div
+                                  style={{
+                                    color: "#666",
+                                    fontSize: "13px",
+                                    marginTop: "4px",
+                                  }}
+                                >
+                                  Số lượng:{" "}
+                                  <strong style={{ color: "#333" }}>
+                                    x{item.SoLuong}
+                                  </strong>
+                                </div>
+                              </div>
+                              <div
+                                style={{
+                                  fontWeight: 600,
+                                  color: "#173b63",
+                                  flexShrink: 0,
+                                }}
+                              >
+                                {Number(item.ThanhTien).toLocaleString("vi-VN")}{" "}
+                                ₫
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                   )}
                 </div>

@@ -6,6 +6,7 @@ import {
   OrderModel,
   VariantModel,
   ProductModel,
+  VariantImageModel,
   ReturnModel,
   OrderDetailModel,
 } from "../models/index.js";
@@ -178,11 +179,63 @@ const getProductDisplay = (history) => {
 const getRelatedOrderCode = (history) =>
   history.DonHang?.MaHienThi || history.MaHienThiLienQuan || "";
 
+const buildInventoryHistoryWhere = (startDate, endDate, extra = {}) => {
+  const where = {
+    LoaiThamChieu: {
+      [Op.ne]: "Phiếu Nhập",
+    },
+    ...extra,
+  };
+
+  if (startDate || endDate) {
+    where.NgayTao = {};
+
+    if (startDate) {
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      where.NgayTao[Op.gte] = start;
+    }
+
+    if (endDate) {
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      where.NgayTao[Op.lte] = end;
+    }
+  }
+
+  return where;
+};
+
+const inventoryHistoryInclude = [
+  {
+    model: OrderModel,
+    as: "DonHang",
+    required: false,
+  },
+  {
+    model: VariantModel,
+    attributes: ["MaBienThe", "TenBienThe"],
+    required: false,
+    include: [
+      {
+        model: ProductModel,
+        attributes: ["MaSanPham", "TenSanPham"],
+        required: false,
+      },
+      {
+        model: VariantImageModel,
+      },
+    ],
+  },
+];
+
 export const getAllInventoryHistoryService = async (
   page = 1,
   limit = 10,
   search = "",
   order = "DESC",
+  startDate,
+  endDate,
 ) => {
   const currentPage = Math.max(Number(page) || 1, 1);
   const currentLimit = Math.max(Number(limit) || 10, 1);
@@ -191,30 +244,8 @@ export const getAllInventoryHistoryService = async (
   const keyword = String(search || "").trim();
 
   const rows = await InventoryHistoryModel.findAll({
-    where: {
-      LoaiThamChieu: {
-        [Op.ne]: "Phiếu Nhập",
-      },
-    },
-    include: [
-      {
-        model: OrderModel,
-        as: "DonHang",
-        required: false,
-      },
-      {
-        model: VariantModel,
-        attributes: ["MaBienThe", "TenBienThe"],
-        required: false,
-        include: [
-          {
-            model: ProductModel,
-            attributes: ["MaSanPham", "TenSanPham"],
-            required: false,
-          },
-        ],
-      },
-    ],
+    where: buildInventoryHistoryWhere(startDate, endDate),
+    include: inventoryHistoryInclude,
     order: [["MaLichSu", sortOrder]],
   });
 
@@ -242,31 +273,8 @@ export const getAllInventoryHistoryService = async (
 
 export const showInventoryHistoryService = async (idInventory) => {
   const historyRow = await InventoryHistoryModel.findOne({
-    where: {
-      MaLichSu: idInventory,
-      LoaiThamChieu: {
-        [Op.ne]: "Phiếu Nhập",
-      },
-    },
-    include: [
-      {
-        model: OrderModel,
-        as: "DonHang",
-        required: false,
-      },
-      {
-        model: VariantModel,
-        attributes: ["MaBienThe", "TenBienThe"],
-        required: false,
-        include: [
-          {
-            model: ProductModel,
-            attributes: ["MaSanPham", "TenSanPham"],
-            required: false,
-          },
-        ],
-      },
-    ],
+    where: buildInventoryHistoryWhere(null, null, { MaLichSu: idInventory }),
+    include: inventoryHistoryInclude,
   });
 
   const [history] = await enrichInventoryHistories(
@@ -334,49 +342,9 @@ export const exportInventoryHistoryXlsxService = async (
   const sortOrder = String(order).toUpperCase() === "ASC" ? "ASC" : "DESC";
   const keyword = String(search || "").trim();
 
-  const whereCondition = {
-    LoaiThamChieu: {
-      [Op.ne]: "Phiếu Nhập",
-    },
-  };
-
-  if (startDate || endDate) {
-    whereCondition.NgayTao = {};
-
-    if (startDate) {
-      const start = new Date(startDate);
-      start.setHours(0, 0, 0, 0);
-      whereCondition.NgayTao[Op.gte] = start;
-    }
-
-    if (endDate) {
-      const end = new Date(endDate);
-      end.setHours(23, 59, 59, 999);
-      whereCondition.NgayTao[Op.lte] = end;
-    }
-  }
-
   const rows = await InventoryHistoryModel.findAll({
-    where: whereCondition,
-    include: [
-      {
-        model: OrderModel,
-        as: "DonHang",
-        required: false,
-      },
-      {
-        model: VariantModel,
-        attributes: ["MaBienThe", "TenBienThe"],
-        required: false,
-        include: [
-          {
-            model: ProductModel,
-            attributes: ["MaSanPham", "TenSanPham"],
-            required: false,
-          },
-        ],
-      },
-    ],
+    where: buildInventoryHistoryWhere(startDate, endDate),
+    include: inventoryHistoryInclude,
     order: [["MaLichSu", sortOrder]],
   });
 
