@@ -220,6 +220,14 @@ OrderModel.hasMany(RiskModel, {
 RiskModel.belongsTo(OrderModel, {
   foreignKey: "MaDonHang",
 });
+StaffModel.hasMany(RiskModel, {
+  foreignKey: "MaNhanVienPhuTrach",
+  as: "RuiRoPhuTrach",
+});
+RiskModel.belongsTo(StaffModel, {
+  foreignKey: "MaNhanVienPhuTrach",
+  as: "NhanVienPhuTrach",
+});
 
 OrderDetailModel.hasMany(WarrantyModel, {
   foreignKey: "MaCTDH",
