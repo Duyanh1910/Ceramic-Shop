@@ -160,3 +160,17 @@
     align-items: flex-start;
   }
 }
+.riskDetailModal :global(.ant-modal-content) {
+  max-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
+}
+
+.riskDetailModal :global(.ant-modal-body) {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.riskDetailModal :global(.ant-modal-footer) {
+  flex-shrink: 0;
+}

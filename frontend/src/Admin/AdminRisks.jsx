@@ -639,10 +639,12 @@ export default function AdminRisks() {
       />
 
       <Modal
+        className={styles.riskDetailModal}
         open={isDetailOpen}
         onCancel={closeDetail}
         title={`Chi tiết rủi ro #${selectedRisk?.MaRuiRo || ""}`}
         width={980}
+        style={{ top: 24 }}
         footer={[
           <Button key="close" onClick={closeDetail}>
             Đóng
@@ -659,7 +661,7 @@ export default function AdminRisks() {
         destroyOnHidden
         styles={{
           body: {
-            maxHeight: "75vh",
+            maxHeight: "calc(100vh - 220px)",
             overflowY: "auto",
             paddingRight: 8,
           },
