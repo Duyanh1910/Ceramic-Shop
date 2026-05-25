@@ -7,7 +7,6 @@ import {
   Empty,
   Form,
   Input,
-  InputNumber,
   message,
   Modal,
   Radio,
@@ -246,6 +245,19 @@ const getProductImage = (item) => {
   return images?.[0]?.DuongDan || product?.Thumbnail || "";
 };
 
+const toStaffOption = (staff) => {
+  const staffName = staff.TenNhanVien || "Nhân viên";
+  const staffPhone = staff.SDT || "Chưa có SĐT";
+  const username = staff.TaiKhoan?.Username || "";
+
+  return {
+    value: staff.MaNhanVien,
+    label: `${staffName} - NV #${staff.MaNhanVien} - ${staffPhone}`,
+    searchText:
+      `${staff.MaNhanVien} ${staffName} ${staffPhone} ${username}`.toLowerCase(),
+  };
+};
+
 export default function AdminRisks() {
   const [form] = Form.useForm();
 
@@ -265,6 +277,39 @@ export default function AdminRisks() {
   const [source, setSource] = useState(ALL_VALUE);
 
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+
+  const [staffOptions, setStaffOptions] = useState([]);
+  const [staffLoading, setStaffLoading] = useState(false);
+
+  const fetchStaffOptions = async (keyword = "") => {
+    setStaffLoading(true);
+
+    try {
+      const res = await axios.get(`${API_BASE}/admin/staffs`, {
+        params: {
+          page: 1,
+          limit: 50,
+          search: keyword.trim(),
+          sort: "TenNhanVien",
+          order: "ASC",
+        },
+        ...authConfig(),
+      });
+
+      const staffs = res.data?.result?.data || [];
+      setStaffOptions(staffs.map(toStaffOption));
+    } catch (err) {
+      message.error(
+        err.response?.data?.message || "Không thể tải danh sách nhân viên!",
+      );
+    } finally {
+      setStaffLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStaffOptions();
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -318,6 +363,18 @@ export default function AdminRisks() {
       );
 
       const risk = res.data?.result || null;
+
+      if (risk?.NhanVienPhuTrach?.MaNhanVien) {
+        const assignedStaffOption = toStaffOption(risk.NhanVienPhuTrach);
+
+        setStaffOptions((prev) => {
+          const exists = prev.some(
+            (item) => item.value === assignedStaffOption.value,
+          );
+
+          return exists ? prev : [assignedStaffOption, ...prev];
+        });
+      }
 
       setSelectedRisk(risk);
 
@@ -376,6 +433,21 @@ export default function AdminRisks() {
 
       message.success(res.data?.message || "Cập nhật rủi ro thành công!");
       setSelectedRisk(res.data?.result || null);
+
+      if (res.data?.result?.NhanVienPhuTrach?.MaNhanVien) {
+        const assignedStaffOption = toStaffOption(
+          res.data.result.NhanVienPhuTrach,
+        );
+
+        setStaffOptions((prev) => {
+          const exists = prev.some(
+            (item) => item.value === assignedStaffOption.value,
+          );
+
+          return exists ? prev : [assignedStaffOption, ...prev];
+        });
+      }
+
       await fetchData();
     } catch (err) {
       message.error(
@@ -835,14 +907,34 @@ export default function AdminRisks() {
 
                     <Form.Item
                       name="MaNhanVienPhuTrach"
-                      label="Mã nhân viên phụ trách"
+                      label="Nhân viên phụ trách"
                       tooltip="Có thể để trống nếu chưa cần gán nhân viên."
                     >
-                      <InputNumber
-                        min={1}
-                        precision={0}
-                        style={{ width: "100%" }}
-                        placeholder="VD: 1"
+                      <Select
+                        allowClear
+                        showSearch
+                        loading={staffLoading}
+                        options={staffOptions}
+                        placeholder="Tìm theo tên, SĐT hoặc mã nhân viên"
+                        optionFilterProp="searchText"
+                        filterOption={(input, option) =>
+                          String(option?.searchText || option?.label || "")
+                            .toLowerCase()
+                            .includes(input.toLowerCase())
+                        }
+                        onSearch={fetchStaffOptions}
+                        onFocus={() => {
+                          if (staffOptions.length === 0) {
+                            fetchStaffOptions();
+                          }
+                        }}
+                        notFoundContent={
+                          staffLoading ? (
+                            <Spin size="small" />
+                          ) : (
+                            "Không tìm thấy nhân viên"
+                          )
+                        }
                       />
                     </Form.Item>
                   </div>
