@@ -39,6 +39,7 @@ const { Title, Text } = Typography;
 const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1";
 
 const ALL_VALUE = "all";
+const PAGE_SIZE = 10;
 
 const RISK_STATUS = {
   UNHANDLED: 0,
@@ -141,19 +142,35 @@ const renderStatus = (status) => {
   const statusNumber = Number(status);
 
   if (statusNumber === RISK_STATUS.UNHANDLED) {
-    return <Tag color="gold" icon={<ClockCircleOutlined />}>Chưa xử lý</Tag>;
+    return (
+      <Tag color="gold" icon={<ClockCircleOutlined />}>
+        Chưa xử lý
+      </Tag>
+    );
   }
 
   if (statusNumber === RISK_STATUS.PROCESSING) {
-    return <Tag color="blue" icon={<WarningOutlined />}>Đang xử lý</Tag>;
+    return (
+      <Tag color="blue" icon={<WarningOutlined />}>
+        Đang xử lý
+      </Tag>
+    );
   }
 
   if (statusNumber === RISK_STATUS.RESOLVED) {
-    return <Tag color="green" icon={<CheckCircleOutlined />}>Đã xử lý</Tag>;
+    return (
+      <Tag color="green" icon={<CheckCircleOutlined />}>
+        Đã xử lý
+      </Tag>
+    );
   }
 
   if (statusNumber === RISK_STATUS.IGNORED) {
-    return <Tag color="default" icon={<StopOutlined />}>Bỏ qua</Tag>;
+    return (
+      <Tag color="default" icon={<StopOutlined />}>
+        Bỏ qua
+      </Tag>
+    );
   }
 
   return <Tag>{status}</Tag>;
@@ -170,6 +187,21 @@ const renderSource = (source) => (
     {RISK_SOURCE_LABEL[source] || source || "Không rõ"}
   </Tag>
 );
+
+const renderHandledDate = (value, status) => {
+  if (value) {
+    return dayjs(value).format("DD/MM/YYYY HH:mm");
+  }
+
+  if (
+    Number(status) === RISK_STATUS.RESOLVED ||
+    Number(status) === RISK_STATUS.IGNORED
+  ) {
+    return "Chưa có ngày xử lý";
+  }
+
+  return "Chưa xử lý";
+};
 
 const getOrder = (risk) => risk?.DonHang || risk?.Order || {};
 const getOrderItems = (order) =>
@@ -256,7 +288,7 @@ export default function AdminRisks() {
       const res = await axios.get(`${API_BASE}/admin/after_sales/risks`, {
         params: {
           page,
-          limit: 10,
+          limit: PAGE_SIZE,
           search: search.trim(),
           status: status === ALL_VALUE ? undefined : status,
           level: level === ALL_VALUE ? undefined : level,
@@ -378,6 +410,7 @@ export default function AdminRisks() {
 
       if (selectedRisk?.MaRuiRo === risk.MaRuiRo) {
         setSelectedRisk(res.data?.result || null);
+        form.setFieldValue("TrangThai", nextStatus);
       }
 
       await fetchData();
@@ -457,8 +490,7 @@ export default function AdminRisks() {
       dataIndex: "NgayXuLy",
       key: "NgayXuLy",
       width: 150,
-      render: (value) =>
-        value ? dayjs(value).format("DD/MM/YYYY HH:mm") : "Chưa xử lý",
+      render: (value, record) => renderHandledDate(value, record.TrangThai),
     },
     {
       title: "Trạng thái",
@@ -582,15 +614,15 @@ export default function AdminRisks() {
         loading={loading}
         className={styles.table}
         rowClassName={(record) =>
-          Number(record.TrangThai) === RISK_STATUS.UNHANDLED
-            ? styles.rowUnhandled
-            : record.MucDo === "KHAN_CAP"
-              ? styles.rowUrgent
+          record.MucDo === "KHAN_CAP"
+            ? styles.rowUrgent
+            : Number(record.TrangThai) === RISK_STATUS.UNHANDLED
+              ? styles.rowUnhandled
               : ""
         }
         pagination={{
           current: page,
-          pageSize: 10,
+          pageSize: PAGE_SIZE,
           total: totalItems,
           showSizeChanger: false,
           showTotal: (total) => `Tổng số: ${total} rủi ro`,
@@ -676,9 +708,10 @@ export default function AdminRisks() {
                 </Descriptions.Item>
 
                 <Descriptions.Item label="Ngày xử lý">
-                  {selectedRisk.NgayXuLy
-                    ? dayjs(selectedRisk.NgayXuLy).format("DD/MM/YYYY HH:mm")
-                    : "Chưa xử lý"}
+                  {renderHandledDate(
+                    selectedRisk.NgayXuLy,
+                    selectedRisk.TrangThai,
+                  )}
                 </Descriptions.Item>
 
                 <Descriptions.Item label="Mô tả" span={2}>

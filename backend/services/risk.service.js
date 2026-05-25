@@ -102,7 +102,31 @@ const normalizeRiskSource = (value) => {
   return source;
 };
 
-const getRiskInclude = () => [
+const getRiskListInclude = () => [
+  {
+    model: OrderModel,
+    required: false,
+    attributes: [
+      "MaDonHang",
+      "MaHienThi",
+      "TenNguoiNhan",
+      "SDT",
+      "DiaChiGiaoHang",
+      "TongThanhToan",
+      "TrangThaiDonHang",
+      "TrangThaiThanhToan",
+      "NgayDat",
+    ],
+  },
+  {
+    model: StaffModel,
+    as: "NhanVienPhuTrach",
+    required: false,
+    attributes: ["MaNhanVien", "TenNhanVien", "SDT"],
+  },
+];
+
+const getRiskDetailInclude = () => [
   {
     model: OrderModel,
     required: false,
@@ -139,7 +163,7 @@ const getRiskInclude = () => [
 
 const findRiskOrFail = async (MaRuiRo, options = {}) => {
   const risk = await RiskModel.findByPk(MaRuiRo, {
-    include: getRiskInclude(),
+    include: getRiskDetailInclude(),
     ...options,
   });
 
@@ -175,11 +199,11 @@ const ensureStaffExistsIfNeeded = async (MaNhanVienPhuTrach) => {
 };
 
 const applyResolvedTimeByStatus = (risk, status) => {
-  if (
-    status === RISK_STATUS.RESOLVED ||
-    status === RISK_STATUS.IGNORED
-  ) {
-    risk.NgayXuLy = new Date();
+  if (status === RISK_STATUS.RESOLVED || status === RISK_STATUS.IGNORED) {
+    if (!risk.NgayXuLy) {
+      risk.NgayXuLy = new Date();
+    }
+
     return;
   }
 
@@ -207,11 +231,11 @@ export const getAllRiskService = async (
     riskWhere.TrangThai = normalizeRiskStatus(status);
   }
 
-  if (level) {
+  if (level && level !== "all") {
     riskWhere.MucDo = normalizeRiskLevel(level);
   }
 
-  if (source) {
+  if (source && source !== "all") {
     riskWhere.NguonPhatHien = normalizeRiskSource(source);
   }
 
@@ -233,9 +257,10 @@ export const getAllRiskService = async (
     limit: pageSize,
     offset,
     distinct: true,
+    col: "MaRuiRo",
     subQuery: false,
     order: [["MaRuiRo", sortOrder]],
-    include: getRiskInclude(),
+    include: getRiskListInclude(),
   });
 
   return {
