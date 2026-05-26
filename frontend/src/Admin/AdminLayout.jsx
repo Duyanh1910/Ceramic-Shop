@@ -22,6 +22,7 @@ import {
   AppstoreOutlined,
   SwapOutlined,
   CreditCardOutlined,
+  DeploymentUnitOutlined,
 } from "@ant-design/icons";
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import axios from "axios";
@@ -38,6 +39,11 @@ const STAFF_MENU = [
     label: "Danh mục sản phẩm",
   },
   { key: "/admin/customers", icon: <TeamOutlined />, label: "Khách hàng" },
+  {
+    key: "/admin/suppliers",
+    icon: <DeploymentUnitOutlined />,
+    label: "Nhà cung cấp",
+  },
   { key: "/admin/promotions", icon: <TagsOutlined />, label: "Khuyến mãi" },
   { key: "/admin/news", icon: <FileTextOutlined />, label: "Tin tức" },
   { key: "/admin/warranties", icon: <SafetyOutlined />, label: "Bảo hành" },
@@ -69,9 +75,18 @@ const ADMIN_MENU = [
     label: "Danh mục sản phẩm",
   },
   { key: "/admin/customers", icon: <TeamOutlined />, label: "Khách hàng" },
+  {
+    key: "/admin/suppliers",
+    icon: <DeploymentUnitOutlined />,
+    label: "Nhà cung cấp",
+  },
   { key: "/admin/staffs", icon: <UserOutlined />, label: "Nhân viên" },
   { key: "/admin/promotions", icon: <TagsOutlined />, label: "Khuyến mãi" },
-  { key: "/admin/reports", icon: <BarChartOutlined />, label: "Báo cáo và Thống kê" },
+  {
+    key: "/admin/reports",
+    icon: <BarChartOutlined />,
+    label: "Báo cáo và Thống kê",
+  },
   { key: "/admin/news", icon: <FileTextOutlined />, label: "Tin tức" },
   { key: "/admin/warranties", icon: <SafetyOutlined />, label: "Bảo hành" },
   { key: "/admin/risks", icon: <AlertOutlined />, label: "Rủi ro" },
