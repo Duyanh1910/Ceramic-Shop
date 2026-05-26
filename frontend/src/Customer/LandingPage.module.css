@@ -357,7 +357,8 @@ ul {
 
 .sectionSubtitle {
     font-size: 16px;
-    color: #666;
+    font-weight: 600;
+    color: #333;
     margin-top: 10px;
 }
 
@@ -377,7 +378,7 @@ ul {
 .aboutText p {
     font-size: 16px;
     line-height: 1.8;
-    color: #333;
+    color: #555;
     margin-bottom: 20px;
 }
 
