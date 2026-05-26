@@ -152,15 +152,33 @@ export const getAllPaymentTransactionsAdminService = async ({
   }
 
   if (keyword) {
-    where[Op.or] = [
-      { MaThamChieu: { [Op.like]: `%${keyword}%` } },
-      { MaGiaoDichDoiTac: { [Op.like]: `%${keyword}%` } },
-      { MaLoi: { [Op.like]: `%${keyword}%` } },
-      { "$DonHang.MaHienThi$": { [Op.like]: `%${keyword}%` } },
-      { "$DonHang.TenNguoiNhan$": { [Op.like]: `%${keyword}%` } },
-      { "$DonHang.SDT$": { [Op.like]: `%${keyword}%` } },
-    ];
+  const numericKeyword = keyword.startsWith("#")
+    ? keyword.slice(1)
+    : keyword;
+
+  const isNumericKeyword = /^\d+$/.test(numericKeyword);
+  const keywordNumber = Number(numericKeyword);
+
+  const searchConditions = [
+    { MaThamChieu: { [Op.like]: `%${keyword}%` } },
+    { MaGiaoDichDoiTac: { [Op.like]: `%${keyword}%` } },
+    { MaLoi: { [Op.like]: `%${keyword}%` } },
+    { "$DonHang.MaHienThi$": { [Op.like]: `%${keyword}%` } },
+    { "$DonHang.TenNguoiNhan$": { [Op.like]: `%${keyword}%` } },
+    { "$DonHang.SDT$": { [Op.like]: `%${keyword}%` } },
+  ];
+
+  if (isNumericKeyword) {
+    searchConditions.push(
+      { MaGiaoDich: keywordNumber },
+      { MaDonHang: keywordNumber },
+      { MaDoiTra: keywordNumber },
+      { MaGiaoDichGoc: keywordNumber },
+    );
   }
+
+  where[Op.or] = searchConditions;
+}
 
   const { count, rows } = await PaymentTransactionModel.findAndCountAll({
   where,
