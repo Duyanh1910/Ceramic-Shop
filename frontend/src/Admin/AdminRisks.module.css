@@ -1,43 +1,176 @@
-.risk-card {
-  border-radius: 8px;
+.riskCard {
+  border-radius: 12px;
   box-shadow:
     0 1px 2px 0 rgba(0, 0, 0, 0.03),
     0 1px 6px -1px rgba(0, 0, 0, 0.02),
     0 2px 4px 0 rgba(0, 0, 0, 0.02);
 }
 
-.risk-toolbar {
+.titleIcon {
+  color: #faad14;
+  font-size: 22px;
+}
+
+.infoAlert {
+  margin-bottom: 16px;
+}
+
+.toolbar {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 12px;
   margin-bottom: 16px;
   flex-wrap: wrap;
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 260px;
+  max-width: 420px;
+}
+
+.filterSelect {
+  width: 160px;
+}
+
+.table :global(.ant-table-thead > tr > th) {
+  background: #f7f9fc !important;
+  color: #1b437c !important;
+  font-weight: 700 !important;
+}
+
+.table :global(.ant-table-row:hover > td) {
+  background: #f5f8fe !important;
+}
+
+.rowUnhandled td {
+  background: #fffbe6 !important;
+}
+
+.rowUrgent td {
+  background: #fff1f0 !important;
+}
+
+.orderCell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.orderCode {
+  color: #1677ff;
+  font-size: 14px;
+}
+
+.smallText {
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.riskCell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.riskType {
+  color: #222;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.riskDesc {
+  display: -webkit-box;
+  line-clamp: 2;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.tagLine {
+  margin-top: 2px;
+}
+
+.detailWrap {
+  display: flex;
+  flex-direction: column;
   gap: 16px;
 }
 
-.risk-search-input {
-  width: 300px;
+.sectionCard {
+  border-radius: 10px;
 }
 
-.risk-col-wrapper {
+.orderItems {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.orderItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border: 1px solid #edf0f7;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.productImage {
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #f0f0f0;
+}
+
+.orderItemInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+@media (max-width: 768px) {
+  .toolbar {
+    align-items: stretch;
+  }
+
+  .searchInput,
+  .filterSelect {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .orderItem {
+    align-items: flex-start;
+  }
+}
+.riskDetailModal :global(.ant-modal-content) {
+  max-height: calc(100vh - 48px);
   display: flex;
   flex-direction: column;
 }
 
-.risk-desc {
-  font-size: 13px;
-  margin-top: 4px;
+.riskDetailModal :global(.ant-modal-body) {
+  flex: 1;
+  overflow-y: auto;
 }
 
-.info-col-wrapper {
-  display: flex;
-  flex-direction: column;
-}
-
-.info-code {
-  font-size: 13px;
-}
-
-.row-pending {
-  background-color: #fffbe6;
+.riskDetailModal :global(.ant-modal-footer) {
+  flex-shrink: 0;
 }

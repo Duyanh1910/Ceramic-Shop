@@ -7,7 +7,13 @@ import {
   updateWarrantyStatus,
   exportWarrantyXlsxController,
 } from "../../controllers/admin/after_sales/warranty.controller.js";
-import { getAllRisks } from "../../controllers/admin/after_sales/risk.controller.js";
+import {
+  createRisk,
+  getAllRisks,
+  getRiskById,
+  updateRisk,
+  updateRiskStatus,
+} from "../../controllers/admin/after_sales/risk.controller.js";
 import {
   confirmReturnRefund,
   getAllReturns,
@@ -34,5 +40,9 @@ router.post("/returns/:id/process", processReturn);
 router.patch("/returns/:id/confirm-refund", confirmReturnRefund);
 
 router.get("/risks", getAllRisks);
+router.post("/risks", createRisk);
+router.get("/risks/:id", getRiskById);
+router.patch("/risks/:id", updateRisk);
+router.patch("/risks/:id/status", updateRiskStatus);
 
 export default router;

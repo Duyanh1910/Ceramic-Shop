@@ -21,6 +21,7 @@ import {
   CommentOutlined,
   AppstoreOutlined,
   SwapOutlined,
+  CreditCardOutlined,
 } from "@ant-design/icons";
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import axios from "axios";
@@ -42,6 +43,11 @@ const STAFF_MENU = [
   { key: "/admin/warranties", icon: <SafetyOutlined />, label: "Bảo hành" },
   { key: "/admin/risks", icon: <AlertOutlined />, label: "Rủi ro" },
   { key: "/admin/returns", icon: <SwapOutlined />, label: "Đổi trả" },
+  {
+    key: "/admin/payments",
+    icon: <CreditCardOutlined />,
+    label: "Thanh toán / Hoàn tiền",
+  },
   {
     key: "/admin/inventories",
     icon: <AuditOutlined />,
@@ -70,6 +76,11 @@ const ADMIN_MENU = [
   { key: "/admin/warranties", icon: <SafetyOutlined />, label: "Bảo hành" },
   { key: "/admin/risks", icon: <AlertOutlined />, label: "Rủi ro" },
   { key: "/admin/returns", icon: <SwapOutlined />, label: "Đổi trả" },
+  {
+    key: "/admin/payments",
+    icon: <CreditCardOutlined />,
+    label: "Thanh toán / Hoàn tiền",
+  },
   {
     key: "/admin/inventories",
     icon: <AuditOutlined />,

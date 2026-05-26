@@ -1,0 +1,80 @@
+.paymentCard {
+  border-radius: 12px;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.03),
+    0 1px 6px -1px rgba(0, 0, 0, 0.02),
+    0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.titleIcon {
+  color: #1677ff;
+  font-size: 22px;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 260px;
+  max-width: 430px;
+}
+
+.filterSelect {
+  width: 170px;
+}
+
+.table :global(.ant-table-thead > tr > th) {
+  background: #f7f9fc !important;
+  color: #1b437c !important;
+  font-weight: 700 !important;
+}
+
+.transactionCell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.smallText {
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.paymentAmount {
+  color: #1677ff;
+}
+
+.refundAmount {
+  color: #d4380d;
+}
+
+.detailWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.loadingBox {
+  padding: 32px;
+  text-align: center;
+  color: #888;
+}
+
+@media (max-width: 768px) {
+  .toolbar {
+    align-items: stretch;
+  }
+
+  .searchInput,
+  .filterSelect {
+    width: 100%;
+    max-width: 100%;
+  }
+}
