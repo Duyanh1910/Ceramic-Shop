@@ -105,23 +105,6 @@ function Footer() {
             </div>
           </div>
 
-          <div className={`${styles.footerCol} ${styles.supportCol}`}>
-            <h3>Hỗ trợ khách hàng</h3>
-            <ul className={styles.linkList}>
-              {supportLinks.map((item) => (
-                <li key={item.path}>
-                  <button
-                    type="button"
-                    className={styles.footerLink}
-                    onClick={() => navigate(item.path)}
-                  >
-                    {item.label}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-
           <div className={`${styles.footerCol} ${styles.contactCol}`}>
             <h3>Thông tin liên hệ</h3>
 
@@ -189,6 +172,23 @@ function Footer() {
                 Xem bản đồ
               </a>
             </div>
+          </div>
+
+          <div className={`${styles.footerCol} ${styles.supportCol}`}>
+            <h3>Hỗ trợ khách hàng</h3>
+            <ul className={styles.linkList}>
+              {supportLinks.map((item) => (
+                <li key={item.path}>
+                  <button
+                    type="button"
+                    className={styles.footerLink}
+                    onClick={() => navigate(item.path)}
+                  >
+                    {item.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
 

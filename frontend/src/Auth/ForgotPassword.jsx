@@ -159,7 +159,8 @@ function ForgotPassword() {
       <div className={styles.combinedCard}>
         <div className={styles.cardImage}>
           <div className={styles.glowEffect} />
-          <div style={{ position: 'relative', flexDirection: 'column', width: '100%', display: 'flex', alignItems: 'center', zIndex: 1 }}>
+          {/* Đã bọc bằng class chibiWrapper để thu nhỏ và căn chỉnh dễ hơn */}
+          <div className={styles.chibiWrapper}>
             <Chibi 
               passwordVisible={passwordVisible || confirmPasswordVisible} 
               loginSuccess={actionSuccess} 
