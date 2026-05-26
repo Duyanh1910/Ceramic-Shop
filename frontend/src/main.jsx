@@ -52,6 +52,7 @@ import AdminInventories from "./Admin/AdminInventories.jsx";
 import AdminReviews from "./Admin/AdminReviews.jsx";
 import AdminCategories from "./Admin/AdminCategory.jsx";
 import AdminReturns from "./Admin/AdminReturns.jsx";
+import AdminPayments from "./Admin/AdminPayments.jsx";
 
 const PublicRoute = ({ children }) => {
   const isCustomerActive =
@@ -217,6 +218,7 @@ createRoot(document.getElementById("root")).render(
             <Route path="warranties" element={<AdminWarranties />} />
             <Route path="risks" element={<AdminRisks />} />
             <Route path="returns" element={<AdminReturns />} />
+            <Route path="payments" element={<AdminPayments />} />
             <Route
               path="promotions"
               element={

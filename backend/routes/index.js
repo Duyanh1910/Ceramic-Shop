@@ -28,6 +28,7 @@ import statisticsRoutes from "./admin/statistics.route.js";
 import afterSalesRoutes from "./admin/after_sales.route.js";
 import adminPromotionRoutes from "./admin/adminPromotions.route.js";
 import adminCategoryRoutes from "./admin/adminCategory.route.js";
+import adminPaymentRoutes from "./admin/adminPayment.route.js";
 
 import jwtMiddleware from "../middlewares/jwt.middlewares.js";
 import checkRole from "../middlewares/authorize.middlewares.js";
@@ -118,6 +119,13 @@ router.use(
   jwtMiddleware,
   checkRole("Admin", "Staff"),
   adminPromotionRoutes,
+);
+
+router.use(
+  "/admin/payments",
+  jwtMiddleware,
+  checkRole("Admin", "Staff"),
+  adminPaymentRoutes,
 );
 
 router.use("/categories", categoryRoutes);
