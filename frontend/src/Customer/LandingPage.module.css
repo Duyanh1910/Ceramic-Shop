@@ -377,14 +377,13 @@ ul {
 .aboutText p {
     font-size: 16px;
     line-height: 1.8;
-    color: #555;
+    color: #333;
     margin-bottom: 20px;
 }
 
 .aboutIntro {
     font-size: 17px !important;
     font-weight: 500;
-    color: #333 !important;
 }
 
 .aboutImage img {
