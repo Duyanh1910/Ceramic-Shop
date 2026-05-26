@@ -19,6 +19,7 @@ import styles from './productDetail.module.css';
 import { clearSession } from '../Utility/useAuth.js';
 import Breadcrumb from '../Utility/Breadcrumb.jsx';
 import ProductReview from './ProductReview.jsx';
+import Footer from '../Utility/Footer';
 
 const { Header, Content } = Layout;
 
@@ -775,54 +776,7 @@ function ProductDetail() {
         </Content>
       </Layout>
 
-      <footer className={styles.footer}>
-          <div className={styles.container}>
-              <div className={styles.footerGrid}>
-                  <div className={styles.footerCol}>
-                      <h3>HỖ TRỢ KHÁCH HÀNG</h3>
-                      <ul>
-                        <li><span className={styles.footerLink} onClick={()=>navigate('/support/huong-dan-mua-hang')}>Hướng dẫn mua hàng</span></li>
-                        <li><span className={styles.footerLink} onClick={()=>navigate('/support/chinh-sach-thanh-toan')}>Chính sách thanh toán</span></li>
-                        <li><span className={styles.footerLink} onClick={()=>navigate('/support/chinh-sach-giao-hang')}>Chính sách giao hàng</span></li>
-                        <li><span className={styles.footerLink} onClick={()=>navigate('/support/chinh-sach-doi-tra')}>Chính sách đổi trả</span></li>
-                        <li><span className={styles.footerLink} onClick={()=>navigate('/support/chinh-sach-bao-hanh')}>Chính sách bảo hành</span></li>
-                      </ul>
-                  </div>
-                  
-                  <div className={styles.footerCol}>
-                      <h3>PHƯƠNG THỨC THANH TOÁN</h3>
-                      <ul>
-                          <li>💵 Thanh toán COD (Tiền mặt)</li>
-                          <li>📱 Ví điện tử (MoMo / ZaloPay)</li>
-                      </ul>
-                  </div>
-
-                  <div className={styles.footerCol}>
-                      <h3>THÔNG TIN LIÊN HỆ</h3>
-                      <ul>
-                          <li>📍 Địa chỉ: 484 Lạch Tray, Lê Chân, Hải Phòng</li>
-                          <li>📞 Hotline: 0329.835.725</li>
-                          <li>✉️ Email: theceramicshop24@gmail.com</li>
-                          <li style={{ whiteSpace: 'nowrap' }}>
-                              🕐 Giờ làm việc: 8:00 - 22:00 (Thứ 2 - Thứ 7)
-                          </li>
-                      </ul>
-                  </div>
-
-                  <div className={styles.footerCol}>
-                      <h3>ĐĂNG KÝ NHẬN TIN</h3>
-                      <p className={styles.footerText}>Nhận thông tin về sản phẩm mới và các chương trình khuyến mãi.</p>
-                      <div className={styles.subscribeBox}>
-                          <input type="email" placeholder="Nhập email của bạn..." />
-                          <button>ĐĂNG KÝ</button>
-                      </div>
-                  </div>
-              </div>
-          </div>
-          <div className={styles.copyright}>
-              <p>© 2026 Bản quyền thuộc về CeramicShop. Bảo lưu mọi quyền.</p>
-          </div>
-      </footer>
+      <Footer />
     </Layout>
   );
 }
