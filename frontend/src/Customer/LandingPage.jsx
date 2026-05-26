@@ -510,7 +510,7 @@ function LandingPage() {
 
                     <div className={styles.aboutContent}>
                         <div className={styles.aboutText}>
-                            <p className={styles.aboutIntro}>
+                            <p>
                                 CeramicShop tự hào là thương hiệu mang đến những sản phẩm gốm sứ chất lượng cao, 
                                 là sự kết tinh hoàn mỹ giữa tinh hoa nghệ thuật thủ công truyền thống và nhịp sống văn minh, hiện đại. 
                                 Chúng tôi tin rằng, mỗi sản phẩm gốm sứ không chỉ đơn thuần là vật dụng phục vụ sinh hoạt hàng ngày, 
