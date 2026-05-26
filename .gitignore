@@ -14,3 +14,11 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .DS_Store
+.idea/.gitignore
+.idea/php.xml
+.idea/vcs.xml
+database/.idea/database.iml
+database/.idea/modules.xml
+database/.idea/php.xml
+database/.idea/.gitignore
+database/.idea/vcs.xml

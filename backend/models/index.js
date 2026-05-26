@@ -39,6 +39,9 @@ import RiskModel from "./risk.model.js";
 import ReturnModel from "./return.model.js";
 import ReturnProcessModel from "./return_process.model.js";
 
+import SupplierModel from "./supply/supplier.model.js";
+import ReceivedNoteDetailModel from "./supply/received_note_detail.model.js";
+import ReceivedNoteModel from "./supply/received_note.model.js";
 // --- QUAN HỆ TÀI KHOẢN & PHÂN QUYỀN ---
 RoleModel.hasMany(AccountModel, {
   foreignKey: "MaQuyen",
@@ -271,6 +274,35 @@ ReturnModel.hasMany(PaymentTransactionModel, {
 PaymentTransactionModel.belongsTo(ReturnModel, {
   foreignKey: "MaDoiTra",
 });
+
+// --- QUAN HỆ NHÀ CUNG CẤP & PHIẾU NHẬP ---
+SupplierModel.hasMany(ReceivedNoteModel, {
+  foreignKey: "MaNhaCC",
+});
+ReceivedNoteModel.belongsTo(SupplierModel, {
+  foreignKey: "MaNhaCC",
+});
+
+StaffModel.hasMany(ReceivedNoteModel, {
+  foreignKey: "MaNhanVien",
+});
+ReceivedNoteModel.belongsTo(StaffModel, {
+  foreignKey: "MaNhanVien",
+});
+
+ReceivedNoteModel.hasMany(ReceivedNoteDetailModel, {
+  foreignKey: "MaPhieuNhap",
+});
+ReceivedNoteDetailModel.belongsTo(ReceivedNoteModel, {
+  foreignKey: "MaPhieuNhap",
+});
+
+VariantModel.hasMany(ReceivedNoteDetailModel, {
+  foreignKey: "MaBienThe",
+});
+ReceivedNoteDetailModel.belongsTo(VariantModel, {
+  foreignKey: "MaBienThe",
+});
 export {
   sequelize,
   AccountModel,
@@ -305,4 +337,7 @@ export {
   WarrantyModel,
   ReturnModel,
   ReturnProcessModel,
+  ReceivedNoteDetailModel,
+  ReceivedNoteModel,
+  SupplierModel,
 };
