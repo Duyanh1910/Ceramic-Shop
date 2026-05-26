@@ -21,6 +21,13 @@
   overflow-y: hidden;
 }
 
+:global(.ant-layout-sider-children) {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
 .siderLogo {
   height: 64px;
   display: flex;
@@ -78,7 +85,31 @@
   background: transparent !important;
   border: none !important;
   padding: 8px 0;
+}
+
+.menuScroll {
   flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+}
+
+.menuScroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.menuScroll::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.04);
+}
+
+.menuScroll::-webkit-scrollbar-thumb {
+  background: rgba(196,140,70,0.55);
+  border-radius: 8px;
+}
+
+.menuScroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(196,140,70,0.8);
 }
 
 :global(.ant-menu-dark .ant-menu-item-selected) {

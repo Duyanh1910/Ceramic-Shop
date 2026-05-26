@@ -134,6 +134,18 @@ export default function AdminOrder() {
     }
   };
 
+  useEffect(() => {
+    const handleOrdersChanged = () => {
+      fetchOrders();
+    };
+
+    window.addEventListener('admin:orders_changed', handleOrdersChanged);
+
+    return () => {
+      window.removeEventListener('admin:orders_changed', handleOrdersChanged);
+    };
+  }, [page, activeTab, debouncedSearch, dateRange]);
+
   const handleTabChange = (key) => {
     setActiveTab(key);
     setPage(1);
