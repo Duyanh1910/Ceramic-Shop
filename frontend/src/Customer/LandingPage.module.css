@@ -1,25 +1,26 @@
-@import url('https://fonts.googleapis.com/css2?family=Arsenal:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Arsenal:wght@400;700&family=Inter:wght@400;500;600;700&display=swap');
 
 .wrapper {
-    font-family: 'Arsenal', sans-serif;
+    font-family: 'Inter', sans-serif;
     color: #252a2b;
     background-color: #fff;
     line-height: 1.6;
     overflow-x: hidden;
 }
 
-.title{
+.title {
     text-transform: uppercase;
-    background: linear-gradient(135deg,blue,white);
+    background: linear-gradient(135deg, blue, white);
     background-clip: text;
-    color:transparent;
+    color: transparent;
     animation: animate 80s linear infinite;
 }
+
 @keyframes animate {
-    0%{
-        background-position: 0% 50% ;
+    0% {
+        background-position: 0% 50%;
     }
-    100%{
+    100% {
         background-position: 100% 50%;
     }
 }
@@ -162,7 +163,7 @@ ul {
     border: none;
     outline: none;
     width: 100%;
-    font-family: 'Arsenal', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 14px;
 }
 
@@ -227,6 +228,7 @@ ul {
 .menuList li a {
     display: block;
     padding: 16px 0;
+    font-family: 'Arsenal', sans-serif;
     font-size: 30px;
     font-weight: 600;
     color: #252a2b;
@@ -293,6 +295,7 @@ ul {
 }
 
 .bannerTitle {
+    font-family: 'Arsenal', sans-serif;
     font-size: 52px;
     font-weight: 700;
     margin: 0 0 20px;
@@ -311,7 +314,7 @@ ul {
     color: white;
     border: none;
     padding: 15px 40px;
-    font-family: 'Arsenal', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-weight: 600;
     font-size: 16px;
     cursor: pointer;
@@ -333,6 +336,7 @@ ul {
 }
 
 .sectionHeading h2 {
+    font-family: 'Arsenal', sans-serif;
     font-size: 32px;
     font-weight: 700;
     color: #252a2b;
@@ -414,7 +418,8 @@ ul {
 }
 
 .vmCard h3 {
-    font-size: 18px;
+    font-family: 'Arsenal', sans-serif;
+    font-size: 22px;
     font-weight: 700;
     color: #173354;
     margin-bottom: 15px;
@@ -467,8 +472,9 @@ ul {
 }
 
 .featureItem h4 {
-    font-size: 20px;
-    font-weight: 800;
+    font-family: 'Arsenal', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
     color: #173354;
     margin-bottom: 15px;
 }
@@ -658,7 +664,8 @@ ul {
 }
 
 .marqueeText {
-    font-size: 22px;
+    font-family: 'Arsenal', sans-serif;
+    font-size: 24px;
     font-weight: 700;
     color: #173354;
     margin: 0 0 6px 0;
@@ -751,7 +758,7 @@ ul {
     color: #fff;
     border: none;
     padding: 10px 25px;
-    font-family: 'Arsenal', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-weight: 600;
     font-size: 13px;
     cursor: pointer;
@@ -771,7 +778,7 @@ ul {
 .productName {
     font-size: 16px;
     color: #252a2b;
-    font-weight: 500;
+    font-weight: 600;
     margin: 0 0 8px;
     line-height: 1.4;
     display: -webkit-box;
@@ -789,6 +796,7 @@ ul {
     font-size: 18px;
     font-weight: 700;
     color: #d0021b;
+    letter-spacing: 0.5px;
 }
 
 .btnWrapCenter {
@@ -801,7 +809,7 @@ ul {
     color: #252a2b;
     border: 2px solid #173354;
     padding: 14px 40px;
-    font-family: 'Arsenal', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 15px;
     font-weight: 600;
     text-transform: uppercase;
@@ -883,7 +891,8 @@ ul {
 }
 
 .newsTitle {
-    font-size: 18px;
+    font-family: 'Arsenal', sans-serif;
+    font-size: 22px;
     font-weight: 700;
     color: #252a2b;
     margin: 0 0 12px;
