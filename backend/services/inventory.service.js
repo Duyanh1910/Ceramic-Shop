@@ -270,7 +270,7 @@ const inventoryHistoryInclude = [
     include: [
       {
         model: ProductModel,
-        attributes: ["MaSanPham", "TenSanPham"],
+        attributes: ["MaSanPham", "TenSanPham", "Thumbnail"],
         required: false,
       },
       {

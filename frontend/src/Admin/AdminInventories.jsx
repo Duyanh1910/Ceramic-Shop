@@ -40,8 +40,13 @@ const getInventoryProductName = (record) => {
   );
 };
 
+const getVariantProductImage = (variant) =>
+  variant?.HinhAnhBienThes?.[0]?.DuongDan ||
+  variant?.SanPham?.Thumbnail ||
+  "";
+
 const getInventoryProductImage = (record) =>
-  record.BienTheSanPham?.HinhAnhBienThes?.[0]?.DuongDan;
+  getVariantProductImage(record.BienTheSanPham);
 
 const InventoryHistory = () => {
   const [data, setData] = useState([]);
@@ -387,13 +392,9 @@ const InventoryHistory = () => {
                 <h3 className={styles.variantTitle}>Thông tin giao dịch</h3>
 
                 <div className={styles.inventoryDetailProductBox}>
-                  {detailData.history.BienTheSanPham?.HinhAnhBienThes?.[0]
-                    ?.DuongDan ? (
+                  {getInventoryProductImage(detailData.history) ? (
                     <img
-                      src={
-                        detailData.history.BienTheSanPham.HinhAnhBienThes[0]
-                          .DuongDan
-                      }
+                      src={getInventoryProductImage(detailData.history)}
                       alt="variant"
                       className={styles.inventoryDetailProductImage}
                     />
@@ -532,8 +533,9 @@ const InventoryHistory = () => {
                             .filter(Boolean)
                             .join(" - ");
 
-                          const imgUrl =
-                            item.BienTheSanPham?.HinhAnhBienThes?.[0]?.DuongDan;
+                          const imgUrl = getVariantProductImage(
+                            item.BienTheSanPham,
+                          );
 
                           return (
                             <div

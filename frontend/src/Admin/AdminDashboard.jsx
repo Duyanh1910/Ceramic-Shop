@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Tabs, Tag, Table, Button, Empty, Spin, Modal,
   Descriptions, message, Select, Input, Space, DatePicker, Card, Row, Col, Divider, Avatar
@@ -39,14 +39,20 @@ const STATUS_CONFIG = {
   4: { color: 'red',     label: 'Đã huỷ',         icon: <StopOutlined /> },
 };
 
+const PAYMENT_METHOD = {
+  COD: 1,
+};
+
+const isCodOrder = (order) => Number(order?.MaPhuongThuc) === PAYMENT_METHOD.COD;
+
 export default function AdminOrder() {
   const navigate = useNavigate();
   const token = localStorage.getItem('admin_token') || localStorage.getItem('token');
   
-  const authHeader = { 
+  const authHeader = useMemo(() => ({
     headers: { Authorization: `Bearer ${token}` },
     withCredentials: true 
-  };
+  }), [token]);
 
   const [stats, setStats] = useState({});
 
@@ -67,6 +73,7 @@ export default function AdminOrder() {
   const [updateModal, setUpdateModal] = useState(false);
   const [editingOrder, setEditingOrder] = useState(null);
   const [newStatus, setNewStatus] = useState(null);
+  const [newPaymentStatus, setNewPaymentStatus] = useState(0);
   const [updateLoading, setUpdateLoading] = useState(false);
 
   useEffect(() => {
@@ -94,7 +101,7 @@ export default function AdminOrder() {
       }
     };
     fetchStats();
-  }, []);
+  }, [authHeader]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -104,11 +111,7 @@ export default function AdminOrder() {
     return () => clearTimeout(timer);
   }, [searchInput]);
 
-  useEffect(() => {
-    fetchOrders();
-  }, [page, activeTab, debouncedSearch, dateRange]);
-
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     setLoading(true);
     try {
       const params = { page: page, limit: 10 };
@@ -132,7 +135,13 @@ export default function AdminOrder() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeTab, authHeader, dateRange, debouncedSearch, page]);
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      fetchOrders();
+    });
+  }, [fetchOrders]);
 
   useEffect(() => {
     const handleOrdersChanged = () => {
@@ -144,7 +153,7 @@ export default function AdminOrder() {
     return () => {
       window.removeEventListener('admin:orders_changed', handleOrdersChanged);
     };
-  }, [page, activeTab, debouncedSearch, dateRange]);
+  }, [fetchOrders]);
 
   const handleTabChange = (key) => {
     setActiveTab(key);
@@ -173,6 +182,7 @@ export default function AdminOrder() {
   const openUpdateModal = (order) => {
     setEditingOrder(order);
     setNewStatus(order.TrangThaiDonHang);
+    setNewPaymentStatus(Number(order.TrangThaiThanhToan || 0));
     setUpdateModal(true);
   };
 
@@ -182,7 +192,12 @@ export default function AdminOrder() {
     try {
       await axios.patch(
         `${API_BASE}/admin/orders/${editingOrder.MaHienThi}`, 
-        { newStatus: newStatus }, 
+        {
+          newStatus: newStatus,
+          ...(isCodOrder(editingOrder) && {
+            newPaymentStatus: newPaymentStatus,
+          }),
+        },
         authHeader
       );
       message.success('Cập nhật trạng thái thành công!');
@@ -383,6 +398,23 @@ export default function AdminOrder() {
             <Option key={status.value} value={status.value}>{status.label}</Option>
           ))}
         </Select>
+
+        {isCodOrder(editingOrder) && (
+          <>
+            <div className={styles.modalLabel} style={{ marginTop: 16 }}>
+              Trạng thái thanh toán COD:
+            </div>
+            <Select
+              className={styles.fullWidth}
+              value={newPaymentStatus}
+              onChange={(val) => setNewPaymentStatus(val)}
+              disabled={Number(editingOrder?.TrangThaiThanhToan) === 1}
+            >
+              <Option value={0}>Chưa thanh toán</Option>
+              <Option value={1}>Đã thanh toán</Option>
+            </Select>
+          </>
+        )}
       </Modal>
 
       <Modal
