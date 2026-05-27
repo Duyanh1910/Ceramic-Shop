@@ -28,6 +28,7 @@
     "sanitize-html": "^2.17.3",
     "sequelize": "^6.37.8",
     "socket.io": "^4.8.3",
+    "swagger-ui-express": "^5.0.1",
     "yaml": "^2.8.2"
   },
   "name": "backend",
@@ -36,6 +37,7 @@
   "description": "",
   "main": "app.js",
   "scripts": {
+    "build:docs": "npm install --prefix ../docs && npm run build --prefix ../docs",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node app.js",
     "dev": "nodemon app.js"

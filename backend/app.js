@@ -9,12 +9,21 @@ import session from "express-session";
 import MySQLSession from "express-mysql-session";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import fs from "fs";
 import http from "http";
+import path from "path";
+import swaggerUi from "swagger-ui-express";
+import YAML from "yaml";
+import {fileURLToPath} from "url";
 
 import {initSocket} from "./config/socketIO.js";
 import router from "./routes/index.js";
 
 const app = express();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const swaggerPath = path.join(__dirname, "docs", "swagger.yaml");
+const vitePressDistPath = path.resolve(__dirname, "../docs/.vitepress/dist");
 
 const MySQLStore = MySQLSession(session);
 const sessionStore = new MySQLStore(dbConfig);
@@ -56,6 +65,44 @@ app.use(
         credentials: true,
     }),
 );
+
+const swaggerDocument = YAML.parse(fs.readFileSync(swaggerPath, "utf8"));
+
+app.get("/api-docs/openapi.yaml", (req, res) => {
+    res.type("yaml").sendFile(swaggerPath);
+});
+
+app.use(
+    "/api-docs",
+    swaggerUi.serve,
+    swaggerUi.setup(swaggerDocument, {
+        explorer: true,
+        customSiteTitle: "Pottery Shop API Docs",
+    }),
+);
+
+if (fs.existsSync(vitePressDistPath)) {
+    app.use("/docs", express.static(vitePressDistPath));
+} else {
+    app.use("/docs", (req, res) => {
+        res.status(503).send(`
+            <h1>Developer docs are not built yet</h1>
+            <p>Run <code>cd docs && npm install && npm run build</code>, or set Render build command to build docs before starting backend.</p>
+            <p>Swagger is still available at <a href="/api-docs">/api-docs</a>.</p>
+        `);
+    });
+}
+
+app.get("/", (req, res) => {
+    res.send(`
+        <h1>Pottery Shop Management System</h1>
+        <ul>
+            <li><a href="/api-docs">Swagger API Documentation</a></li>
+            <li><a href="/docs">VitePress Developer Documentation</a></li>
+            <li><a href="/api/v1/products">API health sample: products</a></li>
+        </ul>
+    `);
+});
 
 app.use("/api/v1", router);
 
