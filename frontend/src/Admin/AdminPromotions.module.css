@@ -162,6 +162,23 @@
   border-radius: 14px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(27, 67, 124, 0.04);
   border: 1px solid #edf0f7;
+  overflow: visible;
+}
+
+.table :global(.ant-table) {
+  width: 100% !important;
+  table-layout: fixed;
+}
+
+.table :global(.ant-table-container),
+.table :global(.ant-table-content),
+.table :global(.ant-table-body) {
+  overflow-x: hidden !important;
+  overflow-y: visible !important;
+  max-height: none !important;
+}
+
+.table :global(.ant-table-cell) {
   overflow: hidden;
 }
 
@@ -173,6 +190,14 @@
   text-transform: uppercase;
   letter-spacing: 0.4px;
   border-bottom: 2px solid #edf0f7 !important;
+  padding: 12px 10px !important;
+  white-space: nowrap !important;
+  text-align: left;
+}
+
+.table :global(.ant-table-tbody > tr > td) {
+  padding: 12px 10px !important;
+  vertical-align: middle;
 }
 
 .table :global(.ant-table-row:hover > td) {
@@ -189,12 +214,20 @@
   font-size: 13px;
   font-weight: 700;
   color: #222;
+  line-height: 1.35;
+  display: -webkit-box;
+  line-clamp: 2;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
 }
 
 .codeRow {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
+  min-width: 0;
 }
 
 .code {
@@ -206,6 +239,10 @@
   border-radius: 4px;
   border: 1px solid #d0e0f8;
   letter-spacing: 0.5px;
+  max-width: 78px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .copyIcon {
@@ -223,29 +260,51 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  align-items: flex-start;
+}
+
+.compactTag {
+  max-width: 122px;
+  margin-inline-end: 0 !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.categoryTag {
+  max-width: 145px;
+  margin-inline-end: 0 !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .cellValue {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 
 .valueMain {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   color: #1b437c;
+  line-height: 1.3;
 }
 
 .valueSub {
   font-size: 11px;
   color: #999;
+  line-height: 1.35;
+  word-break: break-word;
 }
 
 .cellDates {
   font-size: 12px;
   color: #555;
-  line-height: 1.6;
+  line-height: 1.65;
+  white-space: nowrap;
 }
 
 .dateSep {
@@ -257,16 +316,17 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  line-height: 1.2;
 }
 
 .quotaOk {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
   color: #52c41a;
 }
 
 .quotaEmpty {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
   color: #ff4d4f;
 }
@@ -274,17 +334,43 @@
 .quotaLabel {
   font-size: 11px;
   color: #aaa;
+  margin-top: 2px;
 }
 
 .cellStatus {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
-.statusSwitch :global(.ant-switch-checked) {
+.statusTag {
+  min-width: 92px;
+  max-width: 118px;
+  margin-inline-end: 0 !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.statusSwitch {
+  flex-shrink: 0;
+}
+
+.statusSwitch:global(.ant-switch-checked) {
   background: #52c41a !important;
+}
+
+.actionSpace {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.actionSpace :global(.ant-btn) {
+  width: 28px;
+  height: 28px;
+  padding: 0;
 }
 
 .btnEdit {
@@ -293,15 +379,6 @@
 
 .btnEdit:hover {
   background: #f0f5ff !important;
-}
-
-.btnDisable {
-  color: #fa8c16 !important;
-}
-
-.btnDisable:hover {
-  background: #fff7e6 !important;
-  color: #d46b08 !important;
 }
 
 .modal :global(.ant-modal-content) {
@@ -394,170 +471,4 @@
   .searchInput {
     min-width: 100%;
   }
-}
-.tableWrap {
-  overflow: hidden;
-}
-
-.table :global(.ant-table) {
-  table-layout: fixed;
-}
-
-.table :global(.ant-table-container),
-.table :global(.ant-table-content) {
-  overflow-x: hidden !important;
-}
-
-.table :global(.ant-table) {
-  width: 100% !important;
-  table-layout: fixed;
-}
-
-.table :global(.ant-table-cell) {
-  overflow: hidden;
-}
-
-.table :global(.ant-table-thead > tr > th) {
-  padding: 12px 10px !important;
-  white-space: nowrap !important;
-  text-align: left;
-}
-
-.table :global(.ant-table-tbody > tr > td) {
-  padding: 12px 10px !important;
-  vertical-align: middle;
-}
-
-.cellTitle {
-  font-size: 13px;
-  font-weight: 700;
-  color: #222;
-  line-height: 1.35;
-  display: -webkit-box;
-  line-clamp: 2;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  word-break: break-word;
-}
-
-.codeRow {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  min-width: 0;
-}
-
-.code {
-  max-width: 78px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.cellTags {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  align-items: flex-start;
-}
-
-.compactTag {
-  max-width: 105px;
-  margin-inline-end: 0 !important;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.categoryTag {
-  max-width: 108px;
-  margin-inline-end: 0 !important;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.cellValue {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.valueMain {
-  font-size: 14px;
-  font-weight: 700;
-  color: #1b437c;
-  line-height: 1.3;
-}
-
-.valueSub {
-  font-size: 11px;
-  color: #999;
-  line-height: 1.35;
-  word-break: break-word;
-}
-
-.cellDates {
-  font-size: 12px;
-  color: #555;
-  line-height: 1.65;
-  white-space: nowrap;
-}
-
-.cellQuota {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  line-height: 1.2;
-}
-
-.quotaOk {
-  font-size: 17px;
-  font-weight: 700;
-  color: #52c41a;
-}
-
-.quotaEmpty {
-  font-size: 17px;
-  font-weight: 700;
-  color: #ff4d4f;
-}
-
-.quotaLabel {
-  font-size: 11px;
-  color: #aaa;
-  margin-top: 2px;
-}
-
-.cellStatus {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: nowrap;
-}
-
-.statusTag {
-  max-width: 82px;
-  margin-inline-end: 0 !important;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.statusSwitch {
-  flex-shrink: 0;
-}
-
-.actionSpace {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-}
-
-.actionSpace :global(.ant-btn) {
-  width: 28px;
-  height: 28px;
-  padding: 0;
 }
