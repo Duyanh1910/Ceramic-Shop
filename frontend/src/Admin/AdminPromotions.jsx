@@ -11,7 +11,6 @@ import {
   Switch,
   Tag,
   Tooltip,
-  Popconfirm,
   message,
   Space,
   Row,
@@ -116,6 +115,7 @@ const normalizeListResponse = (payload) => {
 
 const getPromotionCategory = (promo) =>
   promo?.DanhMucSanPham || promo?.category || promo?.Category || null;
+
 function statusInfo(promo) {
   const now = new Date();
   const start = new Date(promo.NgayBatDau);
@@ -173,6 +173,7 @@ export default function AdminPromotions() {
     fetchPromos();
     fetchCategories();
   }, []);
+
   const getCategoryName = (promo) => {
     const relationCategory = getPromotionCategory(promo);
 
@@ -190,6 +191,7 @@ export default function AdminPromotions() {
 
     return category?.TenDanhMuc || `Danh mục #${promo.MaDanhMuc}`;
   };
+
   const fetchPromos = async () => {
     setLoading(true);
 
@@ -387,23 +389,6 @@ export default function AdminPromotions() {
     }
   };
 
-  const handleDisablePromotion = async (record) => {
-    try {
-      await axios.patch(
-        `${API_BASE}/admin/promotions/${record.MaKhuyenMai}/status`,
-        {
-          TrangThai: 0,
-        },
-        authH(),
-      );
-
-      message.success("Đã tắt khuyến mãi!");
-      fetchPromos();
-    } catch (err) {
-      message.error(err.response?.data?.message || "Không thể tắt khuyến mãi!");
-    }
-  };
-
   const handleCopyCode = (code) => {
     if (!code) {
       message.warning("Khuyến mãi này chưa có mã code!");
@@ -459,181 +444,161 @@ export default function AdminPromotions() {
   });
 
   const columns = [
-  {
-    title: "Mã / Tên",
-    key: "name",
-    width: 190,
-    render: (_, r) => (
-      <div className={styles.cellName}>
-        <div className={styles.cellTitle}>{r.TenKhuyenMai}</div>
+    {
+      title: "Mã / Tên",
+      key: "name",
+      width: 190,
+      render: (_, r) => (
+        <div className={styles.cellName}>
+          <div className={styles.cellTitle}>{r.TenKhuyenMai}</div>
 
-        {r.MaCode && (
-          <div className={styles.codeRow}>
-            <code className={styles.code}>{r.MaCode}</code>
+          {r.MaCode && (
+            <div className={styles.codeRow}>
+              <code className={styles.code}>{r.MaCode}</code>
 
-            <Tooltip title="Sao chép">
-              <CopyOutlined
-                className={styles.copyIcon}
-                onClick={() => handleCopyCode(r.MaCode)}
-              />
-            </Tooltip>
-          </div>
-        )}
-      </div>
-    ),
-  },
-  {
-    title: "Loại",
-    key: "type",
-    width: 115,
-    render: (_, r) => (
-      <div className={styles.cellTags}>
-        <Tag
-          className={styles.compactTag}
-          color={VOUCHER_TYPE_COLOR[Number(r.LoaiVoucher)] || "blue"}
-          icon={
-            Number(r.LoaiVoucher) === 2 ? <TruckOutlined /> : <GiftOutlined />
-          }
-        >
-          {VOUCHER_TYPE_LABEL[Number(r.LoaiVoucher)] || "Giảm giá"}
-        </Tag>
-
-        <Tag
-          className={styles.compactTag}
-          color={Number(r.MaLoaiKM) === 1 ? "purple" : "magenta"}
-        >
-          {Number(r.MaLoaiKM) === 1 ? "%" : "VNĐ"}
-        </Tag>
-      </div>
-    ),
-  },
-  {
-    title: "Danh mục",
-    key: "category",
-    width: 120,
-    render: (_, r) => (
-      <Tag
-        className={styles.categoryTag}
-        color={r.MaDanhMuc ? "geekblue" : "default"}
-        icon={r.MaDanhMuc ? <AppstoreOutlined /> : <TagsOutlined />}
-      >
-        {getCategoryName(r)}
-      </Tag>
-    ),
-  },
-  {
-    title: "Giá trị",
-    key: "value",
-    width: 145,
-    render: (_, r) => (
-      <div className={styles.cellValue}>
-        <span className={styles.valueMain}>
-          {Number(r.MaLoaiKM) === 1 ? `${Number(r.GiaTri)}%` : fmt(r.GiaTri)}
-        </span>
-
-        {Number(r.GiamToiDa || 0) > 0 && (
-          <span className={styles.valueSub}>Tối đa {fmt(r.GiamToiDa)}</span>
-        )}
-
-        {Number(r.GiaTriToiThieu || 0) > 0 && (
-          <span className={styles.valueSub}>
-            Đơn tối thiểu {fmt(r.GiaTriToiThieu)}
-          </span>
-        )}
-      </div>
-    ),
-  },
-  {
-    title: "Thời hạn",
-    key: "dates",
-    width: 110,
-    render: (_, r) => (
-      <div className={styles.cellDates}>
-        <div>{dayjs(r.NgayBatDau).format("DD/MM/YYYY")}</div>
-        <div>{dayjs(r.NgayKetThuc).format("DD/MM/YYYY")}</div>
-      </div>
-    ),
-  },
-  {
-    title: "Lượt còn",
-    key: "quota",
-    width: 80,
-    align: "center",
-    render: (_, r) => (
-      <div className={styles.cellQuota}>
-        <span
-          className={
-            Number(r.SoLuong) === 0 ? styles.quotaEmpty : styles.quotaOk
-          }
-        >
-          {r.SoLuong}
-        </span>
-        <span className={styles.quotaLabel}>lượt</span>
-      </div>
-    ),
-  },
-  {
-    title: "Trạng thái",
-    key: "status",
-    width: 115,
-    render: (_, r) => {
-      const st = statusInfo(r);
-
-      return (
-        <div className={styles.cellStatus}>
-          <Tag className={styles.statusTag} color={st.color} icon={st.icon}>
-            {st.label}
+              <Tooltip title="Sao chép">
+                <CopyOutlined
+                  className={styles.copyIcon}
+                  onClick={() => handleCopyCode(r.MaCode)}
+                />
+              </Tooltip>
+            </div>
+          )}
+        </div>
+      ),
+    },
+    {
+      title: "Loại",
+      key: "type",
+      width: 130,
+      render: (_, r) => (
+        <div className={styles.cellTags}>
+          <Tag
+            className={styles.compactTag}
+            color={VOUCHER_TYPE_COLOR[Number(r.LoaiVoucher)] || "blue"}
+            icon={
+              Number(r.LoaiVoucher) === 2 ? <TruckOutlined /> : <GiftOutlined />
+            }
+          >
+            {VOUCHER_TYPE_LABEL[Number(r.LoaiVoucher)] || "Giảm giá"}
           </Tag>
 
-          <Switch
-            size="small"
-            checked={Number(r.TrangThai) === 1}
-            onChange={() => handleToggleStatus(r)}
-            className={styles.statusSwitch}
-          />
-        </div>
-      );
-    },
-  },
-  {
-    title: "Thao tác",
-    key: "actions",
-    width: 80,
-    align: "center",
-    render: (_, r) => (
-      <Space size={2} className={styles.actionSpace}>
-        <Tooltip title="Chỉnh sửa">
-          <Button
-            type="text"
-            icon={<EditOutlined />}
-            className={styles.btnEdit}
-            onClick={() => openEdit(r)}
-          />
-        </Tooltip>
-
-        {Number(r.TrangThai) === 1 && (
-          <Popconfirm
-            title="Tắt khuyến mãi này?"
-            description="Khuyến mãi sẽ không còn hiển thị cho khách hàng."
-            onConfirm={() => handleDisablePromotion(r)}
-            okText="Tắt"
-            cancelText="Huỷ"
-            okButtonProps={{ danger: true }}
+          <Tag
+            className={styles.compactTag}
+            color={Number(r.MaLoaiKM) === 1 ? "purple" : "magenta"}
           >
-            <Tooltip title="Tắt khuyến mãi">
-              <Button
-                type="text"
-                danger
-                icon={<StopOutlined />}
-                className={styles.btnDisable}
-              />
-            </Tooltip>
-          </Popconfirm>
-        )}
-      </Space>
-    ),
-  },
-];
+            {Number(r.MaLoaiKM) === 1 ? "%" : "VNĐ"}
+          </Tag>
+        </div>
+      ),
+    },
+    {
+      title: "Danh mục",
+      key: "category",
+      width: 155,
+      render: (_, r) => (
+        <Tag
+          className={styles.categoryTag}
+          color={r.MaDanhMuc ? "geekblue" : "default"}
+          icon={r.MaDanhMuc ? <AppstoreOutlined /> : <TagsOutlined />}
+        >
+          {getCategoryName(r)}
+        </Tag>
+      ),
+    },
+    {
+      title: "Giá trị",
+      key: "value",
+      width: 145,
+      render: (_, r) => (
+        <div className={styles.cellValue}>
+          <span className={styles.valueMain}>
+            {Number(r.MaLoaiKM) === 1 ? `${Number(r.GiaTri)}%` : fmt(r.GiaTri)}
+          </span>
+
+          {Number(r.GiamToiDa || 0) > 0 && (
+            <span className={styles.valueSub}>Tối đa {fmt(r.GiamToiDa)}</span>
+          )}
+
+          {Number(r.GiaTriToiThieu || 0) > 0 && (
+            <span className={styles.valueSub}>
+              Đơn tối thiểu {fmt(r.GiaTriToiThieu)}
+            </span>
+          )}
+        </div>
+      ),
+    },
+    {
+      title: "Thời hạn",
+      key: "dates",
+      width: 110,
+      render: (_, r) => (
+        <div className={styles.cellDates}>
+          <div>{dayjs(r.NgayBatDau).format("DD/MM/YYYY")}</div>
+          <div>{dayjs(r.NgayKetThuc).format("DD/MM/YYYY")}</div>
+        </div>
+      ),
+    },
+    {
+      title: "Lượt còn",
+      key: "quota",
+      width: 80,
+      align: "center",
+      render: (_, r) => (
+        <div className={styles.cellQuota}>
+          <span
+            className={
+              Number(r.SoLuong) === 0 ? styles.quotaEmpty : styles.quotaOk
+            }
+          >
+            {r.SoLuong}
+          </span>
+          <span className={styles.quotaLabel}>lượt</span>
+        </div>
+      ),
+    },
+    {
+      title: "Trạng thái",
+      key: "status",
+      width: 165,
+      render: (_, r) => {
+        const st = statusInfo(r);
+
+        return (
+          <div className={styles.cellStatus}>
+            <Tag className={styles.statusTag} color={st.color} icon={st.icon}>
+              {st.label}
+            </Tag>
+
+            <Switch
+              size="small"
+              checked={Number(r.TrangThai) === 1}
+              onChange={() => handleToggleStatus(r)}
+              className={styles.statusSwitch}
+            />
+          </div>
+        );
+      },
+    },
+    {
+      title: "Thao tác",
+      key: "actions",
+      width: 55,
+      align: "center",
+      render: (_, r) => (
+        <Space size={2} className={styles.actionSpace}>
+          <Tooltip title="Chỉnh sửa">
+            <Button
+              type="text"
+              icon={<EditOutlined />}
+              className={styles.btnEdit}
+              onClick={() => openEdit(r)}
+            />
+          </Tooltip>
+        </Space>
+      ),
+    },
+  ];
 
   return (
     <div className={styles.page}>
@@ -736,6 +701,7 @@ export default function AdminPromotions() {
           <Select.Option value="1">Giảm đơn hàng</Select.Option>
           <Select.Option value="2">Freeship</Select.Option>
         </Select>
+
         <Select
           value={filterCategory}
           onChange={setFilterCategory}
@@ -924,6 +890,7 @@ export default function AdminPromotions() {
               </Select>
             </Form.Item>
           </div>
+
           <div className={styles.formGrid3}>
             <Form.Item
               name="GiaTri"
