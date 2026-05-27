@@ -35,6 +35,7 @@ const { TextArea } = Input;
 const API_BASE = 'https://ceramic-shop-u8ak.onrender.com/api/v1';
 const CLOUDINARY_CLOUD_NAME = 'dcmwz0uis';
 const CLOUDINARY_UPLOAD_PRESET = 'the_creamy_shop';
+const WARRANTY_PAGE_SIZE = 6;
 
 const WARRANTY_STATUS = {
   EXPIRED: 0,
@@ -185,6 +186,7 @@ const getSearchText = (warranty) => {
 export default function WarrantyContent({ compact = false }) {
   const [tab, setTab] = useState(WARRANTY_TABS.ACTIVE);
   const [keyword, setKeyword] = useState('');
+  const [visibleCount, setVisibleCount] = useState(WARRANTY_PAGE_SIZE);
   const [loading, setLoading] = useState(false);
   const [warranties, setWarranties] = useState([]);
 
@@ -238,6 +240,10 @@ export default function WarrantyContent({ compact = false }) {
   useEffect(() => {
     fetchWarranties();
   }, []);
+
+  useEffect(() => {
+    setVisibleCount(WARRANTY_PAGE_SIZE);
+  }, [tab, keyword]);
 
   useEffect(() => {
     if (!detailOpen && !requestOpen) {
@@ -306,6 +312,18 @@ export default function WarrantyContent({ compact = false }) {
       return getSearchText(warranty).includes(q);
     });
   }, [warranties, tab, keyword]);
+
+  const displayedWarranties = useMemo(
+    () => visibleWarranties.slice(0, visibleCount),
+    [visibleWarranties, visibleCount],
+  );
+
+  const shownCount = Math.min(visibleCount, visibleWarranties.length);
+  const hasMoreWarranties = shownCount < visibleWarranties.length;
+
+  const handleLoadMore = () => {
+    setVisibleCount((current) => current + WARRANTY_PAGE_SIZE);
+  };
 
   const openRequestModal = (warranty) => {
     setRequestWarranty(warranty);
@@ -518,84 +536,98 @@ export default function WarrantyContent({ compact = false }) {
           />
         </div>
       ) : (
-        <div className={styles.warrantyList}>
-          {visibleWarranties.map((warranty) => {
-            const orderDetail = getOrderDetail(warranty);
-            const variant = getVariant(warranty);
-            const product = getProduct(warranty);
-            const order = getOrder(warranty);
-            const effectiveStatus = getEffectiveStatus(warranty);
+        <>
+          <div className={styles.warrantyList}>
+            {displayedWarranties.map((warranty) => {
+              const orderDetail = getOrderDetail(warranty);
+              const variant = getVariant(warranty);
+              const product = getProduct(warranty);
+              const order = getOrder(warranty);
+              const effectiveStatus = getEffectiveStatus(warranty);
 
-            return (
-              <div key={warranty.MaBaoHanh} className={styles.warrantyCard}>
-                <div className={styles.productThumb}>
-                  <Image
-                    src={product?.Thumbnail}
-                    fallback="https://via.placeholder.com/76"
-                    width={76}
-                    height={76}
-                    preview={false}
-                    className={styles.productImage}
-                  />
-                </div>
-
-                <div className={styles.warrantyBody}>
-                  <div className={styles.cardTop}>
-                    {renderStatusTag(effectiveStatus)}
-                    <Tag color="blue" icon={<SafetyCertificateOutlined />}>
-                      Mã BH #{warranty.MaBaoHanh}
-                    </Tag>
+              return (
+                <div key={warranty.MaBaoHanh} className={styles.warrantyCard}>
+                  <div className={styles.productThumb}>
+                    <Image
+                      src={product?.Thumbnail}
+                      fallback="https://via.placeholder.com/76"
+                      width={76}
+                      height={76}
+                      preview={false}
+                      className={styles.productImage}
+                    />
                   </div>
 
-                  <h3>{product?.TenSanPham || 'Sản phẩm không xác định'}</h3>
+                  <div className={styles.warrantyBody}>
+                    <div className={styles.cardTop}>
+                      {renderStatusTag(effectiveStatus)}
+                      <Tag color="blue" icon={<SafetyCertificateOutlined />}>
+                        Mã BH #{warranty.MaBaoHanh}
+                      </Tag>
+                    </div>
 
-                  <div className={styles.meta}>
-                    <span>Phân loại: {variant?.TenBienThe || 'Không rõ'}</span>
-                    <span>Mã đơn: {order?.MaHienThi || 'Không rõ'}</span>
-                    <span>
-                      Giá mua: {fmt(orderDetail?.GiaBan)} × {orderDetail?.SoLuong || 0}
-                    </span>
+                    <h3>{product?.TenSanPham || 'Sản phẩm không xác định'}</h3>
+
+                    <div className={styles.meta}>
+                      <span>Phân loại: {variant?.TenBienThe || 'Không rõ'}</span>
+                      <span>Mã đơn: {order?.MaHienThi || 'Không rõ'}</span>
+                      <span>
+                        Giá mua: {fmt(orderDetail?.GiaBan)} × {orderDetail?.SoLuong || 0}
+                      </span>
+                    </div>
+
+                    <div className={styles.expireText}>
+                      Thời hạn: {dayjs(warranty.NgayBatDau).format('DD/MM/YYYY')} -{' '}
+                      {dayjs(warranty.NgayKetThuc).format('DD/MM/YYYY')}
+                    </div>
+
+                    {warranty.GhiChu && (
+                      <div className={styles.note}>{warranty.GhiChu}</div>
+                    )}
                   </div>
 
-                  <div className={styles.expireText}>
-                    Thời hạn: {dayjs(warranty.NgayBatDau).format('DD/MM/YYYY')} -{' '}
-                    {dayjs(warranty.NgayKetThuc).format('DD/MM/YYYY')}
-                  </div>
-
-                  {warranty.GhiChu && (
-                    <div className={styles.note}>{warranty.GhiChu}</div>
-                  )}
-                </div>
-
-                <div className={styles.actions}>
-                  <Button
-                    icon={<EyeOutlined />}
-                    onClick={() => fetchWarrantyDetail(warranty.MaBaoHanh)}
-                  >
-                    Chi tiết
-                  </Button>
-
-                  {canRequestWarranty(warranty) ? (
+                  <div className={styles.actions}>
                     <Button
-                      type="primary"
-                      icon={<SendOutlined />}
-                      className={styles.primaryBtn}
-                      onClick={() => openRequestModal(warranty)}
+                      icon={<EyeOutlined />}
+                      onClick={() => fetchWarrantyDetail(warranty.MaBaoHanh)}
                     >
-                      Yêu cầu BH
+                      Chi tiết
                     </Button>
-                  ) : (
-                    <Tooltip
-                      title={`Phiếu đang ở trạng thái ${getStatusLabel(effectiveStatus)}`}
-                    >
-                      <Button disabled>Yêu cầu BH</Button>
-                    </Tooltip>
-                  )}
+
+                    {canRequestWarranty(warranty) ? (
+                      <Button
+                        type="primary"
+                        icon={<SendOutlined />}
+                        className={styles.primaryBtn}
+                        onClick={() => openRequestModal(warranty)}
+                      >
+                        Yêu cầu BH
+                      </Button>
+                    ) : (
+                      <Tooltip
+                        title={`Phiếu đang ở trạng thái ${getStatusLabel(effectiveStatus)}`}
+                      >
+                        <Button disabled>Yêu cầu BH</Button>
+                      </Tooltip>
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+
+          <div className={styles.listFooter}>
+            <span>
+              Đang hiển thị {shownCount} / {visibleWarranties.length} phiếu bảo hành
+            </span>
+
+            {hasMoreWarranties && (
+              <Button className={styles.loadMoreBtn} onClick={handleLoadMore}>
+                Xem thêm bảo hành
+              </Button>
+            )}
+          </div>
+        </>
       )}
 
       <Modal
