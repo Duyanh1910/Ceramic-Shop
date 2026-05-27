@@ -1,35 +1,49 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Layout, Form, Input, Button, Avatar, message, Upload, Divider } from 'antd';
-import { UserOutlined, ArrowLeftOutlined, UploadOutlined, ProfileOutlined, LockOutlined } from '@ant-design/icons';
+import { UserOutlined, UploadOutlined, ProfileOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
 import styles from '../Auth/Profile.module.css';
 
-import ChangePassword from '../Auth/ChangePassword'; 
+import ChangePassword from '../Auth/ChangePassword';
 
-const { Header, Content, Sider } = Layout;
+const { Content, Sider } = Layout;
 
 function AdminProfile() {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState('');
-  
+  const [profileName, setProfileName] = useState(
+    localStorage.getItem('admin_username') ||
+    localStorage.getItem('username') ||
+    'Admin'
+  );
+
   const [activeTab, setActiveTab] = useState('profile');
 
   const CLOUDINARY_CLOUD_NAME = 'dcmwz0uis';
   const CLOUDINARY_UPLOAD_PRESET = 'the_creamy_shop';
   const token = localStorage.getItem('admin_token') || localStorage.getItem('token');
   const role = localStorage.getItem('admin_role') || localStorage.getItem('role');
+  const normalizedRole = (role || '').trim().toLowerCase();
+  const roleLabel = normalizedRole === 'admin' ? 'Quản trị viên' : 'Nhân viên';
+  const avatarInitial = (profileName || 'A').trim().charAt(0).toUpperCase();
 
   useEffect(() => {
     if (!token) {
       navigate('/login');
       return;
     }
+
     fetchAdminProfile();
-  }, [token, navigate]); 
+  }, [token, navigate]);
+
+  const handleAvatarError = () => {
+    setAvatarUrl('');
+    return false;
+  };
 
   const fetchAdminProfile = async () => {
     try {
@@ -42,41 +56,58 @@ function AdminProfile() {
       const profileData = userData?.profile || userData;
 
       if (userData) {
-        setAvatarUrl(profileData?.Avatar || 'https://res.cloudinary.com/dcmwz0uis/image/upload/v1773107213/default_avatar_gojcul.png');
+        const fullName =
+          profileData?.TenNhanVien ||
+          userData?.TenNhanVien ||
+          userData?.name ||
+          userData?.username ||
+          localStorage.getItem('admin_username') ||
+          'Admin';
+
+        const avatar = profileData?.Avatar || '';
+
+        setProfileName(fullName);
+        setAvatarUrl(avatar);
 
         form.setFieldsValue({
-          FullName: profileData?.TenNhanVien,
+          FullName: fullName,
           Email: userData?.email || userData?.Email,
           SDT: profileData?.SDT,
-          Diachi: profileData?.DiaChi || profileData?.Diachi, 
-          Avatar: profileData?.Avatar,
+          Diachi: profileData?.DiaChi || profileData?.Diachi,
+          Avatar: avatar,
         });
       }
     } catch (error) {
       console.error(error);
-      message.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
-      
+      message.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!');
+
       localStorage.clear();
       navigate('/login');
     }
   };
 
   const handleAvatarChange = async (info) => {
-    const file = info.file;
+    const file = info.file?.originFileObj || info.file;
+
+    if (!file) return;
+
     if (file.size > 1024 * 1024) {
       message.error('Dung lượng ảnh không được vượt quá 1MB!');
       return;
     }
 
     setLoading(true);
-    
+
     const formData = new FormData();
     formData.append('file', file);
     formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
 
     try {
-      const res = await axios.post(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, formData);
-      
+      const res = await axios.post(
+        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+        formData
+      );
+
       const secureUrl = res.data.secure_url;
       setAvatarUrl(secureUrl);
       form.setFieldsValue({ Avatar: secureUrl });
@@ -91,27 +122,37 @@ function AdminProfile() {
 
   const handleUpdateProfile = async (values) => {
     setLoading(true);
+
     try {
       const payload = {
         TenNhanVien: values.FullName,
         SDT: values.SDT,
         DiaChi: values.Diachi,
-        Avatar: values.Avatar || avatarUrl,
+        Avatar: values.Avatar || avatarUrl || undefined,
       };
 
-      const res = await axios.patch('https://ceramic-shop-u8ak.onrender.com/api/v1/staffs/me', payload, {
-        headers: { Authorization: `Bearer ${token}` },
-        withCredentials: true
-      });
+      const res = await axios.patch(
+        'https://ceramic-shop-u8ak.onrender.com/api/v1/staffs/me',
+        payload,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true
+        }
+      );
 
       message.success('Cập nhật hồ sơ thành công!');
-      
+
       const updatedData = res.data.result;
-      localStorage.setItem('admin_username', updatedData?.TenNhanVien || values.FullName);
-      localStorage.setItem('admin_avatar', updatedData?.Avatar || values.Avatar || avatarUrl);
+      const updatedName = updatedData?.TenNhanVien || values.FullName;
+      const updatedAvatar = updatedData?.Avatar || values.Avatar || avatarUrl || '';
+
+      setProfileName(updatedName);
+      setAvatarUrl(updatedAvatar);
+
+      localStorage.setItem('admin_username', updatedName);
+      localStorage.setItem('admin_avatar', updatedAvatar);
 
       window.dispatchEvent(new Event('storage'));
-      
     } catch (error) {
       const errorMsg = error.response?.data?.message || 'Cập nhật thất bại!';
       message.error(errorMsg);
@@ -129,25 +170,34 @@ function AdminProfile() {
       <Content className={styles.mainContent}>
         <div className={styles.container}>
           <Layout className={styles.innerLayout}>
-            
             <Sider width={250} className={styles.sidebar}>
               <div className={styles.userInfoMini}>
-                <Avatar src={avatarUrl} size={60} className={styles.avatarMini} />
+                <Avatar
+                  src={avatarUrl || undefined}
+                  size={60}
+                  className={styles.avatarMini}
+                  onError={handleAvatarError}
+                >
+                  {avatarInitial}
+                </Avatar>
+
                 <div className={styles.userNameMini}>
-                  <strong>{form.getFieldValue('FullName')}</strong>
-                  <span><UserOutlined /> {role === 'Admin' ? 'Quản trị viên' : 'Nhân viên'}</span>
+                  <strong>{profileName}</strong>
+                  <span>
+                    <UserOutlined /> {roleLabel}
+                  </span>
                 </div>
               </div>
-              
+
               <ul className={styles.sidebarMenu}>
-                <li 
-                  className={activeTab === 'profile' ? styles.active : ''} 
+                <li
+                  className={activeTab === 'profile' ? styles.active : ''}
                   onClick={() => setActiveTab('profile')}
                 >
                   <ProfileOutlined /> Thông tin tài khoản
                 </li>
-                <li 
-                  className={activeTab === 'password' ? styles.active : ''} 
+                <li
+                  className={activeTab === 'password' ? styles.active : ''}
                   onClick={() => setActiveTab('password')}
                 >
                   <LockOutlined /> Đổi mật khẩu
@@ -156,25 +206,26 @@ function AdminProfile() {
             </Sider>
 
             <Content className={styles.formContent}>
-              
               {activeTab === 'profile' && (
                 <>
                   <div className={styles.formHeader}>
                     <h2 className={styles.formTitle}>Hồ Sơ Nhân Sự</h2>
-                    <p className={styles.formSub}>Quản lý thông tin hồ sơ và bảo mật tài khoản nội bộ</p>
+                    <p className={styles.formSub}>
+                      Quản lý thông tin hồ sơ và bảo mật tài khoản nội bộ
+                    </p>
                   </div>
                   <Divider className={styles.divider} />
 
                   <div className={styles.formBody}>
                     <div className={styles.formLeft}>
-                      <Form 
-                        form={form} 
-                        layout="vertical" 
+                      <Form
+                        form={form}
+                        layout="vertical"
                         onFinish={handleUpdateProfile}
                         className={styles.profileForm}
                       >
-                        <Form.Item 
-                          label="Họ và Tên" 
+                        <Form.Item
+                          label="Họ và Tên"
                           name="FullName"
                           rules={[{ required: true, message: 'Vui lòng nhập họ tên!' }]}
                         >
@@ -182,11 +233,11 @@ function AdminProfile() {
                         </Form.Item>
 
                         <Form.Item label="Email" name="Email">
-                          <Input className={styles.customInput} disabled /> 
+                          <Input className={styles.customInput} disabled />
                         </Form.Item>
 
-                        <Form.Item 
-                          label="Số điện thoại" 
+                        <Form.Item
+                          label="Số điện thoại"
                           name="SDT"
                           rules={[{ required: true, message: 'Vui lòng nhập số điện thoại!' }]}
                         >
@@ -198,11 +249,16 @@ function AdminProfile() {
                         </Form.Item>
 
                         <Form.Item name="Avatar" hidden>
-                          <Input /> 
+                          <Input />
                         </Form.Item>
 
                         <Form.Item>
-                          <Button type="primary" htmlType="submit" className={styles.btnSave} loading={loading}>
+                          <Button
+                            type="primary"
+                            htmlType="submit"
+                            className={styles.btnSave}
+                            loading={loading}
+                          >
                             LƯU THAY ĐỔI
                           </Button>
                         </Form.Item>
@@ -211,19 +267,32 @@ function AdminProfile() {
 
                     <div className={styles.formRight}>
                       <div className={styles.avatarSection}>
-                        <Avatar src={avatarUrl} size={120} className={styles.avatarBig} />
-                        <Upload 
-                          showUploadList={false} 
+                        <Avatar
+                          src={avatarUrl || undefined}
+                          size={120}
+                          className={styles.avatarBig}
+                          onError={handleAvatarError}
+                        >
+                          {avatarInitial}
+                        </Avatar>
+
+                        <Upload
+                          showUploadList={false}
                           beforeUpload={() => false}
                           onChange={handleAvatarChange}
                           accept=".jpg,.jpeg,.png"
                         >
-                          <Button icon={<UploadOutlined />} className={styles.btnUpload} loading={loading}>
+                          <Button
+                            icon={<UploadOutlined />}
+                            className={styles.btnUpload}
+                            loading={loading}
+                          >
                             Chọn Ảnh
                           </Button>
                         </Upload>
+
                         <p className={styles.avatarNote}>
-                          Dung lượng file tối đa 1 MB<br/>
+                          Dung lượng file tối đa 1 MB<br />
                           Định dạng: .JPEG, .PNG
                         </p>
                       </div>
@@ -232,10 +301,7 @@ function AdminProfile() {
                 </>
               )}
 
-              {activeTab === 'password' && (
-                <ChangePassword />
-              )}
-
+              {activeTab === 'password' && <ChangePassword />}
             </Content>
           </Layout>
         </div>
