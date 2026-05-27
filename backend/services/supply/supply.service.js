@@ -1,11 +1,7 @@
-import {
-  StaffModel,
-  ReceivedNoteDetailModel,
-  ReceivedNoteModel,
-  SupplierModel,
-} from "../../models/index.js";
+import { SupplierModel } from "../../models/index.js";
 import { Op } from "sequelize";
 import ErrorHandler from "../../utils/error_handler.js";
+
 export const getAllSuppliers = async (
   page = 1,
   limit = 10,
@@ -27,6 +23,11 @@ export const getAllSuppliers = async (
           },
           {
             SDT: {
+              [Op.like]: keyword,
+            },
+          },
+          {
+            Diachi: {
               [Op.like]: keyword,
             },
           },
@@ -54,12 +55,11 @@ export const getSupllierInfo = async (idSupplier) => {
 
 export const createSupplierService = async (TenNhaCC, Diachi, SDT) => {
   try {
-    const supplier = await SupplierModel.create({
+    return await SupplierModel.create({
       TenNhaCC,
       Diachi,
       SDT,
     });
-    return supplier;
   } catch (err) {
     if (err.statusCode) throw err;
     console.error(err);

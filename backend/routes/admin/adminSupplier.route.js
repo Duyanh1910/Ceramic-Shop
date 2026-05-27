@@ -1,10 +1,10 @@
 import express from "express";
 import checkRole from "../../middlewares/authorize.middlewares.js";
 import {
+  createSupplier,
   getSupplierInfo,
   getSuppliers,
-  createSupplier,
-  updateSupplier,
+  updateSupplier
 } from "../../controllers/admin/supplier/supplier.controller.js";
 
 const router = express.Router();
@@ -12,4 +12,5 @@ router.get("/", getSuppliers);
 router.post("/", checkRole("Admin"), createSupplier);
 router.get("/:id", getSupplierInfo);
 router.put("/:id", updateSupplier);
+router.patch("/:id", updateSupplier);
 export default router;
