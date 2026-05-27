@@ -162,7 +162,7 @@ function AdminProfile() {
   };
 
   return (
-    <Layout className={styles.profileWrapper}>
+    <Layout className={`${styles.profileWrapper} ${styles.adminProfileWrapper}`}>
       <Helmet>
         <title>Hồ sơ quản trị | Ceramic Shop</title>
       </Helmet>
