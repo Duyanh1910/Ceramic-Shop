@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react";
-import {Avatar, Button, Dropdown, Layout, Menu, notification} from "antd";
+import {Avatar, Dropdown, Layout, Menu, notification} from "antd";
 import {
   AlertOutlined,
   AppstoreOutlined,
@@ -11,8 +11,6 @@ import {
   DeploymentUnitOutlined,
   FileTextOutlined,
   LogoutOutlined,
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
   SafetyOutlined,
   ShoppingOutlined,
   SwapOutlined,
@@ -179,6 +177,7 @@ export default function AdminLayout() {
         localStorage.getItem("username") ||
         "Tài khoản";
     const menuItems = isAdmin ? ADMIN_MENU : STAFF_MENU;
+
     const handleLogout = async () => {
         try {
             await axios.post(
@@ -223,15 +222,12 @@ export default function AdminLayout() {
                 breakpoint="lg"
                 onBreakpoint={(broken) => setCollapsed(broken)}
             >
-                <Button
-                    type="text"
-                    icon={collapsed ? <MenuUnfoldOutlined/> : <MenuFoldOutlined/>}
-                    onClick={() => setCollapsed(!collapsed)}
-                    className={styles.collapseBtn}
-                />
-                <div
+                <button
+                    type="button"
                     className={`${styles.siderLogo} ${collapsed ? styles.siderLogoCollapsed : ""}`}
-                    onClick={() => navigate("/landing")}
+                    onClick={() => setCollapsed(!collapsed)}
+                    aria-label={collapsed ? "Mở thanh quản trị" : "Thu gọn thanh quản trị"}
+                    title={collapsed ? "Mở thanh quản trị" : "Thu gọn thanh quản trị"}
                 >
                     <img
                         src="/logo.png"
@@ -245,7 +241,7 @@ export default function AdminLayout() {
                             <span className={styles.logoSub}>TINH HOA GỐM SỨ VIỆT</span>
                         </div>
                     )}
-                </div>
+                </button>
 
                 {!collapsed && (
                     <div className={styles.roleTag}>

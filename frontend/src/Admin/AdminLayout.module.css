@@ -29,29 +29,39 @@
 }
 
 .siderLogo {
-  min-height: 82px;
+  width: 100%;
+  min-height: 96px;
   display: flex;
   align-items: center;
   justify-content: flex-start;
   gap: 12px;
   cursor: pointer;
+  border: none;
   border-bottom: 1px solid rgba(255,255,255,0.08);
-  padding: 12px 14px;
-  transition: background 0.2s;
+  padding: 16px 14px;
+  background: rgba(255, 255, 255, 0.025);
+  transition: background 0.2s, transform 0.2s;
+  text-align: left;
+  font: inherit;
 }
 
 .siderLogo:hover {
-  background: rgba(255,255,255,0.05);
+  background: rgba(255,255,255,0.07);
+}
+
+.siderLogo:active {
+  transform: scale(0.98);
 }
 
 .siderLogoCollapsed {
+  min-height: 76px;
   justify-content: center;
   padding: 12px 0;
 }
 
 .logoImg {
-  width: 48px;
-  height: 48px;
+  width: 54px;
+  height: 54px;
   object-fit: contain;
   flex-shrink: 0;
   filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.28));
@@ -195,17 +205,6 @@
   position: sticky;
   top: 0;
   z-index: 99;
-}
-
-.collapseBtn {
-  font-size: 36px !important;
-  color: #acdbff !important;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content:center;
-  margin: 10px auto;
 }
 
 .headerRight {
