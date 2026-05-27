@@ -1,6 +1,7 @@
 import { defineConfig } from "vitepress";
 
 export default defineConfig({
+  base: "/docs/",
   title: "Pottery Shop Docs",
   description: "Developer documentation and Swagger API reference",
   cleanUrls: true,
