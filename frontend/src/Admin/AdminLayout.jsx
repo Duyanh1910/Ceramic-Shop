@@ -218,6 +218,7 @@ export default function AdminLayout() {
                 collapsible
                 collapsed={collapsed}
                 width={240}
+                collapsedWidth={88}
                 className={styles.sider}
                 breakpoint="lg"
                 onBreakpoint={(broken) => setCollapsed(broken)}
