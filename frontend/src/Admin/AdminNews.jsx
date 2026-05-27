@@ -40,7 +40,6 @@ import "tinymce/skins/ui/oxide/skin.min.css";
 import "tinymce/skins/content/default/content.min.css";
 import "tinymce/plugins/advlist";
 import "tinymce/plugins/autolink";
-import "tinymce/plugins/code";
 import "tinymce/plugins/image";
 import "tinymce/plugins/link";
 import "tinymce/plugins/lists";
@@ -66,13 +65,16 @@ const authH = () => ({
 
 const TinyMceEditor = ({value = "", onChange}) => {
     const uploadImageToCloudinary = async (file) => {
+        if (!file) {
+            throw new Error("Không tìm thấy file ảnh!");
+        }
+
         if (file.size > 5 * 1024 * 1024) {
             message.error("Ảnh tối đa 5MB!");
             throw new Error("Ảnh tối đa 5MB!");
         }
 
         const fd = new FormData();
-
         fd.append("file", file);
         fd.append("upload_preset", CDN_PRESET);
 
@@ -90,25 +92,40 @@ const TinyMceEditor = ({value = "", onChange}) => {
             onEditorChange={(content) => onChange?.(content)}
             init={{
                 height: 420,
-                menubar: "file edit view insert format tools table help",
-                plugins:
-                    "advlist autolink lists link image table code preview wordcount",
+                menubar: "file edit view insert format table help",
+                plugins: "advlist autolink lists link image table preview wordcount",
                 toolbar:
-                    "undo redo | blocks fontfamily fontsize | bold italic underline | " +
-                    "forecolor backcolor | alignleft aligncenter alignright alignjustify | " +
-                    "bullist numlist outdent indent | link image table | removeformat preview code",
-                font_size_formats:
+                    "undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | " +
+                    "alignleft aligncenter alignright alignjustify | " +
+                    "bullist numlist outdent indent | forecolor backcolor | link image table | removeformat preview",
+                toolbar_mode: "wrap",
+
+                image_advtab: true,
+                image_caption: true,
+
+                // TinyMCE dùng key này, không phải font_size_formats
+                fontsize_formats:
                     "12px 14px 16px 18px 20px 24px 28px 32px 36px 48px",
+
                 block_formats:
-                    "Đoạn văn=p; Tiêu đề 1=h1; Tiêu đề 2=h2; Tiêu đề 3=h3; Trích dẫn=blockquote; Code=pre",
+                    "Đoạn văn=p; Tiêu đề 1=h1; Tiêu đề 2=h2; Tiêu đề 3=h3; Trích dẫn=blockquote",
+
                 branding: false,
                 promotion: false,
                 resize: true,
                 license_key: "gpl",
+
                 automatic_uploads: true,
                 paste_data_images: true,
                 images_file_types: "jpeg,jpg,png,webp,gif",
                 file_picker_types: "image",
+
+                // Hạn chế các tag nguy hiểm ở phía frontend.
+                // Backend vẫn nên sanitize lại trước khi lưu DB.
+                invalid_elements: "script,iframe,object,embed,form,input,button",
+                extended_valid_elements:
+                    "a[href|target=_blank|rel],img[src|alt|title|width|height|style],span[style],p[style],h1[style],h2[style],h3[style],table[style|border],tr[style],td[style|colspan|rowspan],th[style|colspan|rowspan]",
+
                 content_style: `
           body {
             font-family: Arial, Helvetica, sans-serif;
@@ -127,15 +144,14 @@ const TinyMceEditor = ({value = "", onChange}) => {
             text-decoration: underline;
           }
         `,
+
                 images_upload_handler: async (blobInfo) => {
                     const hideMsg = message.loading("Đang tải ảnh lên...", 0);
 
                     try {
                         const url = await uploadImageToCloudinary(blobInfo.blob());
-
                         hideMsg();
                         message.success("Tải ảnh thành công!");
-
                         return url;
                     } catch (error) {
                         hideMsg();
@@ -143,22 +159,20 @@ const TinyMceEditor = ({value = "", onChange}) => {
                         throw error;
                     }
                 },
+
                 file_picker_callback: (callback) => {
                     const input = document.createElement("input");
-
                     input.type = "file";
                     input.accept = "image/*";
 
                     input.onchange = async () => {
                         const file = input.files?.[0];
-
                         if (!file) return;
 
                         const hideMsg = message.loading("Đang tải ảnh lên...", 0);
 
                         try {
                             const url = await uploadImageToCloudinary(file);
-
                             hideMsg();
                             message.success("Tải ảnh thành công!");
                             callback(url, {title: file.name});
@@ -186,17 +200,32 @@ export default function AdminNews() {
 
     const [viewModalOpen, setViewModalOpen] = useState(false);
     const [viewRecord, setViewRecord] = useState(null);
-    const [sortOrder, setSortOrder] = useState("newest");
 
+    const [sortOrder, setSortOrder] = useState("newest");
     const [search, setSearch] = useState("");
     const [uploading, setUploading] = useState(false);
     const [imgPreview, setImgPreview] = useState("");
-    const [form] = Form.useForm();
 
     const [statusFilter, setStatusFilter] = useState(null);
+    const [form] = Form.useForm();
 
     useEffect(() => {
         fetchNews();
+    }, []);
+
+    // Fix lỗi không gõ được link trong popup TinyMCE khi nằm trong Ant Design Modal
+    useEffect(() => {
+        const handleFocusIn = (e) => {
+            if (document.querySelector(".tox-tinymce-aux")?.contains(e.target)) {
+                e.stopImmediatePropagation();
+            }
+        };
+
+        document.addEventListener("focusin", handleFocusIn, true);
+
+        return () => {
+            document.removeEventListener("focusin", handleFocusIn, true);
+        };
     }, []);
 
     const fetchNews = async () => {
@@ -204,7 +233,6 @@ export default function AdminNews() {
 
         try {
             const res = await axios.get(`${API_BASE}/news`, authH());
-
             setNews(res.data?.result || []);
         } catch {
             message.error("Không thể tải danh sách tin tức!");
@@ -216,11 +244,14 @@ export default function AdminNews() {
     const openCreate = () => {
         setEditRecord(null);
         setImgPreview("");
+
         form.resetFields();
         form.setFieldsValue({
             TrangThai: true,
             NoiDung: "",
+            HinhAnh: "",
         });
+
         setModalOpen(true);
     };
 
@@ -231,8 +262,8 @@ export default function AdminNews() {
         form.setFieldsValue({
             TieuDe: record.TieuDe,
             NoiDung: record.NoiDung || "",
-            HinhAnh: record.HinhAnh,
-            TrangThai: record.TrangThai === 1,
+            HinhAnh: record.HinhAnh || "",
+            TrangThai: Number(record.TrangThai) === 1,
         });
 
         setModalOpen(true);
@@ -243,9 +274,7 @@ export default function AdminNews() {
         setViewModalOpen(true);
     };
 
-    const handleUploadImage = async (info) => {
-        const file = info.file;
-
+    const uploadCoverImage = async (file) => {
         if (!file) return;
 
         if (file.size > 5 * 1024 * 1024) {
@@ -257,7 +286,6 @@ export default function AdminNews() {
 
         try {
             const fd = new FormData();
-
             fd.append("file", file);
             fd.append("upload_preset", CDN_PRESET);
 
@@ -270,7 +298,6 @@ export default function AdminNews() {
 
             form.setFieldValue("HinhAnh", url);
             setImgPreview(url);
-
             message.success("Tải ảnh thành công!");
         } catch {
             message.error("Tải ảnh thất bại!");
@@ -300,7 +327,6 @@ export default function AdminNews() {
                 message.success("Cập nhật tin tức thành công!");
             } else {
                 await axios.post(`${API_BASE}/news`, payload, authH());
-
                 message.success("Tạo tin tức thành công!");
             }
 
@@ -328,10 +354,7 @@ export default function AdminNews() {
             setNews((prevNews) =>
                 prevNews.map((item) =>
                     item.MaTinTuc === record.MaTinTuc
-                        ? {
-                            ...item,
-                            TrangThai: newStatus,
-                        }
+                        ? {...item, TrangThai: newStatus}
                         : item,
                 ),
             );
@@ -344,11 +367,13 @@ export default function AdminNews() {
 
     const filteredAndSorted = news
         .filter((item) => {
+            const title = item.TieuDe || "";
+
             const matchesSearch =
-                !search || item.TieuDe?.toLowerCase().includes(search.toLowerCase());
+                !search || title.toLowerCase().includes(search.toLowerCase());
 
             const matchesStatus =
-                statusFilter === null || item.TrangThai === statusFilter;
+                statusFilter === null || Number(item.TrangThai) === statusFilter;
 
             return matchesSearch && matchesStatus;
         })
@@ -356,12 +381,11 @@ export default function AdminNews() {
             const dateA = dayjs(a.NgayTao).valueOf();
             const dateB = dayjs(b.NgayTao).valueOf();
 
-            if (sortOrder === "newest") {
-                return dateB - dateA;
-            }
-
-            return dateA - dateB;
+            return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
         });
+
+    const totalVisible = news.filter((item) => Number(item.TrangThai) === 1).length;
+    const totalHidden = news.filter((item) => Number(item.TrangThai) === 0).length;
 
     const columns = [
         {
@@ -374,10 +398,7 @@ export default function AdminNews() {
                         src={record.HinhAnh}
                         width={56}
                         height={42}
-                        style={{
-                            objectFit: "cover",
-                            borderRadius: 6,
-                        }}
+                        style={{objectFit: "cover", borderRadius: 6}}
                     />
                 ) : (
                     <div className={styles.noImg}>
@@ -391,6 +412,7 @@ export default function AdminNews() {
             render: (_, record) => (
                 <div className={styles.cellTitle}>
                     <div className={styles.titleText}>{record.TieuDe}</div>
+
                     <div className={styles.titleMeta}>
                         {record.NhanVien?.TenNhanVien && (
                             <span>{record.NhanVien.TenNhanVien} · </span>
@@ -406,7 +428,7 @@ export default function AdminNews() {
             width: 120,
             render: (_, record) => (
                 <Switch
-                    checked={record.TrangThai === 1}
+                    checked={Number(record.TrangThai) === 1}
                     onChange={(checked) => handleStatusChange(checked, record)}
                     checkedChildren="Hiện"
                     unCheckedChildren="Ẩn"
@@ -446,6 +468,7 @@ export default function AdminNews() {
             <div className={styles.pageHeader}>
                 <div className={styles.headerLeft}>
                     <FileTextOutlined className={styles.headerIcon}/>
+
                     <div>
                         <h1 className={styles.pageTitle}>Quản lý Tin tức</h1>
                         <p className={styles.pageSub}>Tạo và chỉnh sửa bài viết tin tức</p>
@@ -473,14 +496,14 @@ export default function AdminNews() {
                     },
                     {
                         label: "Đang hiện",
-                        value: news.filter((item) => item.TrangThai === 1).length,
+                        value: totalVisible,
                         color: "#52c41a",
                         bg: "#f6ffed",
                         status: 1,
                     },
                     {
                         label: "Đang ẩn",
-                        value: news.filter((item) => item.TrangThai === 0).length,
+                        value: totalHidden,
                         color: "#888",
                         bg: "#f5f5f5",
                         status: 0,
@@ -505,17 +528,14 @@ export default function AdminNews() {
                                     statusFilter === item.status ? "translateY(-2px)" : "none",
                                 transition: "all 0.2s ease",
                             }}
-                            onClick={() => {
-                                if (item.status === null) {
-                                    setStatusFilter(null);
-                                } else {
-                                    setStatusFilter((prev) =>
-                                        prev === item.status ? null : item.status,
-                                    );
-                                }
-                            }}
+                            onClick={() =>
+                                setStatusFilter((prev) =>
+                                    prev === item.status ? null : item.status,
+                                )
+                            }
                         >
                             <div className={styles.statNum}>{item.value}</div>
+
                             <div className={styles.statLabel}>
                                 {item.label}{" "}
                                 {statusFilter === item.status &&
@@ -527,13 +547,7 @@ export default function AdminNews() {
                 ))}
             </Row>
 
-            <div
-                className={styles.toolbar}
-                style={{
-                    display: "flex",
-                    gap: "8px",
-                }}
-            >
+            <div className={styles.toolbar} style={{display: "flex", gap: "8px"}}>
                 <Input
                     prefix={<SearchOutlined style={{color: "#bbb"}}/>}
                     placeholder="Tìm kiếm tiêu đề..."
@@ -549,14 +563,8 @@ export default function AdminNews() {
                     onChange={(value) => setSortOrder(value)}
                     style={{width: 140}}
                     options={[
-                        {
-                            value: "newest",
-                            label: "Mới nhất",
-                        },
-                        {
-                            value: "oldest",
-                            label: "Cũ nhất",
-                        },
+                        {value: "newest", label: "Mới nhất"},
+                        {value: "oldest", label: "Cũ nhất"},
                     ]}
                 />
 
@@ -613,12 +621,7 @@ export default function AdminNews() {
                     <Form.Item
                         name="TieuDe"
                         label="Tiêu đề"
-                        rules={[
-                            {
-                                required: true,
-                                message: "Nhập tiêu đề!",
-                            },
-                        ]}
+                        rules={[{required: true, message: "Nhập tiêu đề!"}]}
                     >
                         <Input placeholder="Tiêu đề tin tức..." className={styles.input}/>
                     </Form.Item>
@@ -635,8 +638,10 @@ export default function AdminNews() {
 
                             <Upload
                                 showUploadList={false}
-                                beforeUpload={() => false}
-                                onChange={handleUploadImage}
+                                beforeUpload={(file) => {
+                                    uploadCoverImage(file);
+                                    return false;
+                                }}
                                 accept=".jpg,.jpeg,.png,.webp"
                             >
                                 <Button
@@ -648,7 +653,16 @@ export default function AdminNews() {
                                 </Button>
                             </Upload>
 
-                            <Form.Item name="HinhAnh" noStyle>
+                            <Form.Item
+                                name="HinhAnh"
+                                noStyle
+                                rules={[
+                                    {
+                                        type: "url",
+                                        message: "URL ảnh không hợp lệ!",
+                                    },
+                                ]}
+                            >
                                 <Input
                                     placeholder="Hoặc dán URL ảnh..."
                                     className={styles.input}
@@ -662,12 +676,7 @@ export default function AdminNews() {
                     <Form.Item
                         name="NoiDung"
                         label="Nội dung"
-                        rules={[
-                            {
-                                required: true,
-                                message: "Nhập nội dung bài viết!",
-                            },
-                        ]}
+                        rules={[{required: true, message: "Nhập nội dung bài viết!"}]}
                     >
                         <TinyMceEditor/>
                     </Form.Item>
@@ -684,13 +693,7 @@ export default function AdminNews() {
 
                     <Divider style={{margin: "8px 0 16px"}}/>
 
-                    <div
-                        style={{
-                            display: "flex",
-                            gap: 10,
-                            justifyContent: "flex-end",
-                        }}
-                    >
+                    <div style={{display: "flex", gap: 10, justifyContent: "flex-end"}}>
                         <Button onClick={() => setModalOpen(false)}>Huỷ</Button>
 
                         <Button
@@ -716,16 +719,14 @@ export default function AdminNews() {
                 ]}
                 width={1000}
                 title="Xem trước bài viết"
-                destroyOnHidden={true}
+                destroyOnHidden
             >
                 {viewRecord && (
                     <div style={{padding: "20px 0"}}>
                         <Typography.Title level={2}>{viewRecord.TieuDe}</Typography.Title>
 
                         <div style={{color: "gray", marginBottom: "20px"}}>
-              <span>
-                {dayjs(viewRecord.NgayTao).format("DD/MM/YYYY HH:mm")}
-              </span>
+                            <span>{dayjs(viewRecord.NgayTao).format("DD/MM/YYYY HH:mm")}</span>
 
                             {viewRecord.NhanVien?.TenNhanVien && (
                                 <span> - Đăng bởi: {viewRecord.NhanVien.TenNhanVien}</span>
@@ -733,12 +734,7 @@ export default function AdminNews() {
                         </div>
 
                         {viewRecord.HinhAnh && (
-                            <div
-                                style={{
-                                    textAlign: "center",
-                                    marginBottom: "20px",
-                                }}
-                            >
+                            <div style={{textAlign: "center", marginBottom: "20px"}}>
                                 <img
                                     src={viewRecord.HinhAnh}
                                     alt={viewRecord.TieuDe}
@@ -781,17 +777,21 @@ export default function AdminNews() {
                   border-radius: 8px;
                 }
 
-                .view-content-html pre {
-                  background: #f5f5f5;
-                  padding: 12px;
-                  border-radius: 8px;
-                  overflow-x: auto;
+                .view-content-html table {
+                  border-collapse: collapse;
+                  width: 100%;
+                  margin: 1em 0;
                 }
 
-                .view-content-html code {
-                  background: #f5f5f5;
-                  padding: 2px 5px;
-                  border-radius: 4px;
+                .view-content-html table,
+                .view-content-html th,
+                .view-content-html td {
+                  border: 1px solid #ddd;
+                }
+
+                .view-content-html th,
+                .view-content-html td {
+                  padding: 8px;
                 }
               `}</style>
 
