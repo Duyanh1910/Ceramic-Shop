@@ -93,3 +93,52 @@
 .timeline {
   margin-top: 12px;
 }
+
+.listFooter {
+  margin-top: 18px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: #f7f9fc;
+  border: 1px solid #edf0f7;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  color: #667085;
+  font-size: 14px;
+}
+
+.loadMoreBtn {
+  border-radius: 999px !important;
+  border-color: #1b437c !important;
+  color: #1b437c !important;
+  font-weight: 700 !important;
+  padding: 0 20px !important;
+}
+
+.loadMoreBtn:hover {
+  color: #ffffff !important;
+  background: #1b437c !important;
+  border-color: #1b437c !important;
+}
+
+@media (max-width: 768px) {
+  .orderHeader,
+  .returnHeader {
+    flex-direction: column;
+  }
+
+  .returnBody {
+    flex-direction: column;
+  }
+
+  .listFooter {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .loadMoreBtn {
+    width: 100%;
+  }
+}

@@ -202,12 +202,17 @@ export default function WarrantyContent({ compact = false }) {
   const [evidenceUploading, setEvidenceUploading] = useState(false);
   const [evidenceUrl, setEvidenceUrl] = useState('');
 
+  const resetVisibleCount = () => {
+    setVisibleCount(WARRANTY_PAGE_SIZE);
+  };
+
   const fetchWarranties = async () => {
     setLoading(true);
 
     try {
       const res = await axios.get(`${API_BASE}/warranties`, authHeader());
       setWarranties(res.data?.result || []);
+      resetVisibleCount();
     } catch (err) {
       message.error(
         err.response?.data?.message || 'Không thể tải danh sách bảo hành!',
@@ -242,7 +247,7 @@ export default function WarrantyContent({ compact = false }) {
   }, []);
 
   useEffect(() => {
-    setVisibleCount(WARRANTY_PAGE_SIZE);
+    resetVisibleCount();
   }, [tab, keyword]);
 
   useEffect(() => {
