@@ -14,7 +14,6 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   SafetyOutlined,
-  ShopOutlined,
   ShoppingOutlined,
   SwapOutlined,
   TagsOutlined,
@@ -230,9 +229,22 @@ export default function AdminLayout() {
                     onClick={() => setCollapsed(!collapsed)}
                     className={styles.collapseBtn}
                 />
-                <div className={styles.siderLogo} onClick={() => navigate("/")}>
-                    <ShopOutlined className={styles.logoIcon}/>
-                    {!collapsed && <span className={styles.logoText}>CERAMIC</span>}
+                <div
+                    className={`${styles.siderLogo} ${collapsed ? styles.siderLogoCollapsed : ""}`}
+                    onClick={() => navigate("/landing")}
+                >
+                    <img
+                        src="/logo.png"
+                        alt="Ceramic Shop Logo"
+                        className={styles.logoImg}
+                    />
+
+                    {!collapsed && (
+                        <div className={styles.logoTextWrap}>
+                            <span className={styles.logoText}>CERAMIC-SHOP</span>
+                            <span className={styles.logoSub}>TINH HOA GỐM SỨ VIỆT</span>
+                        </div>
+                    )}
                 </div>
 
                 {!collapsed && (
