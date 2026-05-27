@@ -3,12 +3,14 @@ import ExcelJS from "exceljs";
 import axios from "axios";
 import {
   InventoryHistoryModel,
-  OrderModel,
-  VariantModel,
-  ProductModel,
-  VariantImageModel,
-  ReturnModel,
   OrderDetailModel,
+  OrderModel,
+  ProductModel,
+  ReceivedNoteModel,
+  ReturnModel,
+  SupplierModel,
+  VariantImageModel,
+  VariantModel
 } from "../models/index.js";
 import { adminGetOrderDetailService } from "../services/order.services.js";
 
@@ -20,6 +22,10 @@ const normalizeText = (value) =>
 const normalizeReferenceType = (value) =>
   String(value || "")
     .trim()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "D")
     .replace(/\s+/g, "")
     .toUpperCase();
 
@@ -33,6 +39,20 @@ const isReturnInventoryReference = (history) => {
     transactionType === "XUAT_DOI_HANG" ||
     transactionType === "XUAT_GUI_BO_SUNG" ||
     transactionType === "NHAP_LAI_DOI_TRA"
+  );
+};
+
+const isReceivedNoteInventoryReference = (history) => {
+  const referenceType = normalizeReferenceType(history.LoaiThamChieu);
+  const transactionType = normalizeReferenceType(history.LoaiGiaoDich);
+
+  return (
+    referenceType === "PHIEUNHAP" ||
+    referenceType === "PHIEU_NHAP" ||
+    referenceType === "NHAPKHO" ||
+    referenceType === "NHAP_KHO" ||
+    transactionType === "NHAPKHO" ||
+    transactionType === "NHAP_KHO"
   );
 };
 
@@ -51,64 +71,75 @@ const enrichInventoryHistories = async (rows) => {
     ),
   ];
 
-  if (returnIds.length === 0) {
-    return histories.map((history) => ({
-      ...history,
-      MaDonHangLienQuan: history.DonHang?.MaDonHang || null,
-      MaHienThiLienQuan: history.DonHang?.MaHienThi || null,
-    }));
+  let returnMap = new Map();
+
+  if (returnIds.length > 0) {
+    const returns = await ReturnModel.findAll({
+      where: {
+        MaDoiTra: {
+          [Op.in]: returnIds,
+        },
+      },
+      include: [
+        {
+          model: OrderDetailModel,
+          required: false,
+          include: [
+            {
+              model: OrderModel,
+              required: false,
+            },
+          ],
+        },
+      ],
+    });
+
+    returnMap = new Map(
+      returns.map((item) => {
+        const plain = item.get({ plain: true });
+        return [Number(plain.MaDoiTra), plain];
+      }),
+    );
   }
 
-  const returns = await ReturnModel.findAll({
-    where: {
-      MaDoiTra: {
-        [Op.in]: returnIds,
-      },
-    },
-    include: [
-      {
-        model: OrderDetailModel,
-        required: false,
-        include: [
-          {
-            model: OrderModel,
-            required: false,
-          },
-        ],
-      },
-    ],
-  });
-
-  const returnMap = new Map(
-    returns.map((item) => {
-      const plain = item.get({ plain: true });
-      return [Number(plain.MaDoiTra), plain];
-    }),
-  );
-
   return histories.map((history) => {
-    if (!isReturnInventoryReference(history)) {
-      return {
-        ...history,
-        MaDonHangLienQuan: history.DonHang?.MaDonHang || null,
-        MaHienThiLienQuan: history.DonHang?.MaHienThi || null,
-      };
-    }
+    const relatedOrderFromReturn = (() => {
+      if (!isReturnInventoryReference(history)) return null;
 
-    const returnRequest = returnMap.get(Number(history.MaThamChieu));
-    const relatedOrder =
-      returnRequest?.ChiTietDonHang?.DonHang ||
-      returnRequest?.OrderDetail?.DonHang ||
-      null;
+      const returnRequest = returnMap.get(Number(history.MaThamChieu));
+
+      return (
+        returnRequest?.ChiTietDonHang?.DonHang ||
+        returnRequest?.OrderDetail?.DonHang ||
+        null
+      );
+    })();
+
+    const returnRequest = isReturnInventoryReference(history)
+      ? returnMap.get(Number(history.MaThamChieu)) || null
+      : null;
 
     return {
       ...history,
-      DoiTra: returnRequest || null,
-      DonHang: history.DonHang || relatedOrder || null,
+      DoiTra: returnRequest,
+      DonHang: history.DonHang || relatedOrderFromReturn || null,
+      PhieuNhap: isReceivedNoteInventoryReference(history)
+        ? history.PhieuNhap || null
+        : null,
+
       MaDonHangLienQuan:
-        history.DonHang?.MaDonHang || relatedOrder?.MaDonHang || null,
+        history.DonHang?.MaDonHang || relatedOrderFromReturn?.MaDonHang || null,
+
       MaHienThiLienQuan:
-        history.DonHang?.MaHienThi || relatedOrder?.MaHienThi || null,
+        history.DonHang?.MaHienThi || relatedOrderFromReturn?.MaHienThi || null,
+
+      MaPhieuNhapLienQuan: isReceivedNoteInventoryReference(history)
+        ? history.PhieuNhap?.MaPhieuNhap || history.MaThamChieu || null
+        : null,
+
+      TenNhaCungCapLienQuan: isReceivedNoteInventoryReference(history)
+        ? history.PhieuNhap?.NhaCungCap?.TenNhaCC || null
+        : null,
     };
   });
 };
@@ -138,10 +169,17 @@ const filterInventoryHistoryByKeyword = (histories, keyword) => {
     const searchableValues = [
       history.DonHang?.MaHienThi,
       history.MaHienThiLienQuan,
+
+      history.PhieuNhap?.MaPhieuNhap,
+      history.MaPhieuNhapLienQuan,
+      history.PhieuNhap?.NhaCungCap?.TenNhaCC,
+      history.TenNhaCungCapLienQuan,
+
       history.MaThamChieu,
       history.LoaiGiaoDich,
       history.LoaiThamChieu,
       history.GhiChu,
+
       variant.TenBienThe,
       product.TenSanPham,
     ];
@@ -176,14 +214,16 @@ const getProductDisplay = (history) => {
   );
 };
 
-const getRelatedOrderCode = (history) =>
-  history.DonHang?.MaHienThi || history.MaHienThiLienQuan || "";
+const getRelatedReferenceCode = (history) => {
+  if (isReceivedNoteInventoryReference(history)) {
+    return history.PhieuNhap?.MaPhieuNhap || history.MaPhieuNhapLienQuan || "";
+  }
+
+  return history.DonHang?.MaHienThi || history.MaHienThiLienQuan || "";
+};
 
 const buildInventoryHistoryWhere = (startDate, endDate, extra = {}) => {
   const where = {
-    LoaiThamChieu: {
-      [Op.ne]: "Phiếu Nhập",
-    },
     ...extra,
   };
 
@@ -213,6 +253,17 @@ const inventoryHistoryInclude = [
     required: false,
   },
   {
+    model: ReceivedNoteModel,
+    as: "PhieuNhap",
+    required: false,
+    include: [
+      {
+        model: SupplierModel,
+        required: false,
+      },
+    ],
+  },
+  {
     model: VariantModel,
     attributes: ["MaBienThe", "TenBienThe"],
     required: false,
@@ -224,6 +275,7 @@ const inventoryHistoryInclude = [
       },
       {
         model: VariantImageModel,
+        required: false,
       },
     ],
   },
@@ -250,6 +302,7 @@ export const getAllInventoryHistoryService = async (
   });
 
   const enrichedHistories = await enrichInventoryHistories(rows);
+
   const filteredHistories = filterInventoryHistoryByKeyword(
     enrichedHistories,
     keyword,
@@ -273,7 +326,9 @@ export const getAllInventoryHistoryService = async (
 
 export const showInventoryHistoryService = async (idInventory) => {
   const historyRow = await InventoryHistoryModel.findOne({
-    where: buildInventoryHistoryWhere(null, null, { MaLichSu: idInventory }),
+    where: buildInventoryHistoryWhere(null, null, {
+      MaLichSu: idInventory,
+    }),
     include: inventoryHistoryInclude,
   });
 
@@ -349,10 +404,7 @@ export const exportInventoryHistoryXlsxService = async (
   });
 
   const enrichedHistories = await enrichInventoryHistories(rows);
-  const histories = filterInventoryHistoryByKeyword(
-    enrichedHistories,
-    keyword,
-  );
+  const histories = filterInventoryHistoryByKeyword(enrichedHistories, keyword);
 
   const workbook = new ExcelJS.Workbook();
 
@@ -390,7 +442,7 @@ export const exportInventoryHistoryXlsxService = async (
     },
   ];
 
-  const colWidths = [14, 42, 24, 20, 20, 20, 18, 22, 26, 46];
+  const colWidths = [14, 42, 24, 20, 20, 20, 18, 26, 26, 46];
 
   colWidths.forEach((width, index) => {
     worksheet.getColumn(index + 1).width = width;
@@ -537,7 +589,7 @@ export const exportInventoryHistoryXlsxService = async (
     "Tồn kho hiện tại",
     "Loại tham chiếu",
     "Mã tham chiếu",
-    "Mã đơn hàng",
+    "Mã liên quan",
     "Ngày tạo",
     "Ghi chú",
   ];
@@ -585,7 +637,7 @@ export const exportInventoryHistoryXlsxService = async (
       history.TonKhoHienTai ?? 0,
       history.LoaiThamChieu || "",
       history.MaThamChieu || "",
-      getRelatedOrderCode(history),
+      getRelatedReferenceCode(history),
       history.NgayTao ? formatDateTimeVN(history.NgayTao) : "",
       history.GhiChu || "",
     ];
@@ -600,9 +652,7 @@ export const exportInventoryHistoryXlsxService = async (
 
       cell.alignment = {
         vertical: "middle",
-        horizontal: [1, 4, 5, 7, 8, 9].includes(colNumber)
-          ? "center"
-          : "left",
+        horizontal: [1, 4, 5, 7, 8, 9].includes(colNumber) ? "center" : "left",
         wrapText: true,
       };
 

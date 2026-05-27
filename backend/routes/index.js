@@ -8,6 +8,7 @@ import adminNewsRoutes from "./admin/adminNews.route.js";
 import adminInventoryRoutes from "./admin/adminInventory.route.js";
 import adminReviewsRoutes from "./admin/adminProductReviews.route.js";
 import adminSupplierRoutes from "./admin/adminSupplier.route.js";
+import adminReceivedNoteRoutes from "./admin/adminReceivedNote.route.js";
 
 import customerRoutes from "../routes/customer.route.js";
 import staffRoutes from "../routes/staff.route.js";
@@ -127,6 +128,13 @@ router.use(
   jwtMiddleware,
   checkRole("Admin", "Staff"),
   adminSupplierRoutes,
+);
+
+router.use(
+  "/admin/received_notes",
+  jwtMiddleware,
+  checkRole("Admin", "Staff"),
+  adminReceivedNoteRoutes,
 );
 
 router.use(

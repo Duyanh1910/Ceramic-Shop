@@ -19,6 +19,7 @@ export const PAGE_TITLES = {
   "/admin/adminprofile": "Hồ sơ quản trị | Ceramic Shop",
   "/admin/reports": "Báo cáo thống kê | Ceramic Shop",
   "/admin/customers": "Quản lý khách hàng | Ceramic Shop",
+  "/admin/received_notes": "Quản lý phiếu nhập | Ceramic Shop",
   "/admin/inventories": "Lịch sử tồn kho | Ceramic Shop",
   "/admin/reviews": "Quản lý đánh giá | Ceramic Shop",
   "/admin/staffs": "Quản lý nhân viên | Ceramic Shop",

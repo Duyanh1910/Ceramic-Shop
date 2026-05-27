@@ -311,6 +311,20 @@ VariantModel.hasMany(ReceivedNoteDetailModel, {
 ReceivedNoteDetailModel.belongsTo(VariantModel, {
   foreignKey: "MaBienThe",
 });
+
+ReceivedNoteModel.hasMany(InventoryHistoryModel, {
+  foreignKey: "MaThamChieu",
+  sourceKey: "MaPhieuNhap",
+  constraints: false,
+  as: "LichSuTonKhoPhieuNhap",
+});
+
+InventoryHistoryModel.belongsTo(ReceivedNoteModel, {
+  foreignKey: "MaThamChieu",
+  targetKey: "MaPhieuNhap",
+  constraints: false,
+  as: "PhieuNhap",
+});
 export {
   sequelize,
   AccountModel,

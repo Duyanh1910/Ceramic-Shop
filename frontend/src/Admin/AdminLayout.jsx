@@ -40,6 +40,11 @@ const STAFF_MENU = [
         icon: <DeploymentUnitOutlined/>,
         label: "Nhà cung cấp",
     },
+    {
+        key: "/admin/received_notes",
+        icon: <AuditOutlined/>,
+        label: "Phiếu nhập hàng",
+    },
     {key: "/admin/promotions", icon: <TagsOutlined/>, label: "Khuyến mãi"},
     {key: "/admin/news", icon: <FileTextOutlined/>, label: "Tin tức"},
     {key: "/admin/warranties", icon: <SafetyOutlined/>, label: "Bảo hành"},
@@ -75,6 +80,11 @@ const ADMIN_MENU = [
         key: "/admin/suppliers",
         icon: <DeploymentUnitOutlined/>,
         label: "Nhà cung cấp",
+    },
+    {
+        key: "/admin/received_notes",
+        icon: <AuditOutlined/>,
+        label: "Phiếu nhập hàng",
     },
     {key: "/admin/staffs", icon: <UserOutlined/>, label: "Nhân viên"},
     {key: "/admin/promotions", icon: <TagsOutlined/>, label: "Khuyến mãi"},
