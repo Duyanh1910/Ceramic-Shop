@@ -162,24 +162,11 @@
   border-radius: 14px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(27, 67, 124, 0.04);
   border: 1px solid #edf0f7;
-  overflow: visible;
+  overflow: hidden;
 }
 
 .table :global(.ant-table) {
   width: 100% !important;
-  table-layout: fixed;
-}
-
-.table :global(.ant-table-container),
-.table :global(.ant-table-content),
-.table :global(.ant-table-body) {
-  overflow-x: hidden !important;
-  overflow-y: visible !important;
-  max-height: none !important;
-}
-
-.table :global(.ant-table-cell) {
-  overflow: hidden;
 }
 
 .table :global(.ant-table-thead > tr > th) {

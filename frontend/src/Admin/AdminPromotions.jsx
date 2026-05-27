@@ -746,7 +746,6 @@ export default function AdminPromotions() {
           dataSource={filtered}
           rowKey="MaKhuyenMai"
           loading={loading}
-          tableLayout="fixed"
           pagination={{
             pageSize: 10,
             showTotal: (total) => `${total} khuyến mãi`,
