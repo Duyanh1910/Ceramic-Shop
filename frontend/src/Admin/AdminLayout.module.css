@@ -92,32 +92,6 @@
   white-space: nowrap;
 }
 
-.roleTag {
-  padding: 10px 16px 6px;
-  display: flex;
-  justify-content: center;
-}
-
-.roleAdmin, .roleStaff {
-  font-size: 12px;
-  font-weight: 700;
-  padding: 3px 12px;
-  border-radius: 20px;
-  letter-spacing: 0.5px;
-}
-
-.roleAdmin {
-  background: rgba(196,140,70,0.2);
-  color: #c48c46;
-  border: 1px solid rgba(196,140,70,0.4);
-}
-
-.roleStaff {
-  background: rgba(80,160,255,0.15);
-  color: #6db8ff;
-  border: 1px solid rgba(80,160,255,0.3);
-}
-
 .siderMenu {
   background: transparent !important;
   border: none !important;
@@ -168,32 +142,6 @@
   color: rgba(255, 255, 255, 0.65) !important;
 }
 
-.siderFooter {
-  border-top: 1px solid rgba(255,255,255,0.08);
-  padding: 14px 16px;
-}
-
-.siderUser {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.avatarSmall {
-  background: #c48c46 !important;
-  font-weight: 700;
-  font-size: 14px;
-  flex-shrink: 0;
-}
-
-.siderUsername {
-  font-size: 13px;
-  color: rgba(255,255,255,0.7);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .header {
   background: #fff !important;
   padding: 0 24px !important;
@@ -211,13 +159,6 @@
   display: flex;
   align-items: center;
   gap: 12px;
-}
-
-.iconBtn {
-  font-size: 18px !important;
-  color: #555 !important;
-  width: 40px;
-  height: 40px;
 }
 
 .userInfo {

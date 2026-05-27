@@ -244,16 +244,6 @@ export default function AdminLayout() {
                     )}
                 </button>
 
-                {!collapsed && (
-                    <div className={styles.roleTag}>
-            <span
-                className={role === "Admin" ? styles.roleAdmin : styles.roleStaff}
-            >
-              {role === "Admin" ? "👑 Admin" : "🛠 Staff"}
-            </span>
-                    </div>
-                )}
-
                 <div className={styles.menuScroll}>
                     <Menu
                         theme="dark"
@@ -263,17 +253,6 @@ export default function AdminLayout() {
                         onClick={({key}) => navigate(key)}
                         className={styles.siderMenu}
                     />
-                </div>
-
-                <div className={styles.siderFooter}>
-                    {!collapsed && (
-                        <div className={styles.siderUser}>
-                            <Avatar size={32} className={styles.avatarSmall}>
-                                {username?.[0]?.toUpperCase()}
-                            </Avatar>
-                            <span className={styles.siderUsername}>{username}</span>
-                        </div>
-                    )}
                 </div>
             </Sider>
 
