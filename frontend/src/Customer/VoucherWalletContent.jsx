@@ -392,7 +392,14 @@ export default function VoucherWalletContent({ compact = false }) {
                       disabled={saved || outOfStock}
                       loading={savingId === promo.MaKhuyenMai}
                       onClick={() => handleSaveVoucher(promo)}
-                      className={styles.primaryBtn}
+                      icon={saved ? <CheckCircleOutlined /> : null}
+                      className={
+                        saved
+                          ? styles.savedBtn
+                          : outOfStock
+                            ? styles.outOfStockBtn
+                            : styles.primaryBtn
+                      }
                     >
                       {saved ? 'Đã lưu' : outOfStock ? 'Hết lượt' : 'Lưu mã'}
                     </Button>
