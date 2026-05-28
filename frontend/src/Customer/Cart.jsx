@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Layout, Form, Input, Button, message, Divider, Empty, Row, Col, 
-  Popconfirm, Checkbox, Spin, Select, Modal, Tag 
+  Popconfirm, Checkbox, Spin, Select, Modal
 } from 'antd';
 import { 
   DeleteOutlined, ArrowLeftOutlined, ShoppingCartOutlined, 
@@ -236,9 +236,24 @@ function Cart() {
             </div>
           )}
 
-          <div className={styles.pageTitle} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '24px', fontWeight: 700, color: '#1b437c', marginBottom: '30px' }}>
-            <ShoppingCartOutlined /> Giỏ Hàng Của Bạn
-            {totalCartQuantity > 0 && <Tag color="#1b437c" style={{ fontSize: '14px', padding: '2px 10px', borderRadius: '12px' }}>{totalCartQuantity} sản phẩm</Tag>}
+          <div className={styles.cartHero}>
+            <div className={styles.cartTitleGroup}>
+              <span className={styles.cartTitleIcon}>
+                <ShoppingCartOutlined />
+              </span>
+
+              <div>
+                <h1 className={styles.cartTitle}>Giỏ hàng của bạn</h1>
+                <p className={styles.cartSubtitle}>
+                  Kiểm tra sản phẩm đã chọn trước khi tiến hành thanh toán
+                </p>
+              </div>
+            </div>
+
+            <div className={styles.cartCountBadge}>
+              <span>{totalCartQuantity}</span>
+              <strong>sản phẩm</strong>
+            </div>
           </div>
           
           {isFetchingCart ? (
