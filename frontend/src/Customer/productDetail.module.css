@@ -396,23 +396,6 @@
   min-height: 80vh;
 }
 
-.btnBackWrap {
-  margin-bottom: 30px;
-}
-
-.btnBack {
-  color: #888;
-  font-weight: 600;
-  padding: 0;
-  font-family: 'Arsenal', sans-serif;
-  letter-spacing: 0.5px;
-}
-
-.btnBack:hover {
-  color: #1b437c;
-  background: transparent;
-}
-
 .productDetailBox {
   display: flex;
   gap: 50px;
