@@ -8,7 +8,6 @@ import {
   ShoppingCartOutlined,
   UserOutlined,
   LogoutOutlined,
-  ArrowLeftOutlined,
   DeleteOutlined,
   WalletOutlined,
   SafetyCertificateOutlined,
@@ -277,16 +276,10 @@ function ProductDetail() {
     onClick: () => navigate("/returns"),
   },
   {
-    type: "divider",
-  },
-  {
     key: "orders",
     label: "Đơn hàng của tôi",
     icon: <ShoppingOutlined />,
     onClick: () => navigate("/orders"),
-  },
-  {
-    type: "divider",
   },
   {
     key: "logout",
@@ -652,9 +645,6 @@ function ProductDetail() {
       <Layout className={styles.mainContainer}>
         <Content className={styles.mainContent}>
           <Breadcrumb customLabels={{ [id]: product?.TenSanPham }} />
-          <div className={styles.btnBackWrap}>
-             <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate('/home')} className={styles.btnBack}>Quay lại Cửa hàng</Button>
-          </div>
 
           <div className={styles.productDetailBox}>
             <div className={styles.gallery}>
