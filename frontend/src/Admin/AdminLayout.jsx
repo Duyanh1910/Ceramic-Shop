@@ -112,6 +112,11 @@ const ADMIN_MENU = [
         icon: <CommentOutlined/>,
         label: "Phản hồi khách hàng",
     },
+    {
+        key: "/admin/notifications",
+        icon: <AlertOutlined/>,
+        label: "Thông báo",
+    }
 ];
 
 export default function AdminLayout() {

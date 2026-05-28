@@ -2,7 +2,7 @@ import {useEffect, useState, useMemo} from "react";
 import {useNavigate} from "react-router-dom";
 import {Badge, Empty, Input, Pagination, Select, Tabs} from "antd";
 import {BellOutlined, CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, SearchOutlined, ShopOutlined, SwapOutlined} from "@ant-design/icons";
-
+import styles from "./AdminNotification.module.css";
 const STORAGE_KEY = "admin_notifications";
 const PAGE_SIZE = 15;
 const EVENT_META = {

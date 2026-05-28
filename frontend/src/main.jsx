@@ -55,6 +55,7 @@ import AdminReturns from "./Admin/AdminReturns.jsx";
 import AdminPayments from "./Admin/AdminPayments.jsx";
 import AdminSuppliers from "./Admin/AdminSupplier.jsx";
 import AdminReceivedNotes from "./Admin/AdminReceivedNote.jsx";
+import AdminNotifications from "./Admin/AdminNotifications.jsx";
 
 const PublicRoute = ({ children }) => {
   const isCustomerActive =
@@ -211,6 +212,7 @@ createRoot(document.getElementById("root")).render(
             <Route path="customers" element={<AdminCustomers />} />
             <Route path="inventories" element={<AdminInventories />} />
             <Route path="reviews" element={<AdminReviews />} />
+            <Route path="notifications" element={<AdminNotifications/>} />
             <Route
               path="staffs"
               element={
