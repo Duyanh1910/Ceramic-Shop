@@ -162,35 +162,40 @@
 .cartCountBadge {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   flex-shrink: 0;
-  min-height: 44px;
-  padding: 6px 16px 6px 8px;
-  border: 1px solid rgba(187, 146, 68, 0.38);
+  min-height: 52px;
+  padding: 7px 20px 7px 8px;
+  border: 1px solid rgba(240, 213, 141, 0.48);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.55);
+  background: linear-gradient(135deg, #173354, #1b437c);
+  box-shadow:
+    0 10px 24px rgba(27, 67, 124, 0.22),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
 }
 
 .cartCountBadge span {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 34px;
-  height: 34px;
-  padding: 0 10px;
+  min-width: 38px;
+  height: 38px;
+  padding: 0 11px;
   border-radius: 999px;
-  color: #ffffff;
-  background: linear-gradient(135deg, #bb9244, #d5aa5a);
-  font-size: 16px;
+  color: #173354;
+  background: linear-gradient(135deg, #f0d58d, #bb9244);
+  font-size: 17px;
   font-weight: 800;
+  box-shadow: 0 6px 16px rgba(187, 146, 68, 0.28);
 }
 
 .cartCountBadge strong {
-  color: #173354;
+  color: #ffffff;
   font-size: 15px;
   font-weight: 800;
+  letter-spacing: 0.7px;
   white-space: nowrap;
+  text-transform: capitalize;
 }
 
 .loadingWrap {
@@ -536,9 +541,6 @@
   }
   .cartSubtitle {
     font-size: 14px;
-  }
-  .cartCountBadge {
-    width: fit-content;
   }
   .cartHeaderRow { display: none; }
   .cartItemRow { flex-wrap: wrap; gap: 10px; position: relative; padding: 14px 16px; }

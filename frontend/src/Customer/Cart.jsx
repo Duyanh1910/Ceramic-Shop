@@ -252,7 +252,7 @@ function Cart() {
 
             <div className={styles.cartCountBadge}>
               <span>{totalCartQuantity}</span>
-              <strong>sản phẩm</strong>
+              <strong>Sản Phẩm</strong>
             </div>
           </div>
           
