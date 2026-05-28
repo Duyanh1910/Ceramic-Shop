@@ -165,61 +165,91 @@
 }
 
 .stepTracker {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 20px;
+  width: 100%;
+  max-width: 390px;
+  margin: 4px auto 24px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  align-items: flex-start;
 }
 
 .stepItem {
+  position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
+  min-width: 0;
 }
 
 .stepDot {
-  width: 28px; height: 28px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
-  font-weight: 700;
-  background: #eaeaea;
-  color: #aaa;
-  flex-shrink: 0;
-  transition: all 0.3s;
+  background: #eef1f5;
+  color: #9aa4b2;
+  border: 2px solid #e6ebf2;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1;
+  position: relative;
+  z-index: 2;
+  transition: all 0.25s ease;
 }
 
 .stepDot.active {
-  background: #1b437c;
-  color: #fff;
-  box-shadow: 0 3px 10px rgba(27,67,124,0.3);
+  background: linear-gradient(135deg, #173354, #1b437c);
+  border-color: #bb9244;
+  color: #ffffff;
+  box-shadow: 0 8px 18px rgba(27, 67, 124, 0.28);
 }
 
 .stepDot.done {
-  background: #52c41a;
-  color: #fff;
+  background: linear-gradient(135deg, #2f8f46, #52c41a);
+  border-color: #b7ebc6;
+  color: #ffffff;
+  box-shadow: 0 6px 14px rgba(82, 196, 26, 0.22);
 }
 
 .stepLabel {
-  font-size: 11px;
-  color: #bbb;
-  margin: 0 6px;
-  white-space: nowrap;
+  margin-top: 8px;
+  max-width: 96px;
+  color: #a4acb8;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
+  white-space: normal;
+  transition: color 0.25s ease;
 }
 
 .stepLabel.activeLabel {
-  color: #1b437c;
-  font-weight: 700;
+  color: #173354;
+}
+
+.stepLabel.doneLabel {
+  color: #2f8f46;
 }
 
 .stepLine {
-  width: 28px; height: 2px;
-  background: #eaeaea;
-  transition: background 0.3s;
+  position: absolute;
+  top: 18px;
+  left: calc(50% + 24px);
+  width: calc(100% - 48px);
+  height: 3px;
+  border-radius: 999px;
+  background: #e6ebf2;
+  z-index: 1;
+  transition: background 0.25s ease;
 }
 
-.stepLine.doneLine { background: #52c41a; }
+.stepLine.doneLine {
+  background: linear-gradient(90deg, #52c41a, #bb9244);
+}
 
 .stepContent {
   animation: fadeIn 0.3s ease;
@@ -232,11 +262,12 @@
 
 .formTitle {
   text-align: center;
-  margin-bottom: 20px;
-  color: #1b437c;
+  color: #173354;
   font-family: 'Arsenal', serif;
   font-weight: 700;
-  font-size: 26px;
+  font-size: 30px;
+  letter-spacing: 2px;
+  margin: 0 0 20px;
 }
 
 .customInput {
@@ -253,23 +284,15 @@
 }
 
 .customButton {
-  height: 45px;
-  border-radius: 6px;
-  background-color: #1b437c;
-  font-weight: 600;
-  letter-spacing: 1px;
-  transition: all 0.3s;
-}
-
-.customButton {
+  height: 50px !important;
+  border-radius: 10px !important;
   background-color: #173354 !important;
   border-color: #173354 !important;
-  border-radius: 10px !important;
+  color: #ffffff !important;
   font-weight: 700 !important;
   font-size: 15px !important;
-  height: 50px !important;
   letter-spacing: 1px;
-  box-shadow: 0 8px 20px rgba(23,51,84,0.2) !important;
+  box-shadow: 0 8px 20px rgba(23, 51, 84, 0.2) !important;
   transition: all 0.3s ease !important;
 }
 
@@ -277,7 +300,7 @@
   background-color: #102640 !important;
   border-color: #102640 !important;
   transform: translateY(-2px);
-  box-shadow: 0 12px 28px rgba(23,51,84,0.28) !important;
+  box-shadow: 0 12px 28px rgba(23, 51, 84, 0.28) !important;
 }
 
 .otpIconWrap {
@@ -439,6 +462,28 @@
   .cardImage { display: none; }
   .cardForm { padding: 28px 20px; }
   .otpCell { width: 38px; height: 46px; font-size: 18px; }
+
+  .stepTracker {
+    max-width: 330px;
+    margin-bottom: 20px;
+  }
+
+  .stepDot {
+    width: 34px;
+    height: 34px;
+    font-size: 13px;
+  }
+
+  .stepLabel {
+    max-width: 82px;
+    font-size: 10px;
+  }
+
+  .stepLine {
+    top: 16px;
+    left: calc(50% + 21px);
+    width: calc(100% - 42px);
+  }
 }
 
 .backButton {
@@ -449,11 +494,3 @@
   transition: transform 0.3s, color 0.2s;
 }
 .backButton:hover { transform: translateX(-5px); color: #BB9244 !important; }
-
-.formTitle {
-  color: #173354;
-  font-family: 'Arsenal', serif;
-  font-weight: 700;
-  font-size: 30px;
-  margin: 0 0 5px;
-}

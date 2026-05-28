@@ -1,56 +1,120 @@
-@import url('https://fonts.googleapis.com/css2?family=Arsenal:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
 
 .breadcrumb {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 0;
-  padding: 10px 0;
-  font-size: 13px;
-  font-family: 'Arsenal', sans-serif;
+  max-width: 100%;
+  margin-bottom: 32px;
+  padding: 12px 18px;
+  border: 1px solid rgba(27, 67, 124, 0.12);
+  border-radius: 999px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(246, 250, 255, 0.9));
+  box-shadow: 0 10px 28px rgba(27, 67, 124, 0.08);
+  backdrop-filter: blur(12px);
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 15px;
 }
 
 .item {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0;
+  min-width: 0;
 }
 
 .sep {
-  font-size: 10px;
-  color: #ccc;
-  margin: 0 6px;
   flex-shrink: 0;
+  margin: 0 10px;
+  color: #b7c0ce;
+  font-size: 11px;
 }
 
 .link {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 4px;
-  color: #888;
+  gap: 7px;
+  min-height: 32px;
+  padding: 0 8px;
+  border-radius: 999px;
+  color: #6f7d8f;
+  font-weight: 600;
+  line-height: 1.4;
   text-decoration: none;
-  transition: color 0.2s;
   white-space: nowrap;
+  transition:
+    color 0.25s ease,
+    background 0.25s ease,
+    transform 0.25s ease;
 }
 
 .link:hover {
   color: #1b437c;
+  background: rgba(27, 67, 124, 0.08);
+  transform: translateY(-1px);
 }
 
 .current {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 4px;
-  color: #1b437c;
-  font-weight: 600;
+  gap: 7px;
+  min-width: 0;
+  max-width: min(48vw, 560px);
+  min-height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #173354, #1b437c);
+  box-shadow: 0 8px 18px rgba(27, 67, 124, 0.18);
+  font-weight: 800;
+  line-height: 1.4;
   white-space: nowrap;
-  max-width: 220px;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .icon {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  font-size: 13px;
+  justify-content: center;
+  color: inherit;
+  font-size: 16px;
+}
+
+@media (max-width: 768px) {
+  .breadcrumb {
+    display: flex;
+    width: 100%;
+    margin-bottom: 24px;
+    padding: 11px 12px;
+    border-radius: 18px;
+    font-size: 14px;
+  }
+
+  .current {
+    max-width: 56vw;
+    padding: 0 12px;
+  }
+
+  .sep {
+    margin: 0 7px;
+  }
+
+  .link {
+    padding: 0 5px;
+  }
+}
+
+@media (max-width: 480px) {
+  .breadcrumb {
+    font-size: 13px;
+  }
+
+  .current {
+    max-width: 46vw;
+  }
+
+  .link {
+    gap: 4px;
+  }
 }

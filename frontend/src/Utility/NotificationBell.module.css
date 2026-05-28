@@ -1,0 +1,294 @@
+/* ── Floating wrapper ──────────────────────────────────────────── */
+.wrapper {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  z-index: 1050;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+/* ── Bell button ───────────────────────────────────────────────── */
+.bellBtn {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: none;
+  background: #0f2744;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(15, 39, 68, 0.45);
+  transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+
+.bellBtn:hover {
+  background: #1b437c;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(15, 39, 68, 0.5);
+}
+
+.bellActive {
+  background: #1b437c;
+  box-shadow: 0 0 0 4px rgba(196, 140, 70, 0.25), 0 8px 28px rgba(15, 39, 68, 0.5);
+}
+
+.bellIcon {
+  font-size: 22px;
+  color: #fff;
+}
+
+/* pulse ring */
+.bellPulse {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid #c48c46;
+  animation: pulseRing 1.8s ease-out infinite;
+  pointer-events: none;
+}
+
+@keyframes pulseRing {
+  0%   { transform: scale(1);   opacity: 0.7; }
+  100% { transform: scale(1.7); opacity: 0;   }
+}
+
+/* shake on new notification */
+@keyframes bellShake {
+  0%, 100% { transform: rotate(0deg); }
+  15%       { transform: rotate(-18deg); }
+  30%       { transform: rotate(16deg); }
+  45%       { transform: rotate(-12deg); }
+  60%       { transform: rotate(10deg); }
+  75%       { transform: rotate(-6deg); }
+  90%       { transform: rotate(4deg); }
+}
+
+.bellShake {
+  animation: bellShake 0.7s ease-in-out;
+}
+
+/* ── Dropdown panel ────────────────────────────────────────────── */
+.dropdown {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  right: 0;
+  width: 360px;
+  max-height: 520px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow:
+    0 4px 6px -1px rgba(0,0,0,0.08),
+    0 20px 50px -8px rgba(15,39,68,0.22);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: dropIn 0.22s cubic-bezier(0.34, 1.4, 0.64, 1);
+  transform-origin: bottom right;
+}
+
+@keyframes dropIn {
+  from { opacity: 0; transform: scale(0.88) translateY(8px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0); }
+}
+
+/* ── Dropdown header ───────────────────────────────────────────── */
+.dropHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid #f0f0f0;
+  flex-shrink: 0;
+}
+
+.dropTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f2744;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.unreadBadge {
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  background: #c48c46;
+  border-radius: 20px;
+  padding: 1px 8px;
+  line-height: 1.6;
+}
+
+.markAllBtn {
+  font-size: 12px;
+  color: #1b437c;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+.markAllBtn:hover {
+  background: #f0f4f8;
+}
+
+/* ── List ──────────────────────────────────────────────────────── */
+.dropList {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px 0;
+}
+
+.dropList::-webkit-scrollbar { width: 5px; }
+.dropList::-webkit-scrollbar-track { background: transparent; }
+.dropList::-webkit-scrollbar-thumb {
+  background: rgba(196,140,70,0.4);
+  border-radius: 8px;
+}
+
+/* ── Notification item ─────────────────────────────────────────── */
+.notifItem {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 18px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+  position: relative;
+}
+.notifItem:hover {
+  background: #f8fafc;
+}
+
+.notifUnread {
+  background: rgba(196,140,70,0.05);
+}
+.notifUnread:hover {
+  background: rgba(196,140,70,0.1);
+}
+
+.notifIconWrap {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  flex-shrink: 0;
+}
+
+.notifBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.notifTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1a202c;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.notifMsg {
+  font-size: 12px;
+  color: #64748b;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.5;
+}
+
+.notifTime {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+.unreadDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #c48c46;
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+
+/* ── Empty / loading states ────────────────────────────────────── */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  gap: 12px;
+  color: #94a3b8;
+}
+
+.emptyIcon {
+  font-size: 36px;
+  color: #cbd5e1;
+}
+
+.emptyState p {
+  margin: 0;
+  font-size: 13px;
+}
+
+.skeleton {
+  height: 60px;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  width: 100%;
+  margin: 4px 0;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Footer "View all" button ──────────────────────────────────── */
+.viewAll {
+  width: 100%;
+  padding: 13px 18px;
+  border: none;
+  border-top: 1px solid #f0f0f0;
+  background: #fafbfc;
+  color: #1b437c;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+  letter-spacing: 0.3px;
+}
+.viewAll:hover {
+  background: #0f2744;
+  color: #c48c46;
+}

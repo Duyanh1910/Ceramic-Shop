@@ -5,6 +5,8 @@ import {
   AppstoreOutlined,
   AuditOutlined,
   BarChartOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
   CommentOutlined,
   CreditCardOutlined,
   DashboardOutlined,
@@ -22,7 +24,7 @@ import {Outlet, useLocation, useNavigate} from "react-router-dom";
 import axios from "axios";
 import styles from "./AdminLayout.module.css";
 import {connectAdminSocket, disconnectAdminSocket} from "../Utility/socket.js";
-
+import NotificationBell from "../Utility/NotificationBell.jsx";
 const {Header, Sider, Content} = Layout;
 const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1";
 
@@ -112,6 +114,11 @@ const ADMIN_MENU = [
         icon: <CommentOutlined/>,
         label: "Phản hồi khách hàng",
     },
+    {
+        key: "/admin/notifications",
+        icon: <AlertOutlined/>,
+        label: "Thông báo",
+    }
 ];
 
 export default function AdminLayout() {
@@ -136,33 +143,68 @@ export default function AdminLayout() {
         const socket = connectAdminSocket();
         if (!socket) return;
 
-        const notifyOrder = (payload, type = "info") => {
-            notification[type]({
-                message: payload?.title || "Thong bao don hang",
-                description: payload?.message,
+        // ── Cấu hình toast theo loại sự kiện ──────────────────────────
+        const TOAST_CONFIG = {
+            ORDER_CREATED: {
+                antType: "info",
+                icon: <ShoppingOutlined style={{color: "#3b82f6", fontSize: 20}}/>,
+                style: {borderLeft: "4px solid #3b82f6", borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,0.12)"},
+            },
+            ORDER_STATUS_UPDATED: {
+                antType: "success",
+                icon: <CheckCircleOutlined style={{color: "#10b981", fontSize: 20}}/>,
+                style: {borderLeft: "4px solid #10b981", borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,0.12)"},
+            },
+            ORDER_CANCELED: {
+                antType: "warning",
+                icon: <CloseCircleOutlined style={{color: "#ef4444", fontSize: 20}}/>,
+                style: {borderLeft: "4px solid #ef4444", borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,0.12)"},
+            },
+        };
+
+        // ── Hiện toast ─────────────────────────────────────────────────
+        const showToast = (payload, eventType) => {
+            const cfg = TOAST_CONFIG[eventType] || TOAST_CONFIG.ORDER_STATUS_UPDATED;
+            notification[cfg.antType]({
+                message: <span style={{fontWeight: 700, fontSize: 14}}>{payload?.title || "Thông báo đơn hàng"}</span>,
+                description: <span style={{fontSize: 13, color: "#64748b"}}>{payload?.message}</span>,
+                icon: cfg.icon,
+                style: cfg.style,
                 placement: "topRight",
+                duration: 5,
                 onClick: () => navigate(payload?.redirectUrl || "/admin"),
             });
         };
 
-        const dispatchOrderChanged = (payload) => {
-            window.dispatchEvent(
-                new CustomEvent("admin:orders_changed", {detail: payload}),
-            );
+        // ── Dispatch để reload bảng đơn hàng + đẩy vào NotificationBell ──
+        const dispatchAll = (payload, notifType) => {
+            window.dispatchEvent(new CustomEvent("admin:orders_changed", {detail: payload}));
+            window.dispatchEvent(new CustomEvent("admin:new_notification", {
+                detail: {
+                    id: `notif-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+                    type: notifType,
+                    title: payload?.title || "Thông báo",
+                    message: payload?.message || "",
+                    redirectUrl: payload?.redirectUrl || "/admin",
+                    isRead: false,
+                    createdAt: new Date().toISOString(),
+                },
+            }));
         };
 
         const handleOrderCreated = (payload) => {
-            notifyOrder(payload, "info");
-            dispatchOrderChanged(payload);
+            showToast(payload, "ORDER_CREATED");
+            dispatchAll(payload, "ORDER_CREATED");
         };
 
         const handleOrderUpdated = (payload) => {
-            dispatchOrderChanged(payload);
+            showToast(payload, "ORDER_STATUS_UPDATED");
+            dispatchAll(payload, "ORDER_STATUS_UPDATED");
         };
 
         const handleOrderCanceled = (payload) => {
-            notifyOrder(payload, "warning");
-            dispatchOrderChanged(payload);
+            showToast(payload, "ORDER_CANCELED");
+            dispatchAll(payload, "ORDER_CANCELED");
         };
 
         socket.on("admin:order_created", handleOrderCreated);
@@ -286,6 +328,7 @@ export default function AdminLayout() {
                     <Outlet/>
                 </Content>
             </Layout>
+            <NotificationBell/>
         </Layout>
     );
 }
