@@ -206,21 +206,21 @@ function Home() {
   },
   {
     key: '3',
+    label: 'Đơn hàng của tôi',
+    icon: <ShoppingOutlined />,
+    onClick: () => navigate('/orders')
+  },
+  {
+    key: '4',
     label: 'Bảo hành của tôi',
     icon: <SafetyCertificateOutlined />,
     onClick: () => navigate('/warranties')
   },
   {
-    key: "4",
+    key: "5",
     label: "Đổi trả của tôi",
     icon: <SwapOutlined />,
     onClick: () => navigate("/returns"),
-  },
-  {
-    key: '5',
-    label: 'Đơn hàng của tôi',
-    icon: <ShoppingOutlined />,
-    onClick: () => navigate('/orders')
   },
   {
     key: '6',

@@ -264,6 +264,12 @@ function ProductDetail() {
     onClick: () => navigate("/vouchers"),
   },
   {
+    key: "orders",
+    label: "Đơn hàng của tôi",
+    icon: <ShoppingOutlined />,
+    onClick: () => navigate("/orders"),
+  },
+  {
     key: "warranties",
     label: "Bảo hành của tôi",
     icon: <SafetyCertificateOutlined />,
@@ -274,12 +280,6 @@ function ProductDetail() {
     label: "Đổi trả của tôi",
     icon: <SwapOutlined />,
     onClick: () => navigate("/returns"),
-  },
-  {
-    key: "orders",
-    label: "Đơn hàng của tôi",
-    icon: <ShoppingOutlined />,
-    onClick: () => navigate("/orders"),
   },
   {
     key: "logout",
