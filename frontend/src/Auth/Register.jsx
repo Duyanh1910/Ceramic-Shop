@@ -187,17 +187,43 @@ function Register() {
 
           {step <= 2 && (
             <div className={styles.stepTracker}>
-              {stepLabels.map((label, i) => (
-                <div key={i} className={styles.stepItem}>
-                  <div className={`${styles.stepDot} ${step > i + 1 ? styles.done : step === i + 1 ? styles.active : ''}`}>
-                    {step > i + 1 ? '✓' : i + 1}
+              {stepLabels.map((label, i) => {
+                const stepNumber = i + 1;
+                const isCompleted = step > stepNumber;
+                const isCurrent = step === stepNumber;
+
+                return (
+                  <div key={label} className={styles.stepItem}>
+                    <div
+                      className={`${styles.stepDot} ${
+                        isCompleted ? styles.done : isCurrent ? styles.active : ''
+                      }`}
+                    >
+                      {isCompleted ? '✓' : stepNumber}
+                    </div>
+
+                    <span
+                      className={`${styles.stepLabel} ${
+                        isCompleted
+                          ? styles.doneLabel
+                          : isCurrent
+                            ? styles.activeLabel
+                            : ''
+                      }`}
+                    >
+                      {label}
+                    </span>
+
+                    {i < stepLabels.length - 1 && (
+                      <div
+                        className={`${styles.stepLine} ${
+                          step > stepNumber ? styles.doneLine : ''
+                        }`}
+                      />
+                    )}
                   </div>
-                  <span className={`${styles.stepLabel} ${step === i + 1 ? styles.activeLabel : ''}`}>{label}</span>
-                  {i < stepLabels.length - 1 && (
-                    <div className={`${styles.stepLine} ${step > i + 1 ? styles.doneLine : ''}`} />
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
 
