@@ -255,3 +255,71 @@
   justify-content: center;
   margin-top: 24px;
 }
+
+/* ── Missing classes ───────────────────────────────────────────── */
+.filterRow {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 200px;
+}
+
+.typeSelect {
+  width: 160px;
+}
+
+.clearAllBtn {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: 1px solid #ef4444;
+  background: #fff;
+  color: #ef4444;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.clearAllBtn:hover {
+  background: #ef4444;
+  color: #fff;
+}
+
+.itemDate {
+  color: #b0bec5;
+  margin-left: 4px;
+}
+
+.itemRight {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.deleteBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #cbd5e1;
+  font-size: 14px;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s, background 0.15s;
+}
+.deleteBtn:hover {
+  color: #ef4444;
+  background: rgba(239,68,68,0.08);
+}

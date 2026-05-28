@@ -32,7 +32,7 @@ const EVENT_META = {
     },
 };
 const getEventMeta = (type) =>
-    EVENT_META[type] = EVENT_META[type] ||{
+    EVENT_META[type] ||{
         label:"Khác",
         icon:<BellOutlined/>,
         color: "#c48c46",
@@ -58,7 +58,7 @@ const timeAgo = (dateStr) => {
 };
 const loadAll = () => {
     try{
-        return JSON.parse(LocalStorage.getItem(STORAGE_KEY)) || [];
+        return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
     }
     catch(e){
         return [];
