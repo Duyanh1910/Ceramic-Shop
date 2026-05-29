@@ -16,6 +16,17 @@ export const normalizeAdminNotificationPayload = (payload = {}) => ({
   createdAt: payload.createdAt || payload.NgayTao || new Date().toISOString(),
 });
 
+const dispatchAdminNotification = (payload = {}, fallbackType) => {
+  window.dispatchEvent(
+    new CustomEvent("admin:new_notification", {
+      detail: normalizeAdminNotificationPayload({
+        ...payload,
+        type: payload.type || payload.LoaiThongBao || fallbackType,
+      }),
+    }),
+  );
+};
+
 export const adminSocket = io(SOCKET_URL, {
   transports: ["websocket", "polling"],
   autoConnect: false,
@@ -34,13 +45,18 @@ export const connectAdminSocket = () => {
   adminSocket.auth = { token };
 
   if (!hasGlobalAdminNotificationListener) {
-    adminSocket.on("admin:notification_created", (payload) => {
-      window.dispatchEvent(
-        new CustomEvent("admin:new_notification", {
-          detail: normalizeAdminNotificationPayload(payload),
-        }),
-      );
-    });
+    adminSocket.on("admin:notification_created", (payload) =>
+      dispatchAdminNotification(payload),
+    );
+    adminSocket.on("admin:order_created", (payload) =>
+      dispatchAdminNotification(payload, "ORDER_CREATED"),
+    );
+    adminSocket.on("admin:order_updated", (payload) =>
+      dispatchAdminNotification(payload, "ORDER_STATUS_UPDATED"),
+    );
+    adminSocket.on("admin:order_canceled", (payload) =>
+      dispatchAdminNotification(payload, "ORDER_CANCELED"),
+    );
     hasGlobalAdminNotificationListener = true;
   }
 

@@ -132,31 +132,33 @@ export default function NotificationBell() {
   const unread = notifications.filter((n) => !n.isRead).length;
   const recentList = notifications.slice(0, 8);
 
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      try {
-        const res = await axios.get(
-          `${API_BASE}/admin/notifications?page=1&limit=${MAX_STORED}`,
-          { withCredentials: true },
-        );
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const res = await axios.get(
+        `${API_BASE}/admin/notifications?page=1&limit=${MAX_STORED}`,
+        { withCredentials: true },
+      );
 
-        const rows = res.data?.result?.data || [];
+      const rows = res.data?.result?.data || [];
+      const mapped = rows.map((item) =>
+        normalizeAdminNotificationPayload({
+          ...item,
+          isRead: Number(item.DaDoc) === 1,
+        }),
+      );
 
-        const mapped = rows.map((item) =>
-          normalizeAdminNotificationPayload({
-            ...item,
-            isRead: Number(item.DaDoc) === 1,
-          }),
-        );
-
-        setNotifications(mapped);
-      } catch (err) {
-        console.warn("Cannot load admin notifications:", err.message);
-      }
-    };
-
-    fetchNotifications();
+      setNotifications(mapped);
+    } catch (err) {
+      console.warn("Cannot load admin notifications:", err.message);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchNotifications();
+
+    const intervalId = window.setInterval(fetchNotifications, 5000);
+    return () => window.clearInterval(intervalId);
+  }, [fetchNotifications]);
 
   useEffect(() => {
     saveToStorage(notifications);

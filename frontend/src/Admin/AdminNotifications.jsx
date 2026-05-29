@@ -170,6 +170,9 @@ export default function AdminNotifications() {
 
   useEffect(() => {
     fetchNotifications();
+
+    const intervalId = window.setInterval(fetchNotifications, 5000);
+    return () => window.clearInterval(intervalId);
   }, [fetchNotifications]);
 
   useEffect(() => {
