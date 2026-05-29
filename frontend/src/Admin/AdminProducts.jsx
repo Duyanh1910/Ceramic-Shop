@@ -102,6 +102,10 @@ export default function AdminProducts() {
   const [submitting, setSubmitting] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [categories, setCategories] = useState([]);
+  
+  // ---> THÊM MỚI: State lưu danh sách nhà cung cấp
+  const [suppliers, setSuppliers] = useState([]); 
+  
   const [editingId, setEditingId] = useState(null);
   const [form] = Form.useForm();
 
@@ -113,6 +117,7 @@ export default function AdminProducts() {
 
   useEffect(() => {
     fetchCategories();
+    fetchSuppliers(); // ---> Gọi hàm lấy nhà cung cấp khi trang vừa load
   }, []);
 
   const fetchData = async () => {
@@ -138,6 +143,17 @@ export default function AdminProducts() {
       const res = await axios.get(`${API_BASE}/categories`, axiosConfig);
       setCategories(res.data?.result || []);
     } catch {}
+  };
+
+  // ---> THÊM MỚI: Hàm lấy danh sách nhà cung cấp
+  const fetchSuppliers = async () => {
+    try {
+      // Lưu ý: Nếu đường dẫn API nhà cung cấp của bạn khác (ví dụ: /admin/suppliers), hãy sửa lại ở đây nhé
+      const res = await axios.get(`${API_BASE}/admin/suppliers`, axiosConfig);
+      setSuppliers(res.data?.result || []);
+    } catch {
+      console.log("Chưa có API lấy danh sách nhà cung cấp hoặc lỗi.");
+    }
   };
 
   const handleSearch = () => {
@@ -251,6 +267,11 @@ export default function AdminProducts() {
         brand: p.ThuongHieu,
         description: p.MoTa,
         status: p.TrangThai,
+        
+        // ---> THÊM MỚI: Đổ dữ liệu cũ vào form khi sửa
+        MaNhaCC: p.MaNhaCC,
+        ChatLieu: p.ChatLieu || "Gốm sứ",
+
         variants:
           mappedVariants.length > 0
             ? mappedVariants
@@ -305,6 +326,11 @@ export default function AdminProducts() {
         brand: values.brand,
         description: values.description,
         status: Number(values.status ?? 1),
+        
+        // ---> THÊM MỚI: Lấy dữ liệu từ Form gửi xuống Backend
+        MaNhaCC: values.MaNhaCC ? Number(values.MaNhaCC) : null,
+        ChatLieu: values.ChatLieu || "Gốm sứ",
+        
         BienThe: (values.variants || []).map((v) => ({
           MaBienThe: v.MaBienThe,
           TenBienThe: v.TenBienThe,
@@ -330,7 +356,7 @@ export default function AdminProducts() {
         message.success("Cập nhật thành công!");
       } else {
         await axios.post(`${API_BASE}/admin/products`, payload, axiosConfig);
-        message.success("Thêm mới thành công!");
+        message.success("Thêm mới và ghi Blockchain thành công!");
       }
 
       setAddModal(false);
@@ -379,6 +405,7 @@ export default function AdminProducts() {
     form.resetFields();
     form.setFieldsValue({
       status: 1,
+      ChatLieu: "Gốm sứ", // Set mặc định
       variants: [{ TrangThai: true, images: [] }],
     });
     setAddModal(true);
@@ -719,6 +746,34 @@ export default function AdminProducts() {
               </Select>
             </Form.Item>
           </div>
+
+          {/* ---> THÊM MỚI: Giao diện chọn Nhà Cung Cấp và Chất liệu <--- */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 18,
+            }}
+          >
+            <Form.Item name="MaNhaCC" label="Nhà cung cấp gốc">
+              <Select size="large" placeholder="Chọn nhà cung cấp (nếu có)" allowClear>
+                {suppliers.map((s) => (
+                  <Select.Option key={s.MaNhaCC} value={s.MaNhaCC}>
+                    {s.TenNhaCC}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item 
+              name="ChatLieu" 
+              label="Chất liệu" 
+              rules={[{ required: true, message: "Vui lòng nhập chất liệu sản phẩm" }]}
+            >
+              <Input size="large" placeholder="Ví dụ: Gốm sứ Bát Tràng, Men rạn..." />
+            </Form.Item>
+          </div>
+          {/* ----------------------------------------------------------- */}
 
           <Form.Item name="description" label="Mô tả">
             <Input.TextArea

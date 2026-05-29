@@ -19,7 +19,7 @@ import { clearSession } from '../Utility/useAuth.js';
 import Breadcrumb from '../Utility/Breadcrumb.jsx';
 import ProductReview from './ProductReview.jsx';
 import Footer from '../Utility/Footer';
-
+import ProductTrace from '../Utility/ProductTrace.jsx';
 const { Header, Content } = Layout;
 
 function ProductDetail() {
@@ -151,6 +151,9 @@ function ProductDetail() {
       try {
         const res = await axios.get(`https://ceramic-shop-u8ak.onrender.com/api/v1/products/${id}`);
         const data = res.data.result || res.data.data || res.data;
+        if (!data?.MaSanPham) {
+          console.warn('[ProductDetail] Không tìm thấy MaSanPham trong response:', res.data);
+        }
         setProduct(data);
         
         let images = [];
@@ -731,6 +734,14 @@ function ProductDetail() {
                 <button className={styles.btnAddCart} onClick={handleAddToCart} disabled={isDiscontinued}><ShoppingCartOutlined /> Thêm Giỏ Hàng</button>
                 <button className={styles.btnBuyNow} onClick={handleBuyNow} disabled={isDiscontinued}>{isDiscontinued ? 'ĐÃ NGỪNG KINH DOANH' : 'MUA NGAY'}</button>
               </div>
+                  {product.MaSanPham && (
+                    <div style={{ marginTop: '20px', width: '100%' }}>
+                      <ProductTrace
+                        maSanPham={product.MaSanPham}
+                        disabled={isDiscontinued}
+                      />
+                    </div>
+                  )}
             </div>
           </div>
 
