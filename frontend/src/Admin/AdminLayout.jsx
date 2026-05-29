@@ -211,42 +211,27 @@ export default function AdminLayout() {
             });
         };
 
-        // ── Dispatch để reload bảng đơn hàng + đẩy vào NotificationBell ──
-        const dispatchAll = (payload, notifType) => {
-            if (String(notifType || "").startsWith("ORDER_")) {
-                window.dispatchEvent(new CustomEvent("admin:orders_changed", {detail: payload}));
-            }
-            window.dispatchEvent(new CustomEvent("admin:new_notification", {
-                detail: {
-                    id: payload?.id || payload?.MaThongBao || `notif-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-                    type: notifType,
-                    title: payload?.title || "Thông báo",
-                    message: payload?.message || "",
-                    redirectUrl: payload?.redirectUrl || "/admin",
-                    isRead: Boolean(payload?.isRead),
-                    createdAt: payload?.createdAt || payload?.NgayTao || new Date().toISOString(),
-                },
-            }));
-        };
-
         const handleOrderCreated = (payload) => {
             showToast(payload, "ORDER_CREATED");
-            dispatchAll(payload, "ORDER_CREATED");
+            window.dispatchEvent(new CustomEvent("admin:orders_changed", {detail: payload}));
         };
 
         const handleOrderUpdated = (payload) => {
             showToast(payload, "ORDER_STATUS_UPDATED");
-            dispatchAll(payload, "ORDER_STATUS_UPDATED");
+            window.dispatchEvent(new CustomEvent("admin:orders_changed", {detail: payload}));
         };
 
         const handleOrderCanceled = (payload) => {
             showToast(payload, "ORDER_CANCELED");
-            dispatchAll(payload, "ORDER_CANCELED");
+            window.dispatchEvent(new CustomEvent("admin:orders_changed", {detail: payload}));
         };
 
         const handleAdminNotification = (payload) => {
             const notifType = payload?.type || payload?.LoaiThongBao || "ORDER_STATUS_UPDATED";
             showToast(payload, notifType);
+            if (String(notifType || "").startsWith("ORDER_")) {
+                window.dispatchEvent(new CustomEvent("admin:orders_changed", {detail: payload}));
+            }
         };
 
         socket.on("admin:notification_created", handleAdminNotification);
