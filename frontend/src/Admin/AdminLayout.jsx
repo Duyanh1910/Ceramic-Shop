@@ -247,7 +247,6 @@ export default function AdminLayout() {
         const handleAdminNotification = (payload) => {
             const notifType = payload?.type || payload?.LoaiThongBao || "ORDER_STATUS_UPDATED";
             showToast(payload, notifType);
-            dispatchAll(payload, notifType);
         };
 
         socket.on("admin:notification_created", handleAdminNotification);

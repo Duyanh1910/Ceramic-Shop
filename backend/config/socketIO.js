@@ -10,7 +10,8 @@ export const initSocket = (server) => {
         cors: {
             origin: [
                 process.env.FRONTEND_URL,
-                "http://localhost:5173"
+                "http://localhost:5173",
+                "https://ceramic-shop-rho.vercel.app",
             ].filter(Boolean),
             methods: ["GET", "POST"],
             credentials: true,
@@ -44,6 +45,7 @@ export const initSocket = (server) => {
         const role = socket.user?.role;
         if (role == "Admin" || role == "Staff") {
             socket.join("admin_room");
+            console.log(`Admin socket joined admin_room: account=${socket.user?.id}, role=${role}`);
         }
         if (role == "Customer" && socket.customerID) {
             socket.join(`customer_room:${socket.customerID}`);
@@ -61,7 +63,12 @@ export const getSocket = () => {
 }
 
 export const emitToAdmin = (event, payload) => {
-    io?.to("admin_room").emit(event, payload);
+    if (!io) {
+        console.warn(`Socket.IO has not been initialized. Skip event ${event}`);
+        return;
+    }
+
+    io.to("admin_room").emit(event, payload);
 }
 
 export const emitToCustomer = (customerId, event, payload) => {
