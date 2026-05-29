@@ -21,6 +21,8 @@ export const addNewProductController = async (req, res, next) => {
       description,
       status = 1,
       BienThe,
+      MaNhaCC,
+      ChatLieu,
     } = req.body;
 
     if (!checkValidate(productName, thumbnail)) {
@@ -45,6 +47,8 @@ export const addNewProductController = async (req, res, next) => {
       description,
       Number(status),
       BienThe,
+      MaNhaCC,
+      ChatLieu,
     );
 
     return res.status(201).json({

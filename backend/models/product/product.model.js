@@ -13,6 +13,10 @@ const ProductModel = sequelize.define(
       type: DataTypes.INTEGER.UNSIGNED,
       allowNull: true,
     },
+    MaNhaCC: {
+      type: DataTypes.INTEGER.UNSIGNED,
+      allowNull: true,
+    },
     TenSanPham: {
       type: DataTypes.STRING(100),
       allowNull: false,
@@ -38,6 +42,16 @@ const ProductModel = sequelize.define(
       type: DataTypes.TINYINT.UNSIGNED,
       defaultValue: 1,
       allowNull: false,
+    },
+    BlockchainTxHash: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+      defaultValue: null,
+    },
+    ChatLieu: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      defaultValue: 'Gốm sứ'
     },
   },
   {

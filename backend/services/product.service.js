@@ -10,6 +10,8 @@ import {
 } from "../models/index.js";
 import { Sequelize, Op } from "sequelize";
 import ErrorHandler from "../utils/error_handler.js";
+import { bcThemSanPham } from "../utils/blockchain.js";
+import SupplierModel from "../models/supply/supplier.model.js";
 
 const getProductsHelper = async (
   page = 1,
@@ -213,6 +215,8 @@ export const addNewProductService = async (
   description,
   status = 1,
   BienThe,
+  MaNhaCC = null,      // <-- Thêm tham số
+  ChatLieu = "Gốm sứ", // <-- Thêm tham số
 ) => {
   const transaction = await sequelize.transaction();
   try {
@@ -228,20 +232,24 @@ export const addNewProductService = async (
     if (countChild > 0) {
       throw new ErrorHandler("Chỉ được thêm sản phẩm vào danh mục con!", 400);
     }
+
     const product = await ProductModel.create(
       {
         MaDanhMuc: categoryID,
+        MaNhaCC: MaNhaCC,
         TenSanPham: productName,
         Thumbnail: thumbnail,
         ThuongHieu: brand,
         LuotXem: 0,
         MoTa: description,
         TrangThai: status,
+        ChatLieu: ChatLieu,
       },
       {
         transaction: transaction,
       },
     );
+
     for (const item of BienThe) {
       const variants = await VariantModel.create(
         {
@@ -279,10 +287,35 @@ export const addNewProductService = async (
         });
       }
     }
+
+    // ── Bước 1: Commit DB transaction trước để tránh treo Database ──
     await transaction.commit();
+
+    // ── Bước 2: Ghi Blockchain SAU KHI DB đã lưu xong ──
+    try {
+      let nhaCungCapInfo = {};
+      if (product.MaNhaCC) {
+        nhaCungCapInfo = await SupplierModel.findByPk(product.MaNhaCC);
+      }
+
+      const txHash = await bcThemSanPham(product, nhaCungCapInfo);
+      
+      // Cập nhật txHash riêng biệt (nằm ngoài transaction ban đầu)
+      await product.update({ BlockchainTxHash: txHash });
+    } catch (error) {
+      console.error("Lỗi ghi Blockchain (Không ảnh hưởng tiến trình tạo DB):", error);
+    }
+
     return product;
+
   } catch (err) {
-    await transaction.rollback();
+    // Xử lý an toàn: Chỉ rollback nếu transaction chưa được giải phóng
+    try {
+      await transaction.rollback();
+    } catch (rollbackErr) {
+      // Ignore: Nếu transaction đã commit xong thì rollback sẽ quăng lỗi, ta cứ lờ đi
+    }
+    
     if (err.statusCode) throw err;
     console.error(err);
     throw new ErrorHandler("Lỗi server! Không thể thêm mới sản phẩm!", 500);
