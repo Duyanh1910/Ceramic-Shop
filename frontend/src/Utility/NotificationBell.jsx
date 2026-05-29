@@ -2,7 +2,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Badge, Tooltip } from "antd";
 import axios from "axios";
-import { normalizeAdminNotificationPayload } from "./socket.js";
+import {
+  normalizeAdminNotificationPayload,
+  resolveAdminNotificationRedirect,
+} from "./socket.js";
 import {
   ArrowRightOutlined,
   BellOutlined,
@@ -241,7 +244,7 @@ export default function NotificationBell() {
     );
 
     setOpen(false);
-    navigate(item.redirectUrl || "/admin");
+    navigate(resolveAdminNotificationRedirect(item));
   };
 
   const handleKeyOpen = (e, item) => {
