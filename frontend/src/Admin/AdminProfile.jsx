@@ -47,12 +47,13 @@ function AdminProfile() {
 
   const fetchAdminProfile = async () => {
     try {
-      const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/me', {
+      // 1. Thử đổi endpoint từ /auth/me sang /staffs/me cho đồng bộ với hàm Update ở dưới
+      const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/staffs/me', {
         headers: { Authorization: `Bearer ${token}` },
         withCredentials: true
       });
 
-      const userData = res.data.user || res.data.result;
+      const userData = res.data.user || res.data.result || res.data;
       const profileData = userData?.profile || userData;
 
       if (userData) {
@@ -78,11 +79,17 @@ function AdminProfile() {
         });
       }
     } catch (error) {
-      console.error(error);
-      message.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!');
-
-      localStorage.clear();
-      navigate('/login');
+      console.error("Lỗi khi lấy thông tin Admin:", error);
+      
+      // 2. Chỉ đá văng ra Login nếu lỗi là 401 (Hết hạn Token) hoặc 403 (Sai quyền)
+      if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+        message.error('Phiên đăng nhập đã hết hạn hoặc không có quyền. Vui lòng đăng nhập lại!');
+        localStorage.clear();
+        navigate('/login');
+      } else {
+        // Nếu lỗi 404 (sai URL) hoặc 500 (sập server) thì báo lỗi chứ không văng ra ngoài
+        message.error('Không thể tải thông tin hồ sơ: ' + (error.response?.data?.message || 'Lỗi mạng'));
+      }
     }
   };
 

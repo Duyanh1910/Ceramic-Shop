@@ -17,7 +17,7 @@ export default function ProductTrace({ maSanPham, disabled = false }) {
     setLoading(true);
 
     try {
-      const res = await axios.get(`${API_BASE}/products/${maSanPham}/trace`);
+      const res = await axios.get(`${API_BASE}/products/${maSanPham}`);
       setData(res.data?.result || null);
     } catch {
       setData(null);
