@@ -103,7 +103,6 @@ export default function AdminProducts() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [categories, setCategories] = useState([]);
   
-  // ---> THÊM MỚI: State lưu danh sách nhà cung cấp
   const [suppliers, setSuppliers] = useState([]); 
   
   const [editingId, setEditingId] = useState(null);
@@ -117,7 +116,7 @@ export default function AdminProducts() {
 
   useEffect(() => {
     fetchCategories();
-    fetchSuppliers(); // ---> Gọi hàm lấy nhà cung cấp khi trang vừa load
+    fetchSuppliers();
   }, []);
 
   const fetchData = async () => {
@@ -149,14 +148,12 @@ export default function AdminProducts() {
     try {
       const res = await axios.get(`${API_BASE}/admin/suppliers`, axiosConfig);
       
-      // Lấy data mảng. Nếu API trả về phân trang thì lấy result.data, nếu không thì lấy result
       const supplierData = res.data?.result?.data || res.data?.result || [];
       
-      // Đảm bảo set biến suppliers luôn là mảng, dù có lỗi cấu trúc
       setSuppliers(Array.isArray(supplierData) ? supplierData : []);
     } catch {
       console.log("Lỗi hoặc chưa có API lấy danh sách nhà cung cấp.");
-      setSuppliers([]); // Lỗi thì trả về mảng rỗng để không bị sập hàm .map
+      setSuppliers([]);
     }
   };
 
@@ -272,7 +269,6 @@ export default function AdminProducts() {
         description: p.MoTa,
         status: p.TrangThai,
         
-        // ---> THÊM MỚI: Đổ dữ liệu cũ vào form khi sửa
         MaNhaCC: p.MaNhaCC,
         ChatLieu: p.ChatLieu || "Gốm sứ",
 
@@ -331,7 +327,6 @@ export default function AdminProducts() {
         description: values.description,
         status: Number(values.status ?? 1),
         
-        // ---> THÊM MỚI: Lấy dữ liệu từ Form gửi xuống Backend
         MaNhaCC: values.MaNhaCC ? Number(values.MaNhaCC) : null,
         ChatLieu: values.ChatLieu || "Gốm sứ",
         
@@ -408,7 +403,7 @@ export default function AdminProducts() {
     form.resetFields();
     form.setFieldsValue({
       status: 1,
-      ChatLieu: "Gốm sứ", // Set mặc định
+      ChatLieu: "Gốm sứ",
       variants: [{ TrangThai: true, SoLuong: 0, images: [] }],
     });
     setAddModal(true);
@@ -750,7 +745,6 @@ export default function AdminProducts() {
             </Form.Item>
           </div>
 
-          {/* ---> THÊM MỚI: Giao diện chọn Nhà Cung Cấp và Chất liệu <--- */}
           <div
             style={{
               display: "grid",
@@ -776,8 +770,6 @@ export default function AdminProducts() {
               <Input size="large" placeholder="Ví dụ: Gốm sứ Bát Tràng, Men rạn..." />
             </Form.Item>
           </div>
-          {/* ----------------------------------------------------------- */}
-
           <Form.Item name="description" label="Mô tả">
             <Input.TextArea
               rows={3}

@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Arsenal:wght@400;600;700&display=swap');
+
 .wrapper {
   position: fixed;
   right: 30px;
@@ -6,6 +8,14 @@
   display: flex;
   align-items: flex-end;
   flex-direction: column;
+  font-family: 'Arsenal', sans-serif;
+}
+
+.wrapper *,
+.wrapper button,
+.wrapper :global(.ant-badge),
+.wrapper :global(.ant-badge-count) {
+  font-family: 'Arsenal', sans-serif !important;
 }
 
 .bellBtn {
@@ -184,7 +194,7 @@
   color: #fff;
   font-size: 17px;
   font-weight: 900;
-  letter-spacing: -0.2px;
+  letter-spacing: 0;
 }
 
 .dropSub {

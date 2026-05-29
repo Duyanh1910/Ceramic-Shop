@@ -10,7 +10,6 @@ import {
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import { getPageTitle } from "./pageTitles.js";
 
-// --- CUSTOMER ---
 import LandingPage from "./Customer/LandingPage.jsx";
 import Home from "./Customer/Home.jsx";
 import ProductDetail from "./Customer/productDetail.jsx";
@@ -22,21 +21,18 @@ import SupportPage from "./Customer/Supportpage.jsx";
 import NewsDetail from "./Customer/NewsDetails.jsx";
 import CustomerReturns from "./Customer/CustomerReturns.jsx";
 
-// --- AUTH ---
 import Login from "./Auth/Login.jsx";
 import Register from "./Auth/Register.jsx";
 import Profile from "./Auth/Profile.jsx";
 import ForgotPassword from "./Auth/ForgotPassword.jsx";
 import LoginSuccess from "./Auth/LoginSuccess.jsx";
 
-// --- UTILITY ---
 import ChatBot from "./Utility/ChatBot.jsx";
 import ContactIcons from "./Utility/ContactIcons.jsx";
 import PaymentSuccess from "./Utility/PaymentSuccess.jsx";
 import PaymentResult from "./Utility/PaymentResult.jsx";
 import OrderTracking from "./Utility/OrderTracking.jsx";
 
-// --- ADMIN ---
 import AdminLayout from "./Admin/AdminLayout.jsx";
 import AdminDashboard from "./Admin/AdminDashboard.jsx";
 import AdminProducts from "./Admin/AdminProducts.jsx";

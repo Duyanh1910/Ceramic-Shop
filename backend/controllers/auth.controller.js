@@ -33,6 +33,8 @@ export const login = async (req, res, next) => {
     res.status(200).json({
       success: true,
       message: "Đăng nhập thành công!",
+      token: result.token,
+      expiresInDays: result.expiresInDays,
       user: {
         username: result.username,
         role: result.role,

@@ -72,8 +72,6 @@ export default function ProductReview({ productId }) {
   }
 
   const CheckCanreView = async (currentReviews = []) => {
-    // ---> THÊM CHẶN ADMIN Ở ĐÂY <---
-    // Nếu là admin đang xem trang (có admin_token nhưng không có customer_token) thì không gọi API orders nữa
     const isAdmin = !!localStorage.getItem('admin_token');
     const isCustomer = !!localStorage.getItem('customer_token');
     
@@ -82,7 +80,6 @@ export default function ProductReview({ productId }) {
       setNoReviewReason('not_purchased');
       return;
     }
-    // ---------------------------------
 
     try {
       const res = await axios.get(`${API_BASE}/orders?limit=50`, authHeader);

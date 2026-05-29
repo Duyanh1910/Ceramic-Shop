@@ -238,7 +238,6 @@ const AdminCategories = () => {
         }
     };
 
-    // Đã bỏ cột Mã DM
     const columns = [
         {
             title: "Tên danh mục",
@@ -249,13 +248,12 @@ const AdminCategories = () => {
                 const isChild = hasParentID(record.ParentID);
                 return (
                     <div style={{display: "flex", alignItems: "center", gap: 10}}>
-                        {/* Thêm icon phụ để nhấn mạnh danh mục con khi đã ẩn dấu + */}
                         {isChild && <SubnodeOutlined style={{color: "#a3aed1"}}/>}
                         <span
                             style={{
                                 fontWeight: isChild
                                     ? 400
-                                    : 600 /* Danh mục cha in đậm, con in thường */,
+                                    : 600,
                                 color: isChild ? "#4a5568" : "#2b3674",
                                 fontSize: isChild ? "14px" : "15px",
                             }}
@@ -397,7 +395,6 @@ const AdminCategories = () => {
                     loading={loadingTable}
                     rowKey="MaDanhMuc"
                     scroll={{x: 800}}
-                    /* Phần này giúp ẩn icon + và tự động mở toàn bộ dòng */
                     expandable={{
                         expandIcon: () => null,
                         defaultExpandAllRows: true,
@@ -405,7 +402,6 @@ const AdminCategories = () => {
                 />
             </div>
 
-            {/* Modal giữ nguyên */}
             <Modal
                 title={
                     <span style={{fontSize: 18, fontWeight: 600, color: "#2b3674"}}>

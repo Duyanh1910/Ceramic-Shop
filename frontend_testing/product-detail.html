@@ -27,8 +27,6 @@
         .container { max-width: 1200px; margin: 0 auto; background: var(--surface); border-radius: 16px; box-shadow: var(--shadow-sm); display: flex; padding: 40px; gap: 50px; }
 
         .gallery { width: 480px; flex-shrink: 0; }
-        
-        /* --- HIỆU ỨNG KÍNH LÚP (ZOOM IMAGE) --- */
         .main-img-box { 
             width: 100%; aspect-ratio: 1/1; border-radius: 12px; margin-bottom: 16px; border: 1px solid var(--border); background: #fafafa;
             position: relative; cursor: zoom-in; overflow: hidden;
@@ -54,14 +52,10 @@
         .flex-row { display: flex; align-items: flex-start; margin-bottom: 24px; }
         .label { width: 120px; color: var(--text-muted); font-size: 15px; flex-shrink: 0; padding-top: 10px; font-weight: 500;}
         .options { display: flex; flex-wrap: wrap; gap: 12px; }
-        
-        /* Variants UI */
         .btn-variant { background: var(--surface); border: 1px solid var(--border); padding: 10px 20px; cursor: pointer; border-radius: 30px; font-size: 14px; font-weight: 500; transition: all 0.2s; color: var(--text-main); }
         .btn-variant:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); background: #FCFAF8; }
         .btn-variant.active { border-color: var(--primary); background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(140, 90, 74, 0.2); }
         .btn-variant.out-of-stock { background: #F5F5F5; color: #BDBDBD; border: 1px dashed #E0E0E0; cursor: not-allowed; text-decoration: line-through;}
-
-        /* Quantity UI */
         .qty-box { display: flex; align-items: center; border: 1px solid var(--border); border-radius: 8px; width: fit-content; overflow: hidden; }
         .qty-btn { width: 40px; height: 40px; background: #FAFAFA; border: none; cursor: pointer; font-size: 18px; color: #555; transition: 0.2s; }
         .qty-btn:hover:not(:disabled) { background: #EEEEEE; }
@@ -74,14 +68,10 @@
         .btn-buy { flex: 1; background: var(--primary); color: #fff; border: none; height: 54px; font-size: 16px; font-weight: 600; cursor: pointer; border-radius: 8px; transition: 0.2s; box-shadow: 0 4px 12px rgba(140, 90, 74, 0.2); }
         .btn-buy:hover:not(:disabled) { background: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 6px 15px rgba(140, 90, 74, 0.3); }
         .btn-buy:disabled, .btn-add-cart:disabled { background: #E0E0E0 !important; border-color: #E0E0E0 !important; color: #9E9E9E !important; cursor: not-allowed; box-shadow: none; transform: none; }
-
-        /* Sections */
         .section-box { max-width: 1200px; margin: 30px auto 0; background: var(--surface); padding: 40px; border-radius: 16px; box-shadow: var(--shadow-sm); }
         .section-title { font-size: 20px; font-weight: 600; color: var(--primary); margin-top: 0; margin-bottom: 24px; display: flex; align-items: center; gap: 10px;}
         .section-title::before { content: ''; display: block; width: 4px; height: 24px; background: var(--primary); border-radius: 4px; }
         .desc-content { line-height: 1.8; font-size: 15px; white-space: pre-line; color: #444; }
-
-        /* ĐÁNH GIÁ (REVIEWS) */
         .review-stats { display: flex; align-items: center; gap: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--border); margin-bottom: 24px;}
         .review-score { font-size: 40px; color: var(--primary); font-weight: bold; line-height: 1; }
         .review-stars { color: var(--star-color); font-size: 18px; letter-spacing: 2px;}
@@ -92,16 +82,12 @@
         .review-author { font-size: 15px; font-weight: 600; margin-bottom: 4px; color: var(--text-main); }
         .review-date { font-size: 13px; color: var(--text-muted); margin-bottom: 12px; }
         .review-text { font-size: 15px; line-height: 1.6; color: #444; }
-
-        /* SẢN PHẨM TƯƠNG TỰ (RELATED) */
         .related-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 24px; }
         .r-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; transition: 0.3s; cursor: pointer; padding: 12px; display: flex; flex-direction: column;}
         .r-card:hover { transform: translateY(-4px); border-color: #E8DCCB; box-shadow: var(--shadow-md); }
         .r-card img { width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 12px; }
         .r-title { font-size: 15px; margin: 0 0 8px 0; color: var(--text-main); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; flex: 1; font-weight: 500;}
         .r-price { color: var(--primary); font-weight: 700; font-size: 16px; }
-
-        /* Toast */
         #toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 1000; left: 50%; bottom: 30px; transform: translateX(-50%); opacity: 0; transition: opacity 0.3s, bottom 0.3s; box-shadow: 0 4px 12px rgba(0,0,0,0.15); font-size: 14px; }
         #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
     </style>
@@ -260,12 +246,8 @@
             document.getElementById('btn-buy').innerText = "ĐÃ NGỪNG KINH DOANH";
             showToast("Sản phẩm này hiện đã ngừng bán.");
         }
-
-        // KÍCH HOẠT HIỆU ỨNG KÍNH LÚP (ZOOM IMAGE)
         initImageZoom();
     }
-
-    // --- HÀM XỬ LÝ KÍNH LÚP ---
     function initImageZoom() {
         const container = document.querySelector('.main-img-box');
         const img = document.getElementById('main-image');
@@ -286,8 +268,6 @@
             img.style.transform = 'scale(1)';
         });
     }
-
-    // --- CÁC HÀM XỬ LÝ TƯƠNG TÁC ---
     window.clickThumbnail = function(src, element, variantId) {
         document.getElementById('main-image').src = src;
         document.querySelectorAll('.thumb-item').forEach(el => el.classList.remove('active'));
@@ -346,8 +326,6 @@
         if (product.BienTheSanPhams?.length > 0 && !selectedVariant) return showToast("⚠️ Bạn chưa chọn phân loại hàng.");
         showToast("⏳ Đang chuyển tới trang thanh toán...");
     };
-
-    // --- HÀM LOAD ĐÁNH GIÁ MẪU ---
     function loadReviews() {
         const container = document.getElementById('reviews-container');
         const mockReviews = [
@@ -385,8 +363,6 @@
         }
         container.innerHTML = html;
     }
-
-    // --- HÀM LOAD SẢN PHẨM TƯƠNG TỰ TỪ API ---
     async function loadRelatedProducts(categoryId) {
         try {
             const res = await fetch(`${API_PRODUCT}?category=${categoryId}&limit=5`);
@@ -417,8 +393,6 @@
             document.getElementById('related-products-container').innerHTML = "Lỗi kết nối dữ liệu.";
         }
     }
-
-    // Khởi chạy
     loadProduct();
 </script>
 </body>

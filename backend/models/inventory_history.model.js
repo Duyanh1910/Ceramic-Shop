@@ -11,7 +11,7 @@ const InventoryHistoryModel = sequelize.define(
     },
     MaBienThe: {
       type: DataTypes.INTEGER,
-      allowNull: false, // Bắt buộc phải biết là thay đổi tồn kho của sản phẩm nào
+      allowNull: false,
     },
     LoaiGiaoDich: {
       type: DataTypes.STRING(100),
@@ -25,15 +25,12 @@ const InventoryHistoryModel = sequelize.define(
     TonKhoHienTai: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      // Số lượng tồn kho NGAY TẠI THỜI ĐIỂM giao dịch này xảy ra
     },
     LoaiThamChieu: {
       type: DataTypes.STRING(100),
-      // Lưu tên bảng liên quan, ví dụ: 'DON_HANG', 'PHIEU_NHAP', 'DOI_TRA'
     },
     MaThamChieu: {
       type: DataTypes.INTEGER,
-      // Lưu ID của Đơn hàng, Phếu nhập hoặc Đơn đổi trả tương ứng
     },
     NgayTao: {
       type: DataTypes.DATE,

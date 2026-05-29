@@ -276,8 +276,8 @@ export const addNewProductService = async (
   description,
   status = 1,
   BienThe,
-  MaNhaCC = null,      // <-- Thêm tham số
-  ChatLieu = "Gốm sứ", // <-- Thêm tham số
+  MaNhaCC = null,
+  ChatLieu = "Gốm sứ",
 ) => {
   const transaction = await sequelize.transaction();
   try {
@@ -355,10 +355,8 @@ export const addNewProductService = async (
       }
     }
 
-    // ── Bước 1: Commit DB transaction trước để tránh treo Database ──
     await transaction.commit();
 
-    // ── Bước 2: Ghi Blockchain SAU KHI DB đã lưu xong ──
     try {
       let nhaCungCapInfo = {};
       if (product.MaNhaCC) {
@@ -367,7 +365,6 @@ export const addNewProductService = async (
 
       const txHash = await bcThemSanPham(product, nhaCungCapInfo);
       
-      // Cập nhật txHash riêng biệt (nằm ngoài transaction ban đầu)
       await product.update({ BlockchainTxHash: txHash });
     } catch (error) {
       console.error("Lỗi ghi Blockchain (Không ảnh hưởng tiến trình tạo DB):", error);
@@ -376,11 +373,9 @@ export const addNewProductService = async (
     return product;
 
   } catch (err) {
-    // Xử lý an toàn: Chỉ rollback nếu transaction chưa được giải phóng
     try {
       await transaction.rollback();
-    } catch (rollbackErr) {
-      // Ignore: Nếu transaction đã commit xong thì rollback sẽ quăng lỗi, ta cứ lờ đi
+    } catch {
     }
     
     if (err.statusCode) throw err;

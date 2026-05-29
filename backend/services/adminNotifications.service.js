@@ -25,7 +25,7 @@ const normalizeNotificationType = (type) => {
   const normalizedType = String(type || "").trim().toUpperCase();
 
   if (!VALID_NOTIFICATION_TYPES.includes(normalizedType)) {
-    throw new ErrorHandler("Loai thong bao khong hop le!", 422);
+    throw new ErrorHandler("Loại thông báo không hợp lệ!", 422);
   }
 
   return normalizedType;
@@ -39,7 +39,7 @@ const normalizeReadStatus = (status) => {
   const normalizedStatus = Number(status);
 
   if (!Object.values(NOTIFICATIONS_STATUS).includes(normalizedStatus)) {
-    throw new ErrorHandler("Trang thai doc thong bao khong hop le!", 422);
+    throw new ErrorHandler("Trạng thái đọc thông báo không hợp lệ!", 422);
   }
 
   return normalizedStatus;
@@ -139,7 +139,7 @@ export const markAsReadService = async (idNotification) => {
     const notification = await NotificationsModel.findByPk(idNotification);
 
     if (!notification) {
-      throw new ErrorHandler("Khong tim thay thong bao!", 404);
+      throw new ErrorHandler("Không tìm thấy thông báo!", 404);
     }
 
     return await notification.update({
@@ -148,7 +148,7 @@ export const markAsReadService = async (idNotification) => {
   } catch (err) {
     console.log(err);
     if (err.statusCode) throw err;
-    throw new ErrorHandler("Loi server! Khong the danh dau da doc!", 500);
+    throw new ErrorHandler("Lỗi server! Không thể đánh dấu đã đọc!", 500);
   }
 };
 
@@ -177,7 +177,7 @@ export const deleteNotificationService = async (idNotification) => {
   const notification = await NotificationsModel.findByPk(idNotification);
 
   if (!notification) {
-    throw new ErrorHandler("Khong tim thay thong bao!", 404);
+    throw new ErrorHandler("Không tìm thấy thông báo!", 404);
   }
 
   await notification.destroy();
@@ -217,7 +217,7 @@ export const safeCreateAdminNotificationService = async (payload) => {
   try {
     return await createAdminNotificationService(payload);
   } catch (err) {
-    console.error("Khong the tao thong bao admin:", err);
+    console.error("Không thể tạo thông báo admin:", err);
     return null;
   }
 };

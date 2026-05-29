@@ -46,7 +46,7 @@ export const createZaloPayPaymentUrl = async (maDonHang) => {
     }
 
     if (Number(donHang.TrangThaiDonHang) === 4) {
-      throw new ErrorHandler("Don hang da bi huy, khong the thanh toan lai", 400);
+      throw new ErrorHandler("Đơn hàng đã bị hủy, không thể thanh toán lại", 400);
     }
 
     const amount = Math.round(Number(donHang.TongThanhToan));
@@ -101,7 +101,7 @@ export const createZaloPayPaymentUrl = async (maDonHang) => {
       item,
       embed_data,
       amount,
-      description: `Thanh toan don hang ${maDonHang}`,
+      description: `Thanh toán đơn hàng ${maDonHang}`,
       bank_code: "",
       mac,
       callback_url:

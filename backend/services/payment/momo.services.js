@@ -10,7 +10,6 @@ import {
 } from "../../models/index.js";
 import { sendEmailInvoiceService } from "../email.services.js";
 
-// Lấy config từ biến môi trường
 const MOMO_CONFIG = {
   partnerCode: "MOMO",
   accessKey: "F8BBA842ECF85",
@@ -33,13 +32,13 @@ export const createMomoPaymentUrl = async (maDonHang) => {
     }
 
     if (Number(donHang.TrangThaiDonHang) === 4) {
-      throw new ErrorHandler("Don hang da bi huy, khong the thanh toan lai", 400);
+      throw new ErrorHandler("Đơn hàng đã bị hủy, không thể thanh toán lại", 400);
     }
 
     const amount = Math.round(Number(donHang.TongThanhToan));
     const orderId = `MOMO_${maDonHang}_${Date.now()}`;
     const requestId = orderId;
-    const orderInfo = `Thanh toan don hang ${maDonHang}`;
+    const orderInfo = `Thanh toán đơn hàng ${maDonHang}`;
     const requestType = "captureWallet";
     const extraData = "";
 

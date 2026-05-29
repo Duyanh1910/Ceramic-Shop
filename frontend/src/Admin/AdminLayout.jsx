@@ -152,7 +152,6 @@ export default function AdminLayout() {
         const socket = connectAdminSocket();
         if (!socket) return;
 
-        // ── Cấu hình toast theo loại sự kiện ──────────────────────────
         const TOAST_CONFIG = {
             ORDER_CREATED: {
                 antType: "info",
@@ -201,7 +200,6 @@ export default function AdminLayout() {
             },
         };
 
-        // ── Hiện toast ─────────────────────────────────────────────────
         const showToast = (payload, eventType) => {
             const cfg = TOAST_CONFIG[eventType] || TOAST_CONFIG.ORDER_STATUS_UPDATED;
             notification[cfg.antType]({

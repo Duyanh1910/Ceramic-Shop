@@ -34,14 +34,11 @@
         body {
             background-image: url('https://www.transparenttextures.com/patterns/rice-paper-2.png');
         }
-
-        /* Khung sản phẩm dùng ảnh của bạn */
         .product-frame {
             background-image: url('frame-bg.jpg');
             background-size: 100% 100%;
             background-position: center;
             background-repeat: no-repeat;
-            /* Căn chỉnh khoảng cách để đẩy lõi vào vùng trắng */
             padding: 70px 45px 50px 45px;
             transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
@@ -50,16 +47,12 @@
             transform: translateY(-10px);
             box-shadow: 0 20px 25px -5px rgba(18, 53, 91, 0.15), 0 10px 10px -5px rgba(18, 53, 91, 0.04);
         }
-
-        /* Hiệu ứng Splash lõi sản phẩm */
         .image-core {
             transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
         .product-frame:hover .image-core {
             transform: scale(1.15);
         }
-
-        /* Gradient Text */
         .text-gradient {
             background: linear-gradient(to right, #12355B, #2A4B7C);
             -webkit-background-clip: text;
@@ -195,13 +188,10 @@
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     
     <script>
-        // Khởi tạo hiệu ứng cuộn AOS
         AOS.init({
-            once: true, // Hiệu ứng chỉ chạy 1 lần khi cuộn tới
-            offset: 100, // Cách mép dưới màn hình 100px thì bắt đầu chạy
+            once: true,
+            offset: 100,
         });
-
-        // --- LOGIC GỌI API ---
         let currentPage = 1;
         const limitPerPage = 6;
         let totalPages = 1;
@@ -214,7 +204,6 @@
             const productList = document.getElementById('productList');
 
             products.forEach((product, index) => {
-                // Tạo độ trễ animation (delay) khác nhau cho từng card để xuất hiện so le
                 const delay = (index % 3) * 150; 
 
                 const productHTML = `
@@ -239,7 +228,6 @@
                 `;
                 productList.innerHTML += productHTML;
             });
-            // Cập nhật lại AOS để nó nhận diện các thẻ HTML vừa chèn thêm
             AOS.refresh();
         };
 
@@ -249,7 +237,6 @@
             btnLoadMore.disabled = true;
 
             try {
-                // Đổi URL về API của bạn: http://localhost:3000/api/v1/products...
                 const apiUrl = `http://localhost:3000/api/v1/products?page=${currentPage}&limit=${limitPerPage}&order=asc`;
                 const response = await fetch(apiUrl);
                 
@@ -273,8 +260,6 @@
                 }
             } catch (error) {
                 console.warn('Đang dùng Mock Data vì API chưa kết nối được.');
-                
-                // MOCK DATA ĐỂ BẠN XEM TRƯỚC GIAO DIỆN
                 if (currentPage === 1) {
                      const mockProducts = [
                         { TenSanPham: "Tượng Cá chép hóa rồng", GiaThapNhat: 850000, Thumbnail: "https://res.cloudinary.com/dcmwz0uis/image/upload/v1773370680/ca_chep_hoa_rong_1_qgbxrl.jpg" },
@@ -289,8 +274,6 @@
                 }
             }
         }
-
-        // Khởi chạy khi load trang
         document.addEventListener('DOMContentLoaded', fetchProducts);
     </script>
 </body>

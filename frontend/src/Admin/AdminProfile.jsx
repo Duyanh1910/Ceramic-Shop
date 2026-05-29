@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Layout, Form, Input, Button, Avatar, message, Upload, Divider } from 'antd';
 import { UserOutlined, UploadOutlined, ProfileOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
@@ -30,13 +30,16 @@ function AdminProfile() {
   const normalizedRole = (role || '').trim().toLowerCase();
   const roleLabel = normalizedRole === 'admin' ? 'Quản trị viên' : 'Nhân viên';
   const avatarInitial = (profileName || 'A').trim().charAt(0).toUpperCase();
+  const authConfig = useMemo(() => ({
+    withCredentials: true,
+    ...(token && token !== 'null' && token !== 'undefined'
+      ? { headers: { Authorization: `Bearer ${token}` } }
+      : {}),
+  }), [token]);
 
   const fetchAdminProfile = useCallback(async () => {
     try {
-      const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/me', {
-        headers: { Authorization: `Bearer ${token}` },
-        withCredentials: true
-      });
+      const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/me', authConfig);
 
       const userData = res.data.user || res.data.result || res.data;
       const profileData = userData?.profile || userData;
@@ -83,18 +86,12 @@ function AdminProfile() {
         message.error('Không thể tải thông tin hồ sơ: ' + (error.response?.data?.message || 'Lỗi mạng'));
       }
     }
-  }, [form, navigate, token]);
+  }, [authConfig, form, navigate]);
 
   useEffect(() => {
-    if (!token) {
-      navigate('/login');
-      return;
-    }
-
-    // Fetch is async; state updates happen after the API response.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchAdminProfile();
-  }, [token, navigate, fetchAdminProfile]);
+    const timeoutId = window.setTimeout(fetchAdminProfile, 0);
+    return () => window.clearTimeout(timeoutId);
+  }, [fetchAdminProfile]);
 
   const handleAvatarError = () => {
     setAvatarUrl('');
@@ -149,10 +146,7 @@ function AdminProfile() {
       const res = await axios.patch(
         'https://ceramic-shop-u8ak.onrender.com/api/v1/staffs/me',
         payload,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          withCredentials: true
-        }
+        authConfig
       );
 
       message.success('Cập nhật hồ sơ thành công!');

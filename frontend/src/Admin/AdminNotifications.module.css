@@ -1,7 +1,21 @@
+@import url('https://fonts.googleapis.com/css2?family=Arsenal:wght@400;600;700&display=swap');
+
 .page {
   width: min(1120px, 100%);
   margin: 0 auto;
   padding: 4px 0 44px;
+  font-family: 'Arsenal', sans-serif;
+}
+
+.page :global(.ant-input),
+.page :global(.ant-input-affix-wrapper),
+.page :global(.ant-select),
+.page :global(.ant-select-selector),
+.page :global(.ant-select-selection-item),
+.page :global(.ant-tabs),
+.page :global(.ant-pagination),
+.page button {
+  font-family: 'Arsenal', sans-serif !important;
 }
 
 .hero {
@@ -45,7 +59,7 @@
   background: rgba(255, 255, 255, 0.1);
   font-size: 12px;
   font-weight: 800;
-  letter-spacing: 0.2px;
+  letter-spacing: 0;
 }
 
 .pageTitle {
@@ -53,10 +67,10 @@
   z-index: 1;
   margin: 0;
   color: #fff;
-  font-size: clamp(24px, 3vw, 34px);
+  font-size: 34px;
   font-weight: 900;
   line-height: 1.15;
-  letter-spacing: -0.7px;
+  letter-spacing: 0;
 }
 
 .pageDesc {
@@ -433,6 +447,10 @@
 @media (max-width: 620px) {
   .page {
     padding-bottom: 28px;
+  }
+
+  .pageTitle {
+    font-size: 28px;
   }
 
   .hero {

@@ -247,13 +247,11 @@ const ABI = [
 let readContract = null;
 let writeContract = null;
 
-// 2. Khởi tạo cầu nối với Blockchain qua Ethers.js
 const getProvider = () => {
   if (!process.env.ALCHEMY_API_KEY || !process.env.CONTRACT_ADDRESS) {
     throw new Error("Thiếu cấu hình ALCHEMY_API_KEY hoặc CONTRACT_ADDRESS");
   }
 
-  // Đảm bảo bạn đã cấu hình đúng ALCHEMY_API_KEY, ADMIN_PRIVATE_KEY, CONTRACT_ADDRESS trong file .env
   const provider = new ethers.JsonRpcProvider(
     `https://eth-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
   );
@@ -289,24 +287,22 @@ const getWriteContract = () => {
   return writeContract;
 };
 
-// ── Ghi thông tin sản phẩm và nhà cung cấp lên blockchain ──
 export const bcThemSanPham = async (product, nhaCungCap = {}) => {
   const c = getWriteContract();
 
   const tx = await c.themSanPham(
     product.MaSanPham.toString(),
     product.TenSanPham,
-    nhaCungCap.TenNhaCC || "Chưa cập nhật", // Truyền Tên NCC
-    nhaCungCap.Diachi || "Chưa cập nhật", // Truyền Địa chỉ NCC
+    nhaCungCap.TenNhaCC || "Chưa cập nhật",
+    nhaCungCap.Diachi || "Chưa cập nhật",
     product.ChatLieu || "Gốm sứ",
     product.NgaySanXuat || new Date().toISOString().split("T")[0],
   );
 
-  await tx.wait(); // Chờ block được xác nhận trên mạng
-  return tx.hash; // Trả về transaction hash để lưu vào DB nếu cần
+  await tx.wait();
+  return tx.hash;
 };
 
-// ── Đọc thông tin sản phẩm (Không tốn phí gas) ──
 export const bcXemSanPham = async (maSanPham) => {
   const c = getReadContract();
   const data = await c.xemSanPham(String(maSanPham));

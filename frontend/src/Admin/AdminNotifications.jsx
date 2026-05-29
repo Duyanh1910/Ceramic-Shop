@@ -131,7 +131,7 @@ const saveAll = (data) => {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data.slice(0, 200)));
   } catch {
-    // ignore
+    return undefined;
   }
 };
 
@@ -172,10 +172,13 @@ export default function AdminNotifications() {
   }, [activeTab, typeFilter]);
 
   useEffect(() => {
-    fetchNotifications();
+    const timeoutId = window.setTimeout(fetchNotifications, 0);
 
     const intervalId = window.setInterval(fetchNotifications, 5000);
-    return () => window.clearInterval(intervalId);
+    return () => {
+      window.clearTimeout(timeoutId);
+      window.clearInterval(intervalId);
+    };
   }, [fetchNotifications]);
 
   useEffect(() => {
@@ -195,10 +198,6 @@ export default function AdminNotifications() {
     window.addEventListener("admin:new_notification", handler);
     return () => window.removeEventListener("admin:new_notification", handler);
   }, []);
-
-  useEffect(() => {
-    setPage(1);
-  }, [activeTab, typeFilter, search]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -312,6 +311,21 @@ export default function AdminNotifications() {
     }
   };
 
+  const handleTabChange = (key) => {
+    setActiveTab(key);
+    setPage(1);
+  };
+
+  const handleTypeFilterChange = (value) => {
+    setTypeFilter(value);
+    setPage(1);
+  };
+
+  const handleSearchChange = (e) => {
+    setSearch(e.target.value);
+    setPage(1);
+  };
+
   return (
     <div className={styles.page}>
       <section className={styles.hero}>
@@ -349,7 +363,7 @@ export default function AdminNotifications() {
             prefix={<SearchOutlined className={styles.searchIcon} />}
             placeholder="Tìm theo tiêu đề, nội dung hoặc loại thông báo..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={handleSearchChange}
             allowClear
             className={styles.searchInput}
           />
@@ -357,7 +371,7 @@ export default function AdminNotifications() {
 
         <Select
           value={typeFilter}
-          onChange={setTypeFilter}
+          onChange={handleTypeFilterChange}
           className={styles.typeSelect}
           options={[
             { value: "all", label: "Tất cả loại" },
@@ -388,7 +402,7 @@ export default function AdminNotifications() {
         <div className={styles.panelHeader}>
           <Tabs
             activeKey={activeTab}
-            onChange={setActiveTab}
+            onChange={handleTabChange}
             className={styles.tabs}
             items={[
               {

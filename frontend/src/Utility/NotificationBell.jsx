@@ -118,7 +118,7 @@ const saveToStorage = (list) => {
       JSON.stringify(list.slice(0, MAX_STORED)),
     );
   } catch {
-    // ignore
+    return undefined;
   }
 };
 
@@ -157,10 +157,13 @@ export default function NotificationBell() {
   }, []);
 
   useEffect(() => {
-    fetchNotifications();
+    const timeoutId = window.setTimeout(fetchNotifications, 0);
 
     const intervalId = window.setInterval(fetchNotifications, 5000);
-    return () => window.clearInterval(intervalId);
+    return () => {
+      window.clearTimeout(timeoutId);
+      window.clearInterval(intervalId);
+    };
   }, [fetchNotifications]);
 
   useEffect(() => {

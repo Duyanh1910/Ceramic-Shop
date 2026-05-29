@@ -1,22 +1,20 @@
 import crypto from "crypto";
 import axios from "axios";
 
-// Đây là thông tin lấy từ chính Log của bạn
 const key2 = "Iyz2habzyr7AG8SgvoBCbKwKi3UzlLi3";
 const targetUrl =
   "https://ceramic-shop-u8ak.onrender.com/api/v1/payment/zalo-ipn";
 
-// 1. Giả lập cục data ZaloPay sẽ trả về khi khách thanh toán xong
 const dataJson = {
   app_id: 553,
-  app_trans_id: "260405_120002_118442", // Dùng đúng app_trans_id đang PENDING của bạn
+  app_trans_id: "260405_120002_118442",
   app_time: 1775371745906,
   app_user: "CeramicShopUser",
   amount: 724800,
   embed_data:
     '{"redirecturl":"https://ceramic-shop-rho.vercel.app/payment-result"}',
   item: "[{}]",
-  zp_trans_id: 999888777666, // Mã giao dịch giả định của ZaloPay
+  zp_trans_id: 999888777666,
   server_time: Date.now(),
   channel: 38,
   merchant_user_id: "",
@@ -25,13 +23,10 @@ const dataJson = {
   discount_amount: 0,
 };
 
-// 2. Ép cục data thành chuỗi String
 const dataStr = JSON.stringify(dataJson);
 
-// 3. Ký MAC y hệt thuật toán của ZaloPay bằng Key2
 const reqMac = crypto.createHmac("sha256", key2).update(dataStr).digest("hex");
 
-// 4. Bắn Request POST y hệt ZaloPay bắn vào server Render của bạn
 console.log("Đang giả lập ZaloPay bắn IPN vào:", targetUrl);
 axios
   .post(targetUrl, {
@@ -85,7 +80,7 @@ export const queryZaloPayTransaction = async (app_trans_id) => {
             { TrangThaiThanhToan: 1 },
             { where: { MaDonHang: giaoDich.MaDonHang }, transaction: t },
           );
-          console.log("✅ Đã update DB qua lệnh Query chủ động!");
+          console.log("Đã update DB qua lệnh Query chủ động!");
         }
       });
     }

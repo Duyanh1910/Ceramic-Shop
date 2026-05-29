@@ -103,7 +103,6 @@ const TinyMceEditor = ({value = "", onChange}) => {
                 image_advtab: true,
                 image_caption: true,
 
-                // TinyMCE dùng key này, không phải font_size_formats
                 fontsize_formats:
                     "12px 14px 16px 18px 20px 24px 28px 32px 36px 48px",
 
@@ -120,8 +119,6 @@ const TinyMceEditor = ({value = "", onChange}) => {
                 images_file_types: "jpeg,jpg,png,webp,gif",
                 file_picker_types: "image",
 
-                // Hạn chế các tag nguy hiểm ở phía frontend.
-                // Backend vẫn nên sanitize lại trước khi lưu DB.
                 invalid_elements: "script,iframe,object,embed,form,input,button",
                 extended_valid_elements:
                     "a[href|target=_blank|rel],img[src|alt|title|width|height|style],span[style],p[style],h1[style],h2[style],h3[style],table[style|border],tr[style],td[style|colspan|rowspan],th[style|colspan|rowspan]",
@@ -213,7 +210,6 @@ export default function AdminNews() {
         fetchNews();
     }, []);
 
-    // Fix lỗi không gõ được link trong popup TinyMCE khi nằm trong Ant Design Modal
     useEffect(() => {
         const handleFocusIn = (e) => {
             if (document.querySelector(".tox-tinymce-aux")?.contains(e.target)) {

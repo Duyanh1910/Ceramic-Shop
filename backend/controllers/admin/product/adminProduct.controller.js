@@ -128,7 +128,7 @@ export const getProductInfo = async (req, res, next) => {
 
 export const updateProductController = async (req, res, next) => {
   try {
-    const productID = Number(req.params.id); // Lấy ID từ URL params
+    const productID = Number(req.params.id);
     const {
       categoryID,
       productName,

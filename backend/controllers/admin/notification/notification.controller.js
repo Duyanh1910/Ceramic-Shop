@@ -20,7 +20,7 @@ export const getNotifications = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: "Lay danh sach thong bao thanh cong!",
+      message: "Lấy danh sách thông báo thành công!",
       result: notifications,
     });
   } catch (err) {
@@ -36,7 +36,7 @@ export const getUnreadNotificationsCount = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: "Lay so thong bao chua doc thanh cong!",
+      message: "Lấy số thông báo chưa đọc thành công!",
       result: {
         count,
       },
@@ -53,7 +53,7 @@ export const markNotificationAsRead = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: "Danh dau thong bao da doc thanh cong!",
+      message: "Đánh dấu thông báo đã đọc thành công!",
       result: notification,
     });
   } catch (err) {
@@ -69,7 +69,7 @@ export const markAllNotificationsAsRead = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: "Danh dau tat ca thong bao da doc thanh cong!",
+      message: "Đánh dấu tất cả thông báo đã đọc thành công!",
       result: {
         affectedRows,
       },
@@ -86,7 +86,7 @@ export const deleteNotification = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: "Xoa thong bao thanh cong!",
+      message: "Xóa thông báo thành công!",
     });
   } catch (err) {
     console.error(err);
@@ -104,7 +104,7 @@ export const deleteAllNotifications = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: "Xoa thong bao thanh cong!",
+      message: "Xóa thông báo thành công!",
       result: {
         affectedRows,
       },
