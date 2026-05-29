@@ -48,7 +48,8 @@ function Login() {
 
       if (currentRole === 'Admin' || currentRole === 'Staff') {
         if (typeof saveSession === 'function') saveSession(currentUsername, currentRole, true, token);
-        localStorage.setItem('admin_token', token);
+        if (token) localStorage.setItem('admin_token', token);
+        else localStorage.removeItem('admin_token');
         localStorage.setItem('admin_session_active', 'true');
         localStorage.setItem('role', currentRole);
         localStorage.setItem('username', currentUsername);
@@ -56,7 +57,8 @@ function Login() {
         setTimeout(() => { navigate('/admin'); }, 1500);
       } else {
         if (typeof saveSession === 'function') saveSession(currentUsername, 'Customer', true, token);
-        localStorage.setItem('customer_token', token);
+        if (token) localStorage.setItem('customer_token', token);
+        else localStorage.removeItem('customer_token');
         localStorage.setItem('customer_session_active', 'true');
         localStorage.setItem('role', 'Customer');
         localStorage.setItem('username', currentUsername);

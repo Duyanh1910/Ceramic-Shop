@@ -3,6 +3,16 @@ import { io } from "socket.io-client";
 const SOCKET_URL = "https://ceramic-shop-u8ak.onrender.com";
 let hasGlobalAdminNotificationListener = false;
 
+const getStoredToken = () => {
+  const token = localStorage.getItem("admin_token") || localStorage.getItem("token");
+
+  if (!token || token === "null" || token === "undefined") {
+    return null;
+  }
+
+  return token;
+};
+
 export const normalizeAdminNotificationPayload = (payload = {}) => ({
   id:
     payload.id ||
@@ -38,11 +48,9 @@ export const adminSocket = io(SOCKET_URL, {
 });
 
 export const connectAdminSocket = () => {
-  const token = localStorage.getItem("admin_token") || localStorage.getItem("token");
+  const token = getStoredToken();
 
-  if (!token) return null;
-
-  adminSocket.auth = { token };
+  adminSocket.auth = token ? { token } : {};
 
   if (!hasGlobalAdminNotificationListener) {
     adminSocket.on("admin:notification_created", (payload) =>

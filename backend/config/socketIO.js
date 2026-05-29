@@ -5,6 +5,16 @@ import {CustomerModel} from "../models/index.js";
 
 let io = null;
 
+const getCookieValue = (cookieHeader = "", cookieName) => {
+    return cookieHeader
+        .split(";")
+        .map((item) => item.trim())
+        .find((item) => item.startsWith(`${cookieName}=`))
+        ?.split("=")
+        .slice(1)
+        .join("=");
+};
+
 export const initSocket = (server) => {
     io = new Server(server, {
         cors: {
@@ -20,7 +30,16 @@ export const initSocket = (server) => {
     });
     io.use(async (socket, next) => {
         try {
-            const token = socket.handshake.auth?.token;
+            const authToken = socket.handshake.auth?.token;
+            const cookieToken = getCookieValue(
+                socket.handshake.headers?.cookie || "",
+                "accessToken",
+            );
+            const token =
+                authToken && authToken !== "null" && authToken !== "undefined"
+                    ? authToken
+                    : cookieToken;
+
             if (!token) {
                 return next(new ErrorHandler("Unauthorized", 403));
             }
