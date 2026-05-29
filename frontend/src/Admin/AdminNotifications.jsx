@@ -13,7 +13,10 @@ import {
   SwapOutlined,
   WarningOutlined,
 } from "@ant-design/icons";
-import { normalizeAdminNotificationPayload } from "../Utility/socket.js";
+import {
+  normalizeAdminNotificationPayload,
+  resolveAdminNotificationRedirect,
+} from "../Utility/socket.js";
 import styles from "./AdminNotifications.module.css";
 
 const STORAGE_KEY = "admin_notifications";
@@ -283,7 +286,7 @@ export default function AdminNotifications() {
       prev.map((n) => (n.id === item.id ? { ...n, isRead: true } : n)),
     );
 
-    navigate(item.redirectUrl || "/admin");
+    navigate(resolveAdminNotificationRedirect(item));
   };
 
   const deleteItem = async (e, id) => {

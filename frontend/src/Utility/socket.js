@@ -13,6 +13,60 @@ const getStoredToken = () => {
   return token;
 };
 
+export const resolveAdminNotificationRedirect = (payload = {}) => {
+  const directUrl = payload.redirectUrl || payload.DuongDan || "";
+  const type = payload.type || payload.LoaiThongBao || "";
+  const haystack = [
+    payload.title,
+    payload.TieuDe,
+    payload.message,
+    payload.NoiDung,
+    directUrl,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  if (directUrl.includes("?")) {
+    return directUrl;
+  }
+
+  if (String(type).startsWith("ORDER_")) {
+    const orderCode = haystack.match(/\bDH[A-Z0-9]+\b/i)?.[0];
+    if (orderCode) {
+      return `/admin?orderCode=${encodeURIComponent(orderCode.toUpperCase())}`;
+    }
+  }
+
+  if (String(type).startsWith("RISK_")) {
+    const riskId = haystack.match(/(?:rủi ro|rui ro|risk)\s*#?\s*(\d+)/i)?.[1];
+    if (riskId) {
+      return `/admin/risks?riskId=${riskId}`;
+    }
+  }
+
+  if (String(type).startsWith("WARRANTY_")) {
+    const warrantyId =
+      haystack.match(/(?:bảo hành|bao hanh|warranty|bh|phiếu|phieu)\s*#?\s*(\d+)/i)?.[1] ||
+      haystack.match(/#\s*(\d+)/)?.[1];
+
+    if (warrantyId) {
+      return `/admin/warranties?warrantyId=${warrantyId}`;
+    }
+  }
+
+  if (String(type).startsWith("RETURN_")) {
+    const returnId =
+      haystack.match(/(?:đổi trả|doi tra|return)\s*#?\s*(\d+)/i)?.[1] ||
+      haystack.match(/#\s*(\d+)/)?.[1];
+
+    if (returnId) {
+      return `/admin/returns?returnId=${returnId}`;
+    }
+  }
+
+  return directUrl || "/admin/notifications";
+};
+
 export const normalizeAdminNotificationPayload = (payload = {}) => ({
   id:
     payload.id ||
@@ -21,7 +75,7 @@ export const normalizeAdminNotificationPayload = (payload = {}) => ({
   type: payload.type || payload.LoaiThongBao,
   title: payload.title || payload.TieuDe || "Thông báo",
   message: payload.message || payload.NoiDung || "",
-  redirectUrl: payload.redirectUrl || payload.DuongDan || "/admin/notifications",
+  redirectUrl: resolveAdminNotificationRedirect(payload),
   isRead: Boolean(payload.isRead),
   createdAt: payload.createdAt || payload.NgayTao || new Date().toISOString(),
 });

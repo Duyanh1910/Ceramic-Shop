@@ -23,7 +23,11 @@ import {
 import {Outlet, useLocation, useNavigate} from "react-router-dom";
 import axios from "axios";
 import styles from "./AdminLayout.module.css";
-import {connectAdminSocket, disconnectAdminSocket} from "../Utility/socket.js";
+import {
+    connectAdminSocket,
+    disconnectAdminSocket,
+    resolveAdminNotificationRedirect,
+} from "../Utility/socket.js";
 import NotificationBell from "../Utility/NotificationBell.jsx";
 const {Header, Sider, Content} = Layout;
 const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1";
@@ -207,7 +211,7 @@ export default function AdminLayout() {
                 style: cfg.style,
                 placement: "topRight",
                 duration: 5,
-                onClick: () => navigate(payload?.redirectUrl || "/admin"),
+                onClick: () => navigate(resolveAdminNotificationRedirect(payload)),
             });
         };
 
