@@ -46,7 +46,9 @@ function Login() {
 
       setLoginSuccess(true);
 
-      if (currentRole === 'Admin' || currentRole === 'Staff') {
+      const normalizedRole = String(currentRole).trim().toLowerCase();
+
+      if (normalizedRole === 'admin' || normalizedRole === 'staff') {
         if (typeof saveSession === 'function') saveSession(currentUsername, currentRole, true, token);
         if (token) localStorage.setItem('admin_token', token);
         else localStorage.removeItem('admin_token');

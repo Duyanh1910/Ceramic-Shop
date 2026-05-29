@@ -23,6 +23,7 @@ import dayjs from "dayjs";
 import axios from "axios";
 import { useSearchParams } from "react-router-dom";
 
+import { exportExcelReport } from "../Utility/excelExport";
 import styles from "./AdminWarranties.module.css";
 import WarrantyHistory from "./AdminWarrantyHistory";
 
@@ -157,41 +158,15 @@ const WarrantyList = () => {
     try {
       setLoadingExport(true);
 
-      const queryParams = new URLSearchParams();
-
-      if (search.trim()) {
-        queryParams.append("search", search.trim());
-      }
-
-      if (status !== ALL_STATUS) {
-        queryParams.append("status", status);
-      }
-
-      const url = `${API_BASE}/admin/after_sales/warranties/export?${queryParams.toString()}`;
-
-      const response = await axios.get(url, {
-        responseType: "blob",
-        ...authConfig(),
+      await exportExcelReport({
+        url: `${API_BASE}/admin/after_sales/warranties/export`,
+        params: {
+          search: search.trim(),
+          status: status !== ALL_STATUS ? status : undefined,
+        },
+        axiosConfig: authConfig(),
+        fileName: `Bao_Cao_Bao_Hanh_${dayjs().format("DDMMYYYY_HHmm")}.xlsx`,
       });
-
-      const blob = new Blob([response.data], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      });
-
-      const downloadUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-
-      link.href = downloadUrl;
-      link.setAttribute(
-        "download",
-        `Bao_Cao_Bao_Hanh_${dayjs().format("DDMMYYYY_HHmm")}.xlsx`,
-      );
-
-      document.body.appendChild(link);
-      link.click();
-
-      link.parentNode.removeChild(link);
-      window.URL.revokeObjectURL(downloadUrl);
 
       message.success("Tải báo cáo bảo hành thành công!");
     } catch (error) {

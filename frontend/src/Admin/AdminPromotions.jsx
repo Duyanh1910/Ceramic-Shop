@@ -36,6 +36,7 @@ import {
 } from "@ant-design/icons";
 import axios from "axios";
 import dayjs from "dayjs";
+import { exportExcelReport } from "../Utility/excelExport";
 import styles from "./AdminPromotions.module.css";
 
 const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1";
@@ -228,37 +229,16 @@ export default function AdminPromotions() {
     try {
       setLoadingExport(true);
 
-      const queryParams = new URLSearchParams();
-
-      if (searchText) queryParams.append("search", searchText);
-      if (filterStatus !== "all") queryParams.append("status", filterStatus);
-      if (filterType !== "all") queryParams.append("type", filterType);
-
-      const url = `${API_BASE}/admin/promotions/export?${queryParams.toString()}`;
-
-      const response = await axios.get(url, {
-        responseType: "blob",
-        ...authH(),
+      await exportExcelReport({
+        url: `${API_BASE}/admin/promotions/export`,
+        params: {
+          search: searchText,
+          status: filterStatus !== "all" ? filterStatus : undefined,
+          type: filterType !== "all" ? filterType : undefined,
+        },
+        axiosConfig: authH(),
+        fileName: `Bao_Cao_Khuyen_Mai_${dayjs().format("DDMMYYYY_HHmm")}.xlsx`,
       });
-
-      const blob = new Blob([response.data], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      });
-
-      const downloadUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-
-      link.href = downloadUrl;
-      link.setAttribute(
-        "download",
-        `Bao_Cao_Khuyen_Mai_${dayjs().format("DDMMYYYY_HHmm")}.xlsx`,
-      );
-
-      document.body.appendChild(link);
-      link.click();
-
-      link.parentNode.removeChild(link);
-      window.URL.revokeObjectURL(downloadUrl);
 
       message.success("Tải báo cáo thành công!");
     } catch (error) {

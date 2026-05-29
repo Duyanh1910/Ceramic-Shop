@@ -1,4 +1,4 @@
-import { StrictMode, useEffect } from "react";
+import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import {
   BrowserRouter,
@@ -78,10 +78,16 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 
   let userRole = "Customer";
   if (isAdmin) userRole = localStorage.getItem("admin_role") || "Admin";
-  else if (isCustomer)
+  else if (isCustomer) {
     userRole = localStorage.getItem("customer_role") || "Customer";
+  }
 
-  if (allowedRoles && !allowedRoles.includes(userRole)) {
+  const normalizedRole = String(userRole).trim().toLowerCase();
+  const normalizedAllowedRoles = allowedRoles?.map((role) =>
+    String(role).trim().toLowerCase(),
+  );
+
+  if (normalizedAllowedRoles && !normalizedAllowedRoles.includes(normalizedRole)) {
     return <Navigate to="/" replace />;
   }
 

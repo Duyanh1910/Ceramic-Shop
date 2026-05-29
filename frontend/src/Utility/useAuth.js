@@ -13,8 +13,10 @@ const SESSION_ACTIVE_KEY = "session_active";
 export function saveSession(username, role, rememberMe, token = null, maKhachHang = null) {
   const days = rememberMe ? 30 : 1;
   const expiry = Date.now() + days * 24 * 60 * 60 * 1000;
+  const normalizedRole = String(role || "").trim().toLowerCase();
+  const isAdminRole = normalizedRole === "admin" || normalizedRole === "staff";
 
-  const prefix = role === "Admin" || role === "Staff" ? "admin_" : "customer_";
+  const prefix = isAdminRole ? "admin_" : "customer_";
 
   localStorage.setItem(prefix + "username", username);
   localStorage.setItem(prefix + "role", role);

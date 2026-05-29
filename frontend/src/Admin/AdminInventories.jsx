@@ -17,6 +17,7 @@ import {
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import axios from "axios";
+import { exportExcelReport } from "../Utility/excelExport";
 import styles from "./AdminTable.module.css";
 
 const { RangePicker } = DatePicker;
@@ -134,45 +135,16 @@ const InventoryHistory = () => {
     try {
       setLoadingExport(true);
 
-      let startDate = "";
-      let endDate = "";
-
-      if (dateRange && dateRange.length === 2) {
-        startDate = dateRange[0].format("YYYY-MM-DD");
-        endDate = dateRange[1].format("YYYY-MM-DD");
-      }
-
-      const queryParams = new URLSearchParams({
-        search: searchText,
-        ...(startDate && { startDate }),
-        ...(endDate && { endDate }),
+      await exportExcelReport({
+        url: `${API_BASE}/inventories/export`,
+        params: {
+          search: searchText,
+          startDate: dateRange?.[0]?.format("YYYY-MM-DD"),
+          endDate: dateRange?.[1]?.format("YYYY-MM-DD"),
+        },
+        axiosConfig: { withCredentials: true },
+        fileName: `Bao_Cao_Ton_Kho_${dayjs().format("DDMMYYYY_HHmm")}.xlsx`,
       });
-
-      const url = `${API_BASE}/inventories/export?${queryParams.toString()}`;
-
-      const response = await axios.get(url, {
-        responseType: "blob",
-        withCredentials: true,
-      });
-
-      const blob = new Blob([response.data], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      });
-
-      const downloadUrl = window.URL.createObjectURL(blob);
-
-      const link = document.createElement("a");
-      link.href = downloadUrl;
-      link.setAttribute(
-        "download",
-        `Bao_Cao_Ton_Kho_${dayjs().format("DDMMYYYY_HHmm")}.xlsx`,
-      );
-
-      document.body.appendChild(link);
-      link.click();
-
-      link.parentNode.removeChild(link);
-      window.URL.revokeObjectURL(downloadUrl);
 
       message.success("Tải báo cáo thành công!");
     } catch (error) {

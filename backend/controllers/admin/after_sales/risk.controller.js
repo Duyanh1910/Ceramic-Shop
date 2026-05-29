@@ -1,5 +1,6 @@
 import {
   createRiskService,
+  exportRiskXlsxService,
   getAllRiskService,
   getRiskByIdService,
   updateRiskService,
@@ -135,6 +136,24 @@ export const updateRiskStatus = async (req, res, next) => {
       message: "Cập nhật trạng thái rủi ro thành công!",
       result,
     });
+  } catch (err) {
+    console.error(err);
+    next(err);
+  }
+};
+
+export const exportRisksXlsx = async (req, res, next) => {
+  try {
+    const buffer = await exportRiskXlsxService(req.query);
+    const fileName = `bao-cao-rui-ro-${Date.now()}.xlsx`;
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    );
+    res.setHeader("Content-Disposition", `attachment; filename=${fileName}`);
+
+    return res.status(200).send(buffer);
   } catch (err) {
     console.error(err);
     next(err);

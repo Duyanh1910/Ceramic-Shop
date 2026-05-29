@@ -1,45 +1,14 @@
 import { CustomerModel, OrderModel } from "../../models/index.js";
 import { Op } from "sequelize";
-import ExcelJS from "exceljs";
-import axios from "axios";
-
-const VIETNAM_TIME_ZONE = "Asia/Ho_Chi_Minh";
-const LOGO_URL =
-  "https://res.cloudinary.com/dcmwz0uis/image/upload/v1773973973/logo_otxplb.png";
-
-const formatDateTimeVN = (value = new Date()) => {
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return "";
-  }
-
-  return new Intl.DateTimeFormat("vi-VN", {
-    timeZone: VIETNAM_TIME_ZONE,
-    hour12: false,
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  }).format(date);
-};
-
-const formatDateOnlyVN = (value) => {
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return "";
-  }
-
-  return new Intl.DateTimeFormat("vi-VN", {
-    timeZone: VIETNAM_TIME_ZONE,
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  }).format(date);
-};
+import {
+  buildReportHeader,
+  createReportWorkbook,
+  createReportWorksheet,
+  formatDateOnlyVN,
+  formatDateTimeVN,
+  styleDataRow,
+  styleHeaderRow,
+} from "../../utils/excelReport.js";
 
 const getDateKey = (date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
@@ -80,69 +49,6 @@ const getDateRangeWhere = (startDate, endDate) => {
   }
 
   return whereCondition;
-};
-
-const getExcelSupportedImageUrl = (url = "") => {
-  if (!url.includes("res.cloudinary.com") || !url.includes("/image/upload/")) {
-    return url;
-  }
-
-  if (url.includes("/image/upload/f_png/")) {
-    return url;
-  }
-
-  return url.replace("/image/upload/", "/image/upload/f_png/");
-};
-
-const getImageExtension = (url = "", contentType = "") => {
-  const normalizedContentType = String(contentType).toLowerCase();
-  const normalizedUrl = String(url).split("?")[0].toLowerCase();
-
-  if (normalizedContentType.includes("png") || normalizedUrl.endsWith(".png")) {
-    return "png";
-  }
-
-  if (
-    normalizedContentType.includes("jpeg") ||
-    normalizedContentType.includes("jpg") ||
-    normalizedUrl.endsWith(".jpeg") ||
-    normalizedUrl.endsWith(".jpg")
-  ) {
-    return "jpeg";
-  }
-
-  return null;
-};
-
-const addRemoteImage = async (workbook, worksheet, url, imageRange, size) => {
-  if (!url) return;
-
-  try {
-    const imageUrl = getExcelSupportedImageUrl(url);
-    const response = await axios.get(imageUrl, {
-      responseType: "arraybuffer",
-      timeout: 10000,
-    });
-    const extension = getImageExtension(
-      imageUrl,
-      response.headers?.["content-type"],
-    );
-
-    if (!extension) return;
-
-    const imageId = workbook.addImage({
-      buffer: Buffer.from(response.data),
-      extension,
-    });
-
-    worksheet.addImage(imageId, {
-      ...imageRange,
-      ext: size,
-      editAs: "oneCell",
-    });
-  } catch (error) {
-    console.error("Không tải được hình ảnh:", error.message);
-  }
 };
 
 const getPeriodRows = ({ orders, mode, startDate, endDate }) => {
@@ -213,138 +119,6 @@ const getPeriodRows = ({ orders, mode, startDate, endDate }) => {
   return Array.from(rowMap.values());
 };
 
-const styleHeaderRow = (row) => {
-  row.height = 32;
-  row.eachCell((cell) => {
-    cell.font = {
-      name: "Arial",
-      size: 11,
-      bold: true,
-      color: { argb: "FFFFFFFF" },
-    };
-    cell.fill = {
-      type: "pattern",
-      pattern: "solid",
-      fgColor: { argb: "FF1F4E78" },
-    };
-    cell.alignment = {
-      vertical: "middle",
-      horizontal: "center",
-      wrapText: true,
-    };
-    cell.border = {
-      top: { style: "thin", color: { argb: "FFD9E2F3" } },
-      left: { style: "thin", color: { argb: "FFD9E2F3" } },
-      bottom: { style: "thin", color: { argb: "FFD9E2F3" } },
-      right: { style: "thin", color: { argb: "FFD9E2F3" } },
-    };
-  });
-};
-
-const styleDataRow = (row, centerColumns = []) => {
-  row.eachCell((cell, colNumber) => {
-    cell.font = {
-      name: "Arial",
-      size: 11,
-    };
-    cell.alignment = {
-      vertical: "middle",
-      horizontal: centerColumns.includes(colNumber) ? "center" : "left",
-      wrapText: true,
-    };
-    cell.border = {
-      top: { style: "thin", color: { argb: "FFD9E2F3" } },
-      left: { style: "thin", color: { argb: "FFD9E2F3" } },
-      bottom: { style: "thin", color: { argb: "FFD9E2F3" } },
-      right: { style: "thin", color: { argb: "FFD9E2F3" } },
-    };
-  });
-};
-
-const buildReportHeader = async ({
-  workbook,
-  worksheet,
-  lastColumn,
-  title,
-  dateRangeText,
-}) => {
-  worksheet.mergeCells("A1:A3");
-  worksheet.mergeCells("B1:D2");
-  worksheet.mergeCells("B3:D3");
-
-  await addRemoteImage(
-    workbook,
-    worksheet,
-    LOGO_URL,
-    { tl: { col: 0.15, row: 0.32 } },
-    { width: 100, height: 100 },
-  );
-
-  worksheet.getCell("B1").value = "CERAMIC-SHOP";
-  worksheet.getCell("B1").font = {
-    name: "Times New Roman",
-    size: 22,
-    bold: true,
-    color: { argb: "FF173B63" },
-  };
-  worksheet.getCell("B1").alignment = {
-    vertical: "bottom",
-    horizontal: "left",
-  };
-
-  worksheet.getCell("B3").value = "Tinh hoa gốm sứ Việt";
-  worksheet.getCell("B3").font = {
-    name: "Arial",
-    size: 11,
-    italic: true,
-    color: { argb: "FFC28A5D" },
-  };
-
-  worksheet.mergeCells(`A4:${lastColumn}4`);
-  worksheet.getCell("A4").border = {
-    bottom: { style: "medium", color: { argb: "FF2F6B3F" } },
-  };
-
-  worksheet.mergeCells(`A5:${lastColumn}5`);
-  worksheet.getCell("A5").value = title;
-  worksheet.getCell("A5").font = {
-    name: "Arial",
-    size: 18,
-    bold: true,
-    color: { argb: "FF173B63" },
-  };
-  worksheet.getCell("A5").alignment = {
-    vertical: "middle",
-    horizontal: "center",
-  };
-
-  worksheet.mergeCells(`A6:${lastColumn}6`);
-  worksheet.getCell("A6").value = `Ngày xuất: ${formatDateTimeVN(new Date())}`;
-  worksheet.getCell("A6").font = {
-    name: "Arial",
-    size: 11,
-    italic: true,
-    color: { argb: "FF666666" },
-  };
-  worksheet.getCell("A6").alignment = {
-    vertical: "middle",
-    horizontal: "center",
-  };
-
-  worksheet.mergeCells(`A7:${lastColumn}7`);
-  worksheet.getCell("A7").value = dateRangeText;
-  worksheet.getCell("A7").font = {
-    name: "Arial",
-    size: 11,
-    italic: true,
-    color: { argb: "FF666666" },
-  };
-  worksheet.getCell("A7").alignment = {
-    vertical: "middle",
-    horizontal: "center",
-  };
-};
-
 export const getTotalRevenueService = async (startDate, endDate) => {
   const totalRevenue = await OrderModel.sum("TongThanhToan", {
     where: getDateRangeWhere(startDate, endDate),
@@ -408,64 +182,33 @@ export const exportRevenueXlsxService = async ({
     },
   );
 
-  const workbook = new ExcelJS.Workbook();
-  workbook.creator = "CERAMIC-SHOP";
-  workbook.created = new Date();
+  const workbook = createReportWorkbook();
 
   const dateRangeText = `Thời gian dữ liệu: Từ ${formatDateOnlyVN(
     startDate,
   )} đến ${formatDateOnlyVN(endDate)}`;
 
-  const summarySheet = workbook.addWorksheet("Tổng hợp doanh thu", {
-    properties: { defaultRowHeight: 24 },
-    pageSetup: {
-      paperSize: 9,
-      orientation: "landscape",
-      fitToPage: true,
-      fitToWidth: 1,
-      fitToHeight: 0,
-      horizontalCentered: true,
-      margins: {
-        left: 0.25,
-        right: 0.25,
-        top: 0.45,
-        bottom: 0.45,
-        header: 0.2,
-        footer: 0.2,
-      },
+  const summarySheet = createReportWorksheet(workbook, "Tổng hợp doanh thu", {
+    columnWidths: [31, 27, 35, 24, 27, 31, 26],
+    rowHeights: [24, 24, 24, 24, 36, 24, 24, 24],
+    zoomScale: 100,
+    margins: {
+      left: 0.25,
+      right: 0.25,
+      top: 0.45,
+      bottom: 0.45,
+      header: 0.2,
+      footer: 0.2,
     },
   });
-
-  summarySheet.views = [
-    {
-      state: "frozen",
-      ySplit: 9,
-      showGridLines: false,
-      zoomScale: 100,
-    },
-  ];
-
-  [31, 27, 35, 24, 27, 31, 26].forEach((width, index) => {
-    summarySheet.getColumn(index + 1).width = width;
-  });
-
-  for (let row = 1; row <= 8; row += 1) {
-    summarySheet.getRow(row).height = row === 5 ? 36 : 24;
-    for (let colNumber = 1; colNumber <= 7; colNumber += 1) {
-      summarySheet.getCell(row, colNumber).fill = {
-        type: "pattern",
-        pattern: "solid",
-        fgColor: { argb: "FFFFFFFF" },
-      };
-    }
-  }
 
   await buildReportHeader({
     workbook,
     worksheet: summarySheet,
     lastColumn: "G",
     title: "BÁO CÁO DOANH THU CỬA HÀNG",
-    dateRangeText,
+    subtitle: dateRangeText,
+    brandEndColumn: "D",
   });
 
   const orderTableTitleRowNumber = 9;

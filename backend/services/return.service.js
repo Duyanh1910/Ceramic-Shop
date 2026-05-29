@@ -1,15 +1,15 @@
 import {
-  sequelize,
   CustomerModel,
-  OrderModel,
+  InventoryHistoryModel,
   OrderDetailModel,
-  VariantModel,
+  OrderModel,
+  PaymentTransactionModel,
   ProductModel,
   ReturnModel,
   ReturnProcessModel,
-  InventoryHistoryModel,
-  PaymentTransactionModel,
   RiskModel,
+  sequelize,
+  VariantModel,
 } from "../models/index.js";
 import ErrorHandler from "../utils/error_handler.js";
 import { Op } from "sequelize";
@@ -17,6 +17,15 @@ import {
   NOTIFICATION_TYPES,
   safeCreateAdminNotificationService,
 } from "./adminNotifications.service.js";
+import {
+  buildDateRangeText,
+  buildReportHeader,
+  createReportWorkbook,
+  createReportWorksheet,
+  formatDateTimeVN,
+  styleDataRow,
+  styleHeaderRow,
+} from "../utils/excelReport.js";
 
 export const RETURN_STATUS = {
   WAITING: 0,
@@ -80,6 +89,55 @@ const riskTypeMap = {
     MucDo: "BINH_THUONG",
     NguonPhatHien: "KHACH_HANG",
   },
+};
+
+const getReturnStatusText = (value) => {
+  const statusNumber = Number(value);
+
+  if (statusNumber === RETURN_STATUS.WAITING) return "Chờ xử lý";
+  if (statusNumber === RETURN_STATUS.APPROVED) return "Đã duyệt";
+  if (statusNumber === RETURN_STATUS.REJECTED) return "Từ chối";
+  if (statusNumber === RETURN_STATUS.PROCESSING) return "Đang xử lý";
+  if (statusNumber === RETURN_STATUS.COMPLETED) return "Hoàn tất";
+  if (statusNumber === RETURN_STATUS.CUSTOMER_CANCELED) return "Khách hủy";
+
+  return "Không rõ";
+};
+
+const getReturnRequestTypeText = (value) => {
+  const typeMap = {
+    [RETURN_REQUEST_TYPE.DOI_HANG]: "Đổi hàng",
+    [RETURN_REQUEST_TYPE.TRA_HANG]: "Trả hàng",
+    [RETURN_REQUEST_TYPE.HOAN_TIEN]: "Hoàn tiền",
+    [RETURN_REQUEST_TYPE.VO_HONG_VAN_CHUYEN]: "Vỡ/hỏng vận chuyển",
+    [RETURN_REQUEST_TYPE.THIEU_HANG]: "Thiếu hàng",
+    [RETURN_REQUEST_TYPE.SAI_SAN_PHAM]: "Sai sản phẩm",
+  };
+
+  return typeMap[value] || value || "";
+};
+
+const getReturnConditionText = (value) => {
+  const conditionMap = {
+    [RETURN_CONDITION.CON_NGUYEN]: "Còn nguyên",
+    [RETURN_CONDITION.DA_SU_DUNG]: "Đã sử dụng",
+    [RETURN_CONDITION.VO_HONG]: "Vỡ/hỏng",
+    [RETURN_CONDITION.LOI_SAN_XUAT]: "Lỗi sản xuất",
+    [RETURN_CONDITION.KHONG_NHAN_LAI]: "Không nhận lại hàng",
+  };
+
+  return conditionMap[value] || value || "";
+};
+
+const getReturnProcessTypeText = (value) => {
+  const processMap = {
+    [RETURN_PROCESS_TYPE.DOI_SAN_PHAM]: "Đổi sản phẩm",
+    [RETURN_PROCESS_TYPE.GUI_BO_SUNG]: "Gửi bổ sung",
+    [RETURN_PROCESS_TYPE.HOAN_TIEN_MOT_PHAN]: "Hoàn tiền một phần",
+    [RETURN_PROCESS_TYPE.HOAN_TIEN_TOAN_PHAN]: "Hoàn tiền toàn phần",
+  };
+
+  return processMap[value] || value || "";
 };
 
 const buildReturnInclude = () => [
@@ -543,7 +601,11 @@ export const createReturnRequestService = async (idAccount, payload) => {
   }
 };
 
-export const cancelReturnRequestService = async (idAccount, MaDoiTra, reason) => {
+export const cancelReturnRequestService = async (
+  idAccount,
+  MaDoiTra,
+  reason,
+) => {
   const transaction = await sequelize.transaction();
 
   try {
@@ -573,7 +635,10 @@ export const cancelReturnRequestService = async (idAccount, MaDoiTra, reason) =>
     const order = returnRequest.ChiTietDonHang?.DonHang;
 
     if (!order || Number(order.MaKhachHang) !== Number(customer.MaKhachHang)) {
-      throw new ErrorHandler("Bạn không có quyền hủy yêu cầu đổi trả này!", 403);
+      throw new ErrorHandler(
+        "Bạn không có quyền hủy yêu cầu đổi trả này!",
+        403,
+      );
     }
 
     if (Number(returnRequest.TrangThai) !== RETURN_STATUS.WAITING) {
@@ -631,7 +696,12 @@ export const getAllReturnsAdminService = async (
 
   const returnWhere = {};
 
-  if (status !== undefined && status !== null && status !== "") {
+  if (
+    status !== "all" &&
+    status !== undefined &&
+    status !== null &&
+    status !== ""
+  ) {
     returnWhere.TrangThai = Number(status);
   }
 
@@ -647,7 +717,9 @@ export const getAllReturnsAdminService = async (
     returnWhere[Op.or] = [
       ...(numericKeyword !== null ? [{ MaDoiTra: numericKeyword }] : []),
       { "$ChiTietDonHang.DonHang.MaHienThi$": { [Op.like]: `%${keyword}%` } },
-      { "$ChiTietDonHang.DonHang.TenNguoiNhan$": { [Op.like]: `%${keyword}%` } },
+      {
+        "$ChiTietDonHang.DonHang.TenNguoiNhan$": { [Op.like]: `%${keyword}%` },
+      },
       { "$ChiTietDonHang.DonHang.SDT$": { [Op.like]: `%${keyword}%` } },
     ];
   }
@@ -696,7 +768,9 @@ export const getReturnByIdAdminService = async (MaDoiTra) => {
 };
 
 export const getReturnVariantOptionsAdminService = async (search = "") => {
-  const keyword = String(search || "").trim().toLowerCase();
+  const keyword = String(search || "")
+    .trim()
+    .toLowerCase();
 
   const variants = await VariantModel.findAll({
     where: {
@@ -811,7 +885,8 @@ export const updateReturnStatusAdminService = async (
     }
 
     returnRequest.TrangThai = normalizedNextStatus;
-    returnRequest.MaNhanVienXuLy = staffId || returnRequest.MaNhanVienXuLy || null;
+    returnRequest.MaNhanVienXuLy =
+      staffId || returnRequest.MaNhanVienXuLy || null;
 
     if (normalizedNextStatus === RETURN_STATUS.REJECTED) {
       returnRequest.NgayHoanTat = new Date();
@@ -996,7 +1071,10 @@ export const processReturnAdminService = async (MaDoiTra, payload) => {
       });
 
       if (!oldVariant) {
-        throw new ErrorHandler("Không tìm thấy biến thể cũ để nhập lại kho!", 404);
+        throw new ErrorHandler(
+          "Không tìm thấy biến thể cũ để nhập lại kho!",
+          404,
+        );
       }
 
       const oldStock = Number(oldVariant.SoLuong) + quantity;
@@ -1039,7 +1117,10 @@ export const processReturnAdminService = async (MaDoiTra, payload) => {
       }
 
       if (Number(replacementVariant.SoLuong) < quantity) {
-        throw new ErrorHandler("Không đủ tồn kho để gửi sản phẩm cho khách!", 400);
+        throw new ErrorHandler(
+          "Không đủ tồn kho để gửi sản phẩm cho khách!",
+          400,
+        );
       }
 
       const newStock = Number(replacementVariant.SoLuong) - quantity;
@@ -1082,7 +1163,8 @@ export const processReturnAdminService = async (MaDoiTra, payload) => {
     returnRequest.HinhThucXuLy = HinhThucXuLy;
     returnRequest.CoNhapLaiKho = CoNhapLaiKho;
     returnRequest.SoTienHoan = refundAmount;
-    returnRequest.MaNhanVienXuLy = staffId || returnRequest.MaNhanVienXuLy || null;
+    returnRequest.MaNhanVienXuLy =
+      staffId || returnRequest.MaNhanVienXuLy || null;
 
     if (isRefundProcess) {
       returnRequest.TrangThai = RETURN_STATUS.PROCESSING;
@@ -1192,7 +1274,8 @@ export const confirmReturnRefundAdminService = async (
     await refundTransaction.save({ transaction });
 
     returnRequest.TrangThai = RETURN_STATUS.COMPLETED;
-    returnRequest.MaNhanVienXuLy = staffId || returnRequest.MaNhanVienXuLy || null;
+    returnRequest.MaNhanVienXuLy =
+      staffId || returnRequest.MaNhanVienXuLy || null;
     returnRequest.NgayHoanTat = new Date();
 
     await returnRequest.save({ transaction });
@@ -1227,4 +1310,174 @@ export const confirmReturnRefundAdminService = async (
     console.error(err);
     throw new ErrorHandler("Lỗi server! Không thể xác nhận hoàn tiền!", 500);
   }
+};
+
+export const exportReturnXLSXService = async ({
+  search = "",
+  status = "",
+  type = "",
+  order = "DESC",
+  startDate,
+  endDate,
+} = {}) => {
+  const sortOrder = String(order).toUpperCase() === "ASC" ? "ASC" : "DESC";
+  const keyword = String(search || "").trim();
+  const returnWhere = {};
+
+  if (
+    status !== "all" &&
+    status !== undefined &&
+    status !== null &&
+    status !== ""
+  ) {
+    returnWhere.TrangThai = Number(status);
+  }
+
+  if (type && type !== "all") {
+    returnWhere.LoaiYeuCau = type;
+  }
+
+  if (startDate || endDate) {
+    returnWhere.NgayYeuCau = {};
+
+    if (startDate) {
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      returnWhere.NgayYeuCau[Op.gte] = start;
+    }
+
+    if (endDate) {
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      returnWhere.NgayYeuCau[Op.lte] = end;
+    }
+  }
+
+  if (keyword) {
+    const numericKeyword = /^\d+$/.test(keyword) ? Number(keyword) : null;
+
+    returnWhere[Op.or] = [
+      ...(numericKeyword !== null ? [{ MaDoiTra: numericKeyword }] : []),
+      { "$ChiTietDonHang.DonHang.MaHienThi$": { [Op.like]: `%${keyword}%` } },
+      {
+        "$ChiTietDonHang.DonHang.TenNguoiNhan$": {
+          [Op.like]: `%${keyword}%`,
+        },
+      },
+      { "$ChiTietDonHang.DonHang.SDT$": { [Op.like]: `%${keyword}%` } },
+    ];
+  }
+
+  const returns = await ReturnModel.findAll({
+    where: returnWhere,
+    distinct: true,
+    subQuery: false,
+    order: [["NgayYeuCau", sortOrder]],
+    include: [
+      {
+        model: OrderDetailModel,
+        required: true,
+        include: [
+          {
+            model: OrderModel,
+            required: false,
+          },
+          {
+            model: VariantModel,
+            include: [{ model: ProductModel }],
+          },
+        ],
+      },
+      {
+        model: VariantModel,
+        as: "BienTheDoi",
+        required: false,
+        include: [{ model: ProductModel }],
+      },
+    ],
+  });
+
+  const workbook = createReportWorkbook();
+  const worksheet = createReportWorksheet(workbook, "Danh sách đổi trả", {
+    columnWidths: [14, 20, 24, 18, 34, 28, 16, 22, 22, 18, 24, 24, 24, 42],
+    rowHeights: [28, 28, 26, 14, 34, 22, 22, 14],
+  });
+
+  await buildReportHeader({
+    workbook,
+    worksheet,
+    lastColumn: "N",
+    title: "BÁO CÁO DANH SÁCH ĐỔI TRẢ",
+    subtitle: buildDateRangeText(startDate, endDate),
+  });
+
+  const headers = [
+    "Mã đổi trả",
+    "Mã đơn hàng",
+    "Khách hàng",
+    "Số điện thoại",
+    "Sản phẩm",
+    "Phân loại",
+    "Số lượng",
+    "Loại yêu cầu",
+    "Tình trạng hàng",
+    "Trạng thái",
+    "Hình thức xử lý",
+    "Số tiền hoàn",
+    "Ngày yêu cầu",
+    "Lý do",
+  ];
+
+  const headerRow = worksheet.getRow(9);
+  headerRow.values = headers;
+  styleHeaderRow(headerRow, 32);
+
+  returns.forEach((item, index) => {
+    const data = item.get({ plain: true });
+    const orderDetail = data.ChiTietDonHang || {};
+    const order = orderDetail.DonHang || {};
+    const variant = orderDetail.BienTheSanPham || {};
+    const product = variant.SanPham || {};
+    const row = worksheet.getRow(10 + index);
+
+    row.values = [
+      data.MaDoiTra,
+      order.MaHienThi || order.MaDonHang || "",
+      order.TenNguoiNhan || "",
+      order.SDT || "",
+      product.TenSanPham || "Sản phẩm không xác định",
+      variant.TenBienThe || "",
+      data.SoLuongDoiTra || 0,
+      getReturnRequestTypeText(data.LoaiYeuCau),
+      getReturnConditionText(data.TinhTrangHangTra),
+      getReturnStatusText(data.TrangThai),
+      getReturnProcessTypeText(data.HinhThucXuLy),
+      Number(data.SoTienHoan || 0),
+      data.NgayYeuCau ? formatDateTimeVN(data.NgayYeuCau) : "",
+      data.LyDo || "",
+    ];
+
+    row.height = 36;
+    styleDataRow(row, [1, 2, 4, 7, 8, 9, 10, 11, 12, 13]);
+  });
+
+  worksheet.getColumn(12).numFmt = '#,##0" VNĐ"';
+  worksheet.autoFilter = "A9:N9";
+
+  const lastRow = worksheet.lastRow?.number || 9;
+  worksheet.mergeCells(`A${lastRow + 2}:N${lastRow + 2}`);
+  const totalCell = worksheet.getCell(`A${lastRow + 2}`);
+  totalCell.value = `Tổng số yêu cầu đổi trả: ${returns.length}`;
+  totalCell.font = {
+    name: "Arial",
+    size: 12,
+    bold: true,
+    color: { argb: "FF173B63" },
+  };
+  totalCell.alignment = {
+    vertical: "middle",
+    horizontal: "right",
+  };
+
+  return await workbook.xlsx.writeBuffer();
 };

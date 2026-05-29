@@ -3,6 +3,7 @@ import {Button, DatePicker, Input, message, Rate, Select, Table, Tooltip,} from 
 import {DownloadOutlined, SearchOutlined} from "@ant-design/icons";
 import dayjs from "dayjs";
 import axios from "axios";
+import { exportExcelReport } from "../Utility/excelExport";
 import styles from "./AdminTable.module.css";
 
 const {RangePicker} = DatePicker;
@@ -121,49 +122,20 @@ const AdminReviews = () => {
         try {
             setLoadingExport(true);
 
-            let startDate = "";
-            let endDate = "";
-
-            if (dateRange && dateRange.length === 2) {
-                startDate = dateRange[0].format("YYYY-MM-DD");
-                endDate = dateRange[1].format("YYYY-MM-DD");
-            }
-
-            const params = {
-                search: searchText,
-                ...(filterRating !== null &&
-                    filterRating !== undefined && {rating: filterRating}),
-                ...(filterStatus !== null &&
-                    filterStatus !== undefined && {status: filterStatus}),
-                ...(startDate && {startDate}),
-                ...(endDate && {endDate}),
-            };
-
-            const queryParams = new URLSearchParams(params);
-            const url = `${API_BASE}/export?${queryParams.toString()}`;
-
-            const response = await axios.get(url, {
-                responseType: "blob",
-                withCredentials: true,
+            await exportExcelReport({
+                url: `${API_BASE}/export`,
+                params: {
+                    search: searchText,
+                    ...(filterRating !== null &&
+                        filterRating !== undefined && {rating: filterRating}),
+                    ...(filterStatus !== null &&
+                        filterStatus !== undefined && {status: filterStatus}),
+                    startDate: dateRange?.[0]?.format("YYYY-MM-DD"),
+                    endDate: dateRange?.[1]?.format("YYYY-MM-DD"),
+                },
+                axiosConfig: {withCredentials: true},
+                fileName: `Bao_Cao_Danh_Gia_${dayjs().format("DDMMYYYY_HHmm")}.xlsx`,
             });
-
-            const blob = new Blob([response.data], {
-                type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            });
-
-            const downloadUrl = window.URL.createObjectURL(blob);
-
-            const link = document.createElement("a");
-            link.href = downloadUrl;
-            link.setAttribute(
-                "download",
-                `Bao_Cao_Danh_Gia_${dayjs().format("DDMMYYYY_HHmm")}.xlsx`,
-            );
-
-            document.body.appendChild(link);
-            link.click();
-            link.parentNode.removeChild(link);
-            window.URL.revokeObjectURL(downloadUrl);
 
             message.success("Xuất báo cáo thành công!");
         } catch (error) {

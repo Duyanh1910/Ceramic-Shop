@@ -37,6 +37,7 @@ import {
   YAxis,
 } from "recharts";
 import axios from "axios";
+import { exportExcelReport } from "../Utility/excelExport";
 import styles from "./AdminReports.module.css";
 
 const API_BASE =
@@ -272,8 +273,9 @@ export default function AdminReports() {
     setExportingRevenue(true);
     try {
       const { startDate, endDate } = getDateRange();
-      const response = await axios.get(`${API_BASE}/total-revenue/export`, {
-        ...axiosConfig,
+      await exportExcelReport({
+        url: `${API_BASE}/total-revenue/export`,
+        axiosConfig,
         params: {
           mode,
           year,
@@ -282,21 +284,9 @@ export default function AdminReports() {
           startDate,
           endDate,
         },
-        responseType: "arraybuffer",
+        fileName: `bao-cao-doanh-thu-${Date.now()}.xlsx`,
       });
 
-      const blob = new Blob([response.data], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      });
-      const downloadUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-
-      link.href = downloadUrl;
-      link.setAttribute("download", `bao-cao-doanh-thu-${Date.now()}.xlsx`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(downloadUrl);
       message.success("Đã tải báo cáo doanh thu.");
     } catch (error) {
       console.error("Lỗi khi xuất báo cáo doanh thu:", error);
@@ -309,27 +299,13 @@ export default function AdminReports() {
   const downloadMostViewedReport = async () => {
     setExportingMostViewed(true);
     try {
-      const response = await axios.get(`${API_BASE}/most-viewed/export`, {
-        ...axiosConfig,
+      await exportExcelReport({
+        url: `${API_BASE}/most-viewed/export`,
+        axiosConfig,
         params: { order: mostViewedOrder },
-        responseType: "arraybuffer",
+        fileName: `bao-cao-san-pham-xem-nhieu-${Date.now()}.xlsx`,
       });
 
-      const blob = new Blob([response.data], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      });
-      const downloadUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-
-      link.href = downloadUrl;
-      link.setAttribute(
-        "download",
-        `bao-cao-san-pham-xem-nhieu-${Date.now()}.xlsx`,
-      );
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(downloadUrl);
       message.success("Đã tải báo cáo sản phẩm xem nhiều.");
     } catch (error) {
       console.error("Lỗi khi xuất báo cáo sản phẩm xem nhiều:", error);

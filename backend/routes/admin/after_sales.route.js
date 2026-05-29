@@ -9,6 +9,7 @@ import {
 } from "../../controllers/admin/after_sales/warranty.controller.js";
 import {
   createRisk,
+  exportRisksXlsx,
   getAllRisks,
   getRiskById,
   updateRisk,
@@ -16,6 +17,7 @@ import {
 } from "../../controllers/admin/after_sales/risk.controller.js";
 import {
   confirmReturnRefund,
+  exportReturnsXlsx,
   getAllReturns,
   getReturnById,
   getReturnVariantOptions,
@@ -33,6 +35,7 @@ router.patch("/warranties/:id/status", updateWarrantyStatus);
 router.post("/warranties/:id/replace-product", replaceWarrantyProduct);
 
 router.get("/returns", getAllReturns);
+router.get("/returns/export", exportReturnsXlsx);
 router.get("/returns/variants", getReturnVariantOptions);
 router.get("/returns/:id", getReturnById);
 router.patch("/returns/:id/status", updateReturnStatus);
@@ -40,6 +43,7 @@ router.post("/returns/:id/process", processReturn);
 router.patch("/returns/:id/confirm-refund", confirmReturnRefund);
 
 router.get("/risks", getAllRisks);
+router.get("/risks/export", exportRisksXlsx);
 router.post("/risks", createRisk);
 router.get("/risks/:id", getRiskById);
 router.patch("/risks/:id", updateRisk);

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Layout, Form, Input, Button, Avatar, message, Upload, Divider } from 'antd';
 import { UserOutlined, UploadOutlined, ProfileOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
@@ -31,24 +31,9 @@ function AdminProfile() {
   const roleLabel = normalizedRole === 'admin' ? 'Quản trị viên' : 'Nhân viên';
   const avatarInitial = (profileName || 'A').trim().charAt(0).toUpperCase();
 
-  useEffect(() => {
-    if (!token) {
-      navigate('/login');
-      return;
-    }
-
-    fetchAdminProfile();
-  }, [token, navigate]);
-
-  const handleAvatarError = () => {
-    setAvatarUrl('');
-    return false;
-  };
-
-  const fetchAdminProfile = async () => {
+  const fetchAdminProfile = useCallback(async () => {
     try {
-      // 1. Thử đổi endpoint từ /auth/me sang /staffs/me cho đồng bộ với hàm Update ở dưới
-      const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/staffs/me', {
+      const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/me', {
         headers: { Authorization: `Bearer ${token}` },
         withCredentials: true
       });
@@ -81,16 +66,39 @@ function AdminProfile() {
     } catch (error) {
       console.error("Lỗi khi lấy thông tin Admin:", error);
       
-      // 2. Chỉ đá văng ra Login nếu lỗi là 401 (Hết hạn Token) hoặc 403 (Sai quyền)
       if (error.response && (error.response.status === 401 || error.response.status === 403)) {
         message.error('Phiên đăng nhập đã hết hạn hoặc không có quyền. Vui lòng đăng nhập lại!');
-        localStorage.clear();
+        [
+          'admin_token',
+          'admin_session_active',
+          'admin_role',
+          'admin_username',
+          'admin_token_expiry',
+          'token',
+          'role',
+          'username',
+        ].forEach((key) => localStorage.removeItem(key));
         navigate('/login');
       } else {
-        // Nếu lỗi 404 (sai URL) hoặc 500 (sập server) thì báo lỗi chứ không văng ra ngoài
         message.error('Không thể tải thông tin hồ sơ: ' + (error.response?.data?.message || 'Lỗi mạng'));
       }
     }
+  }, [form, navigate, token]);
+
+  useEffect(() => {
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+
+    // Fetch is async; state updates happen after the API response.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchAdminProfile();
+  }, [token, navigate, fetchAdminProfile]);
+
+  const handleAvatarError = () => {
+    setAvatarUrl('');
+    return false;
   };
 
   const handleAvatarChange = async (info) => {

@@ -13,6 +13,15 @@ import {
   NOTIFICATION_TYPES,
   safeCreateAdminNotificationService,
 } from "./adminNotifications.service.js";
+import {
+  buildDateRangeText,
+  buildReportHeader,
+  createReportWorkbook,
+  createReportWorksheet,
+  formatDateTimeVN,
+  styleDataRow,
+  styleHeaderRow,
+} from "../utils/excelReport.js";
 
 export const RISK_STATUS = {
   UNHANDLED: 0,
@@ -39,6 +48,40 @@ export const RISK_SOURCE = {
 const VALID_RISK_STATUSES = Object.values(RISK_STATUS);
 const VALID_RISK_LEVELS = Object.values(RISK_LEVEL);
 const VALID_RISK_SOURCES = Object.values(RISK_SOURCE);
+
+const getRiskStatusText = (value) => {
+  const statusNumber = Number(value);
+
+  if (statusNumber === RISK_STATUS.UNHANDLED) return "Chưa xử lý";
+  if (statusNumber === RISK_STATUS.RESOLVED) return "Đã xử lý";
+  if (statusNumber === RISK_STATUS.PROCESSING) return "Đang xử lý";
+  if (statusNumber === RISK_STATUS.IGNORED) return "Bỏ qua";
+
+  return "Không rõ";
+};
+
+const getRiskLevelText = (value) => {
+  const levelMap = {
+    [RISK_LEVEL.THAP]: "Thấp",
+    [RISK_LEVEL.BINH_THUONG]: "Bình thường",
+    [RISK_LEVEL.CAO]: "Cao",
+    [RISK_LEVEL.KHAN_CAP]: "Khẩn cấp",
+  };
+
+  return levelMap[value] || value || "";
+};
+
+const getRiskSourceText = (value) => {
+  const sourceMap = {
+    [RISK_SOURCE.HE_THONG]: "Hệ thống",
+    [RISK_SOURCE.NHAN_VIEN]: "Nhân viên",
+    [RISK_SOURCE.KHACH_HANG]: "Khách hàng",
+    [RISK_SOURCE.THANH_TOAN]: "Thanh toán",
+    [RISK_SOURCE.VAN_CHUYEN]: "Vận chuyển",
+  };
+
+  return sourceMap[value] || value || "";
+};
 
 const normalizePositiveInteger = (value, message) => {
   const numberValue = Number(value);
@@ -427,4 +470,153 @@ export const updateRiskStatusService = async (
   }
 
   return await getRiskByIdService(MaRuiRo);
+};
+
+export const exportRiskXlsxService = async ({
+  search = "",
+  status,
+  order = "DESC",
+  level,
+  source,
+  startDate,
+  endDate,
+} = {}) => {
+  const sortOrder = String(order).toUpperCase() === "ASC" ? "ASC" : "DESC";
+  const keyword = String(search || "").trim();
+  const riskWhere = {};
+
+  if (
+    status !== "all" &&
+    status !== undefined &&
+    status !== null &&
+    status !== ""
+  ) {
+    riskWhere.TrangThai = normalizeRiskStatus(status);
+  }
+
+  if (level && level !== "all") {
+    riskWhere.MucDo = normalizeRiskLevel(level);
+  }
+
+  if (source && source !== "all") {
+    riskWhere.NguonPhatHien = normalizeRiskSource(source);
+  }
+
+  if (startDate || endDate) {
+    riskWhere.NgayPhatHien = {};
+
+    if (startDate) {
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      riskWhere.NgayPhatHien[Op.gte] = start;
+    }
+
+    if (endDate) {
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      riskWhere.NgayPhatHien[Op.lte] = end;
+    }
+  }
+
+  if (keyword) {
+    const numericKeyword = /^\d+$/.test(keyword) ? Number(keyword) : null;
+
+    riskWhere[Op.or] = [
+      ...(numericKeyword !== null ? [{ MaRuiRo: numericKeyword }] : []),
+      { LoaiRuiRo: { [Op.like]: `%${keyword}%` } },
+      { MucDo: { [Op.like]: `%${keyword}%` } },
+      { NguonPhatHien: { [Op.like]: `%${keyword}%` } },
+      { MoTa: { [Op.like]: `%${keyword}%` } },
+      { GhiChu: { [Op.like]: `%${keyword}%` } },
+      { "$DonHang.MaHienThi$": { [Op.like]: `%${keyword}%` } },
+      { "$DonHang.TenNguoiNhan$": { [Op.like]: `%${keyword}%` } },
+      { "$DonHang.SDT$": { [Op.like]: `%${keyword}%` } },
+    ];
+  }
+
+  const risks = await RiskModel.findAll({
+    where: riskWhere,
+    distinct: true,
+    col: "MaRuiRo",
+    subQuery: false,
+    order: [["MaRuiRo", sortOrder]],
+    include: getRiskListInclude(),
+  });
+
+  const workbook = createReportWorkbook();
+  const worksheet = createReportWorksheet(workbook, "Danh sách rủi ro", {
+    columnWidths: [14, 20, 24, 18, 28, 18, 20, 20, 24, 24, 24, 42],
+    rowHeights: [28, 28, 26, 14, 34, 22, 22, 14],
+  });
+
+  await buildReportHeader({
+    workbook,
+    worksheet,
+    lastColumn: "L",
+    title: "BÁO CÁO DANH SÁCH RỦI RO",
+    subtitle: buildDateRangeText(startDate, endDate),
+  });
+
+  const headers = [
+    "Mã rủi ro",
+    "Mã đơn hàng",
+    "Khách hàng",
+    "Số điện thoại",
+    "Loại rủi ro",
+    "Mức độ",
+    "Nguồn phát hiện",
+    "Trạng thái",
+    "Ngày phát hiện",
+    "Ngày xử lý",
+    "Nhân viên phụ trách",
+    "Mô tả / ghi chú",
+  ];
+
+  const headerRow = worksheet.getRow(9);
+  headerRow.values = headers;
+  styleHeaderRow(headerRow, 32);
+
+  risks.forEach((item, index) => {
+    const data = item.get({ plain: true });
+    const orderData = data.DonHang || {};
+    const staff = data.NhanVienPhuTrach || {};
+    const row = worksheet.getRow(10 + index);
+
+    row.values = [
+      data.MaRuiRo,
+      orderData.MaHienThi || orderData.MaDonHang || "",
+      orderData.TenNguoiNhan || "",
+      orderData.SDT || "",
+      data.LoaiRuiRo || "",
+      getRiskLevelText(data.MucDo),
+      getRiskSourceText(data.NguonPhatHien),
+      getRiskStatusText(data.TrangThai),
+      data.NgayPhatHien ? formatDateTimeVN(data.NgayPhatHien) : "",
+      data.NgayXuLy ? formatDateTimeVN(data.NgayXuLy) : "",
+      staff.TenNhanVien || data.MaNhanVienPhuTrach || "",
+      [data.MoTa, data.GhiChu].filter(Boolean).join(" | "),
+    ];
+
+    row.height = 36;
+    styleDataRow(row, [1, 2, 4, 6, 7, 8, 9, 10, 11]);
+  });
+
+  worksheet.autoFilter = "A9:L9";
+
+  const lastRow = worksheet.lastRow?.number || 9;
+  worksheet.mergeCells(`A${lastRow + 2}:L${lastRow + 2}`);
+  const totalCell = worksheet.getCell(`A${lastRow + 2}`);
+  totalCell.value = `Tổng số rủi ro: ${risks.length}`;
+  totalCell.font = {
+    name: "Arial",
+    size: 12,
+    bold: true,
+    color: { argb: "FF173B63" },
+  };
+  totalCell.alignment = {
+    vertical: "middle",
+    horizontal: "right",
+  };
+
+  return await workbook.xlsx.writeBuffer();
 };

@@ -22,6 +22,7 @@ import {
 } from "antd";
 import {
   CheckCircleOutlined,
+  DownloadOutlined,
   EyeOutlined,
   ReloadOutlined,
   RollbackOutlined,
@@ -30,6 +31,7 @@ import {
 import axios from "axios";
 import dayjs from "dayjs";
 import { useSearchParams } from "react-router-dom";
+import { exportExcelReport } from "../Utility/excelExport";
 import styles from "./AdminReturns.module.css";
 
 const { Title, Text } = Typography;
@@ -192,6 +194,7 @@ export default function AdminReturns() {
   const [updating, setUpdating] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [confirmingRefund, setConfirmingRefund] = useState(false);
+  const [loadingExport, setLoadingExport] = useState(false);
 
   const [variantOptions, setVariantOptions] = useState([]);
   const [variantLoading, setVariantLoading] = useState(false);
@@ -444,6 +447,30 @@ export default function AdminReturns() {
     setPage(1);
   };
 
+  const handleExportReport = async () => {
+    setLoadingExport(true);
+
+    try {
+      await exportExcelReport({
+        url: `${API_BASE}/admin/after_sales/returns/export`,
+        params: {
+          search: search.trim(),
+          status: status === ALL_STATUS ? undefined : status,
+          type: type === ALL_TYPE ? undefined : type,
+        },
+        axiosConfig: authConfig(),
+        fileName: `Bao_Cao_Doi_Tra_${dayjs().format("DDMMYYYY_HHmm")}.xlsx`,
+      });
+
+      message.success("Tải báo cáo đổi trả thành công!");
+    } catch (err) {
+      console.error(err);
+      message.error("Có lỗi xảy ra khi tải báo cáo đổi trả!");
+    } finally {
+      setLoadingExport(false);
+    }
+  };
+
   const columns = [
     {
       title: "Sản phẩm",
@@ -600,6 +627,15 @@ export default function AdminReturns() {
 
           <Button icon={<ReloadOutlined />} onClick={handleReload}>
             Tải lại
+          </Button>
+
+          <Button
+            type="primary"
+            icon={<DownloadOutlined />}
+            onClick={handleExportReport}
+            loading={loadingExport}
+          >
+            Xuất báo cáo
           </Button>
         </Space>
       </div>

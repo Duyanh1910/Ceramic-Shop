@@ -1,5 +1,6 @@
 import {
   confirmReturnRefundAdminService,
+  exportReturnXLSXService,
   getAllReturnsAdminService,
   getReturnByIdAdminService,
   getReturnVariantOptionsAdminService,
@@ -157,6 +158,24 @@ export const confirmReturnRefund = async (req, res, next) => {
       message: "Xác nhận hoàn tiền thành công!",
       result,
     });
+  } catch (err) {
+    console.error(err);
+    next(err);
+  }
+};
+
+export const exportReturnsXlsx = async (req, res, next) => {
+  try {
+    const buffer = await exportReturnXLSXService(req.query);
+    const fileName = `bao-cao-doi-tra-${Date.now()}.xlsx`;
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    );
+    res.setHeader("Content-Disposition", `attachment; filename=${fileName}`);
+
+    return res.status(200).send(buffer);
   } catch (err) {
     console.error(err);
     next(err);
