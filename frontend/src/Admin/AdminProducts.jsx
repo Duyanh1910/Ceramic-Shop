@@ -145,14 +145,18 @@ export default function AdminProducts() {
     } catch {}
   };
 
-  // ---> THÊM MỚI: Hàm lấy danh sách nhà cung cấp
   const fetchSuppliers = async () => {
     try {
-      // Lưu ý: Nếu đường dẫn API nhà cung cấp của bạn khác (ví dụ: /admin/suppliers), hãy sửa lại ở đây nhé
       const res = await axios.get(`${API_BASE}/admin/suppliers`, axiosConfig);
-      setSuppliers(res.data?.result || []);
+      
+      // Lấy data mảng. Nếu API trả về phân trang thì lấy result.data, nếu không thì lấy result
+      const supplierData = res.data?.result?.data || res.data?.result || [];
+      
+      // Đảm bảo set biến suppliers luôn là mảng, dù có lỗi cấu trúc
+      setSuppliers(Array.isArray(supplierData) ? supplierData : []);
     } catch {
-      console.log("Chưa có API lấy danh sách nhà cung cấp hoặc lỗi.");
+      console.log("Lỗi hoặc chưa có API lấy danh sách nhà cung cấp.");
+      setSuppliers([]); // Lỗi thì trả về mảng rỗng để không bị sập hàm .map
     }
   };
 
