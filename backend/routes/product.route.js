@@ -9,10 +9,9 @@ const router = express.Router();
 
 router.get("/", getProducts);
 
-router.get("/:id", async (req, res) => {
+router.get("/:id/trace", async (req, res) => {
   try {
     const data = await bcXemSanPham(req.params.id);
-
     return res.json({ success: true, result: data });
   } catch (err) {
     return res.status(404).json({
