@@ -16,10 +16,8 @@ function Chibi({ passwordVisible, loginSuccess, loginFailed, defaultMsg, success
       let link = document.querySelector(`link[href="${src}"]`);
       if (!link) {
         link = document.createElement('link');
-        link.rel = 'preload';
+        link.rel = 'prefetch'; 
         link.href = src;
-        link.as = 'fetch';
-        link.crossOrigin = 'anonymous';
         document.head.appendChild(link);
       }
     });
