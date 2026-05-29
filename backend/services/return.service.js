@@ -13,6 +13,10 @@ import {
 } from "../models/index.js";
 import ErrorHandler from "../utils/error_handler.js";
 import { Op } from "sequelize";
+import {
+  NOTIFICATION_TYPES,
+  safeCreateAdminNotificationService,
+} from "./adminNotifications.service.js";
 
 export const RETURN_STATUS = {
   WAITING: 0,
@@ -328,7 +332,10 @@ const createRiskIfNeeded = async ({
   const riskInfo = riskTypeMap[returnRequest.LoaiYeuCau];
 
   if (!riskInfo) {
-    return null;
+    return {
+      risk: null,
+      created: false,
+    };
   }
 
   const existed = await RiskModel.findOne({
@@ -343,10 +350,13 @@ const createRiskIfNeeded = async ({
   });
 
   if (existed) {
-    return existed;
+    return {
+      risk: existed,
+      created: false,
+    };
   }
 
-  return await RiskModel.create(
+  const risk = await RiskModel.create(
     {
       MaDonHang: order.MaDonHang,
       LoaiRuiRo: riskInfo.LoaiRuiRo,
@@ -359,6 +369,11 @@ const createRiskIfNeeded = async ({
     },
     { transaction },
   );
+
+  return {
+    risk,
+    created: true,
+  };
 };
 
 export const getMyReturnsService = async (idAccount) => {
@@ -507,6 +522,13 @@ export const createReturnRequestService = async (idAccount, payload) => {
 
     await transaction.commit();
 
+    await safeCreateAdminNotificationService({
+      LoaiThongBao: NOTIFICATION_TYPES.RETURN_REQUESTED,
+      TieuDe: "Yeu cau doi tra moi",
+      NoiDung: `Yeu cau doi tra #${returnRequest.MaDoiTra} cua don ${order.MaHienThi} vua duoc tao`,
+      DuongDan: `/admin/returns`,
+    });
+
     return await getMyReturnByIdService(idAccount, returnRequest.MaDoiTra);
   } catch (err) {
     if (!transaction.finished) {
@@ -570,6 +592,13 @@ export const cancelReturnRequestService = async (idAccount, MaDoiTra, reason) =>
     );
 
     await transaction.commit();
+
+    await safeCreateAdminNotificationService({
+      LoaiThongBao: NOTIFICATION_TYPES.RETURN_STATUS_UPDATED,
+      TieuDe: "Doi tra da cap nhat",
+      NoiDung: `Yeu cau doi tra #${MaDoiTra} da duoc khach hang huy`,
+      DuongDan: `/admin/returns`,
+    });
 
     return await getMyReturnByIdService(idAccount, MaDoiTra);
   } catch (err) {
@@ -802,6 +831,14 @@ export const updateReturnStatusAdminService = async (
 
     await transaction.commit();
 
+    await safeCreateAdminNotificationService({
+      LoaiThongBao: NOTIFICATION_TYPES.RETURN_STATUS_UPDATED,
+      MaNhanVien: returnRequest.MaNhanVienXuLy,
+      TieuDe: "Doi tra da cap nhat",
+      NoiDung: `Yeu cau doi tra #${MaDoiTra} da chuyen trang thai`,
+      DuongDan: `/admin/returns`,
+    });
+
     return await getReturnByIdAdminService(MaDoiTra);
   } catch (err) {
     if (!transaction.finished) {
@@ -1031,7 +1068,7 @@ export const processReturnAdminService = async (MaDoiTra, payload) => {
       });
     }
 
-    await createRiskIfNeeded({
+    const riskResult = await createRiskIfNeeded({
       returnRequest,
       order,
       note,
@@ -1066,6 +1103,24 @@ export const processReturnAdminService = async (MaDoiTra, payload) => {
     }
 
     await transaction.commit();
+
+    await safeCreateAdminNotificationService({
+      LoaiThongBao: NOTIFICATION_TYPES.RETURN_STATUS_UPDATED,
+      MaNhanVien: returnRequest.MaNhanVienXuLy,
+      TieuDe: "Doi tra da xu ly",
+      NoiDung: `Yeu cau doi tra #${MaDoiTra} da duoc xu ly`,
+      DuongDan: `/admin/returns`,
+    });
+
+    if (riskResult.created && riskResult.risk) {
+      await safeCreateAdminNotificationService({
+        LoaiThongBao: NOTIFICATION_TYPES.RISK_CREATED,
+        MaNhanVien: riskResult.risk.MaNhanVienPhuTrach,
+        TieuDe: "Rui ro moi",
+        NoiDung: `Rui ro #${riskResult.risk.MaRuiRo} duoc tao tu doi tra #${MaDoiTra}`,
+        DuongDan: `/admin/risks`,
+      });
+    }
 
     return await getReturnByIdAdminService(MaDoiTra);
   } catch (err) {
@@ -1147,6 +1202,14 @@ export const confirmReturnRefundAdminService = async (
     );
 
     await transaction.commit();
+
+    await safeCreateAdminNotificationService({
+      LoaiThongBao: NOTIFICATION_TYPES.RETURN_STATUS_UPDATED,
+      MaNhanVien: returnRequest.MaNhanVienXuLy,
+      TieuDe: "Hoan tien doi tra da xac nhan",
+      NoiDung: `Yeu cau doi tra #${MaDoiTra} da hoan tat hoan tien`,
+      DuongDan: `/admin/returns`,
+    });
 
     return await getReturnByIdAdminService(MaDoiTra);
   } catch (err) {

@@ -21,7 +21,11 @@ import { literal, Op } from "sequelize";
 import { generateWarrantiesForOrderService } from "./warranty.service.js";
 import calculateShippingFee from "../utils/orders/calculate_shipping_fee.js";
 import calculateOrderDiscount from "../utils/orders/calculate_order_discount.js";
-import { emitToAdmin, emitToCustomer } from "../config/socketIO.js";
+import { emitToCustomer } from "../config/socketIO.js";
+import {
+  NOTIFICATION_TYPES,
+  safeCreateAdminNotificationService,
+} from "./adminNotifications.service.js";
 
 export const ORDER_STATUS = {
   PENDING: 0,
@@ -319,15 +323,11 @@ export const checkOutService = async (
 
     await transaction.commit();
 
-    emitToAdmin("admin:order_created", {
-      type: "ORDER_CREATED",
-      title: "Có đơn hàng mới",
-      message: `Đơn ${newOrder.MaHienThi} vừa được tạo`,
-      redirectUrl: `/admin?orderCode=${newOrder.MaHienThi}`,
-      order: {
-        MaDonHang: newOrder.MaDonHang,
-        MaHienThi: newOrder.MaHienThi,
-      },
+    await safeCreateAdminNotificationService({
+      LoaiThongBao: NOTIFICATION_TYPES.ORDER_CREATED,
+      TieuDe: "Co don hang moi",
+      NoiDung: `Don ${newOrder.MaHienThi} vua duoc tao`,
+      DuongDan: `/admin?orderCode=${newOrder.MaHienThi}`,
     });
 
     return {
@@ -542,9 +542,12 @@ export const cancelOrderService = async (idAccount, orderCode, reason) => {
       "customer:order_canceled",
       orderCanceledPayload,
     );
-    emitToAdmin("admin:order_canceled", {
-      ...orderCanceledPayload,
-      redirectUrl: orderCanceledPayload.adminRedirectUrl,
+
+    await safeCreateAdminNotificationService({
+      LoaiThongBao: NOTIFICATION_TYPES.ORDER_CANCELED,
+      TieuDe: "Don hang da huy",
+      NoiDung: `Don ${order.MaHienThi} da duoc khach hang huy`,
+      DuongDan: orderCanceledPayload.adminRedirectUrl,
     });
 
     return true;
@@ -714,6 +717,7 @@ export const adminUpdateOrderStatusService = async (
       throw new ErrorHandler("Không tìm thấy đơn hàng này!", 400);
     }
     const currentStatus = Number(order.TrangThaiDonHang);
+    const currentPaymentStatus = Number(order.TrangThaiThanhToan);
     const hasStatusUpdate = newStatus !== undefined && newStatus !== null;
     const hasPaymentUpdate =
       newPaymentStatus !== undefined && newPaymentStatus !== null;
@@ -897,10 +901,6 @@ Thông tin liên hệ:
       "customer:order_updated",
       orderStatusPayload,
     );
-    emitToAdmin("admin:order_updated", {
-      ...orderStatusPayload,
-      redirectUrl: orderStatusPayload.adminRedirectUrl,
-    });
 
     if (Number(order.TrangThaiDonHang) === ORDER_STATUS.CANCELED) {
       const orderCanceledPayload = {
@@ -916,9 +916,22 @@ Thông tin liên hệ:
         "customer:order_canceled",
         orderCanceledPayload,
       );
-      emitToAdmin("admin:order_canceled", {
-        ...orderCanceledPayload,
-        redirectUrl: orderCanceledPayload.adminRedirectUrl,
+
+      await safeCreateAdminNotificationService({
+        LoaiThongBao: NOTIFICATION_TYPES.ORDER_CANCELED,
+        TieuDe: "Don hang da huy",
+        NoiDung: `Don ${order.MaHienThi} da bi admin huy`,
+        DuongDan: orderCanceledPayload.adminRedirectUrl,
+      });
+    } else if (
+      (hasStatusUpdate && nextStatus !== currentStatus) ||
+      (hasPaymentUpdate && Number(order.TrangThaiThanhToan) !== currentPaymentStatus)
+    ) {
+      await safeCreateAdminNotificationService({
+        LoaiThongBao: NOTIFICATION_TYPES.ORDER_STATUS_UPDATED,
+        TieuDe: "Trang thai don hang da thay doi",
+        NoiDung: `Don ${order.MaHienThi} da duoc cap nhat trang thai`,
+        DuongDan: orderStatusPayload.adminRedirectUrl,
       });
     }
   } catch (err) {

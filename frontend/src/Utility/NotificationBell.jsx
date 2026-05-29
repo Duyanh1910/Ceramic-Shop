@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Badge, Tooltip } from "antd";
+import axios from "axios";
 import {
   BellOutlined,
   ShoppingOutlined,
@@ -13,6 +14,7 @@ import styles from "./NotificationBell.module.css";
 
 const STORAGE_KEY = "admin_notifications";
 const MAX_STORED = 50;
+const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1";
 
 const EVENT_META = {
   ORDER_CREATED: {
@@ -30,7 +32,32 @@ const EVENT_META = {
     color: "#ef4444",
     bg: "rgba(239,68,68,0.10)",
   },
-  ORDER_RETURN: {
+  WARRANTY_REQUESTED: {
+    icon: <BellOutlined />,
+    color: "#7c3aed",
+    bg: "rgba(124,58,237,0.10)",
+  },
+  WARRANTY_STATUS_UPDATED: {
+    icon: <BellOutlined />,
+    color: "#7c3aed",
+    bg: "rgba(124,58,237,0.10)",
+  },
+  RISK_CREATED: {
+    icon: <CloseCircleOutlined />,
+    color: "#dc2626",
+    bg: "rgba(220,38,38,0.10)",
+  },
+  RISK_STATUS_UPDATED: {
+    icon: <CloseCircleOutlined />,
+    color: "#dc2626",
+    bg: "rgba(220,38,38,0.10)",
+  },
+  RETURN_REQUESTED: {
+    icon: <SwapOutlined />,
+    color: "#f59e0b",
+    bg: "rgba(245,158,11,0.10)",
+  },
+  RETURN_STATUS_UPDATED: {
     icon: <SwapOutlined />,
     color: "#f59e0b",
     bg: "rgba(245,158,11,0.10)",
@@ -81,6 +108,32 @@ export default function NotificationBell() {
 
   const unread = notifications.filter((n) => !n.isRead).length;
 
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const res = await axios.get(
+          `${API_BASE}/admin/notifications?page=1&limit=${MAX_STORED}`,
+          { withCredentials: true },
+        );
+        const rows = res.data?.result?.data || [];
+        const mapped = rows.map((item) => ({
+          id: item.MaThongBao,
+          type: item.LoaiThongBao,
+          title: item.TieuDe,
+          message: item.NoiDung,
+          redirectUrl: item.DuongDan || "/admin/notifications",
+          isRead: Number(item.DaDoc) === 1,
+          createdAt: item.NgayTao,
+        }));
+        setNotifications(mapped);
+      } catch (err) {
+        console.warn("Cannot load admin notifications:", err.message);
+      }
+    };
+
+    fetchNotifications();
+  }, []);
+
   // ── Đồng bộ state → localStorage mỗi khi list thay đổi ──────────
   useEffect(() => {
     saveToStorage(notifications);
@@ -96,7 +149,7 @@ export default function NotificationBell() {
       setTimeout(() => setAnimating(false), 700);
 
       setNotifications((prev) => {
-        const next = [item, ...prev].slice(0, MAX_STORED);
+        const next = [item, ...prev.filter((n) => n.id !== item.id)].slice(0, MAX_STORED);
         saveToStorage(next);
         return next;
       });
@@ -124,7 +177,12 @@ export default function NotificationBell() {
   }, []);
 
   // ── Đánh dấu tất cả đã đọc ───────────────────────────────────────
-  const markAllRead = () => {
+  const markAllRead = async () => {
+    try {
+      await axios.patch(`${API_BASE}/admin/notifications/read-all`, {}, { withCredentials: true });
+    } catch (err) {
+      console.warn("Cannot mark notifications as read:", err.message);
+    }
     setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
   };
 
@@ -135,7 +193,14 @@ export default function NotificationBell() {
   };
 
   // ── Click vào 1 thông báo ─────────────────────────────────────────
-  const handleItemClick = (item) => {
+  const handleItemClick = async (item) => {
+    if (Number.isInteger(Number(item.id))) {
+      try {
+        await axios.patch(`${API_BASE}/admin/notifications/${item.id}/read`, {}, { withCredentials: true });
+      } catch (err) {
+        console.warn("Cannot mark notification as read:", err.message);
+      }
+    }
     setNotifications((prev) =>
       prev.map((n) => (n.id === item.id ? { ...n, isRead: true } : n))
     );

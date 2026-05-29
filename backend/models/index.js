@@ -42,6 +42,7 @@ import ReturnProcessModel from "./return_process.model.js";
 import SupplierModel from "./supply/supplier.model.js";
 import ReceivedNoteDetailModel from "./supply/received_note_detail.model.js";
 import ReceivedNoteModel from "./supply/received_note.model.js";
+import NotificationsModel from "./notification.model.js";
 // --- QUAN HỆ TÀI KHOẢN & PHÂN QUYỀN ---
 RoleModel.hasMany(AccountModel, {
   foreignKey: "MaQuyen",
@@ -325,6 +326,17 @@ InventoryHistoryModel.belongsTo(ReceivedNoteModel, {
   constraints: false,
   as: "PhieuNhap",
 });
+
+// --- QUAN HỆ THÔNG BÁO ---
+StaffModel.hasMany(NotificationsModel, {
+  foreignKey: "MaNhanVien",
+  as: "ThongBao",
+});
+
+NotificationsModel.belongsTo(StaffModel, {
+  foreignKey: "MaNhanVien",
+  as: "NhanVien",
+});
 export {
   sequelize,
   AccountModel,
@@ -362,4 +374,5 @@ export {
   ReceivedNoteDetailModel,
   ReceivedNoteModel,
   SupplierModel,
+  NotificationsModel,
 };

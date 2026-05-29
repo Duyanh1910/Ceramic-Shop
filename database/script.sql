@@ -380,6 +380,25 @@ create table NhanVien
 )
     collate = utf8mb4_unicode_ci;
 
+create table ThongBao
+(
+    MaThongBao   int auto_increment
+        primary key,
+    LoaiThongBao varchar(50)                        not null,
+    MaNhanVien   int                                null,
+    TieuDe       varchar(255)                       not null,
+    NoiDung      varchar(255)                       not null,
+    DaDoc        tinyint  default 0                 not null,
+    DuongDan     varchar(255)                       null,
+    NgayTao      datetime default CURRENT_TIMESTAMP null,
+    constraint fk_thongbao_nhanvien
+        foreign key (MaNhanVien) references NhanVien (MaNhanVien)
+)
+    collate = utf8mb4_unicode_ci;
+
+create index idx_thongbao_loai_doc_ngaytao
+    on ThongBao (LoaiThongBao, DaDoc, NgayTao);
+
 create table DoiTra
 (
     MaDoiTra         int auto_increment

@@ -67,6 +67,11 @@ const STAFF_MENU = [
         icon: <CommentOutlined/>,
         label: "Phản hồi khách hàng",
     },
+    {
+        key: "/admin/notifications",
+        icon: <AlertOutlined/>,
+        label: "Thông báo",
+    },
 ];
 
 const ADMIN_MENU = [
@@ -160,6 +165,36 @@ export default function AdminLayout() {
                 icon: <CloseCircleOutlined style={{color: "#ef4444", fontSize: 20}}/>,
                 style: {borderLeft: "4px solid #ef4444", borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,0.12)"},
             },
+            WARRANTY_REQUESTED: {
+                antType: "info",
+                icon: <SafetyOutlined style={{color: "#7c3aed", fontSize: 20}}/>,
+                style: {borderLeft: "4px solid #7c3aed", borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,0.12)"},
+            },
+            WARRANTY_STATUS_UPDATED: {
+                antType: "success",
+                icon: <SafetyOutlined style={{color: "#7c3aed", fontSize: 20}}/>,
+                style: {borderLeft: "4px solid #7c3aed", borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,0.12)"},
+            },
+            RISK_CREATED: {
+                antType: "warning",
+                icon: <AlertOutlined style={{color: "#dc2626", fontSize: 20}}/>,
+                style: {borderLeft: "4px solid #dc2626", borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,0.12)"},
+            },
+            RISK_STATUS_UPDATED: {
+                antType: "info",
+                icon: <AlertOutlined style={{color: "#dc2626", fontSize: 20}}/>,
+                style: {borderLeft: "4px solid #dc2626", borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,0.12)"},
+            },
+            RETURN_REQUESTED: {
+                antType: "info",
+                icon: <SwapOutlined style={{color: "#f59e0b", fontSize: 20}}/>,
+                style: {borderLeft: "4px solid #f59e0b", borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,0.12)"},
+            },
+            RETURN_STATUS_UPDATED: {
+                antType: "success",
+                icon: <SwapOutlined style={{color: "#f59e0b", fontSize: 20}}/>,
+                style: {borderLeft: "4px solid #f59e0b", borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,0.12)"},
+            },
         };
 
         // ── Hiện toast ─────────────────────────────────────────────────
@@ -178,16 +213,18 @@ export default function AdminLayout() {
 
         // ── Dispatch để reload bảng đơn hàng + đẩy vào NotificationBell ──
         const dispatchAll = (payload, notifType) => {
-            window.dispatchEvent(new CustomEvent("admin:orders_changed", {detail: payload}));
+            if (String(notifType || "").startsWith("ORDER_")) {
+                window.dispatchEvent(new CustomEvent("admin:orders_changed", {detail: payload}));
+            }
             window.dispatchEvent(new CustomEvent("admin:new_notification", {
                 detail: {
-                    id: `notif-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+                    id: payload?.id || payload?.MaThongBao || `notif-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
                     type: notifType,
                     title: payload?.title || "Thông báo",
                     message: payload?.message || "",
                     redirectUrl: payload?.redirectUrl || "/admin",
-                    isRead: false,
-                    createdAt: new Date().toISOString(),
+                    isRead: Boolean(payload?.isRead),
+                    createdAt: payload?.createdAt || payload?.NgayTao || new Date().toISOString(),
                 },
             }));
         };
@@ -207,6 +244,13 @@ export default function AdminLayout() {
             dispatchAll(payload, "ORDER_CANCELED");
         };
 
+        const handleAdminNotification = (payload) => {
+            const notifType = payload?.type || payload?.LoaiThongBao || "ORDER_STATUS_UPDATED";
+            showToast(payload, notifType);
+            dispatchAll(payload, notifType);
+        };
+
+        socket.on("admin:notification_created", handleAdminNotification);
         socket.on("admin:order_created", handleOrderCreated);
         socket.on("admin:order_updated", handleOrderUpdated);
         socket.on("admin:order_canceled", handleOrderCanceled);
@@ -215,6 +259,7 @@ export default function AdminLayout() {
         });
 
         return () => {
+            socket.off("admin:notification_created", handleAdminNotification);
             socket.off("admin:order_created", handleOrderCreated);
             socket.off("admin:order_updated", handleOrderUpdated);
             socket.off("admin:order_canceled", handleOrderCanceled);

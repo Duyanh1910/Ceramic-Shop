@@ -9,6 +9,10 @@ import {
 } from "../models/index.js";
 import ErrorHandler from "../utils/error_handler.js";
 import { Op } from "sequelize";
+import {
+  NOTIFICATION_TYPES,
+  safeCreateAdminNotificationService,
+} from "./adminNotifications.service.js";
 
 export const RISK_STATUS = {
   UNHANDLED: 0,
@@ -306,6 +310,14 @@ export const createRiskService = async (payload) => {
     MaNhanVienPhuTrach,
   });
 
+  await safeCreateAdminNotificationService({
+    LoaiThongBao: NOTIFICATION_TYPES.RISK_CREATED,
+    MaNhanVien: MaNhanVienPhuTrach,
+    TieuDe: "Rui ro moi",
+    NoiDung: `Rui ro #${risk.MaRuiRo} vua duoc tao`,
+    DuongDan: `/admin/risks`,
+  });
+
   return await getRiskByIdService(risk.MaRuiRo);
 };
 
@@ -380,6 +392,7 @@ export const updateRiskStatusService = async (
   }
 
   const nextStatus = normalizeRiskStatus(TrangThai);
+  const currentStatus = Number(risk.TrangThai);
   const staffId = normalizeNullablePositiveInteger(
     MaNhanVienPhuTrach,
     "Nhân viên phụ trách không hợp lệ!",
@@ -399,6 +412,16 @@ export const updateRiskStatusService = async (
   }
 
   await risk.save();
+
+  if (nextStatus !== currentStatus) {
+    await safeCreateAdminNotificationService({
+      LoaiThongBao: NOTIFICATION_TYPES.RISK_STATUS_UPDATED,
+      MaNhanVien: risk.MaNhanVienPhuTrach,
+      TieuDe: "Rui ro da cap nhat",
+      NoiDung: `Rui ro #${MaRuiRo} da chuyen trang thai`,
+      DuongDan: `/admin/risks`,
+    });
+  }
 
   return await getRiskByIdService(MaRuiRo);
 };

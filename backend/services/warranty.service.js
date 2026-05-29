@@ -13,6 +13,10 @@ import ErrorHandler from "../utils/error_handler.js";
 import { Op } from "sequelize";
 import ExcelJS from "exceljs";
 import axios from "axios";
+import {
+  NOTIFICATION_TYPES,
+  safeCreateAdminNotificationService,
+} from "./adminNotifications.service.js";
 
 export const WARRANTY_STATUS = {
   EXPIRED: 0,
@@ -486,6 +490,13 @@ export const requestWarrantyService = async (
 
     await transaction.commit();
 
+    await safeCreateAdminNotificationService({
+      LoaiThongBao: NOTIFICATION_TYPES.WARRANTY_REQUESTED,
+      TieuDe: "Yeu cau bao hanh moi",
+      NoiDung: `Phieu bao hanh #${MaBaoHanh} cua don ${order.MaHienThi} vua duoc yeu cau`,
+      DuongDan: `/admin/warranties`,
+    });
+
     return await getMyWarrantyByIdService(idAccount, MaBaoHanh);
   } catch (err) {
     if (!transaction.finished) {
@@ -578,6 +589,13 @@ export const updateWarrantyStatusService = async (
     );
 
     await transaction.commit();
+
+    await safeCreateAdminNotificationService({
+      LoaiThongBao: NOTIFICATION_TYPES.WARRANTY_STATUS_UPDATED,
+      TieuDe: "Bao hanh da cap nhat",
+      NoiDung: `Phieu bao hanh #${MaBaoHanh} da chuyen trang thai`,
+      DuongDan: `/admin/warranties`,
+    });
 
     return await getWarrantyByIdService(MaBaoHanh);
   } catch (err) {
@@ -673,6 +691,13 @@ export const replaceWarrantyProductService = async (
     );
 
     await transaction.commit();
+
+    await safeCreateAdminNotificationService({
+      LoaiThongBao: NOTIFICATION_TYPES.WARRANTY_STATUS_UPDATED,
+      TieuDe: "Bao hanh da hoan tat",
+      NoiDung: `Phieu bao hanh #${MaBaoHanh} da duoc doi moi san pham`,
+      DuongDan: `/admin/warranties`,
+    });
 
     return await getWarrantyByIdService(MaBaoHanh);
   } catch (err) {

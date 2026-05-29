@@ -1,10 +1,12 @@
-import {useEffect, useState, useMemo} from "react";
+import {useCallback, useEffect, useState, useMemo} from "react";
 import {useNavigate} from "react-router-dom";
 import {Badge, Empty, Input, Pagination, Select, Tabs} from "antd";
-import {BellOutlined, CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, SearchOutlined, ShopOutlined, SwapOutlined} from "@ant-design/icons";
+import axios from "axios";
+import {BellOutlined, CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined, SafetyOutlined, SearchOutlined, ShopOutlined, SwapOutlined, WarningOutlined} from "@ant-design/icons";
 import styles from "./AdminNotifications.module.css";
 const STORAGE_KEY = "admin_notifications";
 const PAGE_SIZE = 15;
+const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1";
 const EVENT_META = {
     ORDER_CREATED:{
         label:"Đơn mới",
@@ -18,13 +20,43 @@ const EVENT_META = {
         color: "#10b981",
         bg: "rgba(16,185,129,0.10)",
     },
-    ORDER_CANCELLED:{
+    ORDER_CANCELED:{
         label:"Hủy đơn",
         icon:<CloseCircleOutlined/>,
         color: "#ef4444",
         bg: "rgba(239,68,68,0.10)",
     },
-    ORDER_RETURNED:{
+    WARRANTY_REQUESTED:{
+        label:"Bảo hành mới",
+        icon:<SafetyOutlined/>,
+        color: "#7c3aed",
+        bg: "rgba(124,58,237,0.10)",
+    },
+    WARRANTY_STATUS_UPDATED:{
+        label:"Bảo hành",
+        icon:<SafetyOutlined/>,
+        color: "#7c3aed",
+        bg: "rgba(124,58,237,0.10)",
+    },
+    RISK_CREATED:{
+        label:"Rủi ro mới",
+        icon:<WarningOutlined/>,
+        color: "#dc2626",
+        bg: "rgba(220,38,38,0.10)",
+    },
+    RISK_STATUS_UPDATED:{
+        label:"Rủi ro",
+        icon:<WarningOutlined/>,
+        color: "#dc2626",
+        bg: "rgba(220,38,38,0.10)",
+    },
+    RETURN_REQUESTED:{
+        label:"Đổi trả mới",
+        icon:<SwapOutlined/>,
+        color: "#f59e0b",
+        bg: "rgba(245,158,11,0.10)",
+    },
+    RETURN_STATUS_UPDATED:{
         label:"Đổi trả",
         icon:<SwapOutlined/>,
         color: "#f59e0b",
@@ -78,15 +110,47 @@ export default function AdminNotifications() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
 
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const params = new URLSearchParams({ page: "1", limit: "200" });
+
+      if (activeTab === "unread") params.set("status", "0");
+      if (typeFilter !== "all") params.set("type", typeFilter);
+
+      const res = await axios.get(`${API_BASE}/admin/notifications?${params.toString()}`, {
+        withCredentials: true,
+      });
+      const rows = res.data?.result?.data || [];
+
+      setAll(
+        rows.map((item) => ({
+          id: item.MaThongBao,
+          type: item.LoaiThongBao,
+          title: item.TieuDe,
+          message: item.NoiDung,
+          redirectUrl: item.DuongDan || "/admin/notifications",
+          isRead: Number(item.DaDoc) === 1,
+          createdAt: item.NgayTao,
+        })),
+      );
+    } catch (err) {
+      console.warn("Cannot load admin notifications:", err.message);
+    }
+  }, [activeTab, typeFilter]);
+
   // sync state → localStorage
   useEffect(() => { saveAll(all); }, [all]);
+
+  useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications]);
 
   // lắng nghe thông báo mới từ AdminLayout (khi đang ở trang này)
   useEffect(() => {
     const handler = (e) => {
       const item = e.detail;
       if (!item) return;
-      setAll((prev) => [item, ...prev].slice(0, 50));
+      setAll((prev) => [item, ...prev.filter((n) => n.id !== item.id)].slice(0, 200));
     };
     window.addEventListener("admin:new_notification", handler);
     return () => window.removeEventListener("admin:new_notification", handler);
@@ -115,15 +179,29 @@ export default function AdminNotifications() {
   const unreadCount = all.filter((n) => !n.isRead).length;
 
   // ── Actions ────────────────────────────────────────────────────────
-  const markAllRead = () =>
+  const markAllRead = async () => {
+    try {
+      const suffix = typeFilter !== "all" ? `?type=${encodeURIComponent(typeFilter)}` : "";
+      await axios.patch(`${API_BASE}/admin/notifications/read-all${suffix}`, {}, { withCredentials: true });
+    } catch (err) {
+      console.warn("Cannot mark notifications as read:", err.message);
+    }
     setAll((prev) => prev.map((n) => ({ ...n, isRead: true })));
+  };
 
   const clearAll = () => {
     setAll([]);
     localStorage.removeItem(STORAGE_KEY);
   };
 
-  const handleItemClick = (item) => {
+  const handleItemClick = async (item) => {
+    if (Number.isInteger(Number(item.id))) {
+      try {
+        await axios.patch(`${API_BASE}/admin/notifications/${item.id}/read`, {}, { withCredentials: true });
+      } catch (err) {
+        console.warn("Cannot mark notification as read:", err.message);
+      }
+    }
     setAll((prev) =>
       prev.map((n) => (n.id === item.id ? { ...n, isRead: true } : n))
     );
