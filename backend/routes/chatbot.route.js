@@ -297,6 +297,30 @@ router.post("/webhook", async (req, res) => {
       });
     }
   } else if (intentName === "Kiem_Tra_Bao_Hanh_Don_Hang") {
+    if (!maKhachHang) {
+      const loginText =
+        "Dạ, để bảo mật thông tin bảo hành, bạn vui lòng đăng nhập vào tài khoản trên website trước khi kiểm tra bảo hành đơn hàng nhé ạ.";
+
+      return res.json({
+        fulfillmentMessages: [
+          { text: { text: [loginText] } },
+          {
+            payload: {
+              richContent: [
+                [
+                  {
+                    type: "button",
+                    icon: { type: "login", color: "#1b437c" },
+                    text: "Đăng nhập tài khoản",
+                    link: `${domainWeb}/login`,
+                  },
+                ],
+              ],
+            },
+          },
+        ],
+      });
+    }
     const maDonHang = parameters.ma_don_hang || null;
 
     if (!maDonHang) {
@@ -315,7 +339,12 @@ router.post("/webhook", async (req, res) => {
     }
 
     try {
-      const checkOrder = "SELECT MaKhachHang FROM DonHang WHERE MaHienThi = ?";
+      const checkOrder = `
+        SELECT dh.MaKhachHang, kh.MaTaiKhoan
+        FROM DonHang dh
+        LEFT JOIN KhachHang kh ON dh.MaKhachHang = kh.MaKhachHang
+        WHERE dh.MaHienThi = ?
+      `;
       const [orderRows] = await pool.execute(checkOrder, [maDonReal]);
 
       if (orderRows.length === 0) {
@@ -323,7 +352,16 @@ router.post("/webhook", async (req, res) => {
           fulfillmentText: `Dạ em không tìm thấy đơn hàng ${maDonReal} trên hệ thống. Bạn kiểm tra lại mã giúp em nhé.`,
         });
       }
+      const donHang = orderRows[0];
+      const isOwner =
+        String(donHang.MaKhachHang) === String(maKhachHang) ||
+        String(donHang.MaTaiKhoan) === String(maKhachHang);
 
+      if (!isOwner) {
+        return res.json({
+          fulfillmentText: `Dạ, mình không thể hiển thị thông tin bảo hành của đơn hàng ${maDonReal} vì đơn hàng này không thuộc tài khoản của bạn. Bạn vui lòng đăng nhập đúng tài khoản đã đặt đơn để kiểm tra nhé ạ.`,
+        });
+      }
       const sqlQuery = `
                 SELECT sp.TenSanPham, bt.TenBienThe, bh.NgayKetThuc, bh.TrangThai
                 FROM DonHang dh
@@ -394,9 +432,27 @@ router.post("/webhook", async (req, res) => {
     }
   } else if (intentName === "Yeu_Cau_Huy_Don_Hang") {
     if (!maKhachHang) {
+      const loginText =
+        "Dạ, để bảo mật thông tin, bạn vui lòng đăng nhập vào tài khoản trên website trước khi yêu cầu hủy đơn nhé ạ.";
+
       return res.json({
-        fulfillmentText:
-          "Dạ, để bảo mật thông tin, bạn vui lòng đăng nhập vào tài khoản trên website trước khi thực hiện hủy đơn nhé ạ.",
+        fulfillmentMessages: [
+          { text: { text: [loginText] } },
+          {
+            payload: {
+              richContent: [
+                [
+                  {
+                    type: "button",
+                    icon: { type: "login", color: "#1b437c" },
+                    text: "Đăng nhập tài khoản",
+                    link: `${domainWeb}/login`,
+                  },
+                ],
+              ],
+            },
+          },
+        ],
       });
     }
 
@@ -405,7 +461,7 @@ router.post("/webhook", async (req, res) => {
     if (!maDonHang) {
       return res.json({
         fulfillmentText:
-          "Dạ bạn cho mình xin mã đơn hàng (ví dụ: DH26040211X6) để tiến hành hủy nhé.",
+          "Dạ bạn cho mình xin mã đơn hàng (ví dụ: DH26040211X6) để mình kiểm tra điều kiện hỗ trợ hủy nhé.",
       });
     }
 
@@ -436,18 +492,39 @@ router.post("/webhook", async (req, res) => {
         const trangThai = rows[0].TrangThaiDonHang;
 
         if (trangThai === 0) {
-          const updateQuery =
-            "UPDATE DonHang SET TrangThaiDonHang = 4 WHERE MaHienThi = ?";
-          await pool.execute(updateQuery, [maDonReal]);
+          const guideText = `Dạ đơn hàng ${maDonReal} hiện đang chờ shop xác nhận nên bạn có thể gửi yêu cầu hủy trên website. Bạn vui lòng vào mục Đơn hàng > Chi tiết đơn hàng > Hủy đơn để hệ thống xử lý đúng tồn kho, voucher và thanh toán nhé ạ.`;
+
           return res.json({
-            fulfillmentText: `✅ Dạ thành công! Đơn hàng ${maDonReal} của bạn đã được hủy trên hệ thống.`,
+            fulfillmentMessages: [
+              { text: { text: [guideText] } },
+              {
+                payload: {
+                  richContent: [
+                    [
+                      {
+                        type: "button",
+                        icon: { type: "receipt", color: "#1b437c" },
+                        text: "Vào trang đơn hàng",
+                        link: `${domainWeb}/orders`,
+                      },
+                      {
+                        type: "button",
+                        icon: { type: "chat", color: "#0068FF" },
+                        text: "Cần hỗ trợ qua Zalo",
+                        link: zaloLink,
+                      },
+                    ],
+                  ],
+                },
+              },
+            ],
           });
         } else if (trangThai === 4) {
           return res.json({
             fulfillmentText: `Dạ đơn hàng ${maDonReal} này đã được hủy từ trước rồi ạ.`,
           });
         } else {
-          const errText = `❌ Dạ rất tiếc, đơn hàng ${maDonReal} đã được xác nhận và đang trong quá trình xử lý/giao hàng nên không thể hủy tự động. Bạn vui lòng liên hệ CSKH để được hỗ trợ nhé.`;
+          const errText = `❌ Dạ rất tiếc, đơn hàng ${maDonReal} đã được xác nhận hoặc đang trong quá trình xử lý/giao hàng nên chatbot không thể gửi yêu cầu hủy trực tiếp. Bạn vui lòng liên hệ CSKH để được hỗ trợ nhanh nhất nhé.`;
           return res.json({
             fulfillmentMessages: [
               { text: { text: [errText] } },
