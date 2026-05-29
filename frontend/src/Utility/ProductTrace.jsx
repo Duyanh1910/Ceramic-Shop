@@ -13,7 +13,7 @@ export default function ProductTrace({ maSanPham }) { // Đã xóa maDonHang kh�
     setLoading(true);
     try {
       // Đảm bảo URL này khớp với server của bạn
-      const res = await axios.get(`https://ceramic-shop-u8ak.onrender.com/api/v1/products/${maSanPham}/trace`);
+      const res = await axios.get(`https://ceramic-shop-u8ak.onrender.com/api/v1/products/${maSanPham}`);
       setData(res.data.result);
     } catch { 
       setData(null); 
