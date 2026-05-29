@@ -115,7 +115,7 @@ const RouteTitle = () => {
 
   return (
     <Helmet>
-      <title>{getPageTitle(location.pathname)}</title>
+      <title>{getPageTitle(location.pathname) || "Ceramic Shop"}</title>
     </Helmet>
   );
 };

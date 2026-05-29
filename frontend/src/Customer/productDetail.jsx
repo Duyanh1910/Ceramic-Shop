@@ -595,7 +595,9 @@ function ProductDetail() {
 
   return (
     <Layout className={styles.homeWrapper}>
-      <Helmet><title>{product.TenSanPham} | Ceramic Shop</title></Helmet>
+      <Helmet>
+          <title>{`${product.TenSanPham} | Ceramic Shop`}</title>
+      </Helmet>
       
       <Header className={styles.topHeader}>
         <div className={styles.logoBox} onClick={() => navigate('/home')}>
