@@ -9,7 +9,7 @@ import {
   CheckCircleOutlined, ClockCircleOutlined, StopOutlined,
   EditOutlined, SearchOutlined, TeamOutlined, DollarOutlined, RiseOutlined
 } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
 import styles from './AdminDashboard.module.css';
@@ -47,6 +47,7 @@ const isCodOrder = (order) => Number(order?.MaPhuongThuc) === PAYMENT_METHOD.COD
 
 export default function AdminOrder() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const token = localStorage.getItem('admin_token') || localStorage.getItem('token');
   
   const authHeader = useMemo(() => ({
@@ -75,6 +76,7 @@ export default function AdminOrder() {
   const [newStatus, setNewStatus] = useState(null);
   const [newPaymentStatus, setNewPaymentStatus] = useState(0);
   const [updateLoading, setUpdateLoading] = useState(false);
+  const orderCodeParam = searchParams.get('orderCode');
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -154,6 +156,19 @@ export default function AdminOrder() {
       window.removeEventListener('admin:orders_changed', handleOrdersChanged);
     };
   }, [fetchOrders]);
+
+  useEffect(() => {
+    if (!orderCodeParam) return;
+
+    const normalizedOrderCode = orderCodeParam.trim();
+    if (!normalizedOrderCode) return;
+
+    setSearchInput(normalizedOrderCode);
+    setDebouncedSearch(normalizedOrderCode);
+    setActiveTab('all');
+    setPage(1);
+    fetchOrderDetail(normalizedOrderCode);
+  }, [orderCodeParam]);
 
   const handleTabChange = (key) => {
     setActiveTab(key);
@@ -419,7 +434,12 @@ export default function AdminOrder() {
 
       <Modal
         open={detailModal}
-        onCancel={() => setDetailModal(false)}
+        onCancel={() => {
+          setDetailModal(false);
+          if (orderCodeParam) {
+            setSearchParams({});
+          }
+        }}
         footer={null}
         width={850}
         centered

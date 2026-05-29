@@ -279,7 +279,7 @@ export default function AdminProducts() {
         variants:
           mappedVariants.length > 0
             ? mappedVariants
-            : [{ TrangThai: true, images: [] }],
+            : [{ TrangThai: true, SoLuong: 0, images: [] }],
       });
     } catch {
       message.error("Lỗi lấy dữ liệu!");
@@ -339,7 +339,6 @@ export default function AdminProducts() {
           MaBienThe: v.MaBienThe,
           TenBienThe: v.TenBienThe,
           Gia: Number(v.Gia),
-          SoLuong: Number(v.SoLuong),
           TrangThai: v.TrangThai ? 1 : 0,
           KhoiLuong: Number(v.KhoiLuong || 0),
           ChieuDai: Number(v.ChieuDai || 0),
@@ -410,7 +409,7 @@ export default function AdminProducts() {
     form.setFieldsValue({
       status: 1,
       ChatLieu: "Gốm sứ", // Set mặc định
-      variants: [{ TrangThai: true, images: [] }],
+      variants: [{ TrangThai: true, SoLuong: 0, images: [] }],
     });
     setAddModal(true);
   };
@@ -626,7 +625,7 @@ export default function AdminProducts() {
           disabled={viewMode}
           initialValues={{
             status: 1,
-            variants: [{ TrangThai: true, images: [] }],
+            variants: [{ TrangThai: true, SoLuong: 0, images: [] }],
           }}
         >
           <div
@@ -1072,6 +1071,7 @@ export default function AdminProducts() {
                                 <InputNumber
                                   size="large"
                                   min={0}
+                                  disabled
                                   style={{ width: "100%" }}
                                   placeholder="Nhập tồn kho"
                                 />
@@ -1142,7 +1142,7 @@ export default function AdminProducts() {
                   {!viewMode && (
                     <Button
                       type="dashed"
-                      onClick={() => add({ TrangThai: true, images: [] })}
+                      onClick={() => add({ TrangThai: true, SoLuong: 0, images: [] })}
                       block
                       size="large"
                       icon={<PlusOutlined />}

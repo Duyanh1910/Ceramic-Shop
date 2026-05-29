@@ -6,16 +6,22 @@ import {
 import { bcXemSanPham } from "../utils/blockchain.js";
 
 const router = express.Router();
+
 router.get("/", getProducts);
-router.get("/:id", getProductInfo);
-// GET /api/products/:id/trace  — Xem nguồn gốc sản phẩm
-router.get("/:id/trace", async (req, res, next) => {
+
+router.get("/:id/trace", async (req, res) => {
   try {
     const data = await bcXemSanPham(req.params.id);
-    res.json({ success: true, result: data });
-  } catch (err) { 
-    // Trả về JSON lỗi để Frontend dễ xử lý thay vì sập server
-    res.status(500).json({ success: false, message: err.message }); 
+
+    return res.json({ success: true, result: data });
+  } catch (err) {
+    return res.status(404).json({
+      success: false,
+      message: err.message || "Không thể truy xuất nguồn gốc sản phẩm!",
+    });
   }
 });
+
+router.get("/:id", getProductInfo);
+
 export default router;

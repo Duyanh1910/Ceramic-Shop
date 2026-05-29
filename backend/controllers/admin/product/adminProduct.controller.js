@@ -11,6 +11,15 @@ import {
 import ErrorHandler from "../../../utils/error_handler.js";
 import { checkValidate, validateVariants } from "../../../utils/helpers.js";
 
+const normalizeProductVariantsPayload = (variants) => {
+  if (!Array.isArray(variants)) return variants;
+
+  return variants.map((variant) => ({
+    ...variant,
+    SoLuong: 0,
+  }));
+};
+
 export const addNewProductController = async (req, res, next) => {
   try {
     const {
@@ -37,7 +46,8 @@ export const addNewProductController = async (req, res, next) => {
       return next(new ErrorHandler("Trạng thái không hợp lệ!", 400));
     }
 
-    validateVariants(BienThe);
+    const normalizedVariants = normalizeProductVariantsPayload(BienThe);
+    validateVariants(normalizedVariants);
 
     const product = await addNewProductService(
       Number(categoryID),
@@ -46,7 +56,7 @@ export const addNewProductController = async (req, res, next) => {
       brand,
       description,
       Number(status),
-      BienThe,
+      normalizedVariants,
       MaNhaCC,
       ChatLieu,
     );
@@ -127,6 +137,8 @@ export const updateProductController = async (req, res, next) => {
       description,
       status = 1,
       BienThe,
+      MaNhaCC,
+      ChatLieu,
     } = req.body;
 
     if (!Number.isInteger(productID) || productID <= 0) {
@@ -139,7 +151,8 @@ export const updateProductController = async (req, res, next) => {
       return next(new ErrorHandler("Trạng thái không hợp lệ!", 400));
     }
 
-    validateVariants(BienThe);
+    const normalizedVariants = normalizeProductVariantsPayload(BienThe);
+    validateVariants(normalizedVariants);
 
     const product = await updateProductInfoService(
       productID,
@@ -149,7 +162,9 @@ export const updateProductController = async (req, res, next) => {
       brand,
       description,
       Number(status),
-      BienThe,
+      normalizedVariants,
+      MaNhaCC,
+      ChatLieu,
     );
 
     return res.status(200).json({

@@ -244,25 +244,54 @@ const ABI = [
   },
 ];
 
-let contract = null;
+let readContract = null;
+let writeContract = null;
 
 // 2. Khởi tạo cầu nối với Blockchain qua Ethers.js
-const getContract = () => {
-  if (contract) return contract;
+const getProvider = () => {
+  if (!process.env.ALCHEMY_API_KEY || !process.env.CONTRACT_ADDRESS) {
+    throw new Error("Thiếu cấu hình ALCHEMY_API_KEY hoặc CONTRACT_ADDRESS");
+  }
 
   // Đảm bảo bạn đã cấu hình đúng ALCHEMY_API_KEY, ADMIN_PRIVATE_KEY, CONTRACT_ADDRESS trong file .env
   const provider = new ethers.JsonRpcProvider(
     `https://eth-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
   );
-  const wallet = new ethers.Wallet(process.env.ADMIN_PRIVATE_KEY, provider);
-  contract = new ethers.Contract(process.env.CONTRACT_ADDRESS, ABI, wallet);
+  return provider;
+};
 
-  return contract;
+const getReadContract = () => {
+  if (readContract) return readContract;
+
+  readContract = new ethers.Contract(
+    process.env.CONTRACT_ADDRESS,
+    ABI,
+    getProvider(),
+  );
+
+  return readContract;
+};
+
+const getWriteContract = () => {
+  if (writeContract) return writeContract;
+
+  if (!process.env.ADMIN_PRIVATE_KEY) {
+    throw new Error("Thiếu cấu hình ADMIN_PRIVATE_KEY để ghi Blockchain");
+  }
+
+  const wallet = new ethers.Wallet(process.env.ADMIN_PRIVATE_KEY, getProvider());
+  writeContract = new ethers.Contract(
+    process.env.CONTRACT_ADDRESS,
+    ABI,
+    wallet,
+  );
+
+  return writeContract;
 };
 
 // ── Ghi thông tin sản phẩm và nhà cung cấp lên blockchain ──
 export const bcThemSanPham = async (product, nhaCungCap = {}) => {
-  const c = getContract();
+  const c = getWriteContract();
 
   const tx = await c.themSanPham(
     product.MaSanPham.toString(),
@@ -279,8 +308,8 @@ export const bcThemSanPham = async (product, nhaCungCap = {}) => {
 
 // ── Đọc thông tin sản phẩm (Không tốn phí gas) ──
 export const bcXemSanPham = async (maSanPham) => {
-  const c = getContract();
-  const data = await c.xemSanPham(maSanPham);
+  const c = getReadContract();
+  const data = await c.xemSanPham(String(maSanPham));
 
   return {
     maSanPham: data.maSanPham,

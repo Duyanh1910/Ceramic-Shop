@@ -21,6 +21,7 @@ import {
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import axios from "axios";
+import { useSearchParams } from "react-router-dom";
 
 import styles from "./AdminWarranties.module.css";
 import WarrantyHistory from "./AdminWarrantyHistory";
@@ -85,6 +86,8 @@ const renderWarrantyStatus = (status) => {
 };
 
 const WarrantyList = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const warrantyIdParam = searchParams.get("warrantyId");
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingExport, setLoadingExport] = useState(false);
@@ -110,6 +113,17 @@ const WarrantyList = () => {
   useEffect(() => {
     fetchData();
   }, [page, search, status]);
+
+  useEffect(() => {
+    if (!warrantyIdParam) return;
+
+    setSearchInput(warrantyIdParam);
+    setSearch(warrantyIdParam);
+    setStatus(ALL_STATUS);
+    setPage(1);
+    setSelectedWarrantyId(warrantyIdParam);
+    setIsHistoryModalOpen(true);
+  }, [warrantyIdParam]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -438,6 +452,10 @@ const WarrantyList = () => {
         onCancel={() => {
           setIsHistoryModalOpen(false);
           setSelectedWarrantyId(null);
+
+          if (warrantyIdParam) {
+            setSearchParams({});
+          }
         }}
       />
     </Card>

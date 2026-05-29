@@ -6,12 +6,61 @@ import {
   VariantAttributeModel,
   AttributeValueModel,
   AttributeModel,
+  SupplierModel,
   sequelize,
 } from "../models/index.js";
 import { Sequelize, Op } from "sequelize";
 import ErrorHandler from "../utils/error_handler.js";
 import { bcThemSanPham } from "../utils/blockchain.js";
-import SupplierModel from "../models/supply/supplier.model.js";
+
+const normalizeNullablePositiveInteger = (value, message) => {
+  if (value === undefined || value === null || value === "") {
+    return null;
+  }
+
+  const numberValue = Number(value);
+
+  if (!Number.isInteger(numberValue) || numberValue <= 0) {
+    throw new ErrorHandler(message, 400);
+  }
+
+  return numberValue;
+};
+
+const ensureSupplierExistsIfNeeded = async (supplierId, transaction) => {
+  if (!supplierId) return null;
+
+  const supplier = await SupplierModel.findByPk(supplierId, { transaction });
+
+  if (!supplier) {
+    throw new ErrorHandler("Nhà cung cấp không tồn tại!", 400);
+  }
+
+  return supplier;
+};
+
+const syncProductToBlockchain = async (product) => {
+  try {
+    const fullProduct = await ProductModel.findByPk(product.MaSanPham, {
+      include: [{ model: SupplierModel }],
+    });
+
+    const txHash = await bcThemSanPham(
+      fullProduct || product,
+      fullProduct?.NhaCungCap || {},
+    );
+
+    await ProductModel.update(
+      { BlockchainTxHash: txHash },
+      { where: { MaSanPham: product.MaSanPham } },
+    );
+  } catch (error) {
+    console.error(
+      "Lỗi ghi Blockchain (không ảnh hưởng tiến trình lưu DB):",
+      error,
+    );
+  }
+};
 
 const getProductsHelper = async (
   page = 1,
@@ -103,9 +152,13 @@ const getProductsHelper = async (
       "LuotXem",
       "MoTa",
       "TrangThai",
+      "MaNhaCC",
+      "BlockchainTxHash",
+      "ChatLieu",
     ],
     include: [
       { model: CategoryModel, attributes: ["MaDanhMuc", "TenDanhMuc"] },
+      { model: SupplierModel, attributes: ["MaNhaCC", "TenNhaCC", "Diachi", "SDT"] },
       { model: VariantModel, attributes: ["Gia", "SoLuong"] },
     ],
   });
@@ -134,6 +187,10 @@ const getProductsHelper = async (
       LuotXem: p.LuotXem,
       MoTa: p.MoTa,
       TrangThai: p.TrangThai,
+      MaNhaCC: p.MaNhaCC,
+      NhaCungCap: p.NhaCungCap,
+      BlockchainTxHash: p.BlockchainTxHash,
+      ChatLieu: p.ChatLieu,
       DanhMuc: p.DanhMucSanPham,
       GiaThapNhat: giaThapNhat,
       TongSoLuong: tongSoLuong,
@@ -168,6 +225,10 @@ const getSingleProductHelper = async (id, isAdmin = false) => {
       {
         model: CategoryModel,
         attributes: ["MaDanhMuc", "TenDanhMuc"],
+      },
+      {
+        model: SupplierModel,
+        attributes: ["MaNhaCC", "TenNhaCC", "Diachi", "SDT"],
       },
       {
         model: VariantModel,
@@ -233,10 +294,16 @@ export const addNewProductService = async (
       throw new ErrorHandler("Chỉ được thêm sản phẩm vào danh mục con!", 400);
     }
 
+    const supplierId = normalizeNullablePositiveInteger(
+      MaNhaCC,
+      "Mã nhà cung cấp không hợp lệ!",
+    );
+    await ensureSupplierExistsIfNeeded(supplierId, transaction);
+
     const product = await ProductModel.create(
       {
         MaDanhMuc: categoryID,
-        MaNhaCC: MaNhaCC,
+        MaNhaCC: supplierId,
         TenSanPham: productName,
         Thumbnail: thumbnail,
         ThuongHieu: brand,
@@ -256,7 +323,7 @@ export const addNewProductService = async (
           MaSanPham: product.MaSanPham,
           TenBienThe: item.TenBienThe,
           Gia: item.Gia,
-          SoLuong: item.SoLuong,
+          SoLuong: 0,
           TrangThai: item.TrangThai,
           MoTa: item.MoTa,
           KhoiLuong: item.KhoiLuong || 0,
@@ -331,6 +398,8 @@ export const updateProductInfoService = async (
   description,
   status = 1,
   BienThe,
+  MaNhaCC = null,
+  ChatLieu = "Gốm sứ",
 ) => {
   const transaction = await sequelize.transaction();
   try {
@@ -349,15 +418,23 @@ export const updateProductInfoService = async (
       throw new ErrorHandler("Chỉ được thêm sản phẩm vào danh mục con!", 400);
     }
 
+    const supplierId = normalizeNullablePositiveInteger(
+      MaNhaCC,
+      "Mã nhà cung cấp không hợp lệ!",
+    );
+    await ensureSupplierExistsIfNeeded(supplierId, transaction);
+
     await existProduct.update(
       {
         MaDanhMuc: categoryID,
+        MaNhaCC: supplierId,
         TenSanPham: productName,
         Thumbnail: thumbnail,
         ThuongHieu: brand,
         LuotXem: existProduct.LuotXem,
         MoTa: description,
         TrangThai: status,
+        ChatLieu,
       },
       { transaction: transaction },
     );
@@ -369,7 +446,6 @@ export const updateProductInfoService = async (
             MaSanPham: existProduct.MaSanPham,
             TenBienThe: item.TenBienThe,
             Gia: item.Gia,
-            SoLuong: item.SoLuong,
             TrangThai: item.TrangThai,
             MoTa: item.MoTa,
             KhoiLuong: item.KhoiLuong || 0,
@@ -416,9 +492,13 @@ export const updateProductInfoService = async (
             MaSanPham: existProduct.MaSanPham,
             TenBienThe: item.TenBienThe,
             Gia: item.Gia,
-            SoLuong: item.SoLuong,
+            SoLuong: 0,
             TrangThai: item.TrangThai,
             MoTa: item.MoTa,
+            KhoiLuong: item.KhoiLuong || 0,
+            ChieuDai: item.ChieuDai || 0,
+            ChieuRong: item.ChieuRong || 0,
+            ChieuCao: item.ChieuCao || 0,
           },
           { transaction: transaction },
         );
@@ -443,6 +523,7 @@ export const updateProductInfoService = async (
       }
     }
     await transaction.commit();
+    await syncProductToBlockchain(existProduct);
     return existProduct;
   } catch (err) {
     await transaction.rollback();

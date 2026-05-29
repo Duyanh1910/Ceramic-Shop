@@ -244,7 +244,10 @@ export const getAllRiskService = async (
   }
 
   if (keyword) {
+    const numericKeyword = /^\d+$/.test(keyword) ? Number(keyword) : null;
+
     riskWhere[Op.or] = [
+      ...(numericKeyword !== null ? [{ MaRuiRo: numericKeyword }] : []),
       { LoaiRuiRo: { [Op.like]: `%${keyword}%` } },
       { MucDo: { [Op.like]: `%${keyword}%` } },
       { NguonPhatHien: { [Op.like]: `%${keyword}%` } },
@@ -315,7 +318,7 @@ export const createRiskService = async (payload) => {
     MaNhanVien: MaNhanVienPhuTrach,
     TieuDe: "Rủi ro mới",
     NoiDung: `Rủi ro #${risk.MaRuiRo} vừa được tạo`,
-    DuongDan: `/admin/risks`,
+    DuongDan: `/admin/risks?riskId=${risk.MaRuiRo}`,
   });
 
   return await getRiskByIdService(risk.MaRuiRo);
@@ -419,7 +422,7 @@ export const updateRiskStatusService = async (
       MaNhanVien: risk.MaNhanVienPhuTrach,
       TieuDe: "Rủi ro đã cập nhật",
       NoiDung: `Rủi ro #${MaRuiRo} đã chuyển trạng thái`,
-      DuongDan: `/admin/risks`,
+      DuongDan: `/admin/risks?riskId=${MaRuiRo}`,
     });
   }
 

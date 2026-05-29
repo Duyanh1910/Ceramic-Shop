@@ -213,13 +213,16 @@ export const getAllWarrantyService = async (
     warrantyWhere.TrangThai = Number(status);
   }
 
-  const orderWhere = {};
+  const keyword = String(search || "").trim();
 
-  if (search) {
-    orderWhere[Op.or] = [
-      { MaHienThi: { [Op.like]: `%${search}%` } },
-      { TenNguoiNhan: { [Op.like]: `%${search}%` } },
-      { SDT: { [Op.like]: `%${search}%` } },
+  if (keyword) {
+    const numericKeyword = /^\d+$/.test(keyword) ? Number(keyword) : null;
+
+    warrantyWhere[Op.or] = [
+      ...(numericKeyword !== null ? [{ MaBaoHanh: numericKeyword }] : []),
+      { "$ChiTietDonHang.DonHang.MaHienThi$": { [Op.like]: `%${keyword}%` } },
+      { "$ChiTietDonHang.DonHang.TenNguoiNhan$": { [Op.like]: `%${keyword}%` } },
+      { "$ChiTietDonHang.DonHang.SDT$": { [Op.like]: `%${keyword}%` } },
     ];
   }
 
@@ -232,6 +235,7 @@ export const getAllWarrantyService = async (
     limit: pageSize,
     offset,
     distinct: true,
+    subQuery: false,
     order: [["MaBaoHanh", sortOrder]],
     include: [
       {
@@ -249,8 +253,7 @@ export const getAllWarrantyService = async (
               "DiaChiGiaoHang",
               "TrangThaiDonHang",
             ],
-            where: orderWhere,
-            required: Boolean(search),
+            required: false,
           },
           {
             model: VariantModel,
@@ -494,7 +497,7 @@ export const requestWarrantyService = async (
       LoaiThongBao: NOTIFICATION_TYPES.WARRANTY_REQUESTED,
       TieuDe: "Yêu cầu bảo hành mới",
       NoiDung: `Phiếu bảo hành #${MaBaoHanh} của đơn ${order.MaHienThi} vừa được yêu cầu`,
-      DuongDan: `/admin/warranties`,
+      DuongDan: `/admin/warranties?warrantyId=${MaBaoHanh}`,
     });
 
     return await getMyWarrantyByIdService(idAccount, MaBaoHanh);
@@ -594,7 +597,7 @@ export const updateWarrantyStatusService = async (
       LoaiThongBao: NOTIFICATION_TYPES.WARRANTY_STATUS_UPDATED,
       TieuDe: "Bảo hành đã cập nhật",
       NoiDung: `Phiếu bảo hành #${MaBaoHanh} đã chuyển trạng thái`,
-      DuongDan: `/admin/warranties`,
+      DuongDan: `/admin/warranties?warrantyId=${MaBaoHanh}`,
     });
 
     return await getWarrantyByIdService(MaBaoHanh);
@@ -696,7 +699,7 @@ export const replaceWarrantyProductService = async (
       LoaiThongBao: NOTIFICATION_TYPES.WARRANTY_STATUS_UPDATED,
       TieuDe: "Bảo hành đã hoàn tất",
       NoiDung: `Phiếu bảo hành #${MaBaoHanh} đã được đổi mới sản phẩm`,
-      DuongDan: `/admin/warranties`,
+      DuongDan: `/admin/warranties?warrantyId=${MaBaoHanh}`,
     });
 
     return await getWarrantyByIdService(MaBaoHanh);

@@ -292,6 +292,13 @@ ReceivedNoteModel.belongsTo(SupplierModel, {
   foreignKey: "MaNhaCC",
 });
 
+SupplierModel.hasMany(ProductModel, {
+  foreignKey: "MaNhaCC",
+});
+ProductModel.belongsTo(SupplierModel, {
+  foreignKey: "MaNhaCC",
+});
+
 StaffModel.hasMany(ReceivedNoteModel, {
   foreignKey: "MaNhanVien",
 });

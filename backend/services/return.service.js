@@ -526,7 +526,7 @@ export const createReturnRequestService = async (idAccount, payload) => {
       LoaiThongBao: NOTIFICATION_TYPES.RETURN_REQUESTED,
       TieuDe: "Yêu cầu đổi trả mới",
       NoiDung: `Yêu cầu đổi trả #${returnRequest.MaDoiTra} của đơn ${order.MaHienThi} vừa được tạo`,
-      DuongDan: `/admin/returns`,
+      DuongDan: `/admin/returns?returnId=${returnRequest.MaDoiTra}`,
     });
 
     return await getMyReturnByIdService(idAccount, returnRequest.MaDoiTra);
@@ -597,7 +597,7 @@ export const cancelReturnRequestService = async (idAccount, MaDoiTra, reason) =>
       LoaiThongBao: NOTIFICATION_TYPES.RETURN_STATUS_UPDATED,
       TieuDe: "Đổi trả đã cập nhật",
       NoiDung: `Yêu cầu đổi trả #${MaDoiTra} đã được khách hàng hủy`,
-      DuongDan: `/admin/returns`,
+      DuongDan: `/admin/returns?returnId=${MaDoiTra}`,
     });
 
     return await getMyReturnByIdService(idAccount, MaDoiTra);
@@ -639,13 +639,16 @@ export const getAllReturnsAdminService = async (
     returnWhere.LoaiYeuCau = type;
   }
 
-  const orderWhere = {};
+  const keyword = String(search || "").trim();
 
-  if (search) {
-    orderWhere[Op.or] = [
-      { MaHienThi: { [Op.like]: `%${search}%` } },
-      { TenNguoiNhan: { [Op.like]: `%${search}%` } },
-      { SDT: { [Op.like]: `%${search}%` } },
+  if (keyword) {
+    const numericKeyword = /^\d+$/.test(keyword) ? Number(keyword) : null;
+
+    returnWhere[Op.or] = [
+      ...(numericKeyword !== null ? [{ MaDoiTra: numericKeyword }] : []),
+      { "$ChiTietDonHang.DonHang.MaHienThi$": { [Op.like]: `%${keyword}%` } },
+      { "$ChiTietDonHang.DonHang.TenNguoiNhan$": { [Op.like]: `%${keyword}%` } },
+      { "$ChiTietDonHang.DonHang.SDT$": { [Op.like]: `%${keyword}%` } },
     ];
   }
 
@@ -654,6 +657,7 @@ export const getAllReturnsAdminService = async (
     limit: pageSize,
     offset,
     distinct: true,
+    subQuery: false,
     order: [["NgayYeuCau", sortOrder]],
     include: [
       {
@@ -662,8 +666,7 @@ export const getAllReturnsAdminService = async (
         include: [
           {
             model: OrderModel,
-            required: Boolean(search),
-            where: orderWhere,
+            required: false,
           },
           {
             model: VariantModel,
@@ -836,7 +839,7 @@ export const updateReturnStatusAdminService = async (
       MaNhanVien: returnRequest.MaNhanVienXuLy,
       TieuDe: "Đổi trả đã cập nhật",
       NoiDung: `Yêu cầu đổi trả #${MaDoiTra} đã chuyển trạng thái`,
-      DuongDan: `/admin/returns`,
+      DuongDan: `/admin/returns?returnId=${MaDoiTra}`,
     });
 
     return await getReturnByIdAdminService(MaDoiTra);
@@ -1109,7 +1112,7 @@ export const processReturnAdminService = async (MaDoiTra, payload) => {
       MaNhanVien: returnRequest.MaNhanVienXuLy,
       TieuDe: "Đổi trả đã xử lý",
       NoiDung: `Yêu cầu đổi trả #${MaDoiTra} đã được xử lý`,
-      DuongDan: `/admin/returns`,
+      DuongDan: `/admin/returns?returnId=${MaDoiTra}`,
     });
 
     if (riskResult.created && riskResult.risk) {
@@ -1118,7 +1121,7 @@ export const processReturnAdminService = async (MaDoiTra, payload) => {
         MaNhanVien: riskResult.risk.MaNhanVienPhuTrach,
         TieuDe: "Rủi ro mới",
         NoiDung: `Rủi ro #${riskResult.risk.MaRuiRo} được tạo từ đổi trả #${MaDoiTra}`,
-        DuongDan: `/admin/risks`,
+        DuongDan: `/admin/risks?riskId=${riskResult.risk.MaRuiRo}`,
       });
     }
 
@@ -1208,7 +1211,7 @@ export const confirmReturnRefundAdminService = async (
       MaNhanVien: returnRequest.MaNhanVienXuLy,
       TieuDe: "Hoàn tiền đổi trả đã xác nhận",
       NoiDung: `Yêu cầu đổi trả #${MaDoiTra} đã hoàn tất hoàn tiền`,
-      DuongDan: `/admin/returns`,
+      DuongDan: `/admin/returns?returnId=${MaDoiTra}`,
     });
 
     return await getReturnByIdAdminService(MaDoiTra);

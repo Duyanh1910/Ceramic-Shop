@@ -32,6 +32,7 @@ import {
 } from "@ant-design/icons";
 import axios from "axios";
 import dayjs from "dayjs";
+import { useSearchParams } from "react-router-dom";
 import styles from "./AdminRisks.module.css";
 
 const { Title, Text } = Typography;
@@ -260,6 +261,8 @@ const toStaffOption = (staff) => {
 
 export default function AdminRisks() {
   const [form] = Form.useForm();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const riskIdParam = searchParams.get("riskId");
 
   const [data, setData] = useState([]);
   const [selectedRisk, setSelectedRisk] = useState(null);
@@ -325,6 +328,21 @@ export default function AdminRisks() {
   useEffect(() => {
     fetchData();
   }, [page, search, status, level, source]);
+
+  useEffect(() => {
+    if (!riskIdParam) return;
+
+    setSelectedRisk(null);
+    setIsDetailOpen(true);
+    form.resetFields();
+    setSearchInput(riskIdParam);
+    setSearch(riskIdParam);
+    setStatus(ALL_VALUE);
+    setLevel(ALL_VALUE);
+    setSource(ALL_VALUE);
+    setPage(1);
+    fetchRiskDetail(riskIdParam);
+  }, [riskIdParam]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -408,6 +426,10 @@ export default function AdminRisks() {
     setIsDetailOpen(false);
     setSelectedRisk(null);
     form.resetFields();
+
+    if (riskIdParam) {
+      setSearchParams({});
+    }
   };
 
   const submitRiskUpdate = async () => {

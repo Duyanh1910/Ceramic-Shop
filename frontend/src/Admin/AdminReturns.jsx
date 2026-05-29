@@ -29,6 +29,7 @@ import {
 } from "@ant-design/icons";
 import axios from "axios";
 import dayjs from "dayjs";
+import { useSearchParams } from "react-router-dom";
 import styles from "./AdminReturns.module.css";
 
 const { Title, Text } = Typography;
@@ -181,6 +182,8 @@ const getTransactions = (item) =>
 
 export default function AdminReturns() {
   const [form] = Form.useForm();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const returnIdParam = searchParams.get("returnId");
 
   const [data, setData] = useState([]);
   const [detail, setDetail] = useState(null);
@@ -218,6 +221,19 @@ export default function AdminReturns() {
   useEffect(() => {
     fetchData();
   }, [page, search, status, type]);
+
+  useEffect(() => {
+    if (!returnIdParam) return;
+
+    setDetail(null);
+    setIsDetailOpen(true);
+    setSearchInput(returnIdParam);
+    setSearch(returnIdParam);
+    setStatus(ALL_STATUS);
+    setType(ALL_TYPE);
+    setPage(1);
+    Promise.all([fetchDetail(returnIdParam), fetchVariantOptions()]);
+  }, [returnIdParam]);
 
   useEffect(() => {
     if (!detail) return;
@@ -315,6 +331,10 @@ export default function AdminReturns() {
     setIsDetailOpen(false);
     setDetail(null);
     form.resetFields();
+
+    if (returnIdParam) {
+      setSearchParams({});
+    }
   };
 
   const updateStatus = async (nextStatus, note) => {
