@@ -524,8 +524,8 @@ export const createReturnRequestService = async (idAccount, payload) => {
 
     await safeCreateAdminNotificationService({
       LoaiThongBao: NOTIFICATION_TYPES.RETURN_REQUESTED,
-      TieuDe: "Yeu cau doi tra moi",
-      NoiDung: `Yeu cau doi tra #${returnRequest.MaDoiTra} cua don ${order.MaHienThi} vua duoc tao`,
+      TieuDe: "Yêu cầu đổi trả mới",
+      NoiDung: `Yêu cầu đổi trả #${returnRequest.MaDoiTra} của đơn ${order.MaHienThi} vừa được tạo`,
       DuongDan: `/admin/returns`,
     });
 
@@ -595,8 +595,8 @@ export const cancelReturnRequestService = async (idAccount, MaDoiTra, reason) =>
 
     await safeCreateAdminNotificationService({
       LoaiThongBao: NOTIFICATION_TYPES.RETURN_STATUS_UPDATED,
-      TieuDe: "Doi tra da cap nhat",
-      NoiDung: `Yeu cau doi tra #${MaDoiTra} da duoc khach hang huy`,
+      TieuDe: "Đổi trả đã cập nhật",
+      NoiDung: `Yêu cầu đổi trả #${MaDoiTra} đã được khách hàng hủy`,
       DuongDan: `/admin/returns`,
     });
 
@@ -834,8 +834,8 @@ export const updateReturnStatusAdminService = async (
     await safeCreateAdminNotificationService({
       LoaiThongBao: NOTIFICATION_TYPES.RETURN_STATUS_UPDATED,
       MaNhanVien: returnRequest.MaNhanVienXuLy,
-      TieuDe: "Doi tra da cap nhat",
-      NoiDung: `Yeu cau doi tra #${MaDoiTra} da chuyen trang thai`,
+      TieuDe: "Đổi trả đã cập nhật",
+      NoiDung: `Yêu cầu đổi trả #${MaDoiTra} đã chuyển trạng thái`,
       DuongDan: `/admin/returns`,
     });
 
@@ -1107,8 +1107,8 @@ export const processReturnAdminService = async (MaDoiTra, payload) => {
     await safeCreateAdminNotificationService({
       LoaiThongBao: NOTIFICATION_TYPES.RETURN_STATUS_UPDATED,
       MaNhanVien: returnRequest.MaNhanVienXuLy,
-      TieuDe: "Doi tra da xu ly",
-      NoiDung: `Yeu cau doi tra #${MaDoiTra} da duoc xu ly`,
+      TieuDe: "Đổi trả đã xử lý",
+      NoiDung: `Yêu cầu đổi trả #${MaDoiTra} đã được xử lý`,
       DuongDan: `/admin/returns`,
     });
 
@@ -1116,8 +1116,8 @@ export const processReturnAdminService = async (MaDoiTra, payload) => {
       await safeCreateAdminNotificationService({
         LoaiThongBao: NOTIFICATION_TYPES.RISK_CREATED,
         MaNhanVien: riskResult.risk.MaNhanVienPhuTrach,
-        TieuDe: "Rui ro moi",
-        NoiDung: `Rui ro #${riskResult.risk.MaRuiRo} duoc tao tu doi tra #${MaDoiTra}`,
+        TieuDe: "Rủi ro mới",
+        NoiDung: `Rủi ro #${riskResult.risk.MaRuiRo} được tạo từ đổi trả #${MaDoiTra}`,
         DuongDan: `/admin/risks`,
       });
     }
@@ -1206,8 +1206,8 @@ export const confirmReturnRefundAdminService = async (
     await safeCreateAdminNotificationService({
       LoaiThongBao: NOTIFICATION_TYPES.RETURN_STATUS_UPDATED,
       MaNhanVien: returnRequest.MaNhanVienXuLy,
-      TieuDe: "Hoan tien doi tra da xac nhan",
-      NoiDung: `Yeu cau doi tra #${MaDoiTra} da hoan tat hoan tien`,
+      TieuDe: "Hoàn tiền đổi trả đã xác nhận",
+      NoiDung: `Yêu cầu đổi trả #${MaDoiTra} đã hoàn tất hoàn tiền`,
       DuongDan: `/admin/returns`,
     });
 

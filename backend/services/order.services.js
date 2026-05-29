@@ -325,8 +325,8 @@ export const checkOutService = async (
 
     await safeCreateAdminNotificationService({
       LoaiThongBao: NOTIFICATION_TYPES.ORDER_CREATED,
-      TieuDe: "Co don hang moi",
-      NoiDung: `Don ${newOrder.MaHienThi} vua duoc tao`,
+      TieuDe: "Có đơn hàng mới",
+      NoiDung: `Đơn ${newOrder.MaHienThi} vừa được tạo`,
       DuongDan: `/admin?orderCode=${newOrder.MaHienThi}`,
     });
 
@@ -545,8 +545,8 @@ export const cancelOrderService = async (idAccount, orderCode, reason) => {
 
     await safeCreateAdminNotificationService({
       LoaiThongBao: NOTIFICATION_TYPES.ORDER_CANCELED,
-      TieuDe: "Don hang da huy",
-      NoiDung: `Don ${order.MaHienThi} da duoc khach hang huy`,
+      TieuDe: "Đơn hàng đã hủy",
+      NoiDung: `Đơn ${order.MaHienThi} đã được khách hàng hủy`,
       DuongDan: orderCanceledPayload.adminRedirectUrl,
     });
 
@@ -919,8 +919,8 @@ Thông tin liên hệ:
 
       await safeCreateAdminNotificationService({
         LoaiThongBao: NOTIFICATION_TYPES.ORDER_CANCELED,
-        TieuDe: "Don hang da huy",
-        NoiDung: `Don ${order.MaHienThi} da bi admin huy`,
+        TieuDe: "Đơn hàng đã hủy",
+        NoiDung: `Đơn ${order.MaHienThi} đã bị admin hủy`,
         DuongDan: orderCanceledPayload.adminRedirectUrl,
       });
     } else if (
@@ -929,8 +929,8 @@ Thông tin liên hệ:
     ) {
       await safeCreateAdminNotificationService({
         LoaiThongBao: NOTIFICATION_TYPES.ORDER_STATUS_UPDATED,
-        TieuDe: "Trang thai don hang da thay doi",
-        NoiDung: `Don ${order.MaHienThi} da duoc cap nhat trang thai`,
+        TieuDe: "Trạng thái đơn hàng đã thay đổi",
+        NoiDung: `Đơn ${order.MaHienThi} đã được cập nhật trạng thái`,
         DuongDan: orderStatusPayload.adminRedirectUrl,
       });
     }

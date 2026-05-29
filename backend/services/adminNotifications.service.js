@@ -45,6 +45,21 @@ const normalizeReadStatus = (status) => {
   return normalizedStatus;
 };
 
+const buildNotificationWhere = ({ status, type } = {}) => {
+  const whereCondition = {};
+  const normalizedStatus = normalizeReadStatus(status);
+
+  if (normalizedStatus !== undefined) {
+    whereCondition.DaDoc = normalizedStatus;
+  }
+
+  if (type !== undefined && type !== null && type !== "") {
+    whereCondition.LoaiThongBao = normalizeNotificationType(type);
+  }
+
+  return whereCondition;
+};
+
 export const toAdminNotificationPayload = (notification) => {
   const data = notification?.get ? notification.get({ plain: true }) : notification;
 
@@ -79,16 +94,7 @@ export const getAllNotificationsService = async (
   const currentPage = Math.max(Number(page) || 1, 1);
   const pageSize = Math.max(Number(limit) || 10, 1);
   const offset = (currentPage - 1) * pageSize;
-  const whereCondition = {};
-  const normalizedStatus = normalizeReadStatus(status);
-
-  if (normalizedStatus !== undefined) {
-    whereCondition.DaDoc = normalizedStatus;
-  }
-
-  if (type !== undefined && type !== null && type !== "") {
-    whereCondition.LoaiThongBao = normalizeNotificationType(type);
-  }
+  const whereCondition = buildNotificationWhere({ status, type });
 
   const { rows: notifications, count: total } =
     await NotificationsModel.findAndCountAll({
@@ -165,6 +171,24 @@ export const markAllAsReadService = async (type) => {
   );
 
   return affectedRows;
+};
+
+export const deleteNotificationService = async (idNotification) => {
+  const notification = await NotificationsModel.findByPk(idNotification);
+
+  if (!notification) {
+    throw new ErrorHandler("Khong tim thay thong bao!", 404);
+  }
+
+  await notification.destroy();
+
+  return true;
+};
+
+export const deleteAllNotificationsService = async ({ status, type } = {}) => {
+  return await NotificationsModel.destroy({
+    where: buildNotificationWhere({ status, type }),
+  });
 };
 
 export const createAdminNotificationService = async ({

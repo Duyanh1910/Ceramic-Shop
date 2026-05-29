@@ -1,4 +1,6 @@
 import {
+  deleteAllNotificationsService,
+  deleteNotificationService,
   getAllNotificationsService,
   getUnreadNotificationsCountService,
   markAllAsReadService,
@@ -68,6 +70,41 @@ export const markAllNotificationsAsRead = async (req, res, next) => {
     res.status(200).json({
       success: true,
       message: "Danh dau tat ca thong bao da doc thanh cong!",
+      result: {
+        affectedRows,
+      },
+    });
+  } catch (err) {
+    console.error(err);
+    next(err);
+  }
+};
+
+export const deleteNotification = async (req, res, next) => {
+  try {
+    await deleteNotificationService(Number(req.params.id));
+
+    res.status(200).json({
+      success: true,
+      message: "Xoa thong bao thanh cong!",
+    });
+  } catch (err) {
+    console.error(err);
+    next(err);
+  }
+};
+
+export const deleteAllNotifications = async (req, res, next) => {
+  try {
+    const { status, DaDoc, type, LoaiThongBao } = req.query;
+    const affectedRows = await deleteAllNotificationsService({
+      status: status ?? DaDoc,
+      type: type ?? LoaiThongBao,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Xoa thong bao thanh cong!",
       result: {
         affectedRows,
       },

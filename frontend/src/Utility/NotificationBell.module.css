@@ -1,294 +1,477 @@
-/* ── Floating wrapper ──────────────────────────────────────────── */
 .wrapper {
   position: fixed;
-  bottom: 32px;
-  right: 32px;
+  right: 30px;
+  bottom: 30px;
   z-index: 1050;
   display: flex;
-  flex-direction: column;
   align-items: flex-end;
+  flex-direction: column;
 }
 
-/* ── Bell button ───────────────────────────────────────────────── */
 .bellBtn {
   position: relative;
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  border: none;
-  background: #0f2744;
-  color: #fff;
-  cursor: pointer;
-  display: flex;
+  width: 56px;
+  height: 56px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 20px rgba(15, 39, 68, 0.45);
-  transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+  border: none;
+  border-radius: 999px;
+  color: #fff;
+  background:
+    radial-gradient(
+      circle at 30% 20%,
+      rgba(255, 255, 255, 0.18),
+      transparent 34%
+    ),
+    linear-gradient(135deg, #0f2744, #1b437c);
+  box-shadow:
+    0 16px 34px rgba(15, 39, 68, 0.35),
+    0 0 0 1px rgba(255, 255, 255, 0.18) inset;
+  cursor: pointer;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease;
   outline: none;
 }
 
 .bellBtn:hover {
-  background: #1b437c;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 28px rgba(15, 39, 68, 0.5);
+  transform: translateY(-3px);
+  box-shadow:
+    0 20px 42px rgba(15, 39, 68, 0.42),
+    0 0 0 4px rgba(196, 140, 70, 0.16);
+}
+
+.bellBtn:focus-visible {
+  outline: 3px solid rgba(196, 140, 70, 0.35);
+  outline-offset: 3px;
 }
 
 .bellActive {
-  background: #1b437c;
-  box-shadow: 0 0 0 4px rgba(196, 140, 70, 0.25), 0 8px 28px rgba(15, 39, 68, 0.5);
+  transform: translateY(-3px);
+  background:
+    radial-gradient(
+      circle at 30% 20%,
+      rgba(255, 255, 255, 0.18),
+      transparent 34%
+    ),
+    linear-gradient(135deg, #1b437c, #c48c46);
+  box-shadow:
+    0 20px 46px rgba(15, 39, 68, 0.44),
+    0 0 0 5px rgba(196, 140, 70, 0.18);
 }
 
 .bellIcon {
-  font-size: 22px;
   color: #fff;
+  font-size: 23px;
 }
 
-/* pulse ring */
 .bellPulse {
   position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  border: 2px solid #c48c46;
-  animation: pulseRing 1.8s ease-out infinite;
+  inset: -2px;
+  border: 2px solid rgba(196, 140, 70, 0.8);
+  border-radius: inherit;
   pointer-events: none;
+  animation: pulseRing 1.7s ease-out infinite;
 }
 
 @keyframes pulseRing {
-  0%   { transform: scale(1);   opacity: 0.7; }
-  100% { transform: scale(1.7); opacity: 0;   }
+  0% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.55);
+  }
 }
 
-/* shake on new notification */
 @keyframes bellShake {
-  0%, 100% { transform: rotate(0deg); }
-  15%       { transform: rotate(-18deg); }
-  30%       { transform: rotate(16deg); }
-  45%       { transform: rotate(-12deg); }
-  60%       { transform: rotate(10deg); }
-  75%       { transform: rotate(-6deg); }
-  90%       { transform: rotate(4deg); }
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  15% {
+    transform: rotate(-16deg);
+  }
+
+  30% {
+    transform: rotate(14deg);
+  }
+
+  45% {
+    transform: rotate(-10deg);
+  }
+
+  60% {
+    transform: rotate(8deg);
+  }
+
+  75% {
+    transform: rotate(-5deg);
+  }
+
+  90% {
+    transform: rotate(3deg);
+  }
 }
 
 .bellShake {
   animation: bellShake 0.7s ease-in-out;
 }
 
-/* ── Dropdown panel ────────────────────────────────────────────── */
 .dropdown {
   position: absolute;
-  bottom: calc(100% + 12px);
   right: 0;
-  width: 360px;
-  max-height: 520px;
-  background: #fff;
-  border-radius: 16px;
-  box-shadow:
-    0 4px 6px -1px rgba(0,0,0,0.08),
-    0 20px 50px -8px rgba(15,39,68,0.22);
+  bottom: calc(100% + 14px);
+  width: min(390px, calc(100vw - 28px));
+  max-height: min(590px, calc(100vh - 110px));
   display: flex;
-  flex-direction: column;
   overflow: hidden;
-  animation: dropIn 0.22s cubic-bezier(0.34, 1.4, 0.64, 1);
+  flex-direction: column;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow:
+    0 24px 70px rgba(15, 39, 68, 0.23),
+    0 0 0 1px rgba(255, 255, 255, 0.8) inset;
+  backdrop-filter: blur(16px);
   transform-origin: bottom right;
+  animation: dropIn 0.22s cubic-bezier(0.34, 1.35, 0.64, 1);
+}
+
+.dropdown::after {
+  content: "";
+  position: absolute;
+  right: 18px;
+  bottom: -7px;
+  width: 14px;
+  height: 14px;
+  border-right: 1px solid rgba(226, 232, 240, 0.9);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+  background: #fff;
+  transform: rotate(45deg);
 }
 
 @keyframes dropIn {
-  from { opacity: 0; transform: scale(0.88) translateY(8px); }
-  to   { opacity: 1; transform: scale(1)    translateY(0); }
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
-/* ── Dropdown header ───────────────────────────────────────────── */
 .dropHeader {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  padding: 16px 18px 12px;
-  border-bottom: 1px solid #f0f0f0;
-  flex-shrink: 0;
+  gap: 14px;
+  padding: 18px 18px 14px;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(196, 140, 70, 0.14), transparent 38%),
+    linear-gradient(135deg, #0f2744, #1b437c);
 }
 
 .dropTitle {
-  font-size: 15px;
-  font-weight: 700;
-  color: #0f2744;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  margin: 0;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: -0.2px;
+}
+
+.dropSub {
+  margin: 5px 0 0;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .unreadBadge {
-  font-size: 11px;
-  font-weight: 700;
-  color: #fff;
-  background: #c48c46;
-  border-radius: 20px;
-  padding: 1px 8px;
-  line-height: 1.6;
-}
-
-.markAllBtn {
+  min-width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 9px;
+  border-radius: 999px;
+  color: #0f2744;
+  background: #f8e7c9;
   font-size: 12px;
-  color: #1b437c;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  padding: 4px 8px;
-  border-radius: 6px;
-  transition: background 0.15s;
-}
-.markAllBtn:hover {
-  background: #f0f4f8;
+  font-weight: 900;
 }
 
-/* ── List ──────────────────────────────────────────────────────── */
+.quickActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 12px;
+  border-bottom: 1px solid #eef2f7;
+  background: #fbfdff;
+}
+
+.actionBtn {
+  height: 36px;
+  border: 1px solid rgba(27, 67, 124, 0.18);
+  border-radius: 12px;
+  color: #1b437c;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.actionBtn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: #1b437c;
+  background: #1b437c;
+  color: #fff;
+}
+
+.actionBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.clearBtn {
+  border-color: rgba(220, 38, 38, 0.18);
+  color: #dc2626;
+}
+
+.clearBtn:hover:not(:disabled) {
+  border-color: #dc2626;
+  background: #dc2626;
+  color: #fff;
+}
+
 .dropList {
   flex: 1;
   overflow-y: auto;
-  padding: 6px 0;
+  padding: 10px;
+  background: linear-gradient(180deg, #fff 0%, #fbfdff 100%);
 }
 
-.dropList::-webkit-scrollbar { width: 5px; }
-.dropList::-webkit-scrollbar-track { background: transparent; }
+.dropList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dropList::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 .dropList::-webkit-scrollbar-thumb {
-  background: rgba(196,140,70,0.4);
-  border-radius: 8px;
+  border-radius: 99px;
+  background: rgba(196, 140, 70, 0.35);
 }
 
-/* ── Notification item ─────────────────────────────────────────── */
 .notifItem {
-  width: 100%;
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 12px 18px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  text-align: left;
-  transition: background 0.15s;
   position: relative;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) 10px;
+  gap: 11px;
+  align-items: flex-start;
+  padding: 12px;
+  border: 1px solid transparent;
+  border-radius: 17px;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    background 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
+
+.notifItem + .notifItem {
+  margin-top: 6px;
+}
+
 .notifItem:hover {
-  background: #f8fafc;
+  transform: translateY(-1px);
+  border-color: #e2e8f0;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(15, 39, 68, 0.08);
+}
+
+.notifItem:focus-visible {
+  outline: 3px solid rgba(196, 140, 70, 0.25);
+  outline-offset: 2px;
 }
 
 .notifUnread {
-  background: rgba(196,140,70,0.05);
-}
-.notifUnread:hover {
-  background: rgba(196,140,70,0.1);
+  border-color: rgba(196, 140, 70, 0.2);
+  background:
+    linear-gradient(90deg, rgba(196, 140, 70, 0.1), transparent 42%), #fff;
 }
 
 .notifIconWrap {
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  display: flex;
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 17px;
+  border-radius: 14px;
+  font-size: 18px;
   flex-shrink: 0;
 }
 
 .notifBody {
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  flex: 1;
+}
+
+.notifTop {
   min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
 }
 
 .notifTitle {
+  min-width: 0;
+  color: #0f172a;
   font-size: 13px;
-  font-weight: 700;
-  color: #1a202c;
-  white-space: nowrap;
+  font-weight: 900;
+  line-height: 1.35;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.notifType {
+  flex-shrink: 0;
+  max-width: 92px;
+  overflow: hidden;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .notifMsg {
-  font-size: 12px;
+  margin-top: 4px;
   color: #64748b;
+  font-size: 12px;
+  line-height: 1.55;
   display: -webkit-box;
+  overflow: hidden;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
-  overflow: hidden;
-  line-height: 1.5;
 }
 
 .notifTime {
-  font-size: 11px;
+  margin-top: 5px;
   color: #94a3b8;
-  margin-top: 2px;
+  font-size: 11px;
+  font-weight: 700;
 }
 
 .unreadDot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+  width: 9px;
+  height: 9px;
+  margin-top: 8px;
+  border-radius: 999px;
   background: #c48c46;
-  flex-shrink: 0;
-  margin-top: 6px;
+  box-shadow: 0 0 0 4px rgba(196, 140, 70, 0.14);
 }
 
-/* ── Empty / loading states ────────────────────────────────────── */
 .emptyState {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px 20px;
-  gap: 12px;
+  flex-direction: column;
+  min-height: 230px;
+  padding: 30px 20px;
+  text-align: center;
+}
+
+.emptyIconWrap {
+  width: 58px;
+  height: 58px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20px;
+  background: #f1f5f9;
   color: #94a3b8;
 }
 
 .emptyIcon {
-  font-size: 36px;
-  color: #cbd5e1;
+  font-size: 28px;
 }
 
 .emptyState p {
-  margin: 0;
-  font-size: 13px;
+  margin: 14px 0 4px;
+  color: #0f172a;
+  font-size: 14px;
+  font-weight: 900;
 }
 
-.skeleton {
-  height: 60px;
-  border-radius: 10px;
-  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.4s infinite;
-  width: 100%;
-  margin: 4px 0;
+.emptyState span {
+  color: #94a3b8;
+  font-size: 12px;
 }
 
-@keyframes shimmer {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-/* ── Footer "View all" button ──────────────────────────────────── */
 .viewAll {
+  position: relative;
+  z-index: 1;
   width: 100%;
-  padding: 13px 18px;
-  border: none;
-  border-top: 1px solid #f0f0f0;
-  background: #fafbfc;
-  color: #1b437c;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
+  min-height: 48px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  transition: background 0.15s, color 0.15s;
-  flex-shrink: 0;
-  letter-spacing: 0.3px;
+  gap: 8px;
+  border: none;
+  border-top: 1px solid #eef2f7;
+  color: #1b437c;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
 }
+
 .viewAll:hover {
+  color: #fff;
   background: #0f2744;
-  color: #c48c46;
+}
+
+@media (max-width: 620px) {
+  .wrapper {
+    right: 18px;
+    bottom: 18px;
+  }
+
+  .bellBtn {
+    width: 52px;
+    height: 52px;
+  }
+
+  .dropdown {
+    right: -8px;
+    width: calc(100vw - 28px);
+    max-height: calc(100vh - 96px);
+  }
+
+  .quickActions {
+    grid-template-columns: 1fr;
+  }
 }

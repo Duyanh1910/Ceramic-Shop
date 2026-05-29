@@ -313,8 +313,8 @@ export const createRiskService = async (payload) => {
   await safeCreateAdminNotificationService({
     LoaiThongBao: NOTIFICATION_TYPES.RISK_CREATED,
     MaNhanVien: MaNhanVienPhuTrach,
-    TieuDe: "Rui ro moi",
-    NoiDung: `Rui ro #${risk.MaRuiRo} vua duoc tao`,
+    TieuDe: "Rủi ro mới",
+    NoiDung: `Rủi ro #${risk.MaRuiRo} vừa được tạo`,
     DuongDan: `/admin/risks`,
   });
 
@@ -417,8 +417,8 @@ export const updateRiskStatusService = async (
     await safeCreateAdminNotificationService({
       LoaiThongBao: NOTIFICATION_TYPES.RISK_STATUS_UPDATED,
       MaNhanVien: risk.MaNhanVienPhuTrach,
-      TieuDe: "Rui ro da cap nhat",
-      NoiDung: `Rui ro #${MaRuiRo} da chuyen trang thai`,
+      TieuDe: "Rủi ro đã cập nhật",
+      NoiDung: `Rủi ro #${MaRuiRo} đã chuyển trạng thái`,
       DuongDan: `/admin/risks`,
     });
   }

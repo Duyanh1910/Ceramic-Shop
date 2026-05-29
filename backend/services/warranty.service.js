@@ -492,8 +492,8 @@ export const requestWarrantyService = async (
 
     await safeCreateAdminNotificationService({
       LoaiThongBao: NOTIFICATION_TYPES.WARRANTY_REQUESTED,
-      TieuDe: "Yeu cau bao hanh moi",
-      NoiDung: `Phieu bao hanh #${MaBaoHanh} cua don ${order.MaHienThi} vua duoc yeu cau`,
+      TieuDe: "Yêu cầu bảo hành mới",
+      NoiDung: `Phiếu bảo hành #${MaBaoHanh} của đơn ${order.MaHienThi} vừa được yêu cầu`,
       DuongDan: `/admin/warranties`,
     });
 
@@ -592,8 +592,8 @@ export const updateWarrantyStatusService = async (
 
     await safeCreateAdminNotificationService({
       LoaiThongBao: NOTIFICATION_TYPES.WARRANTY_STATUS_UPDATED,
-      TieuDe: "Bao hanh da cap nhat",
-      NoiDung: `Phieu bao hanh #${MaBaoHanh} da chuyen trang thai`,
+      TieuDe: "Bảo hành đã cập nhật",
+      NoiDung: `Phiếu bảo hành #${MaBaoHanh} đã chuyển trạng thái`,
       DuongDan: `/admin/warranties`,
     });
 
@@ -694,8 +694,8 @@ export const replaceWarrantyProductService = async (
 
     await safeCreateAdminNotificationService({
       LoaiThongBao: NOTIFICATION_TYPES.WARRANTY_STATUS_UPDATED,
-      TieuDe: "Bao hanh da hoan tat",
-      NoiDung: `Phieu bao hanh #${MaBaoHanh} da duoc doi moi san pham`,
+      TieuDe: "Bảo hành đã hoàn tất",
+      NoiDung: `Phiếu bảo hành #${MaBaoHanh} đã được đổi mới sản phẩm`,
       DuongDan: `/admin/warranties`,
     });
 
