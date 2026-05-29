@@ -394,9 +394,27 @@ router.post("/webhook", async (req, res) => {
     }
   } else if (intentName === "Yeu_Cau_Huy_Don_Hang") {
     if (!maKhachHang) {
+      const loginText =
+        "Dạ, để bảo mật thông tin, bạn vui lòng đăng nhập vào tài khoản trên website trước khi yêu cầu hủy đơn nhé ạ.";
+
       return res.json({
-        fulfillmentText:
-          "Dạ, để bảo mật thông tin, bạn vui lòng đăng nhập vào tài khoản trên website trước khi thực hiện hủy đơn nhé ạ.",
+        fulfillmentMessages: [
+          { text: { text: [loginText] } },
+          {
+            payload: {
+              richContent: [
+                [
+                  {
+                    type: "button",
+                    icon: { type: "login", color: "#1b437c" },
+                    text: "Đăng nhập tài khoản",
+                    link: `${domainWeb}/login`,
+                  },
+                ],
+              ],
+            },
+          },
+        ],
       });
     }
 
@@ -405,7 +423,7 @@ router.post("/webhook", async (req, res) => {
     if (!maDonHang) {
       return res.json({
         fulfillmentText:
-          "Dạ bạn cho mình xin mã đơn hàng (ví dụ: DH26040211X6) để tiến hành hủy nhé.",
+          "Dạ bạn cho mình xin mã đơn hàng (ví dụ: DH26040211X6) để mình kiểm tra điều kiện hỗ trợ hủy nhé.",
       });
     }
 
@@ -436,18 +454,39 @@ router.post("/webhook", async (req, res) => {
         const trangThai = rows[0].TrangThaiDonHang;
 
         if (trangThai === 0) {
-          const updateQuery =
-            "UPDATE DonHang SET TrangThaiDonHang = 4 WHERE MaHienThi = ?";
-          await pool.execute(updateQuery, [maDonReal]);
+          const guideText = `Dạ đơn hàng ${maDonReal} hiện đang chờ shop xác nhận nên bạn có thể gửi yêu cầu hủy trên website. Bạn vui lòng vào mục Đơn hàng > Chi tiết đơn hàng > Hủy đơn để hệ thống xử lý đúng tồn kho, voucher và thanh toán nhé ạ.`;
+
           return res.json({
-            fulfillmentText: `✅ Dạ thành công! Đơn hàng ${maDonReal} của bạn đã được hủy trên hệ thống.`,
+            fulfillmentMessages: [
+              { text: { text: [guideText] } },
+              {
+                payload: {
+                  richContent: [
+                    [
+                      {
+                        type: "button",
+                        icon: { type: "receipt", color: "#1b437c" },
+                        text: "Vào trang đơn hàng",
+                        link: `${domainWeb}/orders`,
+                      },
+                      {
+                        type: "button",
+                        icon: { type: "chat", color: "#0068FF" },
+                        text: "Cần hỗ trợ qua Zalo",
+                        link: zaloLink,
+                      },
+                    ],
+                  ],
+                },
+              },
+            ],
           });
         } else if (trangThai === 4) {
           return res.json({
             fulfillmentText: `Dạ đơn hàng ${maDonReal} này đã được hủy từ trước rồi ạ.`,
           });
         } else {
-          const errText = `❌ Dạ rất tiếc, đơn hàng ${maDonReal} đã được xác nhận và đang trong quá trình xử lý/giao hàng nên không thể hủy tự động. Bạn vui lòng liên hệ CSKH để được hỗ trợ nhé.`;
+          const errText = `❌ Dạ rất tiếc, đơn hàng ${maDonReal} đã được xác nhận hoặc đang trong quá trình xử lý/giao hàng nên chatbot không thể gửi yêu cầu hủy trực tiếp. Bạn vui lòng liên hệ CSKH để được hỗ trợ nhanh nhất nhé.`;
           return res.json({
             fulfillmentMessages: [
               { text: { text: [errText] } },
