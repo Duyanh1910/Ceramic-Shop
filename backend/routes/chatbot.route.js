@@ -297,6 +297,30 @@ router.post("/webhook", async (req, res) => {
       });
     }
   } else if (intentName === "Kiem_Tra_Bao_Hanh_Don_Hang") {
+    if (!maKhachHang) {
+      const loginText =
+        "Dạ, để bảo mật thông tin bảo hành, bạn vui lòng đăng nhập vào tài khoản trên website trước khi kiểm tra bảo hành đơn hàng nhé ạ.";
+
+      return res.json({
+        fulfillmentMessages: [
+          { text: { text: [loginText] } },
+          {
+            payload: {
+              richContent: [
+                [
+                  {
+                    type: "button",
+                    icon: { type: "login", color: "#1b437c" },
+                    text: "Đăng nhập tài khoản",
+                    link: `${domainWeb}/login`,
+                  },
+                ],
+              ],
+            },
+          },
+        ],
+      });
+    }
     const maDonHang = parameters.ma_don_hang || null;
 
     if (!maDonHang) {
@@ -315,7 +339,12 @@ router.post("/webhook", async (req, res) => {
     }
 
     try {
-      const checkOrder = "SELECT MaKhachHang FROM DonHang WHERE MaHienThi = ?";
+      const checkOrder = `
+        SELECT dh.MaKhachHang, kh.MaTaiKhoan
+        FROM DonHang dh
+        LEFT JOIN KhachHang kh ON dh.MaKhachHang = kh.MaKhachHang
+        WHERE dh.MaHienThi = ?
+      `;
       const [orderRows] = await pool.execute(checkOrder, [maDonReal]);
 
       if (orderRows.length === 0) {
@@ -323,7 +352,16 @@ router.post("/webhook", async (req, res) => {
           fulfillmentText: `Dạ em không tìm thấy đơn hàng ${maDonReal} trên hệ thống. Bạn kiểm tra lại mã giúp em nhé.`,
         });
       }
+      const donHang = orderRows[0];
+      const isOwner =
+        String(donHang.MaKhachHang) === String(maKhachHang) ||
+        String(donHang.MaTaiKhoan) === String(maKhachHang);
 
+      if (!isOwner) {
+        return res.json({
+          fulfillmentText: `Dạ, mình không thể hiển thị thông tin bảo hành của đơn hàng ${maDonReal} vì đơn hàng này không thuộc tài khoản của bạn. Bạn vui lòng đăng nhập đúng tài khoản đã đặt đơn để kiểm tra nhé ạ.`,
+        });
+      }
       const sqlQuery = `
                 SELECT sp.TenSanPham, bt.TenBienThe, bh.NgayKetThuc, bh.TrangThai
                 FROM DonHang dh
