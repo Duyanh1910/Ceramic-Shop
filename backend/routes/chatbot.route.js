@@ -1,5 +1,10 @@
 import express from "express";
 import { pool, CHATBOT_LINKS } from "../config/chatbot.config.js";
+import {
+  toArray,
+  buildVariantAttributeFilter,
+  extractCapacityAttributes,
+} from "../utils/chatbotAttributeFilter.helper.js";
 
 const router = express.Router();
 
@@ -28,37 +33,54 @@ router.post("/webhook", async (req, res) => {
       });
     }
 
-    let thuocTinhList = parameters.Thuoc_Tinh || [];
-    if (!Array.isArray(thuocTinhList)) {
-      thuocTinhList = [thuocTinhList];
-    }
+    const thuocTinhList = [
+      ...toArray(parameters.Thuoc_Tinh),
+      ...extractCapacityAttributes(req.body.queryResult.queryText),
+    ];
+    const menhList = toArray(parameters.Menh);
 
     const tenSanPham = rawTenSP.trim();
 
     try {
-      let sqlQuery = `
-                SELECT sp.MaSanPham, bt.MaBienThe, bt.TenBienThe, bt.Gia, bt.SoLuong, MIN(ha.DuongDan) as DuongDan, sp.TenSanPham
-                FROM BienTheSanPham bt
-                JOIN SanPham sp ON bt.MaSanPham = sp.MaSanPham
-                LEFT JOIN HinhAnhBienThe ha ON bt.MaBienThe = ha.MaBienThe
-                WHERE sp.TenSanPham LIKE ? AND bt.TrangThai = 1
-            `;
+        let sqlQuery = `
+          SELECT
+            sp.MaSanPham,
+            bt.MaBienThe,
+            bt.TenBienThe,
+            bt.Gia,
+            bt.SoLuong,
+            MIN(ha.DuongDan) as DuongDan,
+            sp.TenSanPham
+          FROM BienTheSanPham bt
+          JOIN SanPham sp ON bt.MaSanPham = sp.MaSanPham
+          LEFT JOIN HinhAnhBienThe ha ON bt.MaBienThe = ha.MaBienThe
+          WHERE sp.TenSanPham LIKE ?
+            AND sp.TrangThai = 1
+            AND bt.TrangThai = 1
+        `;
 
-      const searchTenSP = `%${tenSanPham.replace(/\s+/g, "%")}%`;
-      let queryParams = [searchTenSP];
+        const searchTenSP = `%${tenSanPham.replace(/\s+/g, "%")}%`;
+        let queryParams = [searchTenSP];
 
-      thuocTinhList.forEach((tt) => {
-        let cleanTT = tt.replace(/màu/gi, "").replace(/cm/gi, " cm").trim();
-        if (cleanTT) {
-          const searchTT = `%${cleanTT.replace(/\s+/g, "%")}%`;
-          sqlQuery += ` AND bt.TenBienThe LIKE ?`;
-          queryParams.push(searchTT);
-        }
-      });
+        const attributeFilter = buildVariantAttributeFilter({
+          thuocTinhList,
+          menhList,
+        });
 
-      sqlQuery += ` GROUP BY sp.MaSanPham, bt.MaBienThe, bt.TenBienThe, bt.Gia, bt.SoLuong, sp.TenSanPham`;
+        sqlQuery += attributeFilter.sql;
+        queryParams.push(...attributeFilter.params);
 
-      const [rows] = await pool.execute(sqlQuery, queryParams);
+        sqlQuery += `
+          GROUP BY
+            sp.MaSanPham,
+            bt.MaBienThe,
+            bt.TenBienThe,
+            bt.Gia,
+            bt.SoLuong,
+            sp.TenSanPham
+        `;
+
+        const [rows] = await pool.execute(sqlQuery, queryParams);
 
       if (rows.length === 1) {
         const sp = rows[0];
@@ -900,34 +922,41 @@ router.post("/webhook", async (req, res) => {
       });
     }
 
-    let thuocTinhList = parameters.Thuoc_Tinh || [];
-    if (!Array.isArray(thuocTinhList)) {
-      thuocTinhList = [thuocTinhList];
-    }
+    const thuocTinhList = [
+      ...toArray(parameters.Thuoc_Tinh),
+      ...extractCapacityAttributes(req.body.queryResult.queryText),
+    ];
+    const menhList = toArray(parameters.Menh);
 
     const tenSanPham = rawTenSP.trim();
 
     try {
       let sqlQuery = `
-                SELECT sp.MaSanPham, bt.TenBienThe, bt.SoLuong, sp.TenSanPham 
-                FROM BienTheSanPham bt
-                JOIN SanPham sp ON bt.MaSanPham = sp.MaSanPham
-                WHERE sp.TenSanPham LIKE ? AND bt.TrangThai = 1
-            `;
+          SELECT
+            sp.MaSanPham,
+            bt.MaBienThe,
+            bt.TenBienThe,
+            bt.SoLuong,
+            sp.TenSanPham
+          FROM BienTheSanPham bt
+          JOIN SanPham sp ON bt.MaSanPham = sp.MaSanPham
+          WHERE sp.TenSanPham LIKE ?
+            AND sp.TrangThai = 1
+            AND bt.TrangThai = 1
+        `;
 
-      const searchTenSP = `%${tenSanPham.replace(/\s+/g, "%")}%`;
-      let queryParams = [searchTenSP];
+        const searchTenSP = `%${tenSanPham.replace(/\s+/g, "%")}%`;
+        let queryParams = [searchTenSP];
 
-      thuocTinhList.forEach((tt) => {
-        let cleanTT = tt.replace(/màu/gi, "").replace(/cm/gi, " cm").trim();
-        if (cleanTT) {
-          const searchTT = `%${cleanTT.replace(/\s+/g, "%")}%`;
-          sqlQuery += ` AND bt.TenBienThe LIKE ?`;
-          queryParams.push(searchTT);
-        }
-      });
+        const attributeFilter = buildVariantAttributeFilter({
+          thuocTinhList,
+          menhList,
+        });
 
-      const [rows] = await pool.execute(sqlQuery, queryParams);
+        sqlQuery += attributeFilter.sql;
+        queryParams.push(...attributeFilter.params);
+
+        const [rows] = await pool.execute(sqlQuery, queryParams);
 
       if (rows.length === 1) {
         const sp = rows[0];
@@ -1113,22 +1142,23 @@ router.post("/webhook", async (req, res) => {
     let danhMucRaw = parameters.Danh_Muc_San_Pham || "";
     if (Array.isArray(danhMucRaw)) danhMucRaw = danhMucRaw[0];
 
+    const thuocTinhList = [
+      ...toArray(parameters.Thuoc_Tinh),
+      ...extractCapacityAttributes(queryText),
+    ];
+
+    const menhList = toArray(parameters.Menh);
     let nganSach = 0;
 
     const regexTrieu = /(\d+(?:[\.,]\d+)?)\s*(triệu|tr|củ)/i;
     const regexNgan = /(\d+(?:[\.,]\d+)?)\s*(k|ngàn|nghìn)/i;
-    const regexLit = /(\d+(?:[\.,]\d+)?)\s*(lít|lit|l)/i;
 
     let matchTrieu = queryText.match(regexTrieu);
     let matchNgan = queryText.match(regexNgan);
-    let matchLit = queryText.match(regexLit);
 
     if (matchTrieu) {
       let so = parseFloat(matchTrieu[1].replace(",", "."));
       nganSach = so * 1000000;
-    } else if (matchLit) {
-      let so = parseFloat(matchLit[1].replace(",", "."));
-      nganSach = so * 100000;
     } else if (matchNgan) {
       let so = parseFloat(matchNgan[1].replace(",", "."));
       nganSach = so * 1000;
@@ -1201,6 +1231,14 @@ router.post("/webhook", async (req, res) => {
           );
         }
       }
+
+      const attributeFilter = buildVariantAttributeFilter({
+        thuocTinhList,
+        menhList,
+      });
+
+      sqlQuery += attributeFilter.sql;
+      queryParams.push(...attributeFilter.params);
 
       sqlQuery += ` GROUP BY sp.MaSanPham, sp.TenSanPham ORDER BY GiaTu DESC LIMIT 3`;
 
