@@ -122,8 +122,9 @@ const saveToStorage = (list) => {
   }
 };
 
-export default function NotificationBell() {
+export default function NotificationBell({ placement = "floating" }) {
   const navigate = useNavigate();
+  const isHeaderPlacement = placement === "header";
 
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState(() => loadFromStorage());
@@ -258,8 +259,12 @@ export default function NotificationBell() {
   };
 
   return (
-    <div className={styles.wrapper}>
-      <Tooltip title="Thông báo" placement="left">
+    <div
+      className={`${styles.wrapper} ${
+        isHeaderPlacement ? styles.headerWrapper : ""
+      }`}
+    >
+      <Tooltip title="Thông báo" placement={isHeaderPlacement ? "bottom" : "left"}>
         <button
           ref={bellRef}
           type="button"
@@ -283,7 +288,12 @@ export default function NotificationBell() {
       </Tooltip>
 
       {open && (
-        <div ref={dropdownRef} className={styles.dropdown}>
+        <div
+          ref={dropdownRef}
+          className={`${styles.dropdown} ${
+            isHeaderPlacement ? styles.headerDropdown : ""
+          }`}
+        >
           <div className={styles.dropHeader}>
             <div>
               <h3 className={styles.dropTitle}>Thông báo</h3>

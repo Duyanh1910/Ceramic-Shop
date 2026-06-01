@@ -342,6 +342,7 @@ export default function AdminLayout() {
             <Layout>
                 <Header className={styles.header}>
                     <div className={styles.headerRight}>
+                        <NotificationBell placement="header"/>
                         <Dropdown menu={userMenu} placement="bottomRight" arrow>
                             <div className={styles.userInfo}>
                                 <Avatar className={styles.avatar}>
@@ -359,7 +360,6 @@ export default function AdminLayout() {
                     <Outlet/>
                 </Content>
             </Layout>
-            <NotificationBell/>
         </Layout>
     );
 }

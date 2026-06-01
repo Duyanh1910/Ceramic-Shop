@@ -11,6 +11,15 @@
   font-family: 'Arsenal', sans-serif;
 }
 
+.headerWrapper {
+  position: relative;
+  right: auto;
+  bottom: auto;
+  z-index: 100;
+  align-items: center;
+  flex-direction: row;
+}
+
 .wrapper *,
 .wrapper button,
 .wrapper :global(.ant-badge),
@@ -44,6 +53,23 @@
     box-shadow 0.18s ease,
     background 0.18s ease;
   outline: none;
+}
+
+.headerWrapper .bellBtn {
+  width: 44px;
+  height: 44px;
+  box-shadow:
+    0 8px 22px rgba(15, 39, 68, 0.16),
+    0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+}
+
+.headerWrapper .bellBtn:hover,
+.headerWrapper .bellActive {
+  transform: translateY(-1px);
+}
+
+.headerWrapper .bellIcon {
+  font-size: 20px;
 }
 
 .bellBtn:hover {
@@ -153,6 +179,14 @@
   animation: dropIn 0.22s cubic-bezier(0.34, 1.35, 0.64, 1);
 }
 
+.headerDropdown {
+  top: calc(100% + 12px);
+  right: 0;
+  bottom: auto;
+  max-height: min(590px, calc(100vh - 92px));
+  transform-origin: top right;
+}
+
 .dropdown::after {
   content: "";
   position: absolute;
@@ -164,6 +198,14 @@
   border-bottom: 1px solid rgba(226, 232, 240, 0.9);
   background: #fff;
   transform: rotate(45deg);
+}
+
+.headerDropdown::after {
+  top: -7px;
+  bottom: auto;
+  border: 0;
+  border-left: 1px solid rgba(226, 232, 240, 0.9);
+  border-top: 1px solid rgba(226, 232, 240, 0.9);
 }
 
 @keyframes dropIn {
@@ -470,15 +512,30 @@
     bottom: 18px;
   }
 
+  .headerWrapper {
+    right: auto;
+    bottom: auto;
+  }
+
   .bellBtn {
     width: 52px;
     height: 52px;
+  }
+
+  .headerWrapper .bellBtn {
+    width: 42px;
+    height: 42px;
   }
 
   .dropdown {
     right: -8px;
     width: calc(100vw - 28px);
     max-height: calc(100vh - 96px);
+  }
+
+  .headerDropdown {
+    right: -68px;
+    max-height: calc(100vh - 92px);
   }
 
   .quickActions {
