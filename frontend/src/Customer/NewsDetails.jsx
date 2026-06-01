@@ -24,6 +24,7 @@ import {
 } from "@ant-design/icons";
 import { Helmet } from "react-helmet-async";
 import styles from "./NewsDetails.module.css";
+import Footer from "../Utility/Footer";
 
 import { API_BASE } from "../config/api";
 
@@ -364,6 +365,7 @@ function NewsDetail() {
           </div>
         </div>
       </Content>
+      <Footer />
     </Layout>
   );
 }
