@@ -34,6 +34,82 @@ const extractOrderCode = (value) => {
   return null;
 };
 
+const domainFromConfig = () => {
+  return String(CHATBOT_LINKS.domainWeb || "").replace(/\/+$/, "");
+};
+
+const buildWebLink = (path = "") => {
+  const normalizedDomain = domainFromConfig();
+
+  if (!path) return normalizedDomain;
+
+  const normalizedPath = String(path).startsWith("/")
+    ? String(path)
+    : `/${path}`;
+
+  return `${normalizedDomain}${normalizedPath}`;
+};
+
+const findCategoryByKeyword = async (categoryKeyword) => {
+  const keyword = String(categoryKeyword || "").trim();
+
+  if (!keyword) return null;
+
+  const likeKeyword = `%${keyword.replace(/\s+/g, "%")}%`;
+
+  const [rows] = await pool.execute(
+    `
+      SELECT MaDanhMuc, TenDanhMuc, ParentID
+      FROM DanhMucSanPham
+      WHERE TenDanhMuc = ?
+         OR TenDanhMuc LIKE ?
+      ORDER BY
+        CASE
+          WHEN TenDanhMuc = ? THEN 0
+          WHEN TenDanhMuc LIKE ? THEN 1
+          ELSE 2
+        END,
+        ParentID IS NULL DESC,
+        MaDanhMuc ASC
+      LIMIT 1
+    `,
+    [keyword, likeKeyword, keyword, likeKeyword],
+  );
+
+  return rows[0] || null;
+};
+
+const buildHomeCategoryOrSearchLink = async ({
+  categoryKeywords = [],
+  fallbackSearchKeyword = "",
+}) => {
+  const keywords = [
+    ...new Set(
+      toArray(categoryKeywords)
+        .map((keyword) => String(keyword || "").trim())
+        .filter(Boolean),
+    ),
+  ];
+
+  for (const keyword of keywords) {
+    const category = await findCategoryByKeyword(keyword);
+
+    if (category) {
+      return buildWebLink(`/home/?category=${category.MaDanhMuc}`);
+    }
+  }
+
+  const fallbackKeyword = String(
+    fallbackSearchKeyword || keywords[0] || "",
+  ).trim();
+
+  if (!fallbackKeyword) {
+    return buildWebLink("/home");
+  }
+
+  return buildWebLink(`/home/?search=${encodeURIComponent(fallbackKeyword)}`);
+};
+
 router.post("/webhook", async (req, res) => {
   const intentName = req.body.queryResult.intent.displayName;
   const parameters = req.body.queryResult.parameters;
@@ -43,7 +119,7 @@ router.post("/webhook", async (req, res) => {
   let maKhachHang = originalPayload.maKhachHang || webhookPayload.maKhachHang || originalPayload.userId || webhookPayload.userId || null;
   if (maKhachHang === "null" || maKhachHang === "undefined" || maKhachHang === "") maKhachHang = null;
 
-  const domainWeb = CHATBOT_LINKS.domainWeb;
+  const domainWeb = domainFromConfig();
   const zaloLink = CHATBOT_LINKS.zaloLink;
   const emailLink = CHATBOT_LINKS.emailLink;
   const phoneLink = CHATBOT_LINKS.phoneLink;
@@ -1068,14 +1144,17 @@ router.post("/webhook", async (req, res) => {
           categorySearch.searchKeyword || categorySearch.displayText;
 
         if (searchKeyword) {
+          const categoryLink = await buildHomeCategoryOrSearchLink({
+            categoryKeywords: categorySearch.searchKeywords || [searchKeyword],
+            fallbackSearchKeyword: searchKeyword,
+          });
+
           listRichContent.push([
             {
               type: "button",
               icon: { type: "search", color: "#34A853" },
               text: `Xem thêm ${categorySearch.displayText || searchKeyword}`,
-              link: `${domainWeb}/home/?search=${encodeURIComponent(
-                searchKeyword,
-              )}`,
+              link: categoryLink,
             },
           ]);
         }
@@ -1236,14 +1315,19 @@ router.post("/webhook", async (req, res) => {
           });
 
           if (categorySearch.searchKeyword) {
+            const categoryLink = await buildHomeCategoryOrSearchLink({
+              categoryKeywords: categorySearch.searchKeywords || [
+                categorySearch.searchKeyword,
+              ],
+              fallbackSearchKeyword: categorySearch.searchKeyword,
+            });
+
             richContentData.push([
               {
                 type: "button",
                 icon: { type: "search", color: "#34A853" },
                 text: `Xem thêm ${categorySearch.displayText || categorySearch.searchKeyword}`,
-                link: `${domainWeb}/home/?search=${encodeURIComponent(
-                  categorySearch.searchKeyword,
-                )}`,
+                link: categoryLink,
               },
             ]);
           }
@@ -1650,7 +1734,11 @@ router.post("/webhook", async (req, res) => {
         });
 
         if (searchKeyword) {
-          const searchLink = `${domainWeb}/home/?search=${encodeURIComponent(searchKeyword.trim())}`;
+          const searchLink = await buildHomeCategoryOrSearchLink({
+            categoryKeywords: categorySearch.searchKeywords || [searchKeyword],
+            fallbackSearchKeyword: searchKeyword,
+          });
+
           richContentData.push([
             {
               type: "button",
@@ -1659,7 +1747,7 @@ router.post("/webhook", async (req, res) => {
               link: searchLink,
             },
           ]);
-        }
+}
 
         return res.json({
           fulfillmentMessages: [
@@ -1764,7 +1852,7 @@ router.post("/webhook", async (req, res) => {
                   type: "button",
                   icon: { type: "storefront", color: "#34A853" },
                   text: "Đi tới Gian hàng (Xem tất cả)",
-                  link: `${domainWeb}`,
+                  link: buildWebLink("/home"),
                 },
                 {
                   type: "button",

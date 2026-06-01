@@ -232,10 +232,20 @@ const SHOPPING_NEED_RULES = [
     searchKeywords: ["Bộ ấm trà", "Khay mứt"],
   },
   {
-    displayText: "đồ phong thủy",
-    keywords: ["phong thuy", "tai loc", "vat pham"],
-    searchKeywords: ["Đồ phong thủy", "Tượng phong thủy", "Lục bình"],
-  },
+  displayText: "lục bình phong thủy",
+  keywords: ["luc binh"],
+  searchKeywords: ["Lục bình", "Đồ phong thủy"],
+},
+{
+  displayText: "tượng phong thủy",
+  keywords: ["tuong phong thuy"],
+  searchKeywords: ["Tượng phong thủy", "Đồ phong thủy"],
+},
+{
+  displayText: "đồ phong thủy",
+  keywords: ["do phong thuy", "phong thuy", "tai loc", "vat pham"],
+  searchKeywords: ["Đồ phong thủy", "Tượng phong thủy", "Lục bình"],
+},
   {
     displayText: "đồ trang trí",
     keywords: ["phong khach", "decor", "trang tri"],
