@@ -1,7 +1,34 @@
 import express from "express";
 import { pool, CHATBOT_LINKS } from "../config/chatbot.config.js";
+import {
+  toArray,
+  buildVariantAttributeFilter,
+  extractCapacityAttributes,
+} from "../utils/chatbotAttributeFilter.helper.js";
 
 const router = express.Router();
+
+const extractOrderCode = (value) => {
+  if (!value) return null;
+
+  const normalizedValue = String(value).toUpperCase().trim();
+
+  const newOrderCodeMatch = normalizedValue.match(
+    /D\s*H\s*(\d{6})\s*([A-Z0-9])\s*([A-Z0-9])\s*([A-Z0-9])\s*([A-Z0-9])\b/,
+  );
+
+  if (newOrderCodeMatch) {
+    return `DH${newOrderCodeMatch[1]}${newOrderCodeMatch[2]}${newOrderCodeMatch[3]}${newOrderCodeMatch[4]}${newOrderCodeMatch[5]}`;
+  }
+
+  const oldOrderCodeMatch = normalizedValue.match(/D\s*H\s*(\d{6})\b/);
+
+  if (oldOrderCodeMatch) {
+    return `DH${oldOrderCodeMatch[1]}`;
+  }
+
+  return null;
+};
 
 router.post("/webhook", async (req, res) => {
   const intentName = req.body.queryResult.intent.displayName;
@@ -28,37 +55,54 @@ router.post("/webhook", async (req, res) => {
       });
     }
 
-    let thuocTinhList = parameters.Thuoc_Tinh || [];
-    if (!Array.isArray(thuocTinhList)) {
-      thuocTinhList = [thuocTinhList];
-    }
+    const thuocTinhList = [
+      ...toArray(parameters.Thuoc_Tinh),
+      ...extractCapacityAttributes(req.body.queryResult.queryText),
+    ];
+    const menhList = toArray(parameters.Menh);
 
     const tenSanPham = rawTenSP.trim();
 
     try {
-      let sqlQuery = `
-                SELECT sp.MaSanPham, bt.MaBienThe, bt.TenBienThe, bt.Gia, bt.SoLuong, MIN(ha.DuongDan) as DuongDan, sp.TenSanPham
-                FROM BienTheSanPham bt
-                JOIN SanPham sp ON bt.MaSanPham = sp.MaSanPham
-                LEFT JOIN HinhAnhBienThe ha ON bt.MaBienThe = ha.MaBienThe
-                WHERE sp.TenSanPham LIKE ? AND bt.TrangThai = 1
-            `;
+        let sqlQuery = `
+          SELECT
+            sp.MaSanPham,
+            bt.MaBienThe,
+            bt.TenBienThe,
+            bt.Gia,
+            bt.SoLuong,
+            MIN(ha.DuongDan) as DuongDan,
+            sp.TenSanPham
+          FROM BienTheSanPham bt
+          JOIN SanPham sp ON bt.MaSanPham = sp.MaSanPham
+          LEFT JOIN HinhAnhBienThe ha ON bt.MaBienThe = ha.MaBienThe
+          WHERE sp.TenSanPham LIKE ?
+            AND sp.TrangThai = 1
+            AND bt.TrangThai = 1
+        `;
 
-      const searchTenSP = `%${tenSanPham.replace(/\s+/g, "%")}%`;
-      let queryParams = [searchTenSP];
+        const searchTenSP = `%${tenSanPham.replace(/\s+/g, "%")}%`;
+        let queryParams = [searchTenSP];
 
-      thuocTinhList.forEach((tt) => {
-        let cleanTT = tt.replace(/màu/gi, "").replace(/cm/gi, " cm").trim();
-        if (cleanTT) {
-          const searchTT = `%${cleanTT.replace(/\s+/g, "%")}%`;
-          sqlQuery += ` AND bt.TenBienThe LIKE ?`;
-          queryParams.push(searchTT);
-        }
-      });
+        const attributeFilter = buildVariantAttributeFilter({
+          thuocTinhList,
+          menhList,
+        });
 
-      sqlQuery += ` GROUP BY sp.MaSanPham, bt.MaBienThe, bt.TenBienThe, bt.Gia, bt.SoLuong, sp.TenSanPham`;
+        sqlQuery += attributeFilter.sql;
+        queryParams.push(...attributeFilter.params);
 
-      const [rows] = await pool.execute(sqlQuery, queryParams);
+        sqlQuery += `
+          GROUP BY
+            sp.MaSanPham,
+            bt.MaBienThe,
+            bt.TenBienThe,
+            bt.Gia,
+            bt.SoLuong,
+            sp.TenSanPham
+        `;
+
+        const [rows] = await pool.execute(sqlQuery, queryParams);
 
       if (rows.length === 1) {
         const sp = rows[0];
@@ -149,11 +193,84 @@ router.post("/webhook", async (req, res) => {
             },
           ],
         });
-      } else {
+} else {
+    const requestedAttributes = [...thuocTinhList, ...menhList].filter(Boolean);
+
+    if (requestedAttributes.length > 0) {
+      const fallbackQuery = `
+        SELECT
+          sp.MaSanPham,
+          sp.TenSanPham,
+          bt.TenBienThe,
+          bt.Gia,
+          bt.SoLuong
+        FROM BienTheSanPham bt
+        JOIN SanPham sp ON bt.MaSanPham = sp.MaSanPham
+        WHERE sp.TenSanPham LIKE ?
+          AND sp.TrangThai = 1
+          AND bt.TrangThai = 1
+        GROUP BY
+          sp.MaSanPham,
+          sp.TenSanPham,
+          bt.MaBienThe,
+          bt.TenBienThe,
+          bt.Gia,
+          bt.SoLuong
+        LIMIT 5
+      `;
+
+      const [availableRows] = await pool.execute(fallbackQuery, [searchTenSP]);
+
+      if (availableRows.length > 0) {
+        const availableVariants = availableRows.map((variant) => {
+          const giaFormat = new Intl.NumberFormat("vi-VN", {
+            style: "currency",
+            currency: "VND",
+          }).format(variant.Gia);
+
+          const tonKhoText =
+            variant.SoLuong > 0 ? `còn ${variant.SoLuong} sản phẩm` : "tạm hết hàng";
+
+          return `🔸 ${variant.TenBienThe}: ${giaFormat} (${tonKhoText})`;
+        });
+
         return res.json({
-          fulfillmentText: `Dạ em chưa tìm thấy sản phẩm khớp với yêu cầu của bạn trong kho. Bạn kiểm tra lại tên giúp em nhé.`,
+          fulfillmentMessages: [
+            {
+              text: {
+                text: [
+                  `Dạ em có sản phẩm ${availableRows[0].TenSanPham}, nhưng chưa tìm thấy phân loại khớp với thuộc tính ${requestedAttributes.join(", ")}. Em gửi bạn các phân loại hiện có để tham khảo nhé:`,
+                ],
+              },
+            },
+            {
+              payload: {
+                richContent: [
+                  [
+                    {
+                      type: "description",
+                      title: "💰 Phân loại hiện có",
+                      text: availableVariants,
+                    },
+                    {
+                      type: "button",
+                      icon: { type: "touch_app", color: "#C06E52" },
+                      text: "Xem chi tiết & Chọn mẫu",
+                      link: `${domainWeb}/product/${availableRows[0].MaSanPham}`,
+                    },
+                  ],
+                ],
+              },
+            },
+          ],
         });
       }
+    }
+
+    return res.json({
+      fulfillmentText: `Dạ em chưa tìm thấy sản phẩm khớp với yêu cầu của bạn trong kho. Bạn kiểm tra lại tên giúp em nhé.`,
+    });
+  }
     } catch (error) {
       console.error(error);
       return res.json({
@@ -171,9 +288,9 @@ router.post("/webhook", async (req, res) => {
       });
     }
 
-    let maDonReal = maDonHang.toString().toUpperCase().replace(/SỐ|MÃ|SO|MA|ĐƠN|DON|:| /gi, "").trim();
+    const maDonReal = extractOrderCode(maDonHang);
 
-    if (!maDonReal.startsWith("DH")) {
+    if (!maDonReal) {
       return res.json({
         fulfillmentMessages: [{ text: { text: [`Dạ mã đơn hàng bên em bắt đầu bằng chữ "DH" kèm theo các số và chữ cái (ví dụ: DH26040211X6). Bạn vui lòng kiểm tra và cung cấp lại mã chính xác nhé!`] } }],
       });
@@ -330,9 +447,9 @@ router.post("/webhook", async (req, res) => {
       });
     }
 
-    let maDonReal = maDonHang.toString().toUpperCase().replace(/SỐ|MÃ|SO|MA|ĐƠN|DON|:| /gi, "").trim();
+    const maDonReal = extractOrderCode(maDonHang);
 
-    if (!maDonReal.startsWith("DH")) {
+    if (!maDonReal) {
       return res.json({
         fulfillmentMessages: [{ text: { text: [`Dạ mã đơn hàng bên em bắt đầu bằng chữ "DH" kèm theo các số và chữ cái (ví dụ: DH26040211X6). Bạn vui lòng kiểm tra và cung cấp lại mã chính xác nhé!`] } }],
       });
@@ -363,36 +480,123 @@ router.post("/webhook", async (req, res) => {
         });
       }
       const sqlQuery = `
-                SELECT sp.TenSanPham, bt.TenBienThe, bh.NgayKetThuc, bh.TrangThai
-                FROM DonHang dh
-                JOIN ChiTietDonHang ctdh ON dh.MaDonHang = ctdh.MaDonHang
-                JOIN BienTheSanPham bt ON ctdh.MaBienThe = bt.MaBienThe
-                JOIN SanPham sp ON bt.MaSanPham = sp.MaSanPham
-                JOIN BaoHanh bh ON ctdh.MaCTDH = bh.MaCTDH
-                WHERE dh.MaHienThi = ?
-            `;
+        SELECT
+          bh.MaBaoHanh,
+          sp.TenSanPham,
+          bt.TenBienThe,
+          bh.NgayBatDau,
+          bh.NgayKetThuc,
+          bh.TrangThai
+        FROM DonHang dh
+        JOIN ChiTietDonHang ctdh ON dh.MaDonHang = ctdh.MaDonHang
+        JOIN BienTheSanPham bt ON ctdh.MaBienThe = bt.MaBienThe
+        JOIN SanPham sp ON bt.MaSanPham = sp.MaSanPham
+        JOIN BaoHanh bh ON ctdh.MaCTDH = bh.MaCTDH
+        WHERE dh.MaHienThi = ?
+      `;
 
       const [rows] = await pool.execute(sqlQuery, [maDonReal]);
 
       if (rows.length > 0) {
-        let textArray = [];
-        const currentDate = new Date();
+        const WARRANTY_STATUS = {
+          EXPIRED: 0,
+          ACTIVE: 1,
+          REQUESTED: 2,
+          PROCESSING: 3,
+          COMPLETED: 4,
+          REJECTED: 5,
+        };
+
+        const isActiveWarrantyExpired = (item) => {
+          if (!item.NgayKetThuc) return false;
+
+          return (
+            Number(item.TrangThai) === WARRANTY_STATUS.ACTIVE &&
+            new Date(item.NgayKetThuc) < new Date()
+          );
+        };
+
+        const getEffectiveWarrantyStatus = (item) => {
+          if (isActiveWarrantyExpired(item)) {
+            return WARRANTY_STATUS.EXPIRED;
+          }
+
+          return Number(item.TrangThai);
+        };
+
+        const getWarrantyStatusText = (status) => {
+          switch (Number(status)) {
+            case WARRANTY_STATUS.EXPIRED:
+              return "❌ Hết hạn";
+            case WARRANTY_STATUS.ACTIVE:
+              return "✅ Còn hiệu lực";
+            case WARRANTY_STATUS.REQUESTED:
+              return "🟡 Đang yêu cầu bảo hành";
+            case WARRANTY_STATUS.PROCESSING:
+              return "🔵 Đang xử lý bảo hành";
+            case WARRANTY_STATUS.COMPLETED:
+              return "✅ Đã hoàn tất bảo hành";
+            case WARRANTY_STATUS.REJECTED:
+              return "❌ Từ chối bảo hành";
+            default:
+              return "Không xác định";
+          }
+        };
+
+        const textArray = [];
+        let canRequestWarranty = false;
+        let canTrackWarranty = false;
 
         rows.forEach((item) => {
+          const ngayBD = new Date(item.NgayBatDau);
           const ngayKT = new Date(item.NgayKetThuc);
-          const ngayKTStr = ngayKT.toLocaleDateString("vi-VN");
-          let statusStr = "";
 
-          if (item.TrangThai === 1 && ngayKT >= currentDate) {
-            statusStr = "✅ Còn hạn bảo hành";
-          } else {
-            statusStr = "❌ Hết hạn";
+          const ngayBDStr = ngayBD.toLocaleDateString("vi-VN");
+          const ngayKTStr = ngayKT.toLocaleDateString("vi-VN");
+
+          const effectiveStatus = getEffectiveWarrantyStatus(item);
+
+          if (effectiveStatus === WARRANTY_STATUS.ACTIVE) {
+            canRequestWarranty = true;
+          }
+
+          if (
+            effectiveStatus === WARRANTY_STATUS.REQUESTED ||
+            effectiveStatus === WARRANTY_STATUS.PROCESSING ||
+            effectiveStatus === WARRANTY_STATUS.COMPLETED ||
+            effectiveStatus === WARRANTY_STATUS.REJECTED
+          ) {
+            canTrackWarranty = true;
           }
 
           textArray.push(
-            `🔸 ${item.TenSanPham} (${item.TenBienThe})\n   Hạn: ${ngayKTStr} - ${statusStr}`,
+            `🔸 ${item.TenSanPham} (${item.TenBienThe})\n   Thời hạn: ${ngayBDStr} - ${ngayKTStr}\n   Trạng thái: ${getWarrantyStatusText(effectiveStatus)}`,
           );
         });
+
+        const warrantyRichContent = [
+          {
+            type: "description",
+            title: "🛡️ Trạng thái bảo hành",
+            text: textArray,
+          },
+        ];
+
+        if (canRequestWarranty) {
+          warrantyRichContent.push({
+            type: "button",
+            icon: { type: "verified_user", color: "#1b437c" },
+            text: "Gửi yêu cầu bảo hành",
+            link: `${domainWeb}/warranties`,
+          });
+        } else if (canTrackWarranty) {
+          warrantyRichContent.push({
+            type: "button",
+            icon: { type: "receipt_long", color: "#1b437c" },
+            text: "Theo dõi bảo hành",
+            link: `${domainWeb}/warranties`,
+          });
+        }
 
         return res.json({
           fulfillmentMessages: [
@@ -405,15 +609,7 @@ router.post("/webhook", async (req, res) => {
             },
             {
               payload: {
-                richContent: [
-                  [
-                    {
-                      type: "description",
-                      title: "🛡️ Trạng thái bảo hành",
-                      text: textArray,
-                    },
-                  ],
-                ],
+                richContent: [warrantyRichContent],
               },
             },
           ],
@@ -465,9 +661,9 @@ router.post("/webhook", async (req, res) => {
       });
     }
 
-    let maDonReal = maDonHang.toString().toUpperCase().replace(/SỐ|MÃ|SO|MA|ĐƠN|DON|:| /gi, "").trim();
+    const maDonReal = extractOrderCode(maDonHang);
 
-    if (!maDonReal.startsWith("DH")) {
+    if (!maDonReal) {
       return res.json({
         fulfillmentMessages: [{ text: { text: [`Dạ mã đơn hàng bên em bắt đầu bằng chữ "DH" kèm theo các số và chữ cái (ví dụ: DH26040211X6). Bạn vui lòng kiểm tra và cung cấp lại mã chính xác nhé!`] } }],
       });
@@ -587,13 +783,13 @@ router.post("/webhook", async (req, res) => {
     if (!maDonHang) {
       return res.json({
         fulfillmentText:
-          "Dạ bạn cho mình xin mã đơn hàng (ví dụ: DH26040211X6) để hệ thống kiểm tra và hỗ trợ thay đổi thông vị nhé.",
+          "Dạ bạn cho mình xin mã đơn hàng (ví dụ: DH26040211X6) để hệ thống kiểm tra và hỗ trợ thay đổi thông tin nhé.",
       });
     }
 
-    let maDonReal = maDonHang.toString().toUpperCase().replace(/SỐ|MÃ|SO|MA|ĐƠN|DON|:| /gi, "").trim();
+    const maDonReal = extractOrderCode(maDonHang);
 
-    if (!maDonReal.startsWith("DH")) {
+    if (!maDonReal) {
       return res.json({
         fulfillmentMessages: [{ text: { text: [`Dạ mã đơn hàng bên em bắt đầu bằng chữ "DH" kèm theo các số và chữ cái (ví dụ: DH26040211X6). Bạn vui lòng kiểm tra và cung cấp lại mã chính xác nhé!`] } }],
       });
@@ -864,7 +1060,7 @@ router.post("/webhook", async (req, res) => {
           ]);
         });
 
-        const linkSearch = `${domainWeb}?search=${encodeURIComponent(danhMuc.trim())}`;
+        const linkSearch = `${domainWeb}/home/?search=${encodeURIComponent(danhMuc.trim())}`;
         listRichContent.push([
           {
             type: "button",
@@ -900,34 +1096,41 @@ router.post("/webhook", async (req, res) => {
       });
     }
 
-    let thuocTinhList = parameters.Thuoc_Tinh || [];
-    if (!Array.isArray(thuocTinhList)) {
-      thuocTinhList = [thuocTinhList];
-    }
+    const thuocTinhList = [
+      ...toArray(parameters.Thuoc_Tinh),
+      ...extractCapacityAttributes(req.body.queryResult.queryText),
+    ];
+    const menhList = toArray(parameters.Menh);
 
     const tenSanPham = rawTenSP.trim();
 
     try {
       let sqlQuery = `
-                SELECT sp.MaSanPham, bt.TenBienThe, bt.SoLuong, sp.TenSanPham 
-                FROM BienTheSanPham bt
-                JOIN SanPham sp ON bt.MaSanPham = sp.MaSanPham
-                WHERE sp.TenSanPham LIKE ? AND bt.TrangThai = 1
-            `;
+          SELECT
+            sp.MaSanPham,
+            bt.MaBienThe,
+            bt.TenBienThe,
+            bt.SoLuong,
+            sp.TenSanPham
+          FROM BienTheSanPham bt
+          JOIN SanPham sp ON bt.MaSanPham = sp.MaSanPham
+          WHERE sp.TenSanPham LIKE ?
+            AND sp.TrangThai = 1
+            AND bt.TrangThai = 1
+        `;
 
-      const searchTenSP = `%${tenSanPham.replace(/\s+/g, "%")}%`;
-      let queryParams = [searchTenSP];
+        const searchTenSP = `%${tenSanPham.replace(/\s+/g, "%")}%`;
+        let queryParams = [searchTenSP];
 
-      thuocTinhList.forEach((tt) => {
-        let cleanTT = tt.replace(/màu/gi, "").replace(/cm/gi, " cm").trim();
-        if (cleanTT) {
-          const searchTT = `%${cleanTT.replace(/\s+/g, "%")}%`;
-          sqlQuery += ` AND bt.TenBienThe LIKE ?`;
-          queryParams.push(searchTT);
-        }
-      });
+        const attributeFilter = buildVariantAttributeFilter({
+          thuocTinhList,
+          menhList,
+        });
 
-      const [rows] = await pool.execute(sqlQuery, queryParams);
+        sqlQuery += attributeFilter.sql;
+        queryParams.push(...attributeFilter.params);
+
+        const [rows] = await pool.execute(sqlQuery, queryParams);
 
       if (rows.length === 1) {
         const sp = rows[0];
@@ -1113,25 +1316,36 @@ router.post("/webhook", async (req, res) => {
     let danhMucRaw = parameters.Danh_Muc_San_Pham || "";
     if (Array.isArray(danhMucRaw)) danhMucRaw = danhMucRaw[0];
 
+    const capacityAttributes = extractCapacityAttributes(queryText);
+
+    const thuocTinhList = [
+      ...toArray(parameters.Thuoc_Tinh),
+      ...capacityAttributes,
+    ];
+
+    const menhList = toArray(parameters.Menh);
     let nganSach = 0;
 
     const regexTrieu = /(\d+(?:[\.,]\d+)?)\s*(triệu|tr|củ)/i;
     const regexNgan = /(\d+(?:[\.,]\d+)?)\s*(k|ngàn|nghìn)/i;
-    const regexLit = /(\d+(?:[\.,]\d+)?)\s*(lít|lit|l)/i;
 
     let matchTrieu = queryText.match(regexTrieu);
     let matchNgan = queryText.match(regexNgan);
-    let matchLit = queryText.match(regexLit);
+
+    const hasCapacityButNoMoneyUnit =
+      capacityAttributes.length > 0 && !matchTrieu && !matchNgan;
 
     if (matchTrieu) {
       let so = parseFloat(matchTrieu[1].replace(",", "."));
       nganSach = so * 1000000;
-    } else if (matchLit) {
-      let so = parseFloat(matchLit[1].replace(",", "."));
-      nganSach = so * 100000;
     } else if (matchNgan) {
       let so = parseFloat(matchNgan[1].replace(",", "."));
       nganSach = so * 1000;
+    } else if (hasCapacityButNoMoneyUnit) {
+      return res.json({
+        fulfillmentText:
+          `Dạ "${capacityAttributes.join(", ")}" là dung tích sản phẩm, chưa phải ngân sách ạ. Bạn muốn tìm dòng sản phẩm nào và khoảng giá bao nhiêu để em tư vấn chính xác hơn nhé?`,
+      });
     } else if (nganSachRaw) {
       let so = Number(nganSachRaw);
       if (so < 30) {
@@ -1202,6 +1416,14 @@ router.post("/webhook", async (req, res) => {
         }
       }
 
+      const attributeFilter = buildVariantAttributeFilter({
+        thuocTinhList,
+        menhList,
+      });
+
+      sqlQuery += attributeFilter.sql;
+      queryParams.push(...attributeFilter.params);
+
       sqlQuery += ` GROUP BY sp.MaSanPham, sp.TenSanPham ORDER BY GiaTu DESC LIMIT 3`;
 
       const [rows] = await pool.execute(sqlQuery, queryParams);
@@ -1252,7 +1474,7 @@ router.post("/webhook", async (req, res) => {
         });
 
         if (searchKeyword) {
-          const searchLink = `${domainWeb}?search=${encodeURIComponent(searchKeyword.trim())}`;
+          const searchLink = `${domainWeb}/home/?search=${encodeURIComponent(searchKeyword.trim())}`;
           richContentData.push([
             {
               type: "button",
