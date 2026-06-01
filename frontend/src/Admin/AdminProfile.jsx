@@ -1,6 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Layout, Form, Input, Button, Avatar, message, Upload, Divider } from 'antd';
-import { UserOutlined, UploadOutlined, ProfileOutlined, LockOutlined } from '@ant-design/icons';
+import { Layout, Form, Input, Button, Avatar, message, Divider } from 'antd';
+import {
+  HomeOutlined,
+  IdcardOutlined,
+  LockOutlined,
+  MailOutlined,
+  PhoneOutlined,
+  ProfileOutlined,
+  UserOutlined,
+} from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
@@ -14,7 +22,6 @@ function AdminProfile() {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [avatarUrl, setAvatarUrl] = useState('');
   const [profileName, setProfileName] = useState(
     localStorage.getItem('admin_username') ||
     localStorage.getItem('username') ||
@@ -23,8 +30,6 @@ function AdminProfile() {
 
   const [activeTab, setActiveTab] = useState('profile');
 
-  const CLOUDINARY_CLOUD_NAME = 'dcmwz0uis';
-  const CLOUDINARY_UPLOAD_PRESET = 'the_creamy_shop';
   const token = localStorage.getItem('admin_token') || localStorage.getItem('token');
   const role = localStorage.getItem('admin_role') || localStorage.getItem('role');
   const normalizedRole = (role || '').trim().toLowerCase();
@@ -36,6 +41,9 @@ function AdminProfile() {
       ? { headers: { Authorization: `Bearer ${token}` } }
       : {}),
   }), [token]);
+  const emailValue = Form.useWatch('Email', form);
+  const phoneValue = Form.useWatch('SDT', form);
+  const addressValue = Form.useWatch('Diachi', form);
 
   const fetchAdminProfile = useCallback(async () => {
     try {
@@ -53,17 +61,13 @@ function AdminProfile() {
           localStorage.getItem('admin_username') ||
           'Admin';
 
-        const avatar = profileData?.Avatar || '';
-
         setProfileName(fullName);
-        setAvatarUrl(avatar);
 
         form.setFieldsValue({
           FullName: fullName,
           Email: userData?.email || userData?.Email,
           SDT: profileData?.SDT,
           Diachi: profileData?.DiaChi || profileData?.Diachi,
-          Avatar: avatar,
         });
       }
     } catch (error) {
@@ -93,45 +97,6 @@ function AdminProfile() {
     return () => window.clearTimeout(timeoutId);
   }, [fetchAdminProfile]);
 
-  const handleAvatarError = () => {
-    setAvatarUrl('');
-    return false;
-  };
-
-  const handleAvatarChange = async (info) => {
-    const file = info.file?.originFileObj || info.file;
-
-    if (!file) return;
-
-    if (file.size > 1024 * 1024) {
-      message.error('Dung lượng ảnh không được vượt quá 1MB!');
-      return;
-    }
-
-    setLoading(true);
-
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-
-    try {
-      const res = await axios.post(
-        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
-        formData
-      );
-
-      const secureUrl = res.data.secure_url;
-      setAvatarUrl(secureUrl);
-      form.setFieldsValue({ Avatar: secureUrl });
-      message.success('Upload ảnh thành công!');
-    } catch (error) {
-      console.error(error);
-      message.error('Upload ảnh thất bại!');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleUpdateProfile = async (values) => {
     setLoading(true);
 
@@ -140,7 +105,6 @@ function AdminProfile() {
         TenNhanVien: values.FullName,
         SDT: values.SDT,
         DiaChi: values.Diachi,
-        Avatar: values.Avatar || avatarUrl || undefined,
       };
 
       const res = await axios.patch(
@@ -153,13 +117,10 @@ function AdminProfile() {
 
       const updatedData = res.data.result;
       const updatedName = updatedData?.TenNhanVien || values.FullName;
-      const updatedAvatar = updatedData?.Avatar || values.Avatar || avatarUrl || '';
 
       setProfileName(updatedName);
-      setAvatarUrl(updatedAvatar);
 
       localStorage.setItem('admin_username', updatedName);
-      localStorage.setItem('admin_avatar', updatedAvatar);
 
       window.dispatchEvent(new Event('storage'));
     } catch (error) {
@@ -182,10 +143,8 @@ function AdminProfile() {
             <Sider width={250} className={styles.sidebar}>
               <div className={styles.userInfoMini}>
                 <Avatar
-                  src={avatarUrl || undefined}
                   size={60}
                   className={styles.avatarMini}
-                  onError={handleAvatarError}
                 >
                   {avatarInitial}
                 </Avatar>
@@ -257,10 +216,6 @@ function AdminProfile() {
                           <Input className={styles.customInput} />
                         </Form.Item>
 
-                        <Form.Item name="Avatar" hidden>
-                          <Input />
-                        </Form.Item>
-
                         <Form.Item>
                           <Button
                             type="primary"
@@ -275,35 +230,49 @@ function AdminProfile() {
                     </div>
 
                     <div className={styles.formRight}>
-                      <div className={styles.avatarSection}>
+                      <div className={styles.adminProfileSummary}>
                         <Avatar
-                          src={avatarUrl || undefined}
-                          size={120}
-                          className={styles.avatarBig}
-                          onError={handleAvatarError}
+                          size={104}
+                          className={styles.adminSummaryAvatar}
                         >
                           {avatarInitial}
                         </Avatar>
 
-                        <Upload
-                          showUploadList={false}
-                          beforeUpload={() => false}
-                          onChange={handleAvatarChange}
-                          accept=".jpg,.jpeg,.png"
-                        >
-                          <Button
-                            icon={<UploadOutlined />}
-                            className={styles.btnUpload}
-                            loading={loading}
-                          >
-                            Chọn Ảnh
-                          </Button>
-                        </Upload>
+                        <div className={styles.adminSummaryTitle}>
+                          <h3>{profileName}</h3>
+                          <span>{roleLabel}</span>
+                        </div>
 
-                        <p className={styles.avatarNote}>
-                          Dung lượng file tối đa 1 MB<br />
-                          Định dạng: .JPEG, .PNG
-                        </p>
+                        <div className={styles.adminSummaryList}>
+                          <div className={styles.adminSummaryItem}>
+                            <IdcardOutlined />
+                            <div>
+                              <span>Tài khoản</span>
+                              <strong>{localStorage.getItem('admin_username') || localStorage.getItem('username') || profileName}</strong>
+                            </div>
+                          </div>
+                          <div className={styles.adminSummaryItem}>
+                            <MailOutlined />
+                            <div>
+                              <span>Email</span>
+                              <strong>{emailValue || 'Chưa cập nhật'}</strong>
+                            </div>
+                          </div>
+                          <div className={styles.adminSummaryItem}>
+                            <PhoneOutlined />
+                            <div>
+                              <span>Số điện thoại</span>
+                              <strong>{phoneValue || 'Chưa cập nhật'}</strong>
+                            </div>
+                          </div>
+                          <div className={styles.adminSummaryItem}>
+                            <HomeOutlined />
+                            <div>
+                              <span>Địa chỉ liên hệ</span>
+                              <strong>{addressValue || 'Chưa cập nhật'}</strong>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
