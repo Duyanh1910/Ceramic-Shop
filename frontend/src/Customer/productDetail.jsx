@@ -307,6 +307,13 @@ function ProductDetail() {
     return formatPrice(product.GiaThapNhat);
   };
 
+  const getSelectedVariantMenh = () => {
+    return selectedVariant?.GiaTriThuocTinhs?.find(item => {
+      const attributeName = item.ThuocTinh?.TenThuocTinh?.trim().toLowerCase();
+      return item.ThuocTinh?.MaThuocTinh === 30002 || attributeName === 'mệnh' || attributeName === 'Mệnh';
+    })?.GiaTri;
+  };
+
   const handleVariantClick = (v) => {
     if (product?.TrangThai === 0 || v.SoLuong <= 0) return;
     setSelectedVariant(v);
@@ -592,6 +599,7 @@ function ProductDetail() {
   if (!product) return <div style={{textAlign: 'center', padding: '100px', color:'red'}}>Không tìm thấy sản phẩm!</div>;
 
   const isDiscontinued = product.TrangThai === 0;
+  const selectedVariantMenh = getSelectedVariantMenh();
 
   return (
     <Layout className={styles.homeWrapper}>
@@ -719,6 +727,13 @@ function ProductDetail() {
                     )) : <span style={{color:'#888', paddingTop: '5px'}}>Mặc định</span>}
                 </div>
               </div>
+
+              {selectedVariantMenh && (
+                <div className={styles.flexRow}>
+                  <div className={styles.label}>Mệnh</div>
+                  <div className={styles.variantAttributeValue}>{selectedVariantMenh}</div>
+                </div>
+              )}
 
               <div className={styles.flexRow}>
                 <div className={styles.label}>Số lượng</div>

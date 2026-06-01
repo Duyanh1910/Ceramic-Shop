@@ -621,6 +621,19 @@
   align-self: center;
 }
 
+.variantAttributeValue {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  color: #1b437c;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 0 14px;
+  border: 1px solid #e6edf7;
+  border-radius: 4px;
+  background: #f8fbff;
+}
+
 .actions {
   display: flex;
   gap: 20px;
