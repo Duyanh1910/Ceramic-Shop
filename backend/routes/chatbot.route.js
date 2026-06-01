@@ -12,9 +12,22 @@ const extractOrderCode = (value) => {
   if (!value) return null;
 
   const normalizedValue = String(value).toUpperCase().trim();
-  const match = normalizedValue.match(/\bDH[A-Z0-9]+\b/);
 
-  return match ? match[0] : null;
+  const newOrderCodeMatch = normalizedValue.match(
+    /D\s*H\s*(\d{6})\s*([A-Z0-9])\s*([A-Z0-9])\s*([A-Z0-9])\s*([A-Z0-9])\b/,
+  );
+
+  if (newOrderCodeMatch) {
+    return `DH${newOrderCodeMatch[1]}${newOrderCodeMatch[2]}${newOrderCodeMatch[3]}${newOrderCodeMatch[4]}${newOrderCodeMatch[5]}`;
+  }
+
+  const oldOrderCodeMatch = normalizedValue.match(/D\s*H\s*(\d{6})\b/);
+
+  if (oldOrderCodeMatch) {
+    return `DH${oldOrderCodeMatch[1]}`;
+  }
+
+  return null;
 };
 
 router.post("/webhook", async (req, res) => {
@@ -697,7 +710,7 @@ router.post("/webhook", async (req, res) => {
     if (!maDonHang) {
       return res.json({
         fulfillmentText:
-          "Dạ bạn cho mình xin mã đơn hàng (ví dụ: DH26040211X6) để hệ thống kiểm tra và hỗ trợ thay đổi thông vị nhé.",
+          "Dạ bạn cho mình xin mã đơn hàng (ví dụ: DH26040211X6) để hệ thống kiểm tra và hỗ trợ thay đổi thông tin nhé.",
       });
     }
 
