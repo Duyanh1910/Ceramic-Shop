@@ -1654,83 +1654,123 @@ router.post("/webhook", async (req, res) => {
       });
     }
   } else if (intentName === "Khieu_Nai_Bao_Loi") {
-    const textResponse =
-      "Dạ CeramicShop vô cùng xin lỗi bạn về trải nghiệm không tốt này. Để shop xử lý đền bù/đổi trả ngay lập tức, bạn vui lòng liên hệ ngay qua Hotline, Zalo, Fanpage Facebook hoặc Email để bộ phận CSKH giải quyết ngay nhé ạ.";
+    const queryText = String(req.body.queryResult.queryText || "");
+
+    const normalizedQueryText = queryText
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/đ/g, "d");
+
+    const isReturnIssueQuestion =
+      /(doi\s*tra|tra\s*hang|doi\s*hang|hoan\s*tien|giao\s*sai|sai\s*mau|sai\s*san\s*pham|nham\s*san\s*pham|thieu\s*hang|giao\s*thieu|khong\s*du\s*hang|\b(vo|be)\b|hong\s*(khi\s*(nhan|giao|mo)|do\s*van\s*chuyen|luc\s*nhan)|van\s*chuyen.*\b(hong|vo|be|nut|ran)\b|\b(hong|vo|be|nut|ran)\b.*(van\s*chuyen|giao|nhan)|\b(nut|ran)\b.*(khi\s*(giao|nhan|mo)|do\s*van\s*chuyen|luc\s*nhan))/i.test(
+        normalizedQueryText,
+      );
+
+    const isWarrantyLikeQuestion =
+      /(bao\s*hanh|loi\s*men|loi\s*nha\s*san\s*xuat|loi\s*san\s*xuat|loi\s*nung|soc\s*nhiet)/i.test(
+        normalizedQueryText,
+      );
+
+    const textResponse = maKhachHang
+      ? isWarrantyLikeQuestion && !isReturnIssueQuestion
+        ? "Dạ CeramicShop rất xin lỗi bạn về trải nghiệm chưa tốt này. Với lỗi men, lỗi sản xuất, lỗi nung hoặc trường hợp cần bảo hành, bạn có thể gửi yêu cầu bảo hành trên website để shop kiểm tra đúng quy trình ạ."
+        : "Dạ CeramicShop rất xin lỗi bạn về trải nghiệm chưa tốt này. Với trường hợp vỡ/hỏng khi giao, giao sai mẫu, thiếu hàng, đổi trả hoặc hoàn tiền, bạn nên tạo yêu cầu đổi trả/hoàn tiền trên website để admin kiểm tra và xử lý đúng quy trình ạ."
+      : "Dạ CeramicShop rất xin lỗi bạn về trải nghiệm chưa tốt này. Để tạo yêu cầu đổi trả/hoàn tiền hoặc gửi yêu cầu bảo hành, bạn vui lòng đăng nhập tài khoản đã đặt hàng trên website trước nhé ạ.";
+
+    const guideText = [
+      "📌 Bạn nên chuẩn bị ảnh/video minh chứng tình trạng sản phẩm, đặc biệt với trường hợp vỡ hỏng khi vận chuyển, giao sai mẫu hoặc thiếu hàng.",
+    ];
+
+    if (isReturnIssueQuestion) {
+      guideText.push(
+        "🔁 Với vỡ/hỏng khi giao, giao sai mẫu, thiếu hàng hoặc cần hoàn tiền: bạn ưu tiên vào mục Đổi trả / Hoàn tiền để chọn đơn hàng đã hoàn thành và gửi yêu cầu.",
+      );
+    } else {
+      guideText.push(
+        "🔁 Nếu muốn đổi/trả hàng hoặc hoàn tiền, bạn vào mục Đổi trả / Hoàn tiền để chọn đơn hàng đã hoàn thành và gửi yêu cầu.",
+      );
+    }
+
+    if (isWarrantyLikeQuestion) {
+      guideText.push(
+        "🛡️ Với lỗi men, lỗi sản xuất, lỗi nung, sốc nhiệt hoặc yêu cầu bảo hành: bạn có thể vào mục Bảo hành của tôi để gửi/theo dõi yêu cầu bảo hành.",
+      );
+    }
+
+    guideText.push(
+      "Lưu ý: Chatbot chỉ hướng dẫn thao tác, không tự tạo phiếu đổi trả, không hoàn tiền và không cập nhật tồn kho trực tiếp ạ.",
+    );
+
+    const richContent = [
+      {
+        type: "description",
+        title: "Hướng xử lý khiếu nại / báo lỗi",
+        text: guideText,
+      },
+    ];
+
+    if (maKhachHang) {
+      if (isWarrantyLikeQuestion && !isReturnIssueQuestion) {
+        richContent.push({
+          type: "button",
+          icon: { type: "verified_user", color: "#34A853" },
+          text: "Gửi yêu cầu bảo hành",
+          link: buildWebLink("/warranties"),
+        });
+      }
+
+      richContent.push({
+        type: "button",
+        icon: { type: "assignment_return", color: "#1b437c" },
+        text: "Tạo yêu cầu đổi trả / hoàn tiền",
+        link: buildWebLink("/returns"),
+      });
+
+      if (isWarrantyLikeQuestion && isReturnIssueQuestion) {
+        richContent.push({
+          type: "button",
+          icon: { type: "verified_user", color: "#34A853" },
+          text: "Gửi yêu cầu bảo hành",
+          link: buildWebLink("/warranties"),
+        });
+      }
+    } else {
+      richContent.push({
+        type: "button",
+        icon: { type: "login", color: "#1b437c" },
+        text: "Đăng nhập để tạo yêu cầu",
+        link: buildWebLink("/login"),
+      });
+    }
+
+    richContent.push(
+      {
+        type: "button",
+        icon: { type: "assignment", color: "#C06E52" },
+        text: "Xem chính sách đổi trả",
+        link: buildWebLink("/support/chinh-sach-doi-tra"),
+      },
+      {
+        type: "button",
+        icon: { type: "chat", color: "#0068FF" },
+        text: "Gửi ảnh/video qua Zalo",
+        link: zaloLink,
+      },
+      {
+        type: "button",
+        icon: { type: "phone", color: "#34A853" },
+        text: "Gọi CSKH",
+        link: phoneLink,
+      },
+    );
 
     return res.json({
       fulfillmentMessages: [
         { text: { text: [textResponse] } },
         {
           payload: {
-            richContent: [
-              [
-                {
-                  type: "button",
-                  icon: { type: "phone", color: "#34A853" },
-                  text: "Gọi ngay để khiếu nại",
-                  link: phoneLink,
-                },
-                {
-                  type: "button",
-                  icon: { type: "chat", color: "#0068FF" },
-                  text: "Gửi ảnh/video qua Zalo",
-                  link: zaloLink,
-                },
-                {
-                  type: "button",
-                  icon: { type: "facebook", color: "#0866FF" },
-                  text: "Gửi ảnh/video qua Fanpage",
-                  link: fbLink,
-                },
-                {
-                  type: "button",
-                  icon: { type: "mail", color: "#EA4335" },
-                  text: "Gửi ảnh/video qua Email",
-                  link: emailLink,
-                },
-              ],
-            ],
-          },
-        },
-      ],
-    });
-  } else if (intentName === "Gap_Nhan_Vien_Tu_Van") {
-    const textResponse =
-      "Dạ, bạn có thể gọi trực tiếp, nhắn Zalo, Fanpage Facebook hoặc gửi Email để chuyên viên gốm sứ bên em hỗ trợ bạn chu đáo nhất nhé ạ!";
-
-    return res.json({
-      fulfillmentMessages: [
-        { text: { text: [textResponse] } },
-        {
-          payload: {
-            richContent: [
-              [
-                {
-                  type: "button",
-                  icon: { type: "phone", color: "#34A853" },
-                  text: "Gọi trực tiếp Hotline",
-                  link: phoneLink,
-                },
-                {
-                  type: "button",
-                  icon: { type: "chat", color: "#0068FF" },
-                  text: "Chat Zalo với CSKH ngay",
-                  link: zaloLink,
-                },
-                {
-                  type: "button",
-                  icon: { type: "facebook", color: "#0866FF" },
-                  text: "Chat với CSKH qua Fanpage",
-                  link: fbLink,
-                },
-                {
-                  type: "button",
-                  icon: { type: "mail", color: "#EA4335" },
-                  text: "Gửi Email cho CSKH",
-                  link: emailLink,
-                },
-              ],
-            ],
+            richContent: [richContent],
           },
         },
       ],
