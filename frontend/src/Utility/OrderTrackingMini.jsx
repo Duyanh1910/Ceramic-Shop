@@ -11,8 +11,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import styles from './OrderTracking.module.css';
-
-const API_BASE = 'https://ceramic-shop-u8ak.onrender.com/api/v1';
+import { API_BASE } from "../config/api";
 
 const fmt = (p) =>
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(p ?? 0);

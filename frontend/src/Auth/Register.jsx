@@ -11,8 +11,9 @@ import {
 } from '@ant-design/icons';
 import Chibi from '../Utility/Chibi.jsx';
 
+import { API_BASE } from "../config/api";
+
 const { Text, Link } = Typography;
-const API_BASE = 'https://ceramic-shop-u8ak.onrender.com/api/v1';
 const OTP_LENGTH = 6;
 const COOLDOWN_SEC = 60;
 

@@ -13,6 +13,8 @@ import {
 import { Helmet } from 'react-helmet-async';
 import styles from './NewsDetails.module.css';
 
+import { API_BASE } from "../config/api";
+
 const { Header, Content } = Layout;
 const { Title } = Typography;
 
@@ -54,11 +56,11 @@ function NewsDetail() {
     const fetchNewsData = async () => {
       setLoading(true);
       try {
-        const detailRes = await axios.get(`https://ceramic-shop-u8ak.onrender.com/api/v1/news/${id}`);
+        const detailRes = await axios.get(`${API_BASE}/news/${id}`);
         const articleData = detailRes.data?.result || detailRes.data?.data || detailRes.data;
         setNews(articleData);
 
-        const listRes = await axios.get(`https://ceramic-shop-u8ak.onrender.com/api/v1/news`);
+        const listRes = await axios.get(`${API_BASE}/news`);
         const allNews = listRes.data?.result || listRes.data?.data || [];
         
         const filteredNews = allNews.filter(item => item.MaTinTuc !== parseInt(id)).slice(0, 3);

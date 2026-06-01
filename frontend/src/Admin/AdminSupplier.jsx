@@ -3,8 +3,7 @@ import {Button, Form, Input, message, Modal, Table, Tooltip} from "antd";
 import {EditOutlined, PlusOutlined, ReloadOutlined, SearchOutlined,} from "@ant-design/icons";
 import axios from "axios";
 import styles from "./AdminTable.module.css";
-
-const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1";
+import { API_BASE } from "../config/api";
 
 export default function AdminSuppliers() {
     const [data, setData] = useState([]);

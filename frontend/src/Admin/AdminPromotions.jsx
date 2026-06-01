@@ -39,7 +39,7 @@ import dayjs from "dayjs";
 import { exportExcelReport } from "../Utility/excelExport";
 import styles from "./AdminPromotions.module.css";
 
-const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1";
+import { API_BASE } from "../config/api";
 
 const fmt = (v) =>
   new Intl.NumberFormat("vi-VN", {

@@ -367,21 +367,21 @@ export const createSomething = async (req, res, next) => {
 ## 11. Quy ước phát triển frontend
 
 - Dùng React component theo nhóm màn hình sẵn có: `Admin`, `Auth`, `Customer`, `Utility`.
-- API call hiện đang rải trực tiếp trong component bằng Axios.
-- Khi chỉnh lớn, nên gom API base URL về một module dùng chung, ví dụ `src/api/client.js`.
+- API call dùng chung `frontend/src/config/api.js` cho `API_ORIGIN`, `API_BASE` và `API_ADMIN_BASE`.
 - Gửi cookie bằng `withCredentials: true`.
 - Với upload ảnh, frontend đang dùng Cloudinary unsigned/direct upload ở `Auth/Profile.jsx`, `Admin/AdminProfile.jsx`, `Admin/AdminNews.jsx`.
 
 Khuyến nghị refactor kỹ thuật:
 
-- Thay hard-code `https://ceramic-shop-u8ak.onrender.com/api/v1` bằng `import.meta.env.VITE_API_BASE_URL`.
+- Override backend bằng `VITE_API_BASE_URL` hoặc backend origin `VITE_API_URL` khi chạy local/staging.
 - Tạo Axios instance chung:
 
 ```js
 import axios from "axios";
+import { API_BASE } from "../config/api";
 
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api/v1",
+  baseURL: API_BASE,
   withCredentials: true,
 });
 ```

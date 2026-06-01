@@ -37,9 +37,9 @@ import { useSearchParams } from "react-router-dom";
 import { exportExcelReport } from "../Utility/excelExport";
 import styles from "./AdminRisks.module.css";
 
-const { Title, Text } = Typography;
-const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1";
+import { API_BASE } from "../config/api";
 
+const { Title, Text } = Typography;
 const ALL_VALUE = "all";
 const PAGE_SIZE = 10;
 

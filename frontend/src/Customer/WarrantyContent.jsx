@@ -30,9 +30,9 @@ import axios from 'axios';
 import dayjs from 'dayjs';
 import styles from './WarrantyContent.module.css';
 
-const { TextArea } = Input;
+import { API_BASE } from "../config/api";
 
-const API_BASE = 'https://ceramic-shop-u8ak.onrender.com/api/v1';
+const { TextArea } = Input;
 const CLOUDINARY_CLOUD_NAME = 'dcmwz0uis';
 const CLOUDINARY_UPLOAD_PRESET = 'the_creamy_shop';
 const WARRANTY_PAGE_SIZE = 6;

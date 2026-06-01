@@ -15,9 +15,9 @@ import dayjs from "dayjs";
 import axios from "axios";
 import styles from "./AdminWarrantyHistory.module.css";
 
-const { Text, Title } = Typography;
-const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1";
+import { API_BASE } from "../config/api";
 
+const { Text, Title } = Typography;
 const WARRANTY_STATUS = {
   EXPIRED: 0,
   ACTIVE: 1,

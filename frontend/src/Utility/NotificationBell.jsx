@@ -18,10 +18,10 @@ import {
 } from "@ant-design/icons";
 import styles from "./NotificationBell.module.css";
 
+import { API_BASE } from "../config/api";
+
 const STORAGE_KEY = "admin_notifications";
 const MAX_STORED = 50;
-const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1";
-
 const EVENT_META = {
   ORDER_CREATED: {
     label: "Đơn mới",

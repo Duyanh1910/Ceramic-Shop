@@ -3,8 +3,8 @@ import {useNavigate, useSearchParams} from 'react-router-dom';
 import {Helmet} from 'react-helmet-async';
 import axios from 'axios';
 import styles from './PaymentResult.module.css';
+import { API_BASE } from "../config/api";
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://ceramic-shop-u8ak.onrender.com';
 
 const PAYMENT_STATUS = {
     LOADING: 'loading',
@@ -115,7 +115,7 @@ async function parsePaymentResult(searchParams) {
 
         try {
             const response = await axios.get(
-                `${API_URL}/api/v1/payment/check-status/${appTransId}`
+                `${API_BASE}/payment/check-status/${appTransId}`
             );
 
             const result = response.data;

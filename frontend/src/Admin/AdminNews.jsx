@@ -48,8 +48,8 @@ import "tinymce/plugins/table";
 import "tinymce/plugins/wordcount";
 
 import styles from "./AdminNews.module.css";
+import { API_ADMIN_BASE as API_BASE } from "../config/api";
 
-const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1/admin";
 const CDN_CLOUD = "dcmwz0uis";
 const CDN_PRESET = "the_creamy_shop";
 

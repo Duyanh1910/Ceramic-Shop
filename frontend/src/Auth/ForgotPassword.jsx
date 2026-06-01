@@ -6,8 +6,8 @@ import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
 import styles from './ForgotPassword.module.css';
 import Chibi from '../Utility/Chibi.jsx';
+import { API_BASE } from "../config/api";
 
-const API_BASE = 'https://ceramic-shop-u8ak.onrender.com/api/v1';
 const OTP_LENGTH = 6;
 const COOLDOWN_SEC = 60;
 

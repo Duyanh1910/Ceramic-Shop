@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './ChatBot.css';
 
+import { API_BASE } from "../config/api";
+
 const animationConfigs = [
     { name: 'Idle_Base', file: '/basic.glb' },
     { name: 'Cast_Cycle', file: '/basic.glb' },
@@ -34,7 +36,7 @@ function ChatBot() {
   useEffect(() => {
     const fetchMaKH = async () => {
         try {
-            const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/me', { withCredentials: true });
+            const res = await axios.get(`${API_BASE}/auth/me`, { withCredentials: true });
             const userData = res.data.user || res.data.result;
             const profileData = userData?.profile || userData;
 

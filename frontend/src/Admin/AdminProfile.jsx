@@ -16,6 +16,8 @@ import styles from '../Auth/Profile.module.css';
 
 import ChangePassword from '../Auth/ChangePassword';
 
+import { API_BASE } from "../config/api";
+
 const { Content, Sider } = Layout;
 
 function AdminProfile() {
@@ -47,7 +49,7 @@ function AdminProfile() {
 
   const fetchAdminProfile = useCallback(async () => {
     try {
-      const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/me', authConfig);
+      const res = await axios.get(`${API_BASE}/auth/me`, authConfig);
 
       const userData = res.data.user || res.data.result || res.data;
       const profileData = userData?.profile || userData;
@@ -108,7 +110,7 @@ function AdminProfile() {
       };
 
       const res = await axios.patch(
-        'https://ceramic-shop-u8ak.onrender.com/api/v1/staffs/me',
+        `${API_BASE}/staffs/me`,
         payload,
         authConfig
       );

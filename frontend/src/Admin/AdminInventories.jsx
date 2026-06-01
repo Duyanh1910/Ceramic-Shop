@@ -20,9 +20,9 @@ import axios from "axios";
 import { exportExcelReport } from "../Utility/excelExport";
 import styles from "./AdminTable.module.css";
 
-const { RangePicker } = DatePicker;
-const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1/admin";
+import { API_ADMIN_BASE as API_BASE } from "../config/api";
 
+const { RangePicker } = DatePicker;
 const isExportTransaction = (value) => {
   const normalizedValue = String(value || "").toUpperCase();
   return normalizedValue.includes("XUAT") || normalizedValue.includes("XUẤT");

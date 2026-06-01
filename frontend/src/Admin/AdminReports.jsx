@@ -39,9 +39,9 @@ import {
 import axios from "axios";
 import { exportExcelReport } from "../Utility/excelExport";
 import styles from "./AdminReports.module.css";
+import { API_ADMIN_BASE } from "../config/api";
 
-const API_BASE =
-  "https://ceramic-shop-u8ak.onrender.com/api/v1/admin/statistics";
+const API_BASE = `${API_ADMIN_BASE}/statistics`;
 
 const COLORS = [
   "#1b437c",

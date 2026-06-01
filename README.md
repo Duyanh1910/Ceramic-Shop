@@ -150,7 +150,7 @@ Frontend mặc định chạy ở:
 http://localhost:5173
 ```
 
-Lưu ý: nhiều component frontend hiện đang hard-code API production `https://ceramic-shop-u8ak.onrender.com/api/v1`. Khi phát triển local, nên chuẩn hóa sang biến môi trường Vite như `VITE_API_BASE_URL`.
+Lưu ý: frontend dùng chung `frontend/src/config/api.js` để cấu hình API. Có thể override bằng `VITE_API_BASE_URL` hoặc backend origin `VITE_API_URL`.
 
 ## Scripts
 

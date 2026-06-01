@@ -4,11 +4,11 @@ import {DeleteOutlined, EditOutlined, PlusOutlined, SearchOutlined, SubnodeOutli
 import axios from "axios";
 import styles from "./AdminCategory.module.css";
 
+import { API_ADMIN_BASE } from "../config/api";
+
 const {TextArea} = Input;
 const {Option} = Select;
-
-const API_BASE =
-    "https://ceramic-shop-u8ak.onrender.com/api/v1/admin/categories";
+const API_BASE = `${API_ADMIN_BASE}/categories`;
 
 const lineClampStyle = {
     display: "-webkit-box",

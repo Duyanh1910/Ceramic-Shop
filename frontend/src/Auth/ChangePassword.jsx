@@ -4,8 +4,7 @@ import { LockOutlined, CheckCircleFilled } from '@ant-design/icons';
 import axios from 'axios';
 import styles from './ChangePassword.module.css';
 import SetPasswordModal from '../Utility/SetPasswordModal.jsx';
-
-const API_BASE = 'https://ceramic-shop-u8ak.onrender.com/api/v1';
+import { API_BASE } from "../config/api";
 
 export default function ChangePassword() {
   const [form] = Form.useForm();

@@ -22,8 +22,7 @@ import {
 import axios from "axios";
 import dayjs from "dayjs";
 import styles from "./AdminTable.module.css";
-
-const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1";
+import { API_BASE } from "../config/api";
 
 export default function AdminStaffs() {
   const [data, setData] = useState([]);

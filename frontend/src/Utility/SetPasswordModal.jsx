@@ -4,8 +4,7 @@ import { LockOutlined, GoogleOutlined, FacebookOutlined } from '@ant-design/icon
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import styles from './SetPasswordModal.module.css';
-
-const API_BASE = 'https://ceramic-shop-u8ak.onrender.com/api/v1';
+import { API_BASE } from "../config/api";
 
 export default function SetPasswordModal({ open, onClose, provider }) {
   const [form] = Form.useForm();

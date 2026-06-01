@@ -24,6 +24,8 @@ import styles from './LandingPage.module.css';
 import { saveSession } from '../Utility/useAuth.js';
 import Footer from '../Utility/Footer'; 
 
+import { API_BASE } from "../config/api";
+
 const bannerSlides = [
     {
         id: 1,
@@ -180,7 +182,7 @@ function LandingPage() {
     useEffect(() => {
         const fetchCats = async () => {
             try {
-                const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/categories');
+                const res = await axios.get(`${API_BASE}/categories`);
                 const all = res.data?.result || [];
                 setApiCategories(all.filter(c => !c.ParentID));
             } catch {}
@@ -196,7 +198,7 @@ function LandingPage() {
             if (isCustomer || isAdmin) return;
 
             try {
-                const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/me', { 
+                const res = await axios.get(`${API_BASE}/auth/me`, {
                     withCredentials: true 
                 });
                 
@@ -258,7 +260,7 @@ function LandingPage() {
     const fetchNews = async () => {
         setLoadingNews(true);
         try {
-            const response = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/news');
+            const response = await axios.get(`${API_BASE}/news`);
             const data = response.data?.result || response.data?.data || response.data || [];
             setNewsArticles(data.slice(0, 3));
         } catch (error) {
@@ -271,7 +273,7 @@ function LandingPage() {
     const fetchProducts = async () => {
         setLoading(true);
         try {
-            const response = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/products?page=1&limit=8');
+            const response = await axios.get(`${API_BASE}/products?page=1&limit=8`);
             if (response.data && response.data.result) {
                 setProducts(response.data.result.data);
             }
@@ -298,7 +300,7 @@ function LandingPage() {
         setSearchKw(value);
         if (!value) { setSearchOptions([]); return; }
         try {
-            const res = await axios.get(`https://ceramic-shop-u8ak.onrender.com/api/v1/products?limit=1000`);
+            const res = await axios.get(`${API_BASE}/products?limit=1000`);
             let data = res.data.data || res.data.result?.data || [];
             
             const searchLower = value.toLowerCase();

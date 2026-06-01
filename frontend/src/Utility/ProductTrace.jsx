@@ -2,8 +2,7 @@ import { useState } from "react";
 import { Button, Modal, Spin } from "antd";
 import { SafetyOutlined } from "@ant-design/icons";
 import axios from "axios";
-
-const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1";
+import { API_BASE } from "../config/api";
 
 export default function ProductTrace({ maSanPham, disabled = false }) {
   const [open, setOpen] = useState(false);

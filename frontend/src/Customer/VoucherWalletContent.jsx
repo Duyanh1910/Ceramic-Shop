@@ -25,8 +25,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import styles from './VoucherWalletContent.module.css';
-
-const API_BASE = 'https://ceramic-shop-u8ak.onrender.com/api/v1';
+import { API_BASE } from "../config/api";
 
 const getToken = () =>
   localStorage.getItem('customer_token') || localStorage.getItem('admin_token');

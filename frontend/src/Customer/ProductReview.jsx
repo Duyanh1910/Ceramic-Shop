@@ -6,8 +6,7 @@ import {
 import { UserOutlined, StarFilled, EditOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import styles from './ProductReview.module.css';
-
-const API_BASE = 'https://ceramic-shop-u8ak.onrender.com/api/v1';
+import { API_BASE } from "../config/api";
 
 const RATING_LABELS = { 1: 'Rất tệ', 2: 'Tệ', 3: 'Bình thường', 4: 'Tốt', 5: 'Xuất sắc' };
 

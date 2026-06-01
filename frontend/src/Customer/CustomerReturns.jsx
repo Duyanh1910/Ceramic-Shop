@@ -25,8 +25,9 @@ import dayjs from "dayjs";
 import ReturnRequestModal from "./ReturnRequestModal";
 import styles from "./CustomerReturns.module.css";
 
+import { API_BASE } from "../config/api";
+
 const { Text, Title } = Typography;
-const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1";
 const ORDER_COMPLETED = 3;
 const RETURN_PAGE_SIZE = 6;
 

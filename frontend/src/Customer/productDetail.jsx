@@ -35,6 +35,8 @@ import Breadcrumb from "../Utility/Breadcrumb.jsx";
 import ProductReview from "./ProductReview.jsx";
 import Footer from "../Utility/Footer";
 import ProductTrace from "../Utility/ProductTrace.jsx";
+import { API_BASE } from "../config/api";
+
 const { Header, Content } = Layout;
 
 function ProductDetail() {
@@ -93,7 +95,7 @@ function ProductDetail() {
   const fetchCartFromDB = async () => {
     try {
       const res = await axios.get(
-        "https://ceramic-shop-u8ak.onrender.com/api/v1/cart",
+        `${API_BASE}/cart`,
         {
           withCredentials: true,
         },
@@ -144,7 +146,7 @@ function ProductDetail() {
 
       try {
         const res = await axios.get(
-          "https://ceramic-shop-u8ak.onrender.com/api/v1/auth/me",
+          `${API_BASE}/auth/me`,
           {
             withCredentials: true,
           },
@@ -187,7 +189,7 @@ function ProductDetail() {
       setLoading(true);
       try {
         const res = await axios.get(
-          `https://ceramic-shop-u8ak.onrender.com/api/v1/products/${id}`,
+          `${API_BASE}/products/${id}`,
         );
         const data = res.data.result || res.data.data || res.data;
         if (!data?.MaSanPham) {
@@ -222,7 +224,7 @@ function ProductDetail() {
         const categoryObj = data.DanhMuc || data.DanhMucSanPham;
         if (categoryObj && categoryObj.MaDanhMuc) {
           const relRes = await axios.get(
-            `https://ceramic-shop-u8ak.onrender.com/api/v1/products?category=${categoryObj.MaDanhMuc}&limit=5`,
+            `${API_BASE}/products?category=${categoryObj.MaDanhMuc}&limit=5`,
           );
           let relData =
             relRes.data.data ||
@@ -245,7 +247,7 @@ function ProductDetail() {
   const fetchReviews = async () => {
     try {
       const resRating = await axios.get(
-        `https://ceramic-shop-u8ak.onrender.com/api/v1/reviews/${id}/ratings`,
+        `${API_BASE}/reviews/${id}/ratings`,
       );
 
       if (resRating.data.success) {
@@ -304,7 +306,7 @@ function ProductDetail() {
   const handleLogout = async () => {
     try {
       await axios.post(
-        "https://ceramic-shop-u8ak.onrender.com/api/v1/auth/logout",
+        `${API_BASE}/auth/logout`,
         {},
         {
           withCredentials: true,
@@ -533,7 +535,7 @@ function ProductDetail() {
     if (isLoggedIn) {
       try {
         await axios.post(
-          "https://ceramic-shop-u8ak.onrender.com/api/v1/cart/items",
+          `${API_BASE}/cart/items`,
           {
             MaBienThe: targetVariantId,
             SoLuong: validQty,
@@ -648,7 +650,7 @@ function ProductDetail() {
     if (isLoggedIn) {
       try {
         await axios.patch(
-          `https://ceramic-shop-u8ak.onrender.com/api/v1/cart/items/${variantId || id}`,
+          `${API_BASE}/cart/items/${variantId || id}`,
           { SoLuong: newQty },
           { withCredentials: true },
         );
@@ -667,7 +669,7 @@ function ProductDetail() {
     if (isLoggedIn) {
       try {
         await axios.delete(
-          `https://ceramic-shop-u8ak.onrender.com/api/v1/cart/items/${variantId || id}`,
+          `${API_BASE}/cart/items/${variantId || id}`,
           {
             withCredentials: true,
           },
@@ -697,7 +699,7 @@ function ProductDetail() {
       if (isLoggedIn) {
         try {
           await axios.patch(
-            `https://ceramic-shop-u8ak.onrender.com/api/v1/cart/items/${variantId || id}`,
+            `${API_BASE}/cart/items/${variantId || id}`,
             { SoLuong: finalQty },
             { withCredentials: true },
           );
@@ -854,7 +856,7 @@ function ProductDetail() {
     const delayDebounceFn = setTimeout(async () => {
       try {
         const res = await axios.get(
-          `https://ceramic-shop-u8ak.onrender.com/api/v1/products?limit=1000`,
+          `${API_BASE}/products?limit=1000`,
         );
         let data = res.data.data || res.data.result?.data || [];
 

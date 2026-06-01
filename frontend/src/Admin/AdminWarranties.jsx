@@ -26,8 +26,8 @@ import { useSearchParams } from "react-router-dom";
 import { exportExcelReport } from "../Utility/excelExport";
 import styles from "./AdminWarranties.module.css";
 import WarrantyHistory from "./AdminWarrantyHistory";
+import { API_BASE } from "../config/api";
 
-const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1";
 const { Title, Text } = Typography;
 const ALL_STATUS = "all";
 

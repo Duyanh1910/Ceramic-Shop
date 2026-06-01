@@ -1,6 +1,7 @@
 import { io } from "socket.io-client";
+import { API_ORIGIN } from "../config/api";
 
-const SOCKET_URL = "https://ceramic-shop-u8ak.onrender.com";
+const SOCKET_URL = API_ORIGIN;
 let hasGlobalAdminNotificationListener = false;
 
 const getStoredToken = () => {

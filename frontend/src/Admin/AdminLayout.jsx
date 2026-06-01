@@ -29,9 +29,9 @@ import {
     resolveAdminNotificationRedirect,
 } from "../Utility/socket.js";
 import NotificationBell from "../Utility/NotificationBell.jsx";
-const {Header, Sider, Content} = Layout;
-const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1";
+import { API_BASE } from "../config/api";
 
+const {Header, Sider, Content} = Layout;
 const STAFF_MENU = [
     {key: "/admin", icon: <DashboardOutlined/>, label: "Đơn hàng"},
     {key: "/admin/products", icon: <ShoppingOutlined/>, label: "Sản phẩm"},

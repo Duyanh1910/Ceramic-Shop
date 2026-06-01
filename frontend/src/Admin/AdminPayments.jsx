@@ -27,8 +27,9 @@ import axios from "axios";
 import dayjs from "dayjs";
 import styles from "./AdminPayments.module.css";
 
+import { API_BASE } from "../config/api";
+
 const { Title, Text } = Typography;
-const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1";
 const PAGE_SIZE = 10;
 const ALL_VALUE = "all";
 

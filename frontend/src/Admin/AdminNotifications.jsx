@@ -19,10 +19,10 @@ import {
 } from "../Utility/socket.js";
 import styles from "./AdminNotifications.module.css";
 
+import { API_BASE } from "../config/api";
+
 const STORAGE_KEY = "admin_notifications";
 const PAGE_SIZE = 12;
-const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1";
-
 const EVENT_META = {
   ORDER_CREATED: {
     label: "Đơn mới",

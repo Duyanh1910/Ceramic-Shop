@@ -4,8 +4,8 @@ import { message, Spin } from 'antd';
 import axios from 'axios';
 import { saveSession } from '../Utility/useAuth.js';
 import { Helmet } from 'react-helmet-async';
+import { API_BASE } from "../config/api";
 
-const BACKEND_URL = 'https://ceramic-shop-u8ak.onrender.com';
 
 function LoginSuccess() {
   const navigate = useNavigate();
@@ -13,7 +13,7 @@ function LoginSuccess() {
   useEffect(() => {
     const fetchUserAndLogin = async () => {
       try {
-        const response = await axios.get(`${BACKEND_URL}/api/v1/auth/me`, {
+        const response = await axios.get(`${API_BASE}/auth/me`, {
           withCredentials: true 
         });
         

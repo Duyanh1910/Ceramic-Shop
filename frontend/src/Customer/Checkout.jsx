@@ -13,8 +13,8 @@ import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
 import styles from './Checkout.module.css';
 import AddressSelector from '../Utility/AddressSelector.jsx';
+import { API_BASE } from "../config/api";
 
-const API_BASE = 'https://ceramic-shop-u8ak.onrender.com/api/v1';
 const fmt = (p) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(p ?? 0);
 
 const getVoucherValueText = (promo) => {

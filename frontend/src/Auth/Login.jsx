@@ -8,10 +8,9 @@ import { Helmet } from 'react-helmet-async';
 import { saveSession } from '../Utility/useAuth.js';
 import Chibi from '../Utility/Chibi.jsx'; 
 
-const { Text, Link } = Typography;
+import { API_BASE } from "../config/api";
 
-const BACKEND_URL = 'https://ceramic-shop-u8ak.onrender.com';
-const API_BASE = `${BACKEND_URL}/api/v1`;
+const { Text, Link } = Typography;
 
 function Login() {
   const [loading, setLoading] = useState(false);
@@ -192,14 +191,14 @@ function Login() {
 
           <div className={styles.socialGroup}>
             <a
-              href={`${BACKEND_URL}/api/v1/auth/google?rememberMe=${rememberMe}`}
+              href={`${API_BASE}/auth/google?rememberMe=${rememberMe}`}
               className={`${styles.socialCircle} ${styles.ggCircle}`}
             >
               <GoogleIcon />
               <span className={styles.socialTextGg}>Google</span>
             </a>
             <a
-              href={`${BACKEND_URL}/api/v1/auth/facebook?rememberMe=${rememberMe}`}
+              href={`${API_BASE}/auth/facebook?rememberMe=${rememberMe}`}
               className={`${styles.socialCircle} ${styles.fbCircle}`}
             >
               <FacebookIcon />

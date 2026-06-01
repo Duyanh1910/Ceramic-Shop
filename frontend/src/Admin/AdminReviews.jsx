@@ -6,10 +6,11 @@ import axios from "axios";
 import { exportExcelReport } from "../Utility/excelExport";
 import styles from "./AdminTable.module.css";
 
+import { API_ADMIN_BASE } from "../config/api";
+
 const {RangePicker} = DatePicker;
 const {Option} = Select;
-
-const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1/admin/reviews";
+const API_BASE = `${API_ADMIN_BASE}/reviews`;
 
 const ellipsisStyle = {
     overflow: "hidden",

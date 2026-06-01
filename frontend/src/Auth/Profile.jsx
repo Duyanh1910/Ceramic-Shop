@@ -12,6 +12,8 @@ import VoucherWalletContent from '../Customer/VoucherWalletContent';
 import WarrantyContent from '../Customer/WarrantyContent';
 import CustomerReturns from '../Customer/CustomerReturns';
 
+import { API_BASE } from "../config/api";
+
 const { Header, Content, Sider } = Layout;
 
 function Profile() {
@@ -31,7 +33,7 @@ function Profile() {
 
   const fetchUserProfile = async () => {
     try {
-      const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/me', {
+      const res = await axios.get(`${API_BASE}/auth/me`, {
        withCredentials: true
       });
 
@@ -98,7 +100,7 @@ function Profile() {
         Avatar: values.Avatar || avatarUrl,
       };
 
-      const res = await axios.patch('https://ceramic-shop-u8ak.onrender.com/api/v1/customers/me', payload, {
+      const res = await axios.patch(`${API_BASE}/customers/me`, payload, {
         withCredentials:true
       });
 

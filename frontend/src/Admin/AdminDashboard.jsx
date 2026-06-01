@@ -14,11 +14,10 @@ import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
 import styles from './AdminDashboard.module.css';
 
+import { API_BASE } from "../config/api";
+
 const { Option } = Select;
 const { RangePicker } = DatePicker;
-
-const API_BASE = 'https://ceramic-shop-u8ak.onrender.com/api/v1';
-
 const fmt = (p) =>
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(p ?? 0);
 

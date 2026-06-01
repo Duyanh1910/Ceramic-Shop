@@ -13,6 +13,8 @@ import axios from 'axios';
 import styles from './Cart.module.css';
 import AddressSelector from '../Utility/AddressSelector';
 
+import { API_BASE } from "../config/api";
+
 const { Header, Content } = Layout;
 
 function Cart() {
@@ -42,7 +44,7 @@ function Cart() {
 
   const fetchCartFromDB = async () => {
     try {
-      const res = await axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/cart', {
+      const res = await axios.get(`${API_BASE}/cart`, {
         withCredentials: true 
       });
       if (res.data.cart && res.data.cart.items) {
@@ -69,7 +71,7 @@ function Cart() {
   };
 
   useEffect(() => {
-    axios.get('https://ceramic-shop-u8ak.onrender.com/api/v1/auth/me', {
+    axios.get(`${API_BASE}/auth/me`, {
       withCredentials: true
     }).then(res => {
       const userData = res.data.user || res.data.result;
@@ -113,7 +115,7 @@ function Cart() {
     setSelectedItems(prev => prev.filter(k => k !== `${id}-${variantId}`));
     if (isLoggedIn) {
       try {
-        await axios.delete(`https://ceramic-shop-u8ak.onrender.com/api/v1/cart/items/${variantId || id}`, {
+        await axios.delete(`${API_BASE}/cart/items/${variantId || id}`, {
           withCredentials: true
         });
       } catch (error) {}
@@ -132,7 +134,7 @@ function Cart() {
     if (isLoggedIn) {
       try {
         await Promise.all(itemsToDelete.map(item => 
-          axios.delete(`https://ceramic-shop-u8ak.onrender.com/api/v1/cart/items/${item.variantId || item.id}`, {
+          axios.delete(`${API_BASE}/cart/items/${item.variantId || item.id}`, {
             withCredentials: true
           })
         ));
@@ -154,7 +156,7 @@ function Cart() {
 
     if (isLoggedIn) {
       try {
-        await axios.patch(`https://ceramic-shop-u8ak.onrender.com/api/v1/cart/items/${variantId || id}`, 
+        await axios.patch(`${API_BASE}/cart/items/${variantId || id}`,
           { SoLuong: newQty },
           { withCredentials: true }
         );
@@ -174,7 +176,7 @@ function Cart() {
         
         if (isLoggedIn) {
           try {
-            await axios.patch(`https://ceramic-shop-u8ak.onrender.com/api/v1/cart/items/${variantId || id}`, 
+            await axios.patch(`${API_BASE}/cart/items/${variantId || id}`,
               { SoLuong: finalQty },
               { withCredentials: true }
             );

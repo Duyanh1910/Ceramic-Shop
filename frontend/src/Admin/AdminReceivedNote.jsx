@@ -27,8 +27,8 @@ import {
 } from "@ant-design/icons";
 import axios from "axios";
 import styles from "./AdminTable.module.css";
+import { API_BASE } from "../config/api";
 
-const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1";
 const axiosConfig = {withCredentials: true};
 
 const NOTE_STATUS = {
