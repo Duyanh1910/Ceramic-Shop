@@ -1917,77 +1917,172 @@ router.post("/webhook", async (req, res) => {
       });
     }
   } else if (intentName === "San_Pham_Pho_Bien") {
-    try {
-      const sqlQuery = `
-                SELECT sp.MaSanPham, sp.TenSanPham, sp.LuotXem, MIN(bt.Gia) as GiaTu, MIN(ha.DuongDan) as DuongDan
-                FROM SanPham sp
-                JOIN BienTheSanPham bt ON sp.MaSanPham = bt.MaSanPham
-                LEFT JOIN HinhAnhBienThe ha ON bt.MaBienThe = ha.MaBienThe
-                WHERE sp.TrangThai = 1 AND bt.TrangThai = 1
-                GROUP BY sp.MaSanPham, sp.TenSanPham, sp.LuotXem
-                ORDER BY sp.LuotXem DESC
-                LIMIT 3
-            `;
+      const queryText = String(req.body.queryResult.queryText || "");
 
-      const [rows] = await pool.execute(sqlQuery);
+      const normalizedQueryText = queryText
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/đ/g, "d");
 
-      if (rows.length > 0) {
-        let listRichContent = [];
+      const isBestSellerQuestion =
+        /(ban\s*chay|mua\s*nhieu|duoc\s*mua\s*nhieu|khach\s*mua\s*nhieu|mat\s*hang\s*duoc\s*mua|top\s*ban|best\s*seller)/i.test(
+          normalizedQueryText,
+        );
 
-        rows.forEach((sp) => {
-          const giaFormat = new Intl.NumberFormat("vi-VN", {
-            style: "currency",
-            currency: "VND",
-          }).format(sp.GiaTu);
-          const linkSanPham = `${domainWeb}/product/${sp.MaSanPham}`;
+      const isMostViewedQuestion =
+        /(xem\s*nhieu|truy\s*cap\s*nhieu|duoc\s*xem\s*nhieu|nhieu\s*nguoi\s*xem|quan\s*tam\s*nhieu)/i.test(
+          normalizedQueryText,
+        );
+
+      const orderBy = isBestSellerQuestion
+        ? "TongDaBan DESC, SoDonDaMua DESC, sp.LuotXem DESC, GiaTu ASC"
+        : isMostViewedQuestion
+          ? "sp.LuotXem DESC, TongDaBan DESC, GiaTu ASC"
+          : "DiemNoiBat DESC, TongDaBan DESC, sp.LuotXem DESC, GiaTu ASC";
+
+      const bestSellerOnlyCondition = isBestSellerQuestion
+        ? "AND COALESCE(soldAgg.TongDaBan, 0) > 0"
+        : "";
+
+      const introText = isBestSellerQuestion
+        ? "Dạ, đây là các mẫu được khách hàng mua nhiều trong các đơn đã giao thành công và hiện còn hàng tại shop ạ:"
+        : isMostViewedQuestion
+          ? "Dạ, đây là các mẫu được nhiều khách hàng xem và quan tâm nhất tại CeramicShop hiện nay ạ:"
+          : "Dạ, đây là các mẫu nổi bật, được khách hàng quan tâm và mua nhiều tại CeramicShop hiện nay ạ:";
+
+      try {
+        const sqlQuery = `
+          SELECT
+            sp.MaSanPham,
+            sp.TenSanPham,
+            sp.LuotXem,
+            priceAgg.GiaTu,
+            COALESCE(imageAgg.DuongDan, sp.Thumbnail) AS DuongDan,
+            COALESCE(soldAgg.TongDaBan, 0) AS TongDaBan,
+            COALESCE(soldAgg.SoDonDaMua, 0) AS SoDonDaMua,
+            (
+              COALESCE(soldAgg.TongDaBan, 0) * 20
+              + COALESCE(sp.LuotXem, 0)
+            ) AS DiemNoiBat
+          FROM SanPham sp
+          JOIN (
+            SELECT
+              MaSanPham,
+              MIN(Gia) AS GiaTu,
+              SUM(SoLuong) AS TongTonKho
+            FROM BienTheSanPham
+            WHERE TrangThai = 1
+              AND SoLuong > 0
+            GROUP BY MaSanPham
+          ) priceAgg ON priceAgg.MaSanPham = sp.MaSanPham
+          LEFT JOIN (
+            SELECT
+              bt.MaSanPham,
+              SUM(ctdh.SoLuong) AS TongDaBan,
+              COUNT(DISTINCT dh.MaDonHang) AS SoDonDaMua
+            FROM ChiTietDonHang ctdh
+            JOIN DonHang dh ON dh.MaDonHang = ctdh.MaDonHang
+            JOIN BienTheSanPham bt ON bt.MaBienThe = ctdh.MaBienThe
+            WHERE dh.TrangThaiDonHang = 3
+            GROUP BY bt.MaSanPham
+          ) soldAgg ON soldAgg.MaSanPham = sp.MaSanPham
+          LEFT JOIN (
+            SELECT
+              bt.MaSanPham,
+              MIN(ha.DuongDan) AS DuongDan
+            FROM BienTheSanPham bt
+            LEFT JOIN HinhAnhBienThe ha ON ha.MaBienThe = bt.MaBienThe
+            WHERE bt.TrangThai = 1
+            AND bt.SoLuong > 0
+            GROUP BY bt.MaSanPham
+          ) imageAgg ON imageAgg.MaSanPham = sp.MaSanPham
+          WHERE sp.TrangThai = 1
+            AND sp.deleted_at IS NULL
+            ${bestSellerOnlyCondition}
+          ORDER BY ${orderBy}
+          LIMIT 5
+        `;
+
+        const [rows] = await pool.execute(sqlQuery);
+
+        if (rows.length > 0) {
+          const listRichContent = [];
+
+          rows.forEach((sp) => {
+            const giaFormat = new Intl.NumberFormat("vi-VN", {
+              style: "currency",
+              currency: "VND",
+            }).format(sp.GiaTu);
+
+            const tongDaBan = Number(sp.TongDaBan || 0);
+            const luotXem = Number(sp.LuotXem || 0);
+
+            const popularityText =
+              tongDaBan > 0
+                ? `Đã mua: ${tongDaBan} sản phẩm | Lượt xem: ${luotXem}`
+                : `Lượt xem: ${luotXem} | Đang được quan tâm`;
+
+            const linkSanPham = `${domainWeb}/product/${sp.MaSanPham}`;
+
+            listRichContent.push([
+              {
+                type: "image",
+                rawUrl:
+                  sp.DuongDan ||
+                  "https://via.placeholder.com/300?text=Chua+co+hinh",
+                accessibilityText: sp.TenSanPham,
+              },
+              {
+                type: "info",
+                title: sp.TenSanPham,
+                subtitle: `Giá tham khảo từ: ${giaFormat} | ${popularityText}`,
+              },
+              {
+                type: "button",
+                icon: { type: "local_fire_department", color: "#FF5722" },
+                text: "Xem chi tiết",
+                link: linkSanPham,
+              },
+            ]);
+          });
 
           listRichContent.push([
             {
-              type: "image",
-              rawUrl:
-                sp.DuongDan ||
-                "https://via.placeholder.com/300?text=Chua+co+hinh",
-              accessibilityText: sp.TenSanPham,
-            },
-            {
-              type: "info",
-              title: sp.TenSanPham,
-              subtitle: `Giá tham khảo từ: ${giaFormat}`,
-            },
-            {
               type: "button",
-              icon: { type: "local_fire_department", color: "#FF5722" },
-              text: "Xem chi tiết",
-              link: linkSanPham,
+              icon: { type: "storefront", color: "#34A853" },
+              text: "Xem thêm sản phẩm tại gian hàng",
+              link: buildWebLink("/home"),
             },
           ]);
-        });
+
+          return res.json({
+            fulfillmentMessages: [
+              {
+                text: {
+                  text: [introText],
+                },
+              },
+              {
+                payload: {
+                  richContent: listRichContent,
+                },
+              },
+            ],
+          });
+        }
 
         return res.json({
-          fulfillmentMessages: [
-            {
-              text: {
-                text: [
-                  "Dạ, đây là các mẫu sản phẩm đang Hot và được nhiều khách hàng săn đón nhất tại CeramicShop hiện nay ạ:",
-                ],
-              },
-            },
-            { payload: { richContent: listRichContent } },
-          ],
+          fulfillmentText:
+            "Dạ hiện tại hệ thống đang cập nhật danh sách sản phẩm nổi bật. Bạn có thể vào gian hàng để xem thêm các mẫu gốm sứ đang có nhé ạ.",
         });
-      } else {
+      } catch (error) {
+        console.error(error);
         return res.json({
           fulfillmentText:
-            "Dạ hiện tại hệ thống đang cập nhật danh sách sản phẩm hot, bạn vui lòng tham khảo theo danh mục nhé ạ.",
+            "Dạ hệ thống đang tải dữ liệu sản phẩm nổi bật, bạn chờ chút xíu rồi thử lại nhé.",
         });
       }
-    } catch (error) {
-      console.error(error);
-      return res.json({
-        fulfillmentText:
-          "Dạ hệ thống đang tải dữ liệu sản phẩm, bạn chờ chút xíu nhé.",
-      });
-    }
   } else if (intentName === "Xem_Tat_Ca_San_Pham") {
     const textResponse =
       "Dạ, hiện tại CeramicShop tự hào cung cấp hàng chục mẫu mã gốm sứ cao cấp đa dạng: từ Bộ đồ ăn, Ấm trà tiếp khách, Đồ thờ cúng tâm linh cho đến các vật phẩm Phong thủy, Trang trí. \n\nVì danh sách rất dài nên để tiện xem chi tiết hình ảnh và so sánh giá cả, mời bạn ghé thăm gian hàng trực tuyến của bên em nhé ạ:";
@@ -2008,7 +2103,7 @@ router.post("/webhook", async (req, res) => {
                 {
                   type: "button",
                   icon: { type: "local_fire_department", color: "#FF5722" },
-                  text: "Xem ngay tại đây các mẫu Bán Chạy",
+                  text: "Xem mẫu được quan tâm & mua nhiều",
                   event: {
                     name: "San_Pham_Pho_Bien",
                     languageCode: "vi",
