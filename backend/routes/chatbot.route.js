@@ -2117,104 +2117,128 @@ router.post("/webhook", async (req, res) => {
       ],
     });
   } else if (intentName === "Thong_Tin_Lien_He_Shop") {
-    const mapLink = CHATBOT_LINKS.mapLink;
+      const mapLink = CHATBOT_LINKS.mapLink;
 
-    return res.json({
-      fulfillmentMessages: [
-        {
-          text: {
-            text: [
-              "Dạ, chào mừng bạn đến với CeramicShop. Dưới đây là thông tin chi tiết để bạn dễ dàng ghé thăm và liên hệ với tụi mình nhé:",
-            ],
-          },
-        },
-        {
-          payload: {
-            richContent: [
-              [
-                {
-                  type: "description",
-                  title: "🏡 CeramicShop - Gốm Sứ Cao Cấp",
-                  text: [
-                    "📍 Địa chỉ: 484 Lạch Tray, Lê Chân, Hải Phòng",
-                    "⏰ Giờ mở cửa: 08:00 - 22:00 (Từ Thứ 2 - Thứ 7)",
-                    "📞 Hotline: 0329.835.725",
-                    "✉️ Email: theceramicshop24@gmail.com",
-                    "🅿️ Chỗ để xe: Có bãi đậu xe ô tô rộng rãi, nhân viên hỗ trợ bê đồ gốm ra tận xe an toàn.",
-                    "💳 Thanh toán: Tiền mặt khi nhận hàng, MoMo và ZaloPay.",
-                  ],
-                },
-                {
-                  type: "button",
-                  icon: { type: "map", color: "#EA4335" },
-                  text: "Xem đường đi trên Bản đồ",
-                  link: mapLink,
-                },
-                {
-                  type: "button",
-                  icon: { type: "facebook", color: "#0866FF" },
-                  text: "Ghé thăm Fanpage của Shop",
-                  link: fbLink,
-                },
-                {
-                  type: "button",
-                  icon: { type: "chat", color: "#0068FF" },
-                  text: "Chat Zalo với nhân viên",
-                  link: zaloLink,
-                },
-                {
-                  type: "button",
-                  icon: { type: "phone", color: "#34A853" },
-                  text: "Gọi Hotline ngay",
-                  link: phoneLink,
-                },
-                {
-                  type: "button",
-                  icon: { type: "mail", color: "#EA4335" },
-                  text: "Gửi Email cho Shop",
-                  link: emailLink,
-                },
+      return res.json({
+        fulfillmentMessages: [
+          {
+            text: {
+              text: [
+                "Dạ, chào mừng bạn đến với CeramicShop. Dưới đây là thông tin chi tiết để bạn dễ dàng ghé thăm và liên hệ với tụi mình nhé:",
               ],
-            ],
+            },
           },
-        },
-      ],
-    });
-  } else if (intentName === "Hoi_San_Pham_Dat_Nhat") {
+          {
+            payload: {
+              richContent: [
+                [
+                  {
+                    type: "description",
+                    title: "🏡 CeramicShop - Gốm Sứ Cao Cấp",
+                    text: [
+                      "📍 Địa chỉ: 484 Lạch Tray, Lê Chân, Hải Phòng",
+                      "⏰ Giờ mở cửa: 08:00 - 22:00 (Từ Thứ 2 - Thứ 7)",
+                      "📞 Hotline: 0329.835.725",
+                      "✉️ Email: theceramicshop24@gmail.com",
+                      "🅿️ Chỗ để xe: Có bãi đậu xe ô tô rộng rãi, nhân viên hỗ trợ bê đồ gốm ra tận xe an toàn.",
+                      "💳 Thanh toán: Tiền mặt khi nhận hàng, MoMo và ZaloPay.",
+                    ],
+                  },
+                  {
+                    type: "button",
+                    icon: { type: "map", color: "#EA4335" },
+                    text: "Xem đường đi trên Bản đồ",
+                    link: mapLink,
+                  },
+                  {
+                    type: "button",
+                    icon: { type: "facebook", color: "#0866FF" },
+                    text: "Ghé thăm Fanpage của Shop",
+                    link: fbLink,
+                  },
+                  {
+                    type: "button",
+                    icon: { type: "chat", color: "#0068FF" },
+                    text: "Chat Zalo với nhân viên",
+                    link: zaloLink,
+                  },
+                  {
+                    type: "button",
+                    icon: { type: "phone", color: "#34A853" },
+                    text: "Gọi Hotline ngay",
+                    link: phoneLink,
+                  },
+                  {
+                    type: "button",
+                    icon: { type: "mail", color: "#EA4335" },
+                    text: "Gửi Email cho Shop",
+                    link: emailLink,
+                  },
+                ],
+              ],
+            },
+          },
+        ],
+      });
+    } else if (intentName === "Hoi_San_Pham_Dat_Nhat") {
     try {
       const sqlQuery = `
-        SELECT sp.MaSanPham, sp.TenSanPham, MAX(bt.Gia) as GiaCaoNhat, MIN(ha.DuongDan) as DuongDan
+        SELECT
+          sp.MaSanPham,
+          sp.TenSanPham,
+          priceAgg.GiaCaoNhat,
+          COALESCE(imageAgg.DuongDan, sp.Thumbnail) AS DuongDan
         FROM SanPham sp
-        JOIN BienTheSanPham bt ON sp.MaSanPham = bt.MaSanPham
-        LEFT JOIN HinhAnhBienThe ha ON bt.MaBienThe = ha.MaBienThe
-        WHERE sp.TrangThai = 1 AND bt.TrangThai = 1
-        GROUP BY sp.MaSanPham, sp.TenSanPham
-        ORDER BY GiaCaoNhat DESC
+        JOIN (
+          SELECT
+            MaSanPham,
+            MAX(Gia) AS GiaCaoNhat
+          FROM BienTheSanPham
+          WHERE TrangThai = 1
+            AND SoLuong > 0
+          GROUP BY MaSanPham
+        ) priceAgg ON priceAgg.MaSanPham = sp.MaSanPham
+        LEFT JOIN (
+          SELECT
+            bt.MaSanPham,
+            MIN(ha.DuongDan) AS DuongDan
+          FROM BienTheSanPham bt
+          LEFT JOIN HinhAnhBienThe ha ON ha.MaBienThe = bt.MaBienThe
+          WHERE bt.TrangThai = 1
+            AND bt.SoLuong > 0
+          GROUP BY bt.MaSanPham
+        ) imageAgg ON imageAgg.MaSanPham = sp.MaSanPham
+        WHERE sp.TrangThai = 1
+          AND sp.deleted_at IS NULL
+        ORDER BY priceAgg.GiaCaoNhat DESC
         LIMIT 3
       `;
 
       const [rows] = await pool.execute(sqlQuery);
 
       if (rows.length > 0) {
-        let listRichContent = [];
+        const listRichContent = [];
 
         rows.forEach((sp) => {
           const giaFormat = new Intl.NumberFormat("vi-VN", {
             style: "currency",
             currency: "VND",
           }).format(sp.GiaCaoNhat);
+
           const linkSanPham = `${domainWeb}/product/${sp.MaSanPham}`;
 
           listRichContent.push([
             {
               type: "image",
-              rawUrl: sp.DuongDan || "https://via.placeholder.com/300?text=Chua+co+hinh",
+              rawUrl:
+                sp.DuongDan ||
+                "https://via.placeholder.com/300?text=Chua+co+hinh",
               accessibilityText: sp.TenSanPham,
             },
             {
               type: "info",
               title: sp.TenSanPham,
-              subtitle: `Mức giá cao nhất: ${giaFormat}`,
+              subtitle: `Mức giá cao nhất đang bán: ${giaFormat}`,
             },
             {
               type: "button",
@@ -2230,59 +2254,85 @@ router.post("/webhook", async (req, res) => {
             {
               text: {
                 text: [
-                  "Dạ, đây là những mẫu sản phẩm cao cấp và có giá trị nhất tại CeramicShop hiện nay. Rất phù hợp để làm quà biếu tặng sang trọng ạ:",
+                  "Dạ, đây là những mẫu sản phẩm cao cấp, còn hàng và có mức giá cao nhất tại CeramicShop hiện nay. Rất phù hợp để làm quà biếu tặng sang trọng ạ:",
                 ],
               },
             },
             { payload: { richContent: listRichContent } },
           ],
         });
-      } else {
-        return res.json({
-          fulfillmentText: "Dạ hiện tại hệ thống đang cập nhật giá, bạn vui lòng tham khảo theo danh mục trên website nhé ạ.",
-        });
       }
+
+      return res.json({
+        fulfillmentText:
+          "Dạ hiện tại shop chưa có mẫu cao cấp còn hàng để gợi ý. Bạn có thể xem thêm trên gian hàng nhé ạ.",
+      });
     } catch (error) {
       console.error(error);
       return res.json({
-        fulfillmentText: "Dạ hệ thống đang tải dữ liệu, bạn chờ chút xíu nhé.",
+        fulfillmentText:
+          "Dạ hệ thống đang tải dữ liệu, bạn chờ chút xíu nhé.",
       });
     }
   } else if (intentName === "Hoi_San_Pham_Re_Nhat") {
     try {
       const sqlQuery = `
-        SELECT sp.MaSanPham, sp.TenSanPham, MIN(bt.Gia) as GiaThapNhat, MIN(ha.DuongDan) as DuongDan
+        SELECT
+          sp.MaSanPham,
+          sp.TenSanPham,
+          priceAgg.GiaThapNhat,
+          COALESCE(imageAgg.DuongDan, sp.Thumbnail) AS DuongDan
         FROM SanPham sp
-        JOIN BienTheSanPham bt ON sp.MaSanPham = bt.MaSanPham
-        LEFT JOIN HinhAnhBienThe ha ON bt.MaBienThe = ha.MaBienThe
-        WHERE sp.TrangThai = 1 AND bt.TrangThai = 1
-        GROUP BY sp.MaSanPham, sp.TenSanPham
-        ORDER BY GiaThapNhat ASC
+        JOIN (
+          SELECT
+            MaSanPham,
+            MIN(Gia) AS GiaThapNhat
+          FROM BienTheSanPham
+          WHERE TrangThai = 1
+            AND SoLuong > 0
+          GROUP BY MaSanPham
+        ) priceAgg ON priceAgg.MaSanPham = sp.MaSanPham
+        LEFT JOIN (
+          SELECT
+            bt.MaSanPham,
+            MIN(ha.DuongDan) AS DuongDan
+          FROM BienTheSanPham bt
+          LEFT JOIN HinhAnhBienThe ha ON ha.MaBienThe = bt.MaBienThe
+          WHERE bt.TrangThai = 1
+            AND bt.SoLuong > 0
+          GROUP BY bt.MaSanPham
+        ) imageAgg ON imageAgg.MaSanPham = sp.MaSanPham
+        WHERE sp.TrangThai = 1
+          AND sp.deleted_at IS NULL
+        ORDER BY priceAgg.GiaThapNhat ASC
         LIMIT 3
       `;
 
       const [rows] = await pool.execute(sqlQuery);
 
       if (rows.length > 0) {
-        let listRichContent = [];
+        const listRichContent = [];
 
         rows.forEach((sp) => {
           const giaFormat = new Intl.NumberFormat("vi-VN", {
             style: "currency",
             currency: "VND",
           }).format(sp.GiaThapNhat);
+
           const linkSanPham = `${domainWeb}/product/${sp.MaSanPham}`;
 
           listRichContent.push([
             {
               type: "image",
-              rawUrl: sp.DuongDan || "https://via.placeholder.com/300?text=Chua+co+hinh",
+              rawUrl:
+                sp.DuongDan ||
+                "https://via.placeholder.com/300?text=Chua+co+hinh",
               accessibilityText: sp.TenSanPham,
             },
             {
               type: "info",
               title: sp.TenSanPham,
-              subtitle: `Giá chỉ từ: ${giaFormat}`,
+              subtitle: `Giá đang bán chỉ từ: ${giaFormat}`,
             },
             {
               type: "button",
@@ -2298,22 +2348,24 @@ router.post("/webhook", async (req, res) => {
             {
               text: {
                 text: [
-                  "Dạ, shop gửi bạn những mẫu có mức giá mềm và dễ tiếp cận nhất nhưng chất lượng vẫn cực kỳ đảm bảo nhé:",
+                  "Dạ, shop gửi bạn những mẫu còn hàng có mức giá mềm và dễ tiếp cận nhất nhưng chất lượng vẫn đảm bảo nhé:",
                 ],
               },
             },
             { payload: { richContent: listRichContent } },
           ],
         });
-      } else {
-        return res.json({
-          fulfillmentText: "Dạ hiện tại hệ thống đang cập nhật giá, bạn ghé qua website để xem đầy đủ các mức giá nhé.",
-        });
       }
+
+      return res.json({
+        fulfillmentText:
+          "Dạ hiện tại shop chưa có mẫu giá mềm còn hàng để gợi ý. Bạn có thể xem thêm trên gian hàng nhé ạ.",
+      });
     } catch (error) {
       console.error(error);
       return res.json({
-        fulfillmentText: "Dạ hệ thống đang tải dữ liệu, bạn chờ chút xíu nhé.",
+        fulfillmentText:
+          "Dạ hệ thống đang tải dữ liệu, bạn chờ chút xíu nhé.",
       });
     }
   }
