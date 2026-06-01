@@ -193,11 +193,84 @@ router.post("/webhook", async (req, res) => {
             },
           ],
         });
-      } else {
+} else {
+    const requestedAttributes = [...thuocTinhList, ...menhList].filter(Boolean);
+
+    if (requestedAttributes.length > 0) {
+      const fallbackQuery = `
+        SELECT
+          sp.MaSanPham,
+          sp.TenSanPham,
+          bt.TenBienThe,
+          bt.Gia,
+          bt.SoLuong
+        FROM BienTheSanPham bt
+        JOIN SanPham sp ON bt.MaSanPham = sp.MaSanPham
+        WHERE sp.TenSanPham LIKE ?
+          AND sp.TrangThai = 1
+          AND bt.TrangThai = 1
+        GROUP BY
+          sp.MaSanPham,
+          sp.TenSanPham,
+          bt.MaBienThe,
+          bt.TenBienThe,
+          bt.Gia,
+          bt.SoLuong
+        LIMIT 5
+      `;
+
+      const [availableRows] = await pool.execute(fallbackQuery, [searchTenSP]);
+
+      if (availableRows.length > 0) {
+        const availableVariants = availableRows.map((variant) => {
+          const giaFormat = new Intl.NumberFormat("vi-VN", {
+            style: "currency",
+            currency: "VND",
+          }).format(variant.Gia);
+
+          const tonKhoText =
+            variant.SoLuong > 0 ? `còn ${variant.SoLuong} sản phẩm` : "tạm hết hàng";
+
+          return `🔸 ${variant.TenBienThe}: ${giaFormat} (${tonKhoText})`;
+        });
+
         return res.json({
-          fulfillmentText: `Dạ em chưa tìm thấy sản phẩm khớp với yêu cầu của bạn trong kho. Bạn kiểm tra lại tên giúp em nhé.`,
+          fulfillmentMessages: [
+            {
+              text: {
+                text: [
+                  `Dạ em có sản phẩm ${availableRows[0].TenSanPham}, nhưng chưa tìm thấy phân loại khớp với thuộc tính ${requestedAttributes.join(", ")}. Em gửi bạn các phân loại hiện có để tham khảo nhé:`,
+                ],
+              },
+            },
+            {
+              payload: {
+                richContent: [
+                  [
+                    {
+                      type: "description",
+                      title: "💰 Phân loại hiện có",
+                      text: availableVariants,
+                    },
+                    {
+                      type: "button",
+                      icon: { type: "touch_app", color: "#C06E52" },
+                      text: "Xem chi tiết & Chọn mẫu",
+                      link: `${domainWeb}/product/${availableRows[0].MaSanPham}`,
+                    },
+                  ],
+                ],
+              },
+            },
+          ],
         });
       }
+    }
+
+    return res.json({
+      fulfillmentText: `Dạ em chưa tìm thấy sản phẩm khớp với yêu cầu của bạn trong kho. Bạn kiểm tra lại tên giúp em nhé.`,
+    });
+  }
     } catch (error) {
       console.error(error);
       return res.json({
