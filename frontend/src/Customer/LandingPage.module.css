@@ -1,1033 +1,1128 @@
-@import url('https://fonts.googleapis.com/css2?family=Arsenal:wght@400;700&family=Inter:wght@400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Arsenal:wght@400;700&family=Inter:wght@400;500;600;700&display=swap");
 
 .wrapper {
-    font-family: 'Inter', sans-serif;
-    color: #252a2b;
-    background-color: #fff;
-    line-height: 1.6;
-    overflow-x: hidden;
+  font-family: "Inter", sans-serif;
+  color: #252a2b;
+  background-color: #fff;
+  line-height: 1.6;
+  overflow-x: hidden;
 }
 
 .title {
-    text-transform: uppercase;
-    background: linear-gradient(135deg, blue, white);
-    background-clip: text;
-    color: transparent;
-    animation: animate 80s linear infinite;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, blue, white);
+  background-clip: text;
+  color: transparent;
+  animation: animate 80s linear infinite;
 }
 
 @keyframes animate {
-    0% {
-        background-position: 0% 50%;
-    }
-    100% {
-        background-position: 100% 50%;
-    }
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
 }
 
 .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 15px;
-    width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 15px;
+  width: 100%;
 }
 
 a {
-    text-decoration: none;
-    color: inherit;
-    transition: color 0.3s;
+  text-decoration: none;
+  color: inherit;
+  transition: color 0.3s;
 }
 
 ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 .topbar {
-    background-color: #173354;
-    padding: 10px 0;
+  background-color: #173354;
+  padding: 10px 0;
 }
 
 .topbarInner {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 13px;
-    color: #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: #e0e0e0;
 }
 
 .topbarLeft {
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
 }
 
 .topbarPromo {
-    font-weight: 500;
-    color: #ffffff;
-    letter-spacing: 0.3px;
+  font-weight: 500;
+  color: #ffffff;
+  letter-spacing: 0.3px;
 }
 
 .topbarPromo strong {
-    color: #BB9244;
-    font-size: 14px;
+  color: #bb9244;
+  font-size: 14px;
 }
 
 .topbarRight {
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
 }
 
 .topbarRight a {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    color: #e0e0e0;
-    transition: color 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #e0e0e0;
+  transition: color 0.3s ease;
 }
 
 .topbarRight a:hover {
-    color: #BB9244;
+  color: #bb9244;
 }
 
 .divider {
-    margin: 0 15px;
-    color: #4a6382;
+  margin: 0 15px;
+  color: #4a6382;
 }
 
 .mainHeader {
-    background: #fff;
-    padding: 25px 0;
+  background: #fff;
+  padding: 25px 0;
 }
 
 .headerFlex {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .logoBox {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 15px;
-    cursor: pointer;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 15px;
+  cursor: pointer;
 }
 
 .logoImg {
-    width: 60px;
-    height: auto;
-    object-fit: contain;
+  width: 60px;
+  height: auto;
+  object-fit: contain;
 }
 
 .logoTextWrap {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
 .logoText {
-    font-family: 'Arsenal', serif;
-    font-size: 28px;
-    font-weight: 700;
-    margin: 0;
-    color: #173354;
-    letter-spacing: 2px;
+  font-family: "Arsenal", serif;
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0;
+  color: #173354;
+  letter-spacing: 2px;
 }
 
 .logoSub {
-    font-size: 11px;
-    letter-spacing: 2px;
-    color: #BB9244;
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: #bb9244;
 }
 
 .searchBox {
-    flex: 1.5;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-bottom: 1px solid #e1e1e1;
-    padding-bottom: 5px;
-    max-width: 400px;
-    margin: 0 auto;
+  flex: 1.5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid #e1e1e1;
+  padding-bottom: 5px;
+  max-width: 400px;
+  margin: 0 auto;
 }
 
 .iconSearch {
-    font-size: 16px;
-    color: #888;
-    margin-right: 8px;
-    cursor: pointer;
+  font-size: 16px;
+  color: #888;
+  margin-right: 8px;
+  cursor: pointer;
 }
 
 .searchInput {
-    border: none;
-    outline: none;
-    width: 100%;
-    font-family: 'Inter', sans-serif;
-    font-size: 14px;
+  border: none;
+  outline: none;
+  width: 100%;
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
 }
 
 .utilityBox {
-    flex: 1;
-    display: flex;
-    justify-content: flex-end;
-    gap: 25px;
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 25px;
 }
 
 .iconItem {
-    font-size: 22px;
-    color: #333;
-    cursor: pointer;
-    position: relative;
-    transition: color 0.3s;
+  font-size: 22px;
+  color: #333;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.3s;
 }
 
 .iconItem:hover {
-    color: #BB9244;
+  color: #bb9244;
 }
 
 .cartBadge {
-    position: absolute;
-    top: -6px;
-    right: -10px;
-    background-color: #d0021b;
-    color: #fff;
-    font-size: 11px;
-    font-weight: bold;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  position: absolute;
+  top: -6px;
+  right: -10px;
+  background-color: #d0021b;
+  color: #fff;
+  font-size: 11px;
+  font-weight: bold;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .navBar {
-    background: #fff;
-    border-top: 1px solid #f2f2f2;
-    border-bottom: 1px solid #f2f2f2;
-    transition: all 0.3s ease;
+  background: #fff;
+  border-top: 1px solid #f2f2f2;
+  border-bottom: 1px solid #f2f2f2;
+  transition: all 0.3s ease;
 }
 
 .navBar.sticky {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: 1000;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-    border-top: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  border-top: none;
 }
 
 .menuList {
-    display: flex;
-    justify-content: center;
-    gap: 90px;
+  display: flex;
+  justify-content: center;
+  gap: 90px;
 }
 
 .menuList li a {
-    display: block;
-    padding: 16px 0;
-    font-family: 'Arsenal', sans-serif;
-    font-size: 30px;
-    font-weight: 600;
-    color: #252a2b;
-    text-transform: uppercase;
-    position: relative;
+  display: block;
+  padding: 16px 0;
+  font-family: "Arsenal", sans-serif;
+  font-size: 30px;
+  font-weight: 600;
+  color: #252a2b;
+  text-transform: uppercase;
+  position: relative;
 }
 
-.menuList li a:hover, .menuList li a.active {
-    color: #173354;
+.menuList li a:hover,
+.menuList li a.active {
+  color: #173354;
 }
 
 .menuList li a::after {
-    content: '';
-    position: absolute;
-    bottom: -1px;
-    left: 0;
-    width: 0;
-    height: 2px;
-    background-color: #173354;
-    transition: width 0.3s;
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: #173354;
+  transition: width 0.3s;
 }
 
-.menuList li a:hover::after, .menuList li a.active::after {
-    width: 100%;
+.menuList li a:hover::after,
+.menuList li a.active::after {
+  width: 100%;
 }
 
 .bannerSection {
-    width: 100%;
-    overflow: hidden;
-    position: relative;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
 }
 
 .slideWrapper {
-    position: relative;
-    width: 100%;
-    height: 600px;
-    overflow: hidden;
+  position: relative;
+  width: 100%;
+  height: 600px;
+  overflow: hidden;
 }
 
 .bannerImg {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
 }
 
 .bannerOverlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.5));
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.5));
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .bannerContent {
-    text-align: center;
-    color: white;
-    max-width: 800px;
-    padding: 0 20px;
+  text-align: center;
+  color: white;
+  max-width: 800px;
+  padding: 0 20px;
 }
 
 .bannerTitle {
-    font-family: 'Arsenal', sans-serif;
-    font-size: 52px;
-    font-weight: 700;
-    margin: 0 0 20px;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-    letter-spacing: 3px;
+  font-family: "Arsenal", sans-serif;
+  font-size: 52px;
+  font-weight: 700;
+  margin: 0 0 20px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  letter-spacing: 3px;
 }
 
 .bannerSubtitle {
-    font-size: 20px;
-    margin-bottom: 30px;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+  font-size: 20px;
+  margin-bottom: 30px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .btnBanner {
-    background: #BB9244;
-    color: white;
-    border: none;
-    padding: 15px 40px;
-    font-family: 'Inter', sans-serif;
-    font-weight: 600;
-    font-size: 16px;
-    cursor: pointer;
-    border-radius: 4px;
-    text-transform: uppercase;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(187, 146, 68, 0.3);
+  background: #bb9244;
+  color: white;
+  border: none;
+  padding: 15px 40px;
+  font-family: "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 4px;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(187, 146, 68, 0.3);
 }
 
 .btnBanner:hover {
-    background: #a37d36;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(187, 146, 68, 0.4);
+  background: #a37d36;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(187, 146, 68, 0.4);
 }
 
 .sectionHeading {
-    text-align: center;
-    margin: 60px 0 40px;
+  text-align: center;
+  margin: 60px 0 40px;
 }
 
 .sectionHeading h2 {
-    font-family: 'Arsenal', sans-serif;
-    font-size: 32px;
-    font-weight: 700;
-    color: #252a2b;
-    text-transform: uppercase;
-    margin: 0 0 15px;
-    position: relative;
-    display: inline-block;
+  font-family: "Arsenal", sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  color: #252a2b;
+  text-transform: uppercase;
+  margin: 0 0 15px;
+  position: relative;
+  display: inline-block;
 }
 
 .sectionHeading h2::after {
-    content: '';
-    display: block;
-    width: 60px;
-    height: 3px;
-    background: #BB9244;
-    margin: 15px auto 0;
+  content: "";
+  display: block;
+  width: 60px;
+  height: 3px;
+  background: #bb9244;
+  margin: 15px auto 0;
 }
 
 .sectionSubtitle {
-    font-size: 16px;
-    font-weight: 600;
-    color: #333;
-    margin-top: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-top: 10px;
 }
 
 .aboutSection {
-    background: #f9f9f9;
-    padding: 60px 0;
+  background: #f9f9f9;
+  padding: 60px 0;
 }
 
 .aboutContent {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 50px;
-    margin-bottom: 60px;
-    align-items: center;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 50px;
+  margin-bottom: 60px;
+  align-items: center;
 }
 
 .aboutText p {
-    font-size: 16px;
-    line-height: 1.8;
-    color: #555;
-    font-weight: 400;
-    margin-bottom: 20px;
+  font-size: 16px;
+  line-height: 1.8;
+  color: #555;
+  font-weight: 400;
+  margin-bottom: 20px;
 }
 
 .aboutImage img {
-    width: 100%;
-    border-radius: 8px;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+  width: 100%;
+  border-radius: 8px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
 }
 
 .visionMission {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 30px;
-    margin-bottom: 60px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+  margin-bottom: 60px;
 }
 
 .vmCard {
-    text-align: center;
-    padding: 40px 30px;
-    background: white;
-    border-radius: 40px; 
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05); 
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
+  text-align: center;
+  padding: 40px 30px;
+  background: white;
+  border-radius: 40px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .vmCard:hover {
-    box-shadow: 0 15px 40px rgba(0, 155, 182, 0.15);
-    transform: translateY(-5px);
+  box-shadow: 0 15px 40px rgba(0, 155, 182, 0.15);
+  transform: translateY(-5px);
 }
 
 .vmCard h3 {
-    font-family: 'Arsenal', sans-serif;
-    font-size: 22px;
-    font-weight: 700;
-    color: #173354;
-    margin-bottom: 15px;
-    text-transform: uppercase;
+  font-family: "Arsenal", sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #173354;
+  margin-bottom: 15px;
+  text-transform: uppercase;
 }
 
 .vmCard p {
-    font-size: 15px;
-    line-height: 1.7;
-    color: #666;
+  font-size: 15px;
+  line-height: 1.7;
+  color: #666;
 }
 
 .features {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 30px;
-    margin-top: 40px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 30px;
+  margin-top: 40px;
 }
 
 .featureItem {
-    text-align: center; 
-    padding: 40px 30px;
-    background: white;
-    border-radius: 40px; 
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05); 
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    transition: all 0.5s ease;
-    position: relative;
-    overflow: hidden;
+  text-align: center;
+  padding: 40px 30px;
+  background: white;
+  border-radius: 40px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.5s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .featureItem:hover {
-    box-shadow: 0 15px 40px rgba(0, 155, 182, 0.15); 
-    transform: translateY(-5px);
+  box-shadow: 0 15px 40px rgba(0, 155, 182, 0.15);
+  transform: translateY(-5px);
 }
 
 .iconWrapper {
-    width: 65px;
-    height: 65px;
-    border-radius: 20px; 
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 25px auto;
+  width: 65px;
+  height: 65px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 25px auto;
 }
 
 .featureIcon {
-    font-size: 32px;
-    color: #ffffff; 
+  font-size: 32px;
+  color: #ffffff;
 }
 
 .featureItem h4 {
-    font-family: 'Arsenal', sans-serif;
-    font-size: 22px;
-    font-weight: 700;
-    color: #173354;
-    margin-bottom: 15px;
+  font-family: "Arsenal", sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #173354;
+  margin-bottom: 15px;
 }
 
 .featureItem p {
-    font-size: 15px;
-    color: #666;
-    line-height: 1.6;
+  font-size: 15px;
+  color: #666;
+  line-height: 1.6;
 }
 
 .hiddenStart {
-    opacity: 0;
-    transform: translateY(40px) scale(0.95); 
-    transition: opacity 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
-                transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  opacity: 0;
+  transform: translateY(40px) scale(0.95);
+  transition:
+    opacity 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .animateIn {
-    opacity: 1 !important;
-    transform: translateY(0) scale(1) !important; 
+  opacity: 1 !important;
+  transform: translateY(0) scale(1) !important;
 }
 
 .categorySectionDark {
-    background-color: #F9F6F0;
-    padding: 80px 0;
-    overflow: hidden;
-    border-top: 1px solid #f0ebe1;
-    border-bottom: 1px solid #f0ebe1;
+  background-color: #f9f6f0;
+  padding: 80px 0;
+  overflow: hidden;
+  border-top: 1px solid #f0ebe1;
+  border-bottom: 1px solid #f0ebe1;
 }
 
 .sectionHeadingDark {
-    text-align: center;
-    margin-bottom: 50px;
+  text-align: center;
+  margin-bottom: 50px;
 }
 
 .sectionHeadingDark h2 {
-    font-size: 36px;
-    font-weight: 700;
-    color: #173354;
-    text-transform: uppercase;
-    margin: 0 0 15px;
-    font-family: 'Arsenal', sans-serif;
-    position: relative;
-    display: inline-block;
+  font-size: 36px;
+  font-weight: 700;
+  color: #173354;
+  text-transform: uppercase;
+  margin: 0 0 15px;
+  font-family: "Arsenal", sans-serif;
+  position: relative;
+  display: inline-block;
 }
 
 .sectionHeadingDark h2::after {
-    content: '';
-    display: block;
-    width: 60px;
-    height: 3px;
-    background: #BB9244;
-    margin: 15px auto 0;
+  content: "";
+  display: block;
+  width: 60px;
+  height: 3px;
+  background: #bb9244;
+  margin: 15px auto 0;
 }
 
-.sectionHeadingDark p { 
-    color: #666; 
-    font-size: 16px; 
-    margin: 0; 
+.sectionHeadingDark p {
+  color: #666;
+  font-size: 16px;
+  margin: 0;
 }
 
 .instructionText {
-    font-size: 14px;
-    color: #888;
-    font-style: italic;
-    margin-top: 8px;
+  font-size: 14px;
+  color: #888;
+  font-style: italic;
+  margin-top: 8px;
 }
 
 .marqueeContainer {
-    width: 100vw;
-    position: relative;
-    left: 50%;
-    right: 50%;
-    margin-left: -50vw;
-    margin-right: -50vw;
-    overflow: hidden;
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  overflow: hidden;
 }
 
 .marqueeContainer::before,
 .marqueeContainer::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    width: 150px;
-    height: 100%;
-    z-index: 2;
-    pointer-events: none;
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 150px;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
 }
 
-.marqueeContainer::before { 
-    left: 0; 
-    background: linear-gradient(to right, #F9F6F0, transparent); 
+.marqueeContainer::before {
+  left: 0;
+  background: linear-gradient(to right, #f9f6f0, transparent);
 }
 
-.marqueeContainer::after { 
-    right: 0; 
-    background: linear-gradient(to left, #F9F6F0, transparent); 
+.marqueeContainer::after {
+  right: 0;
+  background: linear-gradient(to left, #f9f6f0, transparent);
 }
 
 .marqueeTrack {
-    display: flex;
-    gap: 30px;
-    padding: 20px 0 40px 0;
-    overflow-x: auto;
-    scroll-behavior: auto;
-    cursor: grab;
-    user-select: none;
-    -ms-overflow-style: none;
-    scrollbar-width: none; 
+  display: flex;
+  gap: 30px;
+  padding: 20px 0 40px 0;
+  overflow-x: auto;
+  scroll-behavior: auto;
+  cursor: grab;
+  user-select: none;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .marqueeTrack::-webkit-scrollbar {
-    display: none;
+  display: none;
 }
 
 .marqueeItem {
-    flex: 0 0 auto;
-    width: 300px; 
-    height: 420px;
-    background-color: #ffffff;
-    border-radius: 150px 150px 16px 16px; 
-    padding: 0;
-    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    position: relative;
-    overflow: hidden;
-    cursor: pointer;
-    box-shadow: 0 10px 20px rgba(23, 51, 84, 0.05);
-    border: 1px solid #f0ebe1;
+  flex: 0 0 auto;
+  width: 300px;
+  height: 420px;
+  background-color: #ffffff;
+  border-radius: 150px 150px 16px 16px;
+  padding: 0;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 10px 20px rgba(23, 51, 84, 0.05);
+  border: 1px solid #f0ebe1;
 }
 
 .marqueeItem:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 15px 35px rgba(187, 146, 68, 0.15);
-    border-color: rgba(187, 146, 68, 0.3);
+  transform: translateY(-10px);
+  box-shadow: 0 15px 35px rgba(187, 146, 68, 0.15);
+  border-color: rgba(187, 146, 68, 0.3);
 }
 
 .marqueeImgWrap {
-   width: 100%;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-sizing: border-box; 
-    padding-bottom: 90px;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding-bottom: 90px;
 }
 
 .marqueeImgWrap::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 50%;
-    background: linear-gradient(to top, rgba(255,255,255,1) 10%, rgba(255,255,255,0));
-    pointer-events: none;
-    z-index: 1;
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  background: linear-gradient(
+    to top,
+    rgba(255, 255, 255, 1) 10%,
+    rgba(255, 255, 255, 0)
+  );
+  pointer-events: none;
+  z-index: 1;
 }
 
 .marqueeImgWrap img {
-    width: 80%;
-    height: 80%;
-    object-fit: contain;
-    transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    -webkit-user-drag: none;
-    pointer-events: none;
+  width: 80%;
+  height: 80%;
+  object-fit: contain;
+  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  -webkit-user-drag: none;
+  pointer-events: none;
 }
 
 .marqueeItem:hover .marqueeImgWrap img {
-    transform: scale(1.1) translateY(-10px);
+  transform: scale(1.1) translateY(-10px);
 }
 
 .marqueeTextWrap {
-    position: absolute;
-    bottom: 35px;
-    left: 0;
-    right: 0;
-    background-color: transparent;
-    padding: 0 20px;
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
+  position: absolute;
+  bottom: 35px;
+  left: 0;
+  right: 0;
+  background-color: transparent;
+  padding: 0 20px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
 .marqueeText {
-    font-family: 'Arsenal', sans-serif;
-    font-size: 24px;
-    font-weight: 700;
-    color: #173354;
-    margin: 0 0 6px 0;
-    text-transform: uppercase;
-    transition: color 0.3s;
+  font-family: "Arsenal", sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: #173354;
+  margin: 0 0 6px 0;
+  text-transform: uppercase;
+  transition: color 0.3s;
 }
 
 .marqueeItem:hover .marqueeText {
-    color: #BB9244;
+  color: #bb9244;
 }
 
 .marqueeSubText {
-    font-size: 13px;
-    font-weight: 600;
-    color: #BB9244;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    opacity: 0;
-    transform: translateY(10px);
-    transition: all 0.4s ease;
+  font-size: 13px;
+  font-weight: 600;
+  color: #bb9244;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.4s ease;
 }
 
 .marqueeItem:hover .marqueeSubText {
-    opacity: 1;
-    transform: translateY(0);
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .productSection {
-    background-color: #fff;
-    padding: 60px 0;
+  background-color: #fff;
+  padding: 60px 0;
 }
 
 .productGrid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 30px;
-    margin-bottom: 40px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 30px;
+  margin-bottom: 40px;
 }
 
 .productCard {
-    text-align: center;
-    cursor: pointer;
-    position: relative;
-    transition: transform 0.3s ease;
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.3s ease;
 }
 
 .productCard:hover {
-    transform: translateY(-5px);
+  transform: translateY(-5px);
 }
 
 .productImgWrap {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 1/1;
-    overflow: hidden;
-    margin-bottom: 15px;
-    background: #fdfdfd;
-    border-radius: 8px;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1/1;
+  overflow: hidden;
+  margin-bottom: 15px;
+  background: #fdfdfd;
+  border-radius: 8px;
 }
 
 .productImgWrap img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    transition: transform 0.5s ease;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: transform 0.5s ease;
 }
 
 .productCard:hover .productImgWrap img {
-    transform: scale(1.05);
+  transform: scale(1.05);
 }
 
 .productOverlay {
-    position: absolute;
-    bottom: -50px;
-    left: 0;
-    width: 100%;
-    background: rgba(255,255,255,0.95);
-    padding: 15px 0;
-    transition: bottom 0.3s ease;
-    display: flex;
-    justify-content: center;
+  position: absolute;
+  bottom: -50px;
+  left: 0;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 15px 0;
+  transition: bottom 0.3s ease;
+  display: flex;
+  justify-content: center;
 }
 
 .productCard:hover .productOverlay {
-    bottom: 0;
+  bottom: 0;
 }
 
 .btnAddToCart {
-    background: #173354;
-    color: #fff;
-    border: none;
-    padding: 10px 25px;
-    font-family: 'Inter', sans-serif;
-    font-weight: 600;
-    font-size: 13px;
-    cursor: pointer;
-    border-radius: 4px;
-    text-transform: uppercase;
-    transition: all 0.3s ease;
+  background: #173354;
+  color: #fff;
+  border: none;
+  padding: 10px 25px;
+  font-family: "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  border-radius: 4px;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
 }
 
 .btnAddToCart:hover {
-    background: #BB9244;
+  background: #bb9244;
 }
 
 .productInfo {
-    padding: 0 10px;
+  padding: 0 10px;
 }
 
 .productName {
-    font-size: 16px;
-    color: #252a2b;
-    font-weight: 600;
-    margin: 0 0 8px;
-    line-height: 1.4;
-    display: -webkit-box;
-    line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    height: 44px;
+  font-size: 16px;
+  color: #252a2b;
+  font-weight: 600;
+  margin: 0 0 8px;
+  line-height: 1.4;
+  display: -webkit-box;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  height: 44px;
 }
 
 .productCard:hover .productName {
-    color: #BB9244;
+  color: #bb9244;
 }
 
 .productPrice {
-    font-size: 18px;
-    font-weight: 700;
-    color: #d0021b;
-    letter-spacing: 0.5px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #d0021b;
+  letter-spacing: 0.5px;
 }
 
 .btnWrapCenter {
-    text-align: center;
-    margin-top: 20px;
+  text-align: center;
+  margin-top: 20px;
 }
 
 .btnViewAll {
-    background: #fff;
-    color: #252a2b;
-    border: 2px solid #173354;
-    padding: 14px 40px;
-    font-family: 'Inter', sans-serif;
-    font-size: 15px;
-    font-weight: 600;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border-radius: 4px;
+  background: #fff;
+  color: #252a2b;
+  border: 2px solid #173354;
+  padding: 14px 40px;
+  font-family: "Inter", sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 4px;
 }
 
 .btnViewAll:hover {
-    background: #173354;
-    color: #fff;
+  background: #173354;
+  color: #fff;
 }
 
 .loading {
-    text-align: center;
-    padding: 40px;
-    font-size: 16px;
-    color: #888;
+  text-align: center;
+  padding: 40px;
+  font-size: 16px;
+  color: #888;
 }
 
 .newsSection {
-    background: #f9f9f9;
-    padding: 60px 0;
+  background: #f9f9f9;
+  padding: 60px 0;
 }
 
 .newsCarousel {
-    position: relative;
+  position: relative;
 }
 
 .newsNav {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin: -10px 0 18px;
+  width: fit-content;
+  margin: -8px auto 26px;
+  padding: 8px 10px 8px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(187, 146, 68, 0.22);
+  box-shadow: 0 14px 35px rgba(23, 51, 84, 0.08);
+  backdrop-filter: blur(10px);
 }
 
 .newsNavBtn {
-    width: 42px;
-    height: 42px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid rgba(23, 51, 84, 0.16);
-    border-radius: 50%;
-    color: #173354;
-    background: #fff;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-    cursor: pointer;
-    transition: all 0.2s ease;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  color: #173354;
+  background: #f7efe2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    transform 0.25s ease,
+    background 0.25s ease,
+    color 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
 .newsNavBtn:hover {
-    color: #fff;
-    border-color: #173354;
-    background: #173354;
-    transform: translateY(-2px);
+  color: #fff;
+  background: linear-gradient(135deg, #173354, #bb9244);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(23, 51, 84, 0.18);
 }
 
 .newsGrid {
-    display: flex;
-    gap: 30px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scroll-behavior: smooth;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;
-    margin-bottom: 30px;
-    padding: 2px 2px 18px;
+  display: flex;
+  gap: 30px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  margin-bottom: 30px;
+  padding: 2px 2px 18px;
 }
 
 .newsGrid::-webkit-scrollbar {
-    display: none;
+  display: none;
 }
 
 .newsCard {
-    flex: 0 0 calc((100% - 60px) / 3);
-    min-width: 320px;
-    scroll-snap-align: start;
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    transition: all 0.3s ease;
-    cursor: pointer;
+  flex: 0 0 calc((100% - 60px) / 3);
+  min-width: 320px;
+  scroll-snap-align: start;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  cursor: pointer;
 }
 
 .newsCard:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+  transform: translateY(-5px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
 }
 
 .newsImgWrap {
-    width: 100%;
-    height: 220px;
-    overflow: hidden;
-    position: relative;
+  width: 100%;
+  height: 220px;
+  overflow: hidden;
+  position: relative;
 }
 
 .newsImgWrap img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.5s ease;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
 }
 
 .newsCard:hover .newsImgWrap img {
-    transform: scale(1.1);
+  transform: scale(1.1);
 }
 
 .newsDate {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    background: rgba(187, 146, 68, 0.9);
-    color: white;
-    padding: 8px 15px;
-    border-radius: 4px;
-    font-size: 13px;
-    font-weight: 600;
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: rgba(187, 146, 68, 0.9);
+  color: white;
+  padding: 8px 15px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .newsContent {
-    padding: 25px;
+  padding: 25px;
 }
 
 .newsTitle {
-    font-family: 'Arsenal', sans-serif;
-    font-size: 22px;
-    font-weight: 700;
-    color: #252a2b;
-    margin: 0 0 12px;
-    line-height: 1.4;
+  font-family: "Arsenal", sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #252a2b;
+  margin: 0 0 12px;
+  line-height: 1.4;
 }
 
 .newsExcerpt {
-    font-size: 14px;
-    color: #666;
-    line-height: 1.6;
-    margin-bottom: 15px;
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 15px;
 }
 
 .newsReadMore {
-    color: #173354;
-    font-weight: 600;
-    font-size: 14px;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    transition: all 0.3s ease;
+  color: #173354;
+  font-weight: 600;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.3s ease;
+}
+
+.newsNavLabel {
+  font-size: 13px;
+  font-weight: 700;
+  color: #173354;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.newsNavActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.newsNavBtn:active {
+  transform: translateY(0) scale(0.96);
 }
 
 .newsReadMore:hover {
-    color: #BB9244;
-    gap: 8px;
+  color: #bb9244;
+  gap: 8px;
 }
 
 @media (max-width: 1024px) {
-    .productGrid { grid-template-columns: repeat(3, 1fr); }
-    .newsCard { flex-basis: calc((100% - 30px) / 2); }
-    .features { grid-template-columns: repeat(2, 1fr); }
+  .productGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .newsCard {
+    flex-basis: calc((100% - 30px) / 2);
+  }
+  .features {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 768px) {
-    .topbarInner {
-        flex-direction: column;
-        gap: 8px;
-        justify-content: center;
-        text-align: center;
-    }
-    .topbarPromo {
-        font-size: 11px;
-    }
-    .aboutContent { grid-template-columns: 1fr; gap: 30px; }
-    .visionMission { grid-template-columns: 1fr; }
-    .productGrid { grid-template-columns: repeat(2, 1fr); gap: 20px; }
-    .newsNav { justify-content: center; margin-top: 0; }
-    .newsCard { flex-basis: min(88vw, 360px); min-width: min(88vw, 360px); }
-    .features { grid-template-columns: 1fr; }
-    .bannerTitle { font-size: 36px; }
-    .bannerSubtitle { font-size: 16px; }
-    .navBar { display: none; }
+  .topbarInner {
+    flex-direction: column;
+    gap: 8px;
+    justify-content: center;
+    text-align: center;
+  }
+  .topbarPromo {
+    font-size: 11px;
+  }
+  .aboutContent {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+  .visionMission {
+    grid-template-columns: 1fr;
+  }
+  .productGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  .newsCard {
+    flex-basis: min(88vw, 360px);
+    min-width: min(88vw, 360px);
+  }
+  .features {
+    grid-template-columns: 1fr;
+  }
+  .bannerTitle {
+    font-size: 36px;
+  }
+  .bannerSubtitle {
+    font-size: 16px;
+  }
+  .navBar {
+    display: none;
+  }
 }
 
 @media (max-width: 576px) {
-    .productGrid { grid-template-columns: repeat(2, 1fr); gap: 15px; }
-    .topbar { display: none; }
-    .headerFlex { flex-wrap: wrap; justify-content: center; gap: 15px; }
-    .searchBox { max-width: 100%; margin-bottom: 10px; }
-    .marqueeItem { width: 260px; height: 350px; }
-    .marqueeTextWrap { bottom: 15px; left: 0; right: 0; padding: 0 10px; }
-    .sectionHeadingDark h2 { font-size: 28px; }
+  .productGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+  }
+  .topbar {
+    display: none;
+  }
+  .headerFlex {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+  }
+  .searchBox {
+    max-width: 100%;
+    margin-bottom: 10px;
+  }
+  .marqueeItem {
+    width: 260px;
+    height: 350px;
+  }
+  .marqueeTextWrap {
+    bottom: 15px;
+    left: 0;
+    right: 0;
+    padding: 0 10px;
+  }
+  .sectionHeadingDark h2 {
+    font-size: 28px;
+  }
 }
 
 .searchAutoComplete {
-    width: 100%;
+  width: 100%;
 }
 
 :global(.ant-select-single.ant-select-show-arrow .ant-select-selection-item),
 :global(.ant-select-single .ant-select-selector) {
-    border: none !important;
-    box-shadow: none !important;
-    background: transparent !important;
-    padding: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  padding: 0 !important;
 }
 
 :global(.ant-select-dropdown) {
-    border-radius: 12px !important;
-    overflow: hidden !important;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2) !important;
-    padding: 5px !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2) !important;
+  padding: 5px !important;
 }
 
 :global(.ant-carousel .slick-dots li button) {
-    background: #fff !important;
-    height: 4px !important;
-    border-radius: 2px !important;
-    opacity: 0.5 !important;
-    transition: all 0.3s ease !important;
+  background: #fff !important;
+  height: 4px !important;
+  border-radius: 2px !important;
+  opacity: 0.5 !important;
+  transition: all 0.3s ease !important;
 }
 
 :global(.ant-carousel .slick-dots li.slick-active button) {
-    background: #BB9244 !important;
-    opacity: 1 !important;
-    width: 24px !important;
+  background: #bb9244 !important;
+  opacity: 1 !important;
+  width: 24px !important;
+}
+
+@media (max-width: 576px) {
+  .newsNav {
+    width: 100%;
+    justify-content: space-between;
+    margin-top: 0;
+  }
+
+  .newsNavLabel {
+    font-size: 12px;
+  }
 }

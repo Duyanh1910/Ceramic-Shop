@@ -354,36 +354,61 @@
 }
 
 .relatedNav {
+  width: fit-content;
+  margin: -12px auto 28px;
+  padding: 8px 10px 8px 18px;
   display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin: -12px 0 24px;
+  align-items: center;
+  gap: 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(187, 146, 68, 0.22);
+  box-shadow: 0 14px 35px rgba(27, 67, 124, 0.08);
+  backdrop-filter: blur(10px);
+}
+
+.relatedNavLabel {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1b437c;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.relatedNavActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .relatedNavBtn {
-  width: 42px;
-  height: 42px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  color: #1b437c;
+  background: #f7efe2;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(27, 67, 124, 0.16);
-  border-radius: 50%;
-  color: #1b437c;
-  background: #fff;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
   cursor: pointer;
   transition:
-    transform 0.2s ease,
-    color 0.2s ease,
-    background 0.2s ease,
-    border-color 0.2s ease;
+    transform 0.25s ease,
+    background 0.25s ease,
+    color 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
 .relatedNavBtn:hover {
-  transform: translateY(-2px);
-  border-color: #1b437c;
   color: #fff;
-  background: #1b437c;
+  background: linear-gradient(135deg, #1b437c, #bb9244);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(27, 67, 124, 0.18);
+}
+
+.relatedNavBtn:active {
+  transform: translateY(0) scale(0.96);
 }
 
 .relatedGrid {
@@ -507,5 +532,17 @@
   .relatedCard {
     flex-basis: min(88vw, 340px);
     min-width: min(88vw, 340px);
+  }
+}
+
+@media (max-width: 576px) {
+  .relatedNav {
+    width: 100%;
+    justify-content: space-between;
+    margin-top: 0;
+  }
+
+  .relatedNavLabel {
+    font-size: 12px;
   }
 }
