@@ -1060,7 +1060,7 @@ router.post("/webhook", async (req, res) => {
           ]);
         });
 
-        const linkSearch = `${domainWeb}?search=${encodeURIComponent(danhMuc.trim())}`;
+        const linkSearch = `${domainWeb}/home/?search=${encodeURIComponent(danhMuc.trim())}`;
         listRichContent.push([
           {
             type: "button",
@@ -1316,9 +1316,11 @@ router.post("/webhook", async (req, res) => {
     let danhMucRaw = parameters.Danh_Muc_San_Pham || "";
     if (Array.isArray(danhMucRaw)) danhMucRaw = danhMucRaw[0];
 
+    const capacityAttributes = extractCapacityAttributes(queryText);
+
     const thuocTinhList = [
       ...toArray(parameters.Thuoc_Tinh),
-      ...extractCapacityAttributes(queryText),
+      ...capacityAttributes,
     ];
 
     const menhList = toArray(parameters.Menh);
@@ -1330,12 +1332,20 @@ router.post("/webhook", async (req, res) => {
     let matchTrieu = queryText.match(regexTrieu);
     let matchNgan = queryText.match(regexNgan);
 
+    const hasCapacityButNoMoneyUnit =
+      capacityAttributes.length > 0 && !matchTrieu && !matchNgan;
+
     if (matchTrieu) {
       let so = parseFloat(matchTrieu[1].replace(",", "."));
       nganSach = so * 1000000;
     } else if (matchNgan) {
       let so = parseFloat(matchNgan[1].replace(",", "."));
       nganSach = so * 1000;
+    } else if (hasCapacityButNoMoneyUnit) {
+      return res.json({
+        fulfillmentText:
+          `Dạ "${capacityAttributes.join(", ")}" là dung tích sản phẩm, chưa phải ngân sách ạ. Bạn muốn tìm dòng sản phẩm nào và khoảng giá bao nhiêu để em tư vấn chính xác hơn nhé?`,
+      });
     } else if (nganSachRaw) {
       let so = Number(nganSachRaw);
       if (so < 30) {
@@ -1464,7 +1474,7 @@ router.post("/webhook", async (req, res) => {
         });
 
         if (searchKeyword) {
-          const searchLink = `${domainWeb}?search=${encodeURIComponent(searchKeyword.trim())}`;
+          const searchLink = `${domainWeb}/home/?search=${encodeURIComponent(searchKeyword.trim())}`;
           richContentData.push([
             {
               type: "button",
