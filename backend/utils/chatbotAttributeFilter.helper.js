@@ -139,20 +139,42 @@ export const extractBirthYear = ({ namSinh, queryText }) => {
 export const extractBudgetAmount = ({ nganSachRaw, queryText, birthYear }) => {
   const text = String(queryText || "").toLowerCase();
 
-  const regexTrieu = /(\d+(?:[\.,]\d+)?)\s*(triệu|tr|củ)/i;
-  const regexNgan = /(\d+(?:[\.,]\d+)?)\s*(k|ngàn|nghìn)/i;
+  const parseDecimalNumber = (value) => {
+    return parseFloat(String(value).replace(",", "."));
+  };
+
+  const parseVndNumber = (value) => {
+    const normalizedValue = String(value).replace(/[.,\s]/g, "");
+    const numberValue = Number(normalizedValue);
+
+    return Number.isNaN(numberValue) ? 0 : numberValue;
+  };
+
+  const regexTrieu =
+    /(\d+(?:[\.,]\d+)?)\s*(triệu|tr|củ)(?=$|[\s,.!?;:])/i;
+
+  const regexNgan =
+    /(\d+(?:[\.,]\d+)?)\s*(k|ngàn|nghìn)(?=$|[\s,.!?;:])/i;
+
+  const regexVnd =
+    /(\d+(?:[\.,]\d+)*)\s*(đ|₫|vnd|vnđ|đồng|dong)(?=$|[\s,.!?;:])/i;
 
   const matchTrieu = text.match(regexTrieu);
   const matchNgan = text.match(regexNgan);
+  const matchVnd = text.match(regexVnd);
 
   if (matchTrieu) {
-    const so = parseFloat(matchTrieu[1].replace(",", "."));
+    const so = parseDecimalNumber(matchTrieu[1]);
     return so * 1000000;
   }
 
   if (matchNgan) {
-    const so = parseFloat(matchNgan[1].replace(",", "."));
+    const so = parseDecimalNumber(matchNgan[1]);
     return so * 1000;
+  }
+
+  if (matchVnd) {
+    return parseVndNumber(matchVnd[1]);
   }
 
   if (!nganSachRaw) return 0;
@@ -167,7 +189,7 @@ export const extractBudgetAmount = ({ nganSachRaw, queryText, birthYear }) => {
   if (isBirthYear) return 0;
 
   const hasBudgetKeyword =
-    /(ngân sách|tài chính|tầm|khoảng|dưới|duoi|tối đa|toi da|không quá|khong qua|giá|gia tiền|gia tien)/i.test(
+    /(ngân sách|tài chính|tầm|khoảng|dưới|duoi|tối đa|toi da|không quá|khong qua|giá|gia|tiền|tien)/i.test(
       text,
     );
 

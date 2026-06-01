@@ -1754,9 +1754,10 @@ router.post("/webhook", async (req, res) => {
 
     const menhList = toArray(parameters.Menh);
 
-    const hasExplicitMoneyUnit = /(\d+(?:[\.,]\d+)?)\s*(triệu|tr|củ|k|ngàn|nghìn)/i.test(
-      queryText,
-    );
+    const hasExplicitMoneyUnit =
+      /(\d+(?:[\.,]\d+)*)\s*(triệu|tr|củ|k|ngàn|nghìn|đ|₫|vnd|vnđ|đồng|dong)(?=$|[\s,.!?;:])/i.test(
+        queryText,
+      );
 
     const hasCapacityButNoMoneyUnit =
       capacityAttributes.length > 0 && !hasExplicitMoneyUnit;
@@ -1801,6 +1802,7 @@ router.post("/webhook", async (req, res) => {
       const ignoreWords = [
         "lít",
         "lit",
+        "l",
         "củ",
         "k",
         "tr",
@@ -1808,8 +1810,11 @@ router.post("/webhook", async (req, res) => {
         "ngàn",
         "nghìn",
         "đ",
+        "₫",
         "vnd",
+        "vnđ",
         "đồng",
+        "dong",
       ];
       if (tenSPRaw && ignoreWords.includes(tenSPRaw.toLowerCase().trim())) {
         tenSPRaw = "";
