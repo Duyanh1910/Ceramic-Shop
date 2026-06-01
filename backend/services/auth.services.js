@@ -13,7 +13,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const EXPIRES_IN = process.env.JWT_EXPIRES_IN;
 const REMEMBER_ME_EXPIRES_IN = process.env.REMEMBER_ME_EXPIRES_IN;
 import { SALT_ROUNDS } from "../config/app_config.js";
-import { Op } from "sequelize";
+import { Op, col, fn, where } from "sequelize";
 
 export const customerRegisterService = async (
   username,
@@ -75,10 +75,15 @@ export const customerRegisterService = async (
   }
 };
 
-export const loginService = async (username, password, rememberMe) => {
+export const loginService = async (identifier, password, rememberMe) => {
+  const loginIdentifier = String(identifier || "").trim();
+  const normalizedIdentifier = loginIdentifier.toLowerCase();
   const account = await AccountModel.findOne({
     where: {
-      Username: username,
+      [Op.or]: [
+        where(fn("LOWER", col("Username")), normalizedIdentifier),
+        where(fn("LOWER", col("Email")), normalizedIdentifier),
+      ],
       TrangThai: 1,
     },
     include: [
@@ -114,7 +119,8 @@ export const loginService = async (username, password, rememberMe) => {
   );
 
   return {
-    username,
+    username: account.Username,
+    email: account.Email,
     token,
     role: role,
     expiresInDays: rememberMe ? 30 : 1,

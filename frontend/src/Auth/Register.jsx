@@ -27,6 +27,8 @@ function Register() {
   const [form] = Form.useForm();
   const inputRefs = useRef([]);
   const timerRef = useRef(null);
+  const lastAutoVerifiedOtpRef = useRef('');
+  const isVerifyingOtpRef = useRef(false);
   const navigate = useNavigate();
 
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -56,6 +58,7 @@ function Register() {
       });
 
       setFormData(values);
+      lastAutoVerifiedOtpRef.current = '';
       setStep(2);
       startCooldown();
       message.success('OTP đã được gửi đến email của bạn!');
@@ -93,9 +96,10 @@ function Register() {
     e.preventDefault();
   };
 
-  const handleVerifyOTP = async () => {
-    const code = otp.join('');
+  const verifyOtpCode = async (code) => {
+    if (isVerifyingOtpRef.current) return;
     if (code.length < OTP_LENGTH) { message.warning('Vui lòng nhập đủ 6 chữ số!'); return; }
+    isVerifyingOtpRef.current = true;
     setLoading(true);
     setActionFailed(false);
     try {
@@ -107,9 +111,27 @@ function Register() {
       if (data?.remainingAttempts !== undefined) setRemainingAttempts(data.remainingAttempts);
       message.error(data?.message || 'OTP không hợp lệ!');
     } finally {
+      isVerifyingOtpRef.current = false;
       setLoading(false);
     }
   };
+
+  const handleVerifyOTP = () => {
+    verifyOtpCode(otp.join(''));
+  };
+
+  useEffect(() => {
+    if (step !== 2 || loading) return;
+    const code = otp.join('');
+    if (code.length !== OTP_LENGTH || otp.some((digit) => !digit)) {
+      lastAutoVerifiedOtpRef.current = '';
+      return;
+    }
+    if (lastAutoVerifiedOtpRef.current === code) return;
+
+    lastAutoVerifiedOtpRef.current = code;
+    verifyOtpCode(code);
+  }, [otp, step, loading]);
 
   const handleRegister = async () => {
     try {
@@ -133,6 +155,7 @@ function Register() {
     try {
       await axios.post(`${API_BASE}/auth/sendVerifyEmail`, { email: formData.email });
       setOtp(Array(OTP_LENGTH).fill(''));
+      lastAutoVerifiedOtpRef.current = '';
       setRemainingAttempts(5);
       startCooldown();
       message.success('OTP mới đã được gửi!');

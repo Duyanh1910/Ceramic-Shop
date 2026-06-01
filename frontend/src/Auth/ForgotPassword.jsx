@@ -23,6 +23,8 @@ function ForgotPassword() {
   const inputRefs = useRef([]);
   const [formPass] = Form.useForm();
   const timerRef = useRef(null);
+  const lastAutoVerifiedOtpRef = useRef('');
+  const isVerifyingOtpRef = useRef(false);
 
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
@@ -49,6 +51,7 @@ function ForgotPassword() {
     try {
       await axios.post(`${API_BASE}/auth/forgot-password`, { email: values.email });
       setEmail(values.email);
+      lastAutoVerifiedOtpRef.current = '';
       setStep(2);
       startCooldown();
       message.success('OTP đã được gửi đến email của bạn!');
@@ -87,12 +90,13 @@ function ForgotPassword() {
     e.preventDefault();
   };
 
-  const handleVerifyOTP = async () => {
-    const code = otp.join('');
+  const verifyOtpCode = async (code) => {
+    if (isVerifyingOtpRef.current) return;
     if (code.length < OTP_LENGTH) {
       message.warning('Vui lòng nhập đủ 6 chữ số OTP!');
       return;
     }
+    isVerifyingOtpRef.current = true;
     setLoading(true);
     setActionFailed(false);
     try {
@@ -105,9 +109,27 @@ function ForgotPassword() {
       if (data?.remainingAttempts !== undefined) setRemainingAttempts(data.remainingAttempts);
       message.error(data?.message || 'OTP không hợp lệ!');
     } finally {
+      isVerifyingOtpRef.current = false;
       setLoading(false);
     }
   };
+
+  const handleVerifyOTP = () => {
+    verifyOtpCode(otp.join(''));
+  };
+
+  useEffect(() => {
+    if (step !== 2 || loading) return;
+    const code = otp.join('');
+    if (code.length !== OTP_LENGTH || otp.some((digit) => !digit)) {
+      lastAutoVerifiedOtpRef.current = '';
+      return;
+    }
+    if (lastAutoVerifiedOtpRef.current === code) return;
+
+    lastAutoVerifiedOtpRef.current = code;
+    verifyOtpCode(code);
+  }, [otp, step, loading]);
 
   const handleResendOTP = async () => {
     if (cooldown > 0) return;
@@ -116,6 +138,7 @@ function ForgotPassword() {
     try {
       await axios.post(`${API_BASE}/auth/forgot-password`, { email });
       setOtp(Array(OTP_LENGTH).fill(''));
+      lastAutoVerifiedOtpRef.current = '';
       setRemainingAttempts(5);
       startCooldown();
       message.success('OTP mới đã được gửi!');

@@ -18,11 +18,12 @@ const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 
 export const login = async (req, res, next) => {
   try {
-    const { username, password, rememberMe } = req.body;
-    if (!checkValidate(username, password)) {
-      throw new ErrorHandler("Username và password không được để trống!", 400);
+    const { username, email, identifier, password, rememberMe } = req.body;
+    const loginIdentifier = String(username || email || identifier || "").trim();
+    if (!checkValidate(loginIdentifier, password)) {
+      throw new ErrorHandler("Tên đăng nhập/email và password không được để trống!", 400);
     }
-    const result = await loginService(username, password, rememberMe);
+    const result = await loginService(loginIdentifier, password, rememberMe);
     const maxAge = result.expiresInDays * 24 * 60 * 60 * 1000;
     res.cookie("accessToken", result.token, {
       httpOnly: true,
@@ -37,6 +38,7 @@ export const login = async (req, res, next) => {
       expiresInDays: result.expiresInDays,
       user: {
         username: result.username,
+        email: result.email,
         role: result.role,
       },
     });

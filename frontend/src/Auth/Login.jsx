@@ -34,12 +34,12 @@ function Login() {
 
       const response = await axios.post(
         `${API_BASE}/auth/login`,
-        { username: values.username, password: values.password, rememberMe },
+        { identifier: values.identifier?.trim(), password: values.password, rememberMe },
         { withCredentials: true }
       );
 
       const user = response.data.user || response.data.result || response.data;
-      const currentUsername = user.username || values.username;
+      const currentUsername = user.username || values.identifier;
       const currentRole = user.role || user.Role || 'Customer';
       const token = response.data.token || null;
 
@@ -124,14 +124,14 @@ function Login() {
             onValuesChange={() => setLoginFailed(false)}
           >
             <Form.Item
-              label={<span className={styles.inputLabel}>Tên đăng nhập</span>}
-              name="username"
-              rules={[{ required: true, message: 'Vui lòng nhập tên đăng nhập!' }]}
+              label={<span className={styles.inputLabel}>Tên đăng nhập hoặc email</span>}
+              name="identifier"
+              rules={[{ required: true, message: 'Vui lòng nhập tên đăng nhập hoặc email!' }]}
             >
               <Input
                 prefix={<UserOutlined style={{ color: '#bfbfbf' }} />}
                 className={styles.customInput}
-                placeholder="Nhập tên đăng nhập"
+                placeholder="Nhập tên đăng nhập hoặc email"
                 size="large"
               />
             </Form.Item>
