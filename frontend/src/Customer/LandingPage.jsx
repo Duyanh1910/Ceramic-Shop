@@ -9,6 +9,7 @@ import {
     UserOutlined, 
     EnvironmentOutlined,
     PhoneOutlined,
+    LeftOutlined,
     RightOutlined,
     CheckCircleOutlined,
     SafetyOutlined,
@@ -67,6 +68,7 @@ function LandingPage() {
 
     const [newsArticles, setNewsArticles] = useState([]);
     const [loadingNews, setLoadingNews] = useState(false);
+    const newsTrackRef = useRef(null);
 
     const [isChecking, setIsChecking] = useState(false);
     const [apiCategories, setApiCategories] = useState([]);
@@ -262,12 +264,24 @@ function LandingPage() {
         try {
             const response = await axios.get(`${API_BASE}/news`);
             const data = response.data?.result || response.data?.data || response.data || [];
-            setNewsArticles(data.slice(0, 3));
+            setNewsArticles(data);
         } catch (error) {
             console.error(error);
         } finally {
             setLoadingNews(false);
         }
+    };
+
+    const scrollNews = (direction) => {
+        const track = newsTrackRef.current;
+        if (!track) return;
+
+        const firstCard = track.querySelector(`.${styles.newsCard}`);
+        const cardWidth = firstCard?.offsetWidth || 360;
+        track.scrollBy({
+            left: direction * (cardWidth + 30),
+            behavior: 'smooth',
+        });
     };
 
     const fetchProducts = async () => {
@@ -684,9 +698,31 @@ function LandingPage() {
                         <p className={styles.sectionSubtitle}>Cập nhật xu hướng và kiến thức về gốm sứ</p>
                     </div>
 
-                    <div className={styles.newsGrid}>
+                    <div className={styles.newsCarousel}>
+                        {newsArticles.length > 3 && !loadingNews && (
+                            <div className={styles.newsNav}>
+                                <button
+                                    type="button"
+                                    className={styles.newsNavBtn}
+                                    onClick={() => scrollNews(-1)}
+                                    aria-label="Xem tin tức trước"
+                                >
+                                    <LeftOutlined />
+                                </button>
+                                <button
+                                    type="button"
+                                    className={styles.newsNavBtn}
+                                    onClick={() => scrollNews(1)}
+                                    aria-label="Xem tin tức tiếp theo"
+                                >
+                                    <RightOutlined />
+                                </button>
+                            </div>
+                        )}
+
+                        <div className={styles.newsGrid} ref={newsTrackRef}>
                         {loadingNews ? (
-                            <div style={{ textAlign: 'center', gridColumn: '1 / -1', padding: '40px 0' }}>
+                            <div style={{ textAlign: 'center', flex: '0 0 100%', padding: '40px 0' }}>
                                 <Spin tip="Đang tải tin tức..." />
                             </div>
                         ) : newsArticles.length > 0 ? (
@@ -725,10 +761,11 @@ function LandingPage() {
                                 </div>
                             ))
                         ) : (
-                            <div style={{ textAlign: 'center', gridColumn: '1 / -1', color: '#888' }}>
+                            <div style={{ textAlign: 'center', flex: '0 0 100%', color: '#888' }}>
                                 Hiện chưa có tin tức nào.
                             </div>
                         )}
+                        </div>
                     </div>
                 </div>
             </section>

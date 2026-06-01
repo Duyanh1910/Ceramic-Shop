@@ -353,13 +353,58 @@
   margin: 12px auto 0;
 }
 
+.relatedNav {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: -12px 0 24px;
+}
+
+.relatedNavBtn {
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(27, 67, 124, 0.16);
+  border-radius: 50%;
+  color: #1b437c;
+  background: #fff;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    color 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.relatedNavBtn:hover {
+  transform: translateY(-2px);
+  border-color: #1b437c;
+  color: #fff;
+  background: #1b437c;
+}
+
 .relatedGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  display: flex;
   gap: 25px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  padding: 4px 2px 18px;
+}
+
+.relatedGrid::-webkit-scrollbar {
+  display: none;
 }
 
 .relatedCard {
+  flex: 0 0 calc((100% - 50px) / 3);
+  min-width: 260px;
+  scroll-snap-align: start;
   background: #fff;
   border-radius: 12px;
   overflow: hidden;
@@ -435,6 +480,10 @@
   .articleTitle {
     font-size: 32px !important;
   }
+
+  .relatedCard {
+    flex-basis: calc((100% - 25px) / 2);
+  }
 }
 
 @media (max-width: 768px) {
@@ -455,7 +504,8 @@
     align-items: flex-start;
   }
 
-  .relatedGrid {
-    grid-template-columns: 1fr;
+  .relatedCard {
+    flex-basis: min(88vw, 340px);
+    min-width: min(88vw, 340px);
   }
 }

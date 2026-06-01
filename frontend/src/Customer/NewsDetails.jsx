@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Layout, Spin, Breadcrumb, Typography, Button, Result, Tag, Tooltip, message } from 'antd';
@@ -6,6 +6,8 @@ import {
   HomeOutlined, 
   CalendarOutlined, 
   ArrowLeftOutlined,
+  LeftOutlined,
+  RightOutlined,
   FacebookOutlined,
   TwitterOutlined,
   LinkOutlined
@@ -25,6 +27,7 @@ function NewsDetail() {
   const [news, setNews] = useState(null);
   const [recentNews, setRecentNews] = useState([]);
   const [loading, setLoading] = useState(true);
+  const relatedTrackRef = useRef(null);
 
   const handleShareFacebook = () => {
     const currentUrl = encodeURIComponent(window.location.href);
@@ -63,7 +66,7 @@ function NewsDetail() {
         const listRes = await axios.get(`${API_BASE}/news`);
         const allNews = listRes.data?.result || listRes.data?.data || [];
         
-        const filteredNews = allNews.filter(item => item.MaTinTuc !== parseInt(id)).slice(0, 3);
+        const filteredNews = allNews.filter(item => item.MaTinTuc !== parseInt(id));
         setRecentNews(filteredNews);
       } catch (error) {
         setNews(null);
@@ -74,6 +77,18 @@ function NewsDetail() {
 
     if (id) fetchNewsData();
   }, [id]);
+
+  const scrollRelatedNews = (direction) => {
+    const track = relatedTrackRef.current;
+    if (!track) return;
+
+    const firstCard = track.querySelector(`.${styles.relatedCard}`);
+    const cardWidth = firstCard?.offsetWidth || 280;
+    track.scrollBy({
+      left: direction * (cardWidth + 25),
+      behavior: 'smooth',
+    });
+  };
 
   if (loading) {
     return (
@@ -222,8 +237,28 @@ function NewsDetail() {
 
             {recentNews.length > 0 && (
               <div className={styles.relatedSection}>
-                <h3 className={styles.relatedTitle}>CÙNG CHỦ ĐỀ</h3>
-                <div className={styles.relatedGrid}>
+                <h3 className={styles.relatedTitle}>CÁC BÀI VIẾT TƯƠNG TỰ</h3>
+                {recentNews.length > 3 && (
+                  <div className={styles.relatedNav}>
+                    <button
+                      type="button"
+                      className={styles.relatedNavBtn}
+                      onClick={() => scrollRelatedNews(-1)}
+                      aria-label="Xem bài viết trước"
+                    >
+                      <LeftOutlined />
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.relatedNavBtn}
+                      onClick={() => scrollRelatedNews(1)}
+                      aria-label="Xem bài viết tiếp theo"
+                    >
+                      <RightOutlined />
+                    </button>
+                  </div>
+                )}
+                <div className={styles.relatedGrid} ref={relatedTrackRef}>
                   {recentNews.map(item => (
                     <div 
                       key={item.MaTinTuc} 

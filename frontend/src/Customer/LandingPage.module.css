@@ -831,14 +831,59 @@ ul {
     padding: 60px 0;
 }
 
+.newsCarousel {
+    position: relative;
+}
+
+.newsNav {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin: -10px 0 18px;
+}
+
+.newsNavBtn {
+    width: 42px;
+    height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(23, 51, 84, 0.16);
+    border-radius: 50%;
+    color: #173354;
+    background: #fff;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.newsNavBtn:hover {
+    color: #fff;
+    border-color: #173354;
+    background: #173354;
+    transform: translateY(-2px);
+}
+
 .newsGrid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    display: flex;
     gap: 30px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-behavior: smooth;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
     margin-bottom: 30px;
+    padding: 2px 2px 18px;
+}
+
+.newsGrid::-webkit-scrollbar {
+    display: none;
 }
 
 .newsCard {
+    flex: 0 0 calc((100% - 60px) / 3);
+    min-width: 320px;
+    scroll-snap-align: start;
     background: white;
     border-radius: 8px;
     overflow: hidden;
@@ -919,7 +964,7 @@ ul {
 
 @media (max-width: 1024px) {
     .productGrid { grid-template-columns: repeat(3, 1fr); }
-    .newsGrid { grid-template-columns: repeat(2, 1fr); }
+    .newsCard { flex-basis: calc((100% - 30px) / 2); }
     .features { grid-template-columns: repeat(2, 1fr); }
 }
 
@@ -936,7 +981,8 @@ ul {
     .aboutContent { grid-template-columns: 1fr; gap: 30px; }
     .visionMission { grid-template-columns: 1fr; }
     .productGrid { grid-template-columns: repeat(2, 1fr); gap: 20px; }
-    .newsGrid { grid-template-columns: 1fr; }
+    .newsNav { justify-content: center; margin-top: 0; }
+    .newsCard { flex-basis: min(88vw, 360px); min-width: min(88vw, 360px); }
     .features { grid-template-columns: 1fr; }
     .bannerTitle { font-size: 36px; }
     .bannerSubtitle { font-size: 16px; }
