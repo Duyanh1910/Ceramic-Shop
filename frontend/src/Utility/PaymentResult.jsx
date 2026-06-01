@@ -53,7 +53,13 @@ const getCustomerToken = () => {
 
 const getOrderIdFromAppTransId = (appTransId) => {
     if (!appTransId) return '';
-    return appTransId.includes('_') ? appTransId.split('_').pop() : appTransId;
+    const parts = appTransId.split('_');
+
+    if (parts.length >= 3) {
+        return parts[1];
+    }
+
+    return appTransId;
 };
 
 function detectPaymentGateway(searchParams) {
