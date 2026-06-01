@@ -844,7 +844,7 @@ ul {
 
 .newsNav {
   width: fit-content;
-  margin: -8px auto 26px;
+  margin: 6px auto 0;
   padding: 8px 10px 8px 18px;
   display: flex;
   align-items: center;

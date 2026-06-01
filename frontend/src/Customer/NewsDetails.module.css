@@ -355,7 +355,7 @@
 
 .relatedNav {
   width: fit-content;
-  margin: -12px auto 28px;
+  margin: 10px auto 0;
   padding: 8px 10px 8px 18px;
   display: flex;
   align-items: center;

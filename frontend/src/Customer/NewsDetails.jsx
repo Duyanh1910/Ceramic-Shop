@@ -305,33 +305,6 @@ function NewsDetail() {
             {recentNews.length > 0 && (
               <div className={styles.relatedSection}>
                 <h3 className={styles.relatedTitle}>CÁC BÀI VIẾT TƯƠNG TỰ</h3>
-                {recentNews.length > 3 && (
-                  <div className={styles.relatedNav}>
-                    <span className={styles.relatedNavLabel}>
-                      Khám phá thêm bài viết
-                    </span>
-
-                    <div className={styles.relatedNavActions}>
-                      <button
-                        type="button"
-                        className={styles.relatedNavBtn}
-                        onClick={() => scrollRelatedNews(-1)}
-                        aria-label="Xem bài viết trước"
-                      >
-                        <LeftOutlined />
-                      </button>
-
-                      <button
-                        type="button"
-                        className={styles.relatedNavBtn}
-                        onClick={() => scrollRelatedNews(1)}
-                        aria-label="Xem bài viết tiếp theo"
-                      >
-                        <RightOutlined />
-                      </button>
-                    </div>
-                  </div>
-                )}
                 <div className={styles.relatedGrid} ref={relatedTrackRef}>
                   {recentNews.map((item) => (
                     <div
@@ -359,6 +332,33 @@ function NewsDetail() {
                     </div>
                   ))}
                 </div>
+                {recentNews.length > 3 && (
+                  <div className={styles.relatedNav}>
+                    <span className={styles.relatedNavLabel}>
+                      Khám phá thêm bài viết
+                    </span>
+
+                    <div className={styles.relatedNavActions}>
+                      <button
+                        type="button"
+                        className={styles.relatedNavBtn}
+                        onClick={() => scrollRelatedNews(-1)}
+                        aria-label="Xem bài viết trước"
+                      >
+                        <LeftOutlined />
+                      </button>
+
+                      <button
+                        type="button"
+                        className={styles.relatedNavBtn}
+                        onClick={() => scrollRelatedNews(1)}
+                        aria-label="Xem bài viết tiếp theo"
+                      >
+                        <RightOutlined />
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

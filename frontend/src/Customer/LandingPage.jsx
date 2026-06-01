@@ -948,32 +948,6 @@ function LandingPage() {
           </div>
 
           <div className={styles.newsCarousel}>
-            {newsArticles.length > 3 && !loadingNews && (
-              <div className={styles.newsNav}>
-                <span className={styles.newsNavLabel}>Trượt để xem thêm</span>
-
-                <div className={styles.newsNavActions}>
-                  <button
-                    type="button"
-                    className={styles.newsNavBtn}
-                    onClick={() => scrollNews(-1)}
-                    aria-label="Xem tin tức trước"
-                  >
-                    <LeftOutlined />
-                  </button>
-
-                  <button
-                    type="button"
-                    className={styles.newsNavBtn}
-                    onClick={() => scrollNews(1)}
-                    aria-label="Xem tin tức tiếp theo"
-                  >
-                    <RightOutlined />
-                  </button>
-                </div>
-              </div>
-            )}
-
             <div className={styles.newsGrid} ref={newsTrackRef}>
               {loadingNews ? (
                 <div
@@ -1041,6 +1015,32 @@ function LandingPage() {
                 </div>
               )}
             </div>
+
+            {newsArticles.length > 3 && !loadingNews && (
+              <div className={styles.newsNav}>
+                <span className={styles.newsNavLabel}>Trượt để xem thêm</span>
+
+                <div className={styles.newsNavActions}>
+                  <button
+                    type="button"
+                    className={styles.newsNavBtn}
+                    onClick={() => scrollNews(-1)}
+                    aria-label="Xem tin tức trước"
+                  >
+                    <LeftOutlined />
+                  </button>
+
+                  <button
+                    type="button"
+                    className={styles.newsNavBtn}
+                    onClick={() => scrollNews(1)}
+                    aria-label="Xem tin tức tiếp theo"
+                  >
+                    <RightOutlined />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </section>
