@@ -982,75 +982,226 @@ router.post("/webhook", async (req, res) => {
       });
     }
   } else if (intentName === "Hoi_Khuyen_Mai") {
-    try {
-      const sqlQuery = `
-                SELECT TenKhuyenMai, GiaTri, GiaTriToiThieu, NgayKetThuc 
-                FROM KhuyenMai 
-                WHERE TrangThai = 1 AND NgayKetThuc >= NOW()
-                ORDER BY NgayKetThuc ASC
-            `;
-      const [rows] = await pool.execute(sqlQuery);
+  const queryText = String(req.body.queryResult.queryText || "");
 
-      if (rows.length > 0) {
-        let textArray = [
-          "Dạ, hiện tại cửa hàng đang có các chương trình ưu đãi cực kỳ hấp dẫn sau ạ:",
-        ];
+  const normalizedQueryText = queryText
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d");
 
-        rows.forEach((km, index) => {
-          const ngayKT = new Date(km.NgayKetThuc).toLocaleDateString("vi-VN");
-          let giaTriKM = km.GiaTri;
+  const isShippingVoucherQuestion =
+  /(freeship|free\s*ship|mien\s*phi\s*ship|mien\s*phi\s*giao\s*hang|ma\s*free\s*ship|ma\s*freeship|phi\s*ship|phi\s*giao\s*hang|van\s*chuyen|giao\s*hang)/i.test(
+    normalizedQueryText,
+  );
 
-          if (giaTriKM <= 100) {
-            giaTriKM = parseFloat(giaTriKM) + "%";
-          } else {
-            giaTriKM = new Intl.NumberFormat("vi-VN", {
-              style: "currency",
-              currency: "VND",
-            }).format(giaTriKM);
-          }
+  const isOrderDiscountQuestion =
+    /(ma\s*giam\s*gia|voucher\s*giam|coupon|ma\s*khuyen\s*mai|giam\s*tien|giam\s*don|giam\s*gia\s*don|voucher\s*mua\s*hang|voucher\s*don\s*hang)/i.test(
+      normalizedQueryText,
+    );
 
-          const toiThieu = new Intl.NumberFormat("vi-VN", {
-            style: "currency",
-            currency: "VND",
-          }).format(km.GiaTriToiThieu);
+  const requestedVoucherType = isShippingVoucherQuestion
+    ? 2
+    : isOrderDiscountQuestion
+      ? 1
+      : null;
 
-          textArray.push(
-            `🎁 ${index + 1}. ${km.TenKhuyenMai}: Giảm ${giaTriKM} (Áp dụng đơn từ ${toiThieu}) - Hạn: ${ngayKT}.`,
-          );
-        });
+  try {
+    let sqlQuery = `
+      SELECT
+        km.MaKhuyenMai,
+        km.MaLoaiKM,
+        km.TenKhuyenMai,
+        km.GiaTri,
+        km.GiaTriToiThieu,
+        km.GiamToiDa,
+        km.NgayBatDau,
+        km.NgayKetThuc,
+        km.TrangThai,
+        km.MaCode,
+        km.SoLuong,
+        km.LoaiVoucher,
+        km.MaDanhMuc,
+        lkm.TenLoaiKM,
+        dm.TenDanhMuc
+      FROM KhuyenMai km
+      LEFT JOIN LoaiKhuyenMai lkm ON km.MaLoaiKM = lkm.MaLoaiKM
+      LEFT JOIN DanhMucSanPham dm ON km.MaDanhMuc = dm.MaDanhMuc
+      WHERE km.TrangThai = 1
+        AND km.NgayBatDau <= NOW()
+        AND km.NgayKetThuc >= NOW()
+        AND km.SoLuong > 0
+    `;
 
-        textArray.push("Bạn nhanh tay chốt đơn để được áp dụng ưu đãi nhé! 🥰");
+    const queryParams = [];
 
-        return res.json({
-          fulfillmentMessages: [
-            {
-              payload: {
-                richContent: [
-                  [
-                    {
-                      type: "description",
-                      title: "🎉 Chương trình Khuyến Mãi",
-                      text: textArray,
-                    },
-                  ],
-                ],
-              },
-            },
-          ],
-        });
+    if (requestedVoucherType) {
+      sqlQuery += ` AND km.LoaiVoucher = ?`;
+      queryParams.push(requestedVoucherType);
+    }
+
+    sqlQuery += `
+      ORDER BY km.NgayKetThuc ASC, km.MaKhuyenMai ASC
+      LIMIT 10
+    `;
+
+    const [rows] = await pool.execute(sqlQuery, queryParams);
+
+    const formatCurrency = (value) =>
+      new Intl.NumberFormat("vi-VN", {
+        style: "currency",
+        currency: "VND",
+      }).format(Number(value || 0));
+
+    const isPercentPromotion = (km) => {
+      const tenLoaiKM = String(km.TenLoaiKM || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+
+      return (
+        Number(km.MaLoaiKM) === 1 ||
+        tenLoaiKM.includes("phan tram") ||
+        tenLoaiKM.includes("%")
+      );
+    };
+
+    const formatDiscountValue = (km) => {
+      const value = Number(km.GiaTri || 0);
+
+      if (isPercentPromotion(km)) {
+        return `${value}%`;
+      }
+
+      return formatCurrency(value);
+    };
+
+    const getVoucherTypeText = (loaiVoucher) => {
+      if (Number(loaiVoucher) === 2) {
+        return "Freeship / giảm phí vận chuyển";
+      }
+
+      return "Giảm giá đơn hàng";
+    };
+
+    const getAppliedScopeText = (km) => {
+      if (km.MaDanhMuc && km.TenDanhMuc) {
+        return `Áp dụng: ${km.TenDanhMuc}`;
+      }
+
+      return "Áp dụng: Toàn shop";
+    };
+
+    const getMinimumOrderText = (value) => {
+      const minValue = Number(value || 0);
+
+      if (minValue <= 0) {
+        return "Không yêu cầu đơn tối thiểu";
+      }
+
+      return `Đơn tối thiểu: ${formatCurrency(minValue)}`;
+    };
+
+    const getMaxDiscountText = (km) => {
+      const maxDiscount = Number(km.GiamToiDa || 0);
+      const discountValue = Number(km.GiaTri || 0);
+
+      if (maxDiscount <= 0) return "";
+
+      if (!isPercentPromotion(km) && maxDiscount === discountValue) {
+        return "";
+      }
+
+      return ` | Giảm tối đa: ${formatCurrency(maxDiscount)}`;
+    };
+
+    const title = requestedVoucherType === 2
+      ? "🚚 Mã freeship đang hoạt động"
+      : requestedVoucherType === 1
+        ? "🎁 Mã giảm giá đang hoạt động"
+        : "🎉 Khuyến mãi đang hoạt động";
+
+    if (rows.length > 0) {
+      const textArray = [
+        requestedVoucherType === 2
+          ? "Dạ, hiện tại shop đang có các mã freeship/giảm phí vận chuyển còn hiệu lực sau ạ:"
+          : requestedVoucherType === 1
+            ? "Dạ, hiện tại shop đang có các mã giảm giá đơn hàng còn hiệu lực sau ạ:"
+            : "Dạ, hiện tại shop đang có các chương trình khuyến mãi còn hiệu lực sau ạ:",
+      ];
+
+      rows.forEach((km, index) => {
+        const ngayKT = new Date(km.NgayKetThuc).toLocaleDateString("vi-VN");
+
+        const maCodeText = km.MaCode ? ` | Mã: ${km.MaCode}` : "";
+        const minimumOrderText = getMinimumOrderText(km.GiaTriToiThieu);
+        const maxDiscountText = getMaxDiscountText(km);
+        const appliedScopeText = getAppliedScopeText(km);
+        const voucherTypeText = getVoucherTypeText(km.LoaiVoucher);
+
+        textArray.push(
+          `🎁 ${index + 1}. ${km.TenKhuyenMai}${maCodeText}: Giảm ${formatDiscountValue(km)} | ${minimumOrderText}${maxDiscountText} | ${appliedScopeText} | Loại: ${voucherTypeText} | Còn: ${km.SoLuong} lượt | HSD: ${ngayKT}.`,
+        );
+      });
+
+      if (maKhachHang) {
+        textArray.push(
+          "Bạn đã đăng nhập nên có thể vào ví voucher để xem voucher đang có, đã dùng và hết hạn nhé ạ."
+        );
       } else {
-        return res.json({
-          fulfillmentText:
-            "Dạ, tiếc quá hiện tại các chương trình khuyến mãi của shop vừa mới kết thúc. Bạn theo dõi để cập nhật đợt sale sắp tới nha!",
+        textArray.push(
+          "Bạn có thể đăng nhập tài khoản để lưu voucher vào ví và chọn mã khi thanh toán nhé ạ.",
+        );
+      }
+
+      const richContent = [
+        {
+          type: "description",
+          title,
+          text: textArray,
+        },
+        {
+          type: "button",
+          icon: { type: "storefront", color: "#C06E52" },
+          text: "Xem gian hàng",
+          link: buildWebLink("/home"),
+        },
+      ];
+
+      if (maKhachHang) {
+        richContent.push({
+          type: "button",
+          icon: { type: "local_offer", color: "#1b437c" },
+          text: "Xem ví voucher của tôi",
+          link: buildWebLink("/vouchers"),
         });
       }
-    } catch (error) {
-      console.error(error);
+
       return res.json({
-        fulfillmentText:
-          "Dạ hệ thống kiểm tra khuyến mãi đang bận một chút, bạn thử lại sau ít phút nhé.",
+        fulfillmentMessages: [
+          {
+            payload: {
+              richContent: [richContent],
+            },
+          },
+        ],
       });
     }
+
+    const emptyMessage = requestedVoucherType === 2
+      ? "Dạ, hiện tại shop chưa có mã freeship còn hiệu lực hoặc mã freeship đã hết lượt sử dụng. Bạn theo dõi thêm trên website để cập nhật ưu đãi mới nhé ạ."
+      : requestedVoucherType === 1
+        ? "Dạ, hiện tại shop chưa có mã giảm giá đơn hàng còn hiệu lực hoặc mã đã hết lượt sử dụng. Bạn theo dõi thêm trên website để cập nhật ưu đãi mới nhé ạ."
+        : "Dạ, hiện tại shop chưa có chương trình khuyến mãi còn hiệu lực hoặc các mã đã hết lượt sử dụng. Bạn theo dõi website để cập nhật đợt sale sắp tới nhé ạ.";
+
+    return res.json({ fulfillmentText: emptyMessage });
+  } catch (error) {
+    console.error(error);
+    return res.json({
+      fulfillmentText:
+        "Dạ hệ thống kiểm tra khuyến mãi đang bận một chút, bạn thử lại sau ít phút nhé.",
+    });
+  }
     } else if (intentName === "Tu_Van_Theo_Danh_Muc") {
     const queryText = req.body.queryResult.queryText || "";
 
