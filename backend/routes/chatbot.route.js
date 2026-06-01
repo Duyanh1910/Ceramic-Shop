@@ -3,9 +3,13 @@ import { pool, CHATBOT_LINKS } from "../config/chatbot.config.js";
 import {
   toArray,
   buildVariantAttributeFilter,
+  buildCategorySearchCondition,
   extractCapacityAttributes,
+  getMenhByBirthYear,
+  extractBirthYear,
+  extractBudgetAmount,
+  resolveFengShuiCategorySearch,
 } from "../utils/chatbotAttributeFilter.helper.js";
-
 const router = express.Router();
 
 const extractOrderCode = (value) => {
@@ -971,72 +975,72 @@ router.post("/webhook", async (req, res) => {
           "Dạ hệ thống kiểm tra khuyến mãi đang bận một chút, bạn thử lại sau ít phút nhé.",
       });
     }
-  } else if (intentName === "Tu_Van_Theo_Danh_Muc") {
-    let danhMuc = parameters.Danh_Muc_San_Pham || null;
+    } else if (intentName === "Tu_Van_Theo_Danh_Muc") {
+    const queryText = req.body.queryResult.queryText || "";
 
-    if (!danhMuc) {
+    let danhMuc = parameters.Danh_Muc_San_Pham || "";
+    if (Array.isArray(danhMuc)) danhMuc = danhMuc[0] || "";
+
+    const categorySearch = resolveFengShuiCategorySearch({
+      danhMucRaw: danhMuc,
+      queryText,
+    });
+
+    if (categorySearch.searchKeywords.length === 0) {
       return res.json({
         fulfillmentText:
-          "Dạ bạn đang quan tâm đến dòng sản phẩm nào ạ? (Ví dụ: Đồ phòng bếp, Đồ thờ, hay tìm Quà tặng tân gia...)",
+          "Dạ bạn đang quan tâm đến dòng sản phẩm hoặc nhu cầu nào ạ? Ví dụ: đồ phòng bếp, đồ thờ, đồ trang trí, quà tân gia, quà biếu sếp...",
       });
     }
 
     try {
-      let danhMucLower = danhMuc.toLowerCase();
-      let searchParam = `%${danhMuc.trim()}%`;
-      let responsePrefix = `Dạ em gửi bạn tham khảo một số mẫu ${danhMuc} nổi bật bên em nhé:`;
+      let responsePrefix = "";
 
-      if (
-        danhMucLower.includes("quà") ||
-        danhMucLower.includes("biếu") ||
-        danhMucLower.includes("tân gia")
-      ) {
-        searchParam = "%Bộ ấm trà%";
-        responsePrefix = `Dạ để làm quà tặng , các mẫu Bộ ấm trà cao cấp bên em là lựa chọn sang trọng và ý nghĩa nhất ạ. Bạn tham khảo nhé:`;
-      } else if (
-        danhMucLower.includes("phòng khách") ||
-        danhMucLower.includes("decor") ||
-        danhMucLower.includes("trang trí")
-      ) {
-        searchParam = "%Bình hoa%";
-        responsePrefix = `Dạ để trang trí không gian phòng khách, các mẫu bình hoa phong thủy bên em đang rất được săn đón. Em gửi bạn xem thử nhé:`;
-      } else if (
-        danhMucLower.includes("bếp") ||
-        danhMucLower.includes("nấu") ||
-        danhMucLower.includes("ăn")
-      ) {
-        searchParam = "%Bộ đồ ăn%";
-        responsePrefix = `Dạ với không gian bếp, những bộ bát đĩa gốm sứ cao cấp, an toàn sức khỏe bên em là tuyệt vời nhất ạ. Bạn xem qua nhé:`;
+      if (categorySearch.isNeed) {
+        responsePrefix = `Dạ với ${categorySearch.displayText}, em gợi ý một số dòng gốm sứ phù hợp bên em nhé:`;
+      } else {
+        responsePrefix = `Dạ em gửi bạn tham khảo một số mẫu ${categorySearch.displayText} nổi bật bên em nhé:`;
       }
 
-      const sqlQuery = `
-                SELECT sp.MaSanPham, sp.TenSanPham, MIN(bt.Gia) as GiaTu, MIN(ha.DuongDan) as DuongDan
-                FROM SanPham sp
-                JOIN DanhMucSanPham dm ON sp.MaDanhMuc = dm.MaDanhMuc
-                LEFT JOIN DanhMucSanPham dm_parent ON dm.ParentID = dm_parent.MaDanhMuc
-                JOIN BienTheSanPham bt ON sp.MaSanPham = bt.MaSanPham
-                LEFT JOIN HinhAnhBienThe ha ON bt.MaBienThe = ha.MaBienThe
-                WHERE (dm.TenDanhMuc LIKE ? OR dm_parent.TenDanhMuc LIKE ? OR sp.TenSanPham LIKE ?) 
-                  AND sp.TrangThai = 1 AND bt.TrangThai = 1
-                GROUP BY sp.MaSanPham, sp.TenSanPham
-                LIMIT 3
-            `;
+      let sqlQuery = `
+        SELECT
+          sp.MaSanPham,
+          sp.TenSanPham,
+          MIN(bt.Gia) AS GiaTu,
+          MIN(ha.DuongDan) AS DuongDan
+        FROM SanPham sp
+        JOIN DanhMucSanPham dm ON sp.MaDanhMuc = dm.MaDanhMuc
+        LEFT JOIN DanhMucSanPham dm_parent ON dm.ParentID = dm_parent.MaDanhMuc
+        JOIN BienTheSanPham bt ON sp.MaSanPham = bt.MaSanPham
+        LEFT JOIN HinhAnhBienThe ha ON bt.MaBienThe = ha.MaBienThe
+        WHERE sp.TrangThai = 1
+            AND bt.TrangThai = 1
+            AND bt.SoLuong > 0
+      `;
 
-      const [rows] = await pool.execute(sqlQuery, [
-        searchParam,
-        searchParam,
-        searchParam,
-      ]);
+      const categoryFilter = buildCategorySearchCondition({
+        searchKeywords: categorySearch.searchKeywords,
+      });
+
+      sqlQuery += categoryFilter.sql;
+      const queryParams = [...categoryFilter.params];
+
+      sqlQuery += `
+        GROUP BY sp.MaSanPham, sp.TenSanPham
+        ORDER BY GiaTu ASC
+        LIMIT 5
+      `;
+
+      const [rows] = await pool.execute(sqlQuery, queryParams);
 
       if (rows.length > 0) {
-        let listRichContent = [];
+        const listRichContent = [];
 
         rows.forEach((sp) => {
           const giaFormat = new Intl.NumberFormat("vi-VN", {
             style: "currency",
             currency: "VND",
           }).format(sp.GiaTu);
-          const linkSanPham = `${domainWeb}/product/${sp.MaSanPham}`;
 
           listRichContent.push([
             {
@@ -1055,20 +1059,26 @@ router.post("/webhook", async (req, res) => {
               type: "button",
               icon: { type: "touch_app", color: "#C06E52" },
               text: "Xem chi tiết",
-              link: linkSanPham,
+              link: `${domainWeb}/product/${sp.MaSanPham}`,
             },
           ]);
         });
 
-        const linkSearch = `${domainWeb}/home/?search=${encodeURIComponent(danhMuc.trim())}`;
-        listRichContent.push([
-          {
-            type: "button",
-            icon: { type: "search", color: "#34A853" },
-            text: `Xem tất cả ${danhMuc}`,
-            link: linkSearch,
-          },
-        ]);
+        const searchKeyword =
+          categorySearch.searchKeyword || categorySearch.displayText;
+
+        if (searchKeyword) {
+          listRichContent.push([
+            {
+              type: "button",
+              icon: { type: "search", color: "#34A853" },
+              text: `Xem thêm ${categorySearch.displayText || searchKeyword}`,
+              link: `${domainWeb}/home/?search=${encodeURIComponent(
+                searchKeyword,
+              )}`,
+            },
+          ]);
+        }
 
         return res.json({
           fulfillmentMessages: [
@@ -1076,17 +1086,196 @@ router.post("/webhook", async (req, res) => {
             { payload: { richContent: listRichContent } },
           ],
         });
-      } else {
-        return res.json({
-          fulfillmentText: `Dạ hiện tại dòng sản phẩm ${danhMuc} bên em đang cập nhật thêm mẫu mới. Bạn tham khảo các danh mục khác giúp em nhé.`,
-        });
       }
+
+      return res.json({
+        fulfillmentText: `Dạ hiện tại shop chưa tìm thấy mẫu phù hợp với ${categorySearch.displayText}. Bạn có thể thử nhu cầu khác như quà tân gia, đồ phong thủy, bình hoa hoặc bộ ấm trà nhé ạ.`,
+      });
     } catch (error) {
       console.error(error);
       return res.json({
         fulfillmentText: "Dạ hệ thống đang tải danh mục, bạn chờ chút xíu nhé.",
       });
     }
+      } else if (intentName === "Tu_Van_Theo_Menh") {
+      const queryText = req.body.queryResult.queryText || "";
+
+      const birthYear = extractBirthYear({
+        namSinh: parameters.Nam_Sinh,
+        queryText,
+      });
+
+      const menhList = toArray(parameters.Menh).filter(Boolean);
+      const menhFromBirthYear = getMenhByBirthYear(birthYear);
+      const resolvedMenhList =
+        menhList.length > 0 ? menhList : toArray(menhFromBirthYear);
+
+      if (resolvedMenhList.length === 0) {
+        return res.json({
+          fulfillmentText:
+            "Dạ để tư vấn phong thủy chính xác hơn, bạn cho shop biết mệnh của mình hoặc năm sinh nhé. Ví dụ: mệnh Kim hoặc sinh năm 2004 ạ.",
+        });
+      }
+
+      let danhMucRaw = parameters.Danh_Muc_San_Pham || "";
+      if (Array.isArray(danhMucRaw)) danhMucRaw = danhMucRaw[0] || "";
+
+      let nganSachRaw = parameters.ngan_sach;
+      if (Array.isArray(nganSachRaw)) nganSachRaw = nganSachRaw[0];
+
+      const thuocTinhList = [
+        ...toArray(parameters.Thuoc_Tinh),
+        ...extractCapacityAttributes(queryText),
+      ];
+
+      const nganSach = extractBudgetAmount({
+        nganSachRaw,
+        queryText,
+        birthYear,
+      });
+
+      const categorySearch = resolveFengShuiCategorySearch({
+        danhMucRaw,
+        queryText,
+      });
+
+      try {
+        let sqlQuery = `
+          SELECT
+            sp.MaSanPham,
+            sp.TenSanPham,
+            MIN(bt.Gia) AS GiaTu,
+            COUNT(DISTINCT bt.MaBienThe) AS SoPhanLoai,
+            MIN(ha.DuongDan) AS DuongDan
+          FROM BienTheSanPham bt
+          JOIN SanPham sp ON bt.MaSanPham = sp.MaSanPham
+          LEFT JOIN HinhAnhBienThe ha ON bt.MaBienThe = ha.MaBienThe
+          LEFT JOIN DanhMucSanPham dm ON sp.MaDanhMuc = dm.MaDanhMuc
+          LEFT JOIN DanhMucSanPham dm_parent ON dm.ParentID = dm_parent.MaDanhMuc
+          WHERE sp.TrangThai = 1
+            AND bt.TrangThai = 1
+            AND bt.SoLuong > 0
+        `;
+
+        const queryParams = [];
+
+        const attributeFilter = buildVariantAttributeFilter({
+          thuocTinhList,
+          menhList: resolvedMenhList,
+        });
+
+        sqlQuery += attributeFilter.sql;
+        queryParams.push(...attributeFilter.params);
+
+        const categoryFilter = buildCategorySearchCondition({
+          searchKeywords: categorySearch.searchKeywords,
+        });
+
+        sqlQuery += categoryFilter.sql;
+        queryParams.push(...categoryFilter.params);
+
+        if (nganSach > 0) {
+          sqlQuery += ` AND bt.Gia <= ?`;
+          queryParams.push(nganSach);
+        }
+
+        sqlQuery += `
+          GROUP BY sp.MaSanPham, sp.TenSanPham
+          ORDER BY SoPhanLoai DESC, GiaTu ASC
+          LIMIT 5
+        `;
+
+        const [rows] = await pool.execute(sqlQuery, queryParams);
+
+        const menhText = resolvedMenhList.join(", ");
+        const categoryText = categorySearch.displayText
+          ? `, ${categorySearch.displayText}`
+          : "";
+        const nganSachText =
+          nganSach > 0
+            ? ` trong tầm ${new Intl.NumberFormat("vi-VN", {
+                style: "currency",
+                currency: "VND",
+              }).format(nganSach)}`
+            : "";
+
+        const birthYearText =
+          birthYear && menhList.length === 0
+            ? ` Theo năm sinh ${birthYear}, shop tạm xác định bạn thuộc mệnh ${menhText}. Nếu bạn sinh sát Tết âm lịch thì mệnh có thể cần kiểm tra lại theo năm âm lịch.`
+            : "";
+
+        if (rows.length > 0) {
+          const richContentData = [];
+
+          rows.forEach((sp) => {
+            const giaFormat = new Intl.NumberFormat("vi-VN", {
+              style: "currency",
+              currency: "VND",
+            }).format(sp.GiaTu);
+
+            richContentData.push([
+              {
+                type: "image",
+                rawUrl:
+                  sp.DuongDan ||
+                  "https://via.placeholder.com/300?text=Chua+co+hinh",
+                accessibilityText: sp.TenSanPham,
+              },
+              {
+                type: "info",
+                title: sp.TenSanPham,
+                subtitle: `Hợp mệnh: ${menhText} | Giá từ: ${giaFormat} | Có ${sp.SoPhanLoai} phân loại phù hợp`,
+              },
+              {
+                type: "button",
+                icon: { type: "touch_app", color: "#C06E52" },
+                text: "Xem chi tiết",
+                link: `${domainWeb}/product/${sp.MaSanPham}`,
+              },
+            ]);
+          });
+
+          if (categorySearch.searchKeyword) {
+            richContentData.push([
+              {
+                type: "button",
+                icon: { type: "search", color: "#34A853" },
+                text: `Xem thêm ${categorySearch.displayText || categorySearch.searchKeyword}`,
+                link: `${domainWeb}/home/?search=${encodeURIComponent(
+                  categorySearch.searchKeyword,
+                )}`,
+              },
+            ]);
+          }
+
+          return res.json({
+            fulfillmentMessages: [
+              {
+                text: {
+                  text: [
+                    `Dạ${birthYearText} Với mệnh ${menhText}${categoryText}${nganSachText}, shop gợi ý bạn một số mẫu phù hợp và đang còn hàng sau ạ:`,
+                  ],
+                },
+              },
+              {
+                payload: {
+                  richContent: richContentData,
+                },
+              },
+            ],
+          });
+        }
+
+        return res.json({
+          fulfillmentText: `Dạ hiện tại shop chưa tìm thấy mẫu còn hàng khớp với mệnh ${menhText}${categoryText}${nganSachText}. Bạn có thể thử bỏ bớt điều kiện lọc hoặc tham khảo thêm các dòng phong thủy khác trên website nhé ạ.`,
+        });
+      } catch (error) {
+        console.error(error);
+        return res.json({
+          fulfillmentText:
+            "Dạ hệ thống đang tư vấn sản phẩm theo mệnh hơi bận, bạn vui lòng thử lại sau nhé.",
+        });
+      }
   } else if (intentName === "Hoi_Tinh_Trang_Ton_Kho") {
     const rawTenSP = parameters.Ten_San_Pham || null;
 
@@ -1324,38 +1513,26 @@ router.post("/webhook", async (req, res) => {
     ];
 
     const menhList = toArray(parameters.Menh);
-    let nganSach = 0;
 
-    const regexTrieu = /(\d+(?:[\.,]\d+)?)\s*(triệu|tr|củ)/i;
-    const regexNgan = /(\d+(?:[\.,]\d+)?)\s*(k|ngàn|nghìn)/i;
-
-    let matchTrieu = queryText.match(regexTrieu);
-    let matchNgan = queryText.match(regexNgan);
+    const hasExplicitMoneyUnit = /(\d+(?:[\.,]\d+)?)\s*(triệu|tr|củ|k|ngàn|nghìn)/i.test(
+      queryText,
+    );
 
     const hasCapacityButNoMoneyUnit =
-      capacityAttributes.length > 0 && !matchTrieu && !matchNgan;
+      capacityAttributes.length > 0 && !hasExplicitMoneyUnit;
 
-    if (matchTrieu) {
-      let so = parseFloat(matchTrieu[1].replace(",", "."));
-      nganSach = so * 1000000;
-    } else if (matchNgan) {
-      let so = parseFloat(matchNgan[1].replace(",", "."));
-      nganSach = so * 1000;
-    } else if (hasCapacityButNoMoneyUnit) {
+    if (hasCapacityButNoMoneyUnit) {
       return res.json({
         fulfillmentText:
           `Dạ "${capacityAttributes.join(", ")}" là dung tích sản phẩm, chưa phải ngân sách ạ. Bạn muốn tìm dòng sản phẩm nào và khoảng giá bao nhiêu để em tư vấn chính xác hơn nhé?`,
       });
-    } else if (nganSachRaw) {
-      let so = Number(nganSachRaw);
-      if (so < 30) {
-        nganSach = so * 1000000;
-      } else if (so >= 30 && so <= 10000) {
-        nganSach = so * 1000;
-      } else {
-        nganSach = so;
-      }
     }
+
+    const nganSach = extractBudgetAmount({
+      nganSachRaw,
+      queryText,
+      birthYear: null,
+    });
 
     if (nganSach === 0) {
       return res.json({
@@ -1372,7 +1549,7 @@ router.post("/webhook", async (req, res) => {
                 LEFT JOIN HinhAnhBienThe ha ON bt.MaBienThe = ha.MaBienThe
                 LEFT JOIN DanhMucSanPham dm ON sp.MaDanhMuc = dm.MaDanhMuc
                 LEFT JOIN DanhMucSanPham dm_parent ON dm.ParentID = dm_parent.MaDanhMuc
-                WHERE sp.TrangThai = 1 AND bt.TrangThai = 1 AND bt.Gia <= ?
+                WHERE sp.TrangThai = 1 AND bt.TrangThai = 1 AND bt.SoLuong > 0 AND bt.Gia <= ?
             `;
 
       let queryParams = [nganSach];
@@ -1399,21 +1576,20 @@ router.post("/webhook", async (req, res) => {
 
       let searchKeyword = tenSPRaw || danhMucRaw;
 
-      if (searchKeyword) {
-        if (searchKeyword.toLowerCase().includes("quà tặng")) {
-          sqlQuery += ` AND (dm.TenDanhMuc LIKE ? OR dm_parent.TenDanhMuc LIKE ? OR sp.TenSanPham LIKE ?)`;
-          queryParams.push("%Bộ ấm trà%", "%Bộ ấm trà%", "%Bộ ấm trà%");
-        } else {
-          let cleanSearch = searchKeyword.replace(/bộ |bo /gi, "").trim();
-          if (!cleanSearch) cleanSearch = searchKeyword;
+      const categorySearch = resolveFengShuiCategorySearch({
+        danhMucRaw: searchKeyword,
+        queryText,
+      });
 
-          sqlQuery += ` AND (dm.TenDanhMuc LIKE ? OR dm_parent.TenDanhMuc LIKE ? OR sp.TenSanPham LIKE ?)`;
-          queryParams.push(
-            `%${cleanSearch}%`,
-            `%${cleanSearch}%`,
-            `%${cleanSearch}%`,
-          );
-        }
+      if (categorySearch.searchKeywords.length > 0) {
+        const categoryFilter = buildCategorySearchCondition({
+          searchKeywords: categorySearch.searchKeywords,
+        });
+
+        sqlQuery += categoryFilter.sql;
+        queryParams.push(...categoryFilter.params);
+
+        searchKeyword = categorySearch.displayText || searchKeyword;
       }
 
       const attributeFilter = buildVariantAttributeFilter({
