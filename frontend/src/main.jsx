@@ -29,7 +29,6 @@ import LoginSuccess from "./Auth/LoginSuccess.jsx";
 
 import ChatBot from "./Utility/ChatBot.jsx";
 import ContactIcons from "./Utility/ContactIcons.jsx";
-import PaymentSuccess from "./Utility/PaymentSuccess.jsx";
 import PaymentResult from "./Utility/PaymentResult.jsx";
 import OrderTracking from "./Utility/OrderTracking.jsx";
 
@@ -162,7 +161,7 @@ createRoot(document.getElementById("root")).render(
             }
           />
 
-          <Route path="/payment-result" element={<PaymentSuccess />} />
+          <Route path="/payment-result" element={<PaymentResult />} />
 
           <Route
             path="/profile"
@@ -257,7 +256,6 @@ createRoot(document.getElementById("root")).render(
             }
           />
           <Route path="/support/:slug" element={<SupportPage />} />
-          <Route path="/payment-result" element={<PaymentResult />} />
         </Routes>
         <ConditionalContactIcons />
         <ConditionalChatBot />
