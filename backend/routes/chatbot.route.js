@@ -8,6 +8,15 @@ import {
 
 const router = express.Router();
 
+const extractOrderCode = (value) => {
+  if (!value) return null;
+
+  const normalizedValue = String(value).toUpperCase().trim();
+  const match = normalizedValue.match(/\bDH[A-Z0-9]+\b/);
+
+  return match ? match[0] : null;
+};
+
 router.post("/webhook", async (req, res) => {
   const intentName = req.body.queryResult.intent.displayName;
   const parameters = req.body.queryResult.parameters;
@@ -193,9 +202,9 @@ router.post("/webhook", async (req, res) => {
       });
     }
 
-    let maDonReal = maDonHang.toString().toUpperCase().replace(/SỐ|MÃ|SO|MA|ĐƠN|DON|:| /gi, "").trim();
+    const maDonReal = extractOrderCode(maDonHang);
 
-    if (!maDonReal.startsWith("DH")) {
+    if (!maDonReal) {
       return res.json({
         fulfillmentMessages: [{ text: { text: [`Dạ mã đơn hàng bên em bắt đầu bằng chữ "DH" kèm theo các số và chữ cái (ví dụ: DH26040211X6). Bạn vui lòng kiểm tra và cung cấp lại mã chính xác nhé!`] } }],
       });
@@ -352,9 +361,9 @@ router.post("/webhook", async (req, res) => {
       });
     }
 
-    let maDonReal = maDonHang.toString().toUpperCase().replace(/SỐ|MÃ|SO|MA|ĐƠN|DON|:| /gi, "").trim();
+    const maDonReal = extractOrderCode(maDonHang);
 
-    if (!maDonReal.startsWith("DH")) {
+    if (!maDonReal) {
       return res.json({
         fulfillmentMessages: [{ text: { text: [`Dạ mã đơn hàng bên em bắt đầu bằng chữ "DH" kèm theo các số và chữ cái (ví dụ: DH26040211X6). Bạn vui lòng kiểm tra và cung cấp lại mã chính xác nhé!`] } }],
       });
@@ -487,9 +496,9 @@ router.post("/webhook", async (req, res) => {
       });
     }
 
-    let maDonReal = maDonHang.toString().toUpperCase().replace(/SỐ|MÃ|SO|MA|ĐƠN|DON|:| /gi, "").trim();
+    const maDonReal = extractOrderCode(maDonHang);
 
-    if (!maDonReal.startsWith("DH")) {
+    if (!maDonReal) {
       return res.json({
         fulfillmentMessages: [{ text: { text: [`Dạ mã đơn hàng bên em bắt đầu bằng chữ "DH" kèm theo các số và chữ cái (ví dụ: DH26040211X6). Bạn vui lòng kiểm tra và cung cấp lại mã chính xác nhé!`] } }],
       });
@@ -613,9 +622,9 @@ router.post("/webhook", async (req, res) => {
       });
     }
 
-    let maDonReal = maDonHang.toString().toUpperCase().replace(/SỐ|MÃ|SO|MA|ĐƠN|DON|:| /gi, "").trim();
+    const maDonReal = extractOrderCode(maDonHang);
 
-    if (!maDonReal.startsWith("DH")) {
+    if (!maDonReal) {
       return res.json({
         fulfillmentMessages: [{ text: { text: [`Dạ mã đơn hàng bên em bắt đầu bằng chữ "DH" kèm theo các số và chữ cái (ví dụ: DH26040211X6). Bạn vui lòng kiểm tra và cung cấp lại mã chính xác nhé!`] } }],
       });
