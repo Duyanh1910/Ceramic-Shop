@@ -394,36 +394,123 @@ router.post("/webhook", async (req, res) => {
         });
       }
       const sqlQuery = `
-                SELECT sp.TenSanPham, bt.TenBienThe, bh.NgayKetThuc, bh.TrangThai
-                FROM DonHang dh
-                JOIN ChiTietDonHang ctdh ON dh.MaDonHang = ctdh.MaDonHang
-                JOIN BienTheSanPham bt ON ctdh.MaBienThe = bt.MaBienThe
-                JOIN SanPham sp ON bt.MaSanPham = sp.MaSanPham
-                JOIN BaoHanh bh ON ctdh.MaCTDH = bh.MaCTDH
-                WHERE dh.MaHienThi = ?
-            `;
+        SELECT
+          bh.MaBaoHanh,
+          sp.TenSanPham,
+          bt.TenBienThe,
+          bh.NgayBatDau,
+          bh.NgayKetThuc,
+          bh.TrangThai
+        FROM DonHang dh
+        JOIN ChiTietDonHang ctdh ON dh.MaDonHang = ctdh.MaDonHang
+        JOIN BienTheSanPham bt ON ctdh.MaBienThe = bt.MaBienThe
+        JOIN SanPham sp ON bt.MaSanPham = sp.MaSanPham
+        JOIN BaoHanh bh ON ctdh.MaCTDH = bh.MaCTDH
+        WHERE dh.MaHienThi = ?
+      `;
 
       const [rows] = await pool.execute(sqlQuery, [maDonReal]);
 
       if (rows.length > 0) {
-        let textArray = [];
-        const currentDate = new Date();
+        const WARRANTY_STATUS = {
+          EXPIRED: 0,
+          ACTIVE: 1,
+          REQUESTED: 2,
+          PROCESSING: 3,
+          COMPLETED: 4,
+          REJECTED: 5,
+        };
+
+        const isActiveWarrantyExpired = (item) => {
+          if (!item.NgayKetThuc) return false;
+
+          return (
+            Number(item.TrangThai) === WARRANTY_STATUS.ACTIVE &&
+            new Date(item.NgayKetThuc) < new Date()
+          );
+        };
+
+        const getEffectiveWarrantyStatus = (item) => {
+          if (isActiveWarrantyExpired(item)) {
+            return WARRANTY_STATUS.EXPIRED;
+          }
+
+          return Number(item.TrangThai);
+        };
+
+        const getWarrantyStatusText = (status) => {
+          switch (Number(status)) {
+            case WARRANTY_STATUS.EXPIRED:
+              return "❌ Hết hạn";
+            case WARRANTY_STATUS.ACTIVE:
+              return "✅ Còn hiệu lực";
+            case WARRANTY_STATUS.REQUESTED:
+              return "🟡 Đang yêu cầu bảo hành";
+            case WARRANTY_STATUS.PROCESSING:
+              return "🔵 Đang xử lý bảo hành";
+            case WARRANTY_STATUS.COMPLETED:
+              return "✅ Đã hoàn tất bảo hành";
+            case WARRANTY_STATUS.REJECTED:
+              return "❌ Từ chối bảo hành";
+            default:
+              return "Không xác định";
+          }
+        };
+
+        const textArray = [];
+        let canRequestWarranty = false;
+        let canTrackWarranty = false;
 
         rows.forEach((item) => {
+          const ngayBD = new Date(item.NgayBatDau);
           const ngayKT = new Date(item.NgayKetThuc);
-          const ngayKTStr = ngayKT.toLocaleDateString("vi-VN");
-          let statusStr = "";
 
-          if (item.TrangThai === 1 && ngayKT >= currentDate) {
-            statusStr = "✅ Còn hạn bảo hành";
-          } else {
-            statusStr = "❌ Hết hạn";
+          const ngayBDStr = ngayBD.toLocaleDateString("vi-VN");
+          const ngayKTStr = ngayKT.toLocaleDateString("vi-VN");
+
+          const effectiveStatus = getEffectiveWarrantyStatus(item);
+
+          if (effectiveStatus === WARRANTY_STATUS.ACTIVE) {
+            canRequestWarranty = true;
+          }
+
+          if (
+            effectiveStatus === WARRANTY_STATUS.REQUESTED ||
+            effectiveStatus === WARRANTY_STATUS.PROCESSING ||
+            effectiveStatus === WARRANTY_STATUS.COMPLETED ||
+            effectiveStatus === WARRANTY_STATUS.REJECTED
+          ) {
+            canTrackWarranty = true;
           }
 
           textArray.push(
-            `🔸 ${item.TenSanPham} (${item.TenBienThe})\n   Hạn: ${ngayKTStr} - ${statusStr}`,
+            `🔸 ${item.TenSanPham} (${item.TenBienThe})\n   Thời hạn: ${ngayBDStr} - ${ngayKTStr}\n   Trạng thái: ${getWarrantyStatusText(effectiveStatus)}`,
           );
         });
+
+        const warrantyRichContent = [
+          {
+            type: "description",
+            title: "🛡️ Trạng thái bảo hành",
+            text: textArray,
+          },
+        ];
+
+        if (canRequestWarranty) {
+          warrantyRichContent.push({
+            type: "button",
+            icon: { type: "verified_user", color: "#1b437c" },
+            text: "Gửi yêu cầu bảo hành",
+            link: `${domainWeb}/warranties`,
+          });
+        } else if (canTrackWarranty) {
+          warrantyRichContent.push({
+            type: "button",
+            icon: { type: "receipt_long", color: "#1b437c" },
+            text: "Theo dõi bảo hành",
+            link: `${domainWeb}/warranties`,
+          });
+        }
 
         return res.json({
           fulfillmentMessages: [
@@ -436,15 +523,7 @@ router.post("/webhook", async (req, res) => {
             },
             {
               payload: {
-                richContent: [
-                  [
-                    {
-                      type: "description",
-                      title: "🛡️ Trạng thái bảo hành",
-                      text: textArray,
-                    },
-                  ],
-                ],
+                richContent: [warrantyRichContent],
               },
             },
           ],
