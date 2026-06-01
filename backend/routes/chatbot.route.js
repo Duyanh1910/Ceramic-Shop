@@ -158,6 +158,7 @@ router.post("/webhook", async (req, res) => {
           LEFT JOIN HinhAnhBienThe ha ON bt.MaBienThe = ha.MaBienThe
           WHERE sp.TenSanPham LIKE ?
             AND sp.TrangThai = 1
+            AND sp.deleted_at IS NULL
             AND bt.TrangThai = 1
         `;
 
@@ -288,6 +289,7 @@ router.post("/webhook", async (req, res) => {
         JOIN SanPham sp ON bt.MaSanPham = sp.MaSanPham
         WHERE sp.TenSanPham LIKE ?
           AND sp.TrangThai = 1
+          AND sp.deleted_at IS NULL
           AND bt.TrangThai = 1
         GROUP BY
           sp.MaSanPham,
@@ -1241,8 +1243,9 @@ router.post("/webhook", async (req, res) => {
         JOIN BienTheSanPham bt ON sp.MaSanPham = bt.MaSanPham
         LEFT JOIN HinhAnhBienThe ha ON bt.MaBienThe = ha.MaBienThe
         WHERE sp.TrangThai = 1
-            AND bt.TrangThai = 1
-            AND bt.SoLuong > 0
+          AND sp.deleted_at IS NULL
+          AND bt.TrangThai = 1
+          AND bt.SoLuong > 0
       `;
 
       const categoryFilter = buildCategorySearchCondition({
@@ -1383,6 +1386,7 @@ router.post("/webhook", async (req, res) => {
           LEFT JOIN DanhMucSanPham dm ON sp.MaDanhMuc = dm.MaDanhMuc
           LEFT JOIN DanhMucSanPham dm_parent ON dm.ParentID = dm_parent.MaDanhMuc
           WHERE sp.TrangThai = 1
+            AND sp.deleted_at IS NULL
             AND bt.TrangThai = 1
             AND bt.SoLuong > 0
         `;
@@ -1540,6 +1544,7 @@ router.post("/webhook", async (req, res) => {
           JOIN SanPham sp ON bt.MaSanPham = sp.MaSanPham
           WHERE sp.TenSanPham LIKE ?
             AND sp.TrangThai = 1
+            AND sp.deleted_at IS NULL
             AND bt.TrangThai = 1
         `;
 
@@ -1784,7 +1789,11 @@ router.post("/webhook", async (req, res) => {
                 LEFT JOIN HinhAnhBienThe ha ON bt.MaBienThe = ha.MaBienThe
                 LEFT JOIN DanhMucSanPham dm ON sp.MaDanhMuc = dm.MaDanhMuc
                 LEFT JOIN DanhMucSanPham dm_parent ON dm.ParentID = dm_parent.MaDanhMuc
-                WHERE sp.TrangThai = 1 AND bt.TrangThai = 1 AND bt.SoLuong > 0 AND bt.Gia <= ?
+                WHERE sp.TrangThai = 1
+                  AND sp.deleted_at IS NULL
+                  AND bt.TrangThai = 1
+                  AND bt.SoLuong > 0
+                  AND bt.Gia <= ?
             `;
 
       let queryParams = [nganSach];
