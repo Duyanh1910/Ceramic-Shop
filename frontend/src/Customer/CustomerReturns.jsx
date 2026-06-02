@@ -5,6 +5,7 @@ import {
   Card,
   Empty,
   Image,
+  Layout,
   List,
   message,
   Popconfirm,
@@ -16,10 +17,13 @@ import {
   Typography,
 } from "antd";
 import {
+  ArrowLeftOutlined,
   ReloadOutlined,
   RollbackOutlined,
   ShoppingOutlined,
 } from "@ant-design/icons";
+import { Helmet } from "react-helmet-async";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import dayjs from "dayjs";
 import ReturnRequestModal from "./ReturnRequestModal";
@@ -27,6 +31,7 @@ import styles from "./CustomerReturns.module.css";
 
 import { API_BASE } from "../config/api";
 
+const { Header, Content } = Layout;
 const { Text, Title } = Typography;
 const ORDER_COMPLETED = 3;
 const RETURN_PAGE_SIZE = 6;
@@ -99,7 +104,7 @@ const getReturnProduct = (item) => {
 };
 
 const getHistories = (item) =>
-  item?.XuLyDoiTras || item?.XuLyDoiTras || item?.ReturnProcessModels || [];
+  item?.XuLyDoiTras || item?.ReturnProcessModels || item?.histories || [];
 
 const renderStatus = (value) => {
   const info = STATUS_LABELS[Number(value)] || {
@@ -111,6 +116,7 @@ const renderStatus = (value) => {
 };
 
 export default function CustomerReturns({ compact = false }) {
+  const navigate = useNavigate();
   const [tab, setTab] = useState("create");
   const [orders, setOrders] = useState([]);
   const [returns, setReturns] = useState([]);
@@ -232,10 +238,10 @@ export default function CustomerReturns({ compact = false }) {
     }
   };
 
-  return (
+  const returnsContent = (
     <Card
       bordered={false}
-      className={`${styles.returnsCard} ${compact ? styles.compact : ""}`}
+      className={`${styles.returnsCard} ${compact ? styles.compact : styles.pageCard}`}
       title={
         <Space>
           <RollbackOutlined />
@@ -485,5 +491,63 @@ export default function CustomerReturns({ compact = false }) {
         onSubmit={handleSubmit}
       />
     </Card>
+  );
+
+  if (compact) {
+    return returnsContent;
+  }
+
+  return (
+    <Layout className={styles.returnWrapper}>
+      <Helmet>
+        <title>Đổi Trả Của Tôi | Ceramic Shop</title>
+      </Helmet>
+
+      <Header className={styles.topHeader}>
+        <button
+          type="button"
+          className={styles.logoBox}
+          onClick={() => navigate("/home")}
+        >
+          <img
+            src="https://res.cloudinary.com/dcmwz0uis/image/upload/v1774819165/IMG_20260330_041641_qwo8lc.jpg"
+            alt="Ceramic Shop Logo"
+            className={styles.logoImg}
+          />
+          <div className={styles.logoTextWrap}>
+            <span className={styles.logoText}>CERAMIC-SHOP</span>
+            <span className={styles.logoSub}>TINH HOA GỐM SỨ VIỆT</span>
+          </div>
+        </button>
+
+        <Button
+          type="link"
+          icon={<ArrowLeftOutlined />}
+          onClick={() => navigate("/home")}
+          className={styles.btnBack}
+        >
+          Quay về trang chủ
+        </Button>
+      </Header>
+
+      <Content className={styles.mainContent}>
+        <div className={styles.container}>
+          <div className={styles.pageHero}>
+            <div>
+              <div className={styles.heroLabel}>
+                <RollbackOutlined /> Đổi trả / Hoàn tiền
+              </div>
+              <h1>Theo dõi yêu cầu đổi trả sản phẩm</h1>
+              <p>
+                Gửi yêu cầu đổi hàng, trả hàng hoặc hoàn tiền cho đơn hàng đã
+                hoàn thành và theo dõi tiến trình xử lý từ cửa hàng.
+              </p>
+            </div>
+          </div>
+
+          <div className={styles.contentCard}>{returnsContent}</div>
+        </div>
+      </Content>
+    </Layout>
   );
 }
