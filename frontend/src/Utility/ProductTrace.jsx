@@ -1,82 +1,155 @@
 import { useState, useEffect, useRef } from "react";
-import { Modal, Spin, Alert } from "antd";
-import { 
-  EnvironmentOutlined, 
-  ArrowRightOutlined,
-  CodeSandboxOutlined,
-  BlockOutlined,
-  FieldTimeOutlined
-} from "@ant-design/icons";
+import { Modal, Spin, Alert, Tabs } from "antd";
+import { SafetyOutlined, EnvironmentOutlined } from "@ant-design/icons";
 import axios from "axios";
 import QRCode from "qrcode";
 
 const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1";
-const FRONTEND_BASE = "https://ceramic-shop-rho.vercel.app";
 
-// ==========================================
-// 1. COMPONENT TẠO MÃ QR
-// ==========================================
-function QRCanvas({ url, size = 120, light = "#ffffff" }) {
+function QRCanvas({ url, size = 160 }) {
   const canvasRef = useRef(null);
 
   useEffect(() => {
     if (!canvasRef.current || !url) return;
     QRCode.toCanvas(canvasRef.current, url, {
       width: size,
-      margin: 1,
-      color: { dark: "#173354", light: light },
+      margin: 2,
+      color: { dark: "#173354", light: "#ffffff" },
     });
-  }, [url, size, light]);
+  }, [url, size]);
 
-  return <canvas ref={canvasRef} style={{ display: "block", borderRadius: 8 }} />;
+  const handleDownload = () => {
+    const link = document.createElement("a");
+    link.download = `QR-BanDo-NCC.png`;
+    link.href = canvasRef.current.toDataURL();
+    link.click();
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+      <div style={{
+        padding: 10,
+        background: "#fff",
+        borderRadius: 12,
+        boxShadow: "0 2px 16px rgba(23,51,84,0.10)",
+        border: "1px solid #e8e4dc",
+      }}>
+        <canvas ref={canvasRef} style={{ display: "block", borderRadius: 6 }} />
+      </div>
+      <button
+        onClick={handleDownload}
+        style={{
+          background: "none",
+          border: "1px solid #e8e4dc",
+          borderRadius: 20,
+          padding: "4px 14px",
+          fontSize: 11,
+          color: "#6b7280",
+          cursor: "pointer",
+          transition: "all 0.18s",
+          fontFamily: "inherit",
+        }}
+        onMouseEnter={e => { e.target.style.borderColor = "#1b437c"; e.target.style.color = "#1b437c"; }}
+        onMouseLeave={e => { e.target.style.borderColor = "#e8e4dc"; e.target.style.color = "#6b7280"; }}
+      >
+        Tải xuống
+      </button>
+    </div>
+  );
 }
 
-// ==========================================
-// 2. COMPONENT BẢN ĐỒ
-// ==========================================
 function SupplierMap({ diaChi }) {
   if (!diaChi || diaChi === "Chưa cập nhật") {
     return (
-      <div style={{ padding: 20, textAlign: "center", color: "#bbb", display: "flex", flexDirection: "column", justifyContent: "center", height: "100%" }}>
-        <EnvironmentOutlined style={{ fontSize: 24, marginBottom: 8 }} />
-        <p>Chưa có tọa độ vị trí</p>
-      </div>
+      <Alert
+        type="warning"
+        showIcon
+        message="Chưa có địa chỉ nhà cung cấp"
+        description="Sản phẩm này chưa được gắn địa chỉ nhà cung cấp trên blockchain."
+      />
     );
   }
 
   const encoded = encodeURIComponent(diaChi);
   const src = `https://maps.google.com/maps?q=${encoded}&hl=vi&z=15&output=embed`;
+  const externalMapUrl = `https://www.google.com/maps/search/?api=1&query=${encoded}`;
 
   return (
-    <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
+    <div style={{ paddingBottom: 10 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+        <p style={{ margin: 0, fontWeight: 600, fontSize: 13, color: "#3d4451", display: "flex", alignItems: "center", gap: 6 }}>
+          <EnvironmentOutlined style={{ color: "#e74c3c" }} />
+          {diaChi}
+        </p>
+        <a 
+          href={externalMapUrl} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          style={{
+            fontSize: 12,
+            color: "#1b437c",
+            fontWeight: 500,
+            textDecoration: "underline",
+            whiteSpace: "nowrap"
+          }}
+        >
+          Mở ứng dụng Bản đồ
+        </a>
+      </div>
       <iframe
         title="Vị trí nhà cung cấp"
         src={src}
         width="100%"
-        height="320"
-        style={{ border: 0, borderRadius: 8, flexGrow: 1, filter: "contrast(1.1)" }}
+        height="280"
+        style={{ border: 0, borderRadius: 10, display: "block", backgroundColor: "#f5f5f5" }}
         allowFullScreen
         loading="lazy"
         referrerPolicy="no-referrer-when-downgrade"
       />
+      <p style={{ marginTop: 8, fontSize: 11, color: "#aaa", fontStyle: "italic", textAlign: "center" }}>
+        Vị trí hiển thị dựa trên địa chỉ được ghi trên blockchain.
+      </p>
     </div>
   );
 }
 
-// ==========================================
-// 3. COMPONENT CHÍNH
-// ==========================================
+function InfoRow({ label, value, mono = false }) {
+  return (
+    <div style={{
+      display: "flex",
+      flexDirection: "column",
+      gap: 3,
+      padding: "10px 0",
+      borderBottom: "1px solid #f0ede8",
+    }}>
+      <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: "1.5px", textTransform: "uppercase", color: "#bbb" }}>
+        {label}
+      </span>
+      <span style={{
+        fontSize: mono ? 11 : 14,
+        color: mono ? "#999" : "#1a1a2e",
+        fontFamily: mono ? "monospace" : "inherit",
+        fontWeight: mono ? 400 : 500,
+        wordBreak: "break-all",
+        lineHeight: 1.5,
+      }}>
+        {value || "—"}
+      </span>
+    </div>
+  );
+}
+
 export default function ProductTrace({ maSanPham, disabled = false }) {
   const [open, setOpen] = useState(false);
   const [data, setData] = useState(null);
   const [status, setStatus] = useState("idle");
-
-  const webTraceUrl = `${FRONTEND_BASE}/trace/${maSanPham}`;
+  const [activeTab, setActiveTab] = useState("info");
 
   const fetchTrace = async () => {
     if (!maSanPham || disabled) return;
     setOpen(true);
     setStatus("loading");
+    setActiveTab("info");
 
     try {
       const res = await axios.get(`${API_BASE}/products/${maSanPham}/trace`);
@@ -88,159 +161,163 @@ export default function ProductTrace({ maSanPham, disabled = false }) {
         setStatus("not_found");
       }
     } catch (e) {
-      setStatus("error");
+      const msg = e?.response?.data?.message || "";
+      setStatus(
+        msg.toLowerCase().includes("khong ton tai") || msg.toLowerCase().includes("không tồn tại")
+          ? "not_found" : "error"
+      );
     }
   };
 
-  const TriggerCard = () => (
-    <div style={{
-      background: "#173354",
-      borderRadius: 16,
-      padding: 20,
-      display: "flex",
-      flexDirection: "column",
-      gap: 20,
-      maxWidth: 480,
-      boxShadow: "0 10px 30px rgba(23,51,84,0.15)",
-      border: "1px solid #1b437c"
-    }}>
-      <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
-        <div style={{ background: "#fff", padding: 8, borderRadius: 12 }}>
-          <QRCanvas url={webTraceUrl} size={110} />
-        </div>
-        <div style={{ flex: 1 }}>
-          <div style={{ color: "#f0d58d", fontSize: 11, fontWeight: 700, letterSpacing: 1.5, marginBottom: 4 }}>
-            GENUINE PRODUCT
-          </div>
-          <div style={{ color: "#fff", fontSize: 18, fontWeight: 700, marginBottom: 8 }}>
-            {maSanPham}
-          </div>
-          <div style={{ color: "#94a3b8", fontSize: 12, lineHeight: 1.5 }}>
-            Mã QR chứa chữ ký số định danh sản phẩm trên mạng lưới Blockchain.
-          </div>
-        </div>
-      </div>
-      <button
-        onClick={fetchTrace}
-        disabled={disabled}
-        style={{
-          width: "100%",
-          padding: "14px 0",
-          background: disabled ? "#475569" : "#f0d58d",
-          color: disabled ? "#94a3b8" : "#173354",
-          border: "none",
-          borderRadius: 10,
-          fontSize: 14,
-          fontWeight: 700,
-          cursor: disabled ? "not-allowed" : "pointer",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          gap: 10,
-          transition: "all 0.2s"
-        }}
-        onMouseEnter={e => { if(!disabled) e.currentTarget.style.filter = "brightness(1.1)" }}
-        onMouseLeave={e => { if(!disabled) e.currentTarget.style.filter = "none" }}
-      >
-        XEM CHI TIẾT NGUỒN GỐC <ArrowRightOutlined />
-      </button>
-    </div>
-  );
-
-  const renderDashboard = () => {
-    if (status === "loading") return <div style={{ padding: 100, textAlign: "center" }}><Spin size="large" /></div>;
-    if (status === "not_found") return <Alert type="warning" message="Chưa có dữ liệu Blockchain" />;
-    if (status === "error") return <Alert type="error" message="Lỗi kết nối Blockchain" />;
+  const InfoPanel = () => {
+    const address = data?.diaChiNhaCungCap;
+    const hasValidAddress = address && address !== "Chưa cập nhật";
+    
+    const googleMapsUrl = hasValidAddress 
+      ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`
+      : "";
 
     return (
-      <div style={{ 
-        display: "grid", 
-        gridTemplateColumns: "1fr 1.5fr", // Chuyển thành 2 cột: Cột 1 chiếm 1 phần, Cột 2 chiếm 1.5 phần
-        gap: 20, 
-        minHeight: 440 
-      }}>
-        
-        {/* CỘT 1: THÔNG TIN SẢN PHẨM */}
-        <div style={{ background: "#0d1b2a", borderRadius: 12, padding: 20, border: "1px solid #1b437c", display: "flex", flexDirection: "column" }}>
-          <div style={{ color: "#f0d58d", fontSize: 13, fontWeight: 600, marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
-            <BlockOutlined /> Thông tin sản phẩm
-          </div>
-          
-          <div style={{ 
-            background: "linear-gradient(135deg, #173354, #1b437c)", 
-            height: 160, borderRadius: 8, marginBottom: 20, 
-            display: "flex", alignItems: "center", justifyContent: "center" 
-          }}>
-            <CodeSandboxOutlined style={{ fontSize: 48, color: "#f0d58d", opacity: 0.5 }} />
-          </div>
-
-          <h3 style={{ color: "#fff", fontSize: 16, margin: "0 0 8px", lineHeight: 1.4, textTransform: "uppercase" }}>
-            {data?.tenSanPham}
-          </h3>
-          <p style={{ color: "#94a3b8", fontSize: 13, margin: "0 0 16px" }}>{data?.tenNhaCungCap}</p>
-          
-          {/* Bổ sung thông tin thời gian vào cột 1 để không bị mất dữ liệu */}
-          <div style={{ background: "#173354", padding: 12, borderRadius: 8, marginBottom: 20, border: "1px solid #1b437c" }}>
-             <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#94a3b8", fontSize: 12, marginBottom: 6 }}>
-                <FieldTimeOutlined /> Ngày sản xuất: <span style={{ color: "#fff" }}>{data?.ngaySanXuat}</span>
-             </div>
-             <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#94a3b8", fontSize: 12 }}>
-                <FieldTimeOutlined /> Ghi on-chain: <span style={{ color: "#f0d58d" }}>{data?.thoiGianTao}</span>
-             </div>
-          </div>
-
-          <div style={{ marginTop: "auto" }}>
-            <div style={{ fontSize: 10, color: "#64748b", marginBottom: 6 }}>MÃ SERIAL (ĐỊNH DANH)</div>
-            <div style={{ background: "#173354", padding: "10px 16px", borderRadius: 8, color: "#f0d58d", fontWeight: 600, fontSize: 14, textAlign: "center", marginBottom: 16, border: "1px solid #1b437c" }}>
-              {maSanPham}
-            </div>
-            
-            <div style={{ fontSize: 10, color: "#64748b", marginBottom: 6 }}>TRẠNG THÁI HIỆN TẠI</div>
-            <div style={{ background: "rgba(16, 185, 129, 0.1)", border: "1px solid #10b981", padding: "10px 16px", borderRadius: 50, color: "#10b981", fontWeight: 600, fontSize: 13, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-              <div style={{ width: 8, height: 8, background: "#10b981", borderRadius: "50%", boxShadow: "0 0 8px #10b981" }} />
-              Xuất xưởng / Lên chuỗi
-            </div>
-          </div>
+      <div style={{ display: "flex", gap: 28, alignItems: "flex-start" }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <InfoRow label="Tên sản phẩm" value={data?.tenSanPham} />
+          <InfoRow label="Nhà cung cấp" value={data?.tenNhaCungCap} />
+          <InfoRow label="Chất liệu" value={data?.chatLieu} />
+          <InfoRow label="Ngày sản xuất" value={data?.ngaySanXuat} />
+          <InfoRow label="Thời gian ghi lên blockchain" value={data?.thoiGianTao} />
         </div>
 
-        {/* CỘT 2: BẢN ĐỒ VỊ TRÍ */}
-        <div style={{ background: "#0d1b2a", borderRadius: 12, padding: 20, border: "1px solid #1b437c", display: "flex", flexDirection: "column" }}>
-          <div style={{ color: "#f0d58d", fontSize: 13, fontWeight: 600, marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span style={{ display: "flex", alignItems: "center", gap: 8 }}><EnvironmentOutlined /> Bản Đồ Vị Trí</span>
-            <span style={{ background: "rgba(240, 213, 141, 0.15)", color: "#f0d58d", padding: "4px 10px", borderRadius: 20, fontSize: 10 }}>📍 Điểm xuất phát</span>
-          </div>
-          <div style={{ flexGrow: 1, borderRadius: 8, overflow: "hidden" }}>
-             <SupplierMap diaChi={data?.diaChiNhaCungCap} />
-          </div>
-          <p style={{ marginTop: 12, fontSize: 11, color: "#64748b", fontStyle: "italic", textAlign: "center", margin: "12px 0 0" }}>
-            Vị trí hiển thị dựa trên địa chỉ được ghi trên blockchain.
+        <div style={{ flexShrink: 0, paddingTop: 2, display: "flex", flexDirection: "column", alignItems: "center" }}>
+          <p style={{ margin: "0 0 8px", fontSize: 10, fontWeight: 600, letterSpacing: "1.5px", textTransform: "uppercase", color: "#bbb", textAlign: "center" }}>
+            Quét để xem bản đồ
           </p>
+          
+          {/* 3. Truyền link Google Maps vào QR, nếu chưa có địa chỉ thì hiện ô trống */}
+          {hasValidAddress ? (
+            <QRCanvas url={googleMapsUrl} size={148} />
+          ) : (
+            <div style={{ width: 148, height: 148, display: "flex", alignItems: "center", justifyContent: "center", background: "#f5f5f5", borderRadius: 8, border: "1px dashed #d9d9d9" }}>
+              <span style={{ fontSize: 12, color: "#999", textAlign: "center", padding: 10 }}>Chưa có địa chỉ</span>
+            </div>
+          )}
         </div>
-
       </div>
     );
   };
 
+  const tabItems = [
+    {
+      key: "info",
+      label: <span style={{ fontSize: 13 }}>Thông tin nguồn gốc</span>,
+      children: <InfoPanel />,
+    }
+  ];
+
+  const renderContent = () => {
+    switch (status) {
+      case "loading":
+        return (
+          <div style={{ textAlign: "center", padding: "80px 0", minHeight: 380 }}>
+            <Spin size="large" />
+            <p style={{ marginTop: 16, color: "#aaa", fontSize: 13 }}>Đang truy vấn blockchain...</p>
+          </div>
+        );
+      case "found":
+        return (
+          <div style={{ minHeight: 400 }}>
+            <Tabs 
+              activeKey={activeTab} 
+              onChange={setActiveTab} 
+              items={tabItems} 
+              animated={{ inkBar: true, tabPane: false }} 
+            />
+          </div>
+        );
+      case "not_found":
+        return (
+          <div style={{ minHeight: 150, paddingTop: 20 }}>
+            <Alert
+              type="warning"
+              showIcon
+              message="Chưa có dữ liệu trên blockchain"
+              description="Sản phẩm này chưa được đăng ký trên Ethereum. Vui lòng liên hệ cửa hàng để biết thêm thông tin."
+            />
+          </div>
+        );
+      case "error":
+        return (
+          <div style={{ minHeight: 150, paddingTop: 20 }}>
+            <Alert
+              type="error"
+              showIcon
+              message="Không thể kết nối blockchain"
+              description="Đã xảy ra lỗi khi truy vấn. Vui lòng thử lại sau."
+            />
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <>
-      <TriggerCard />
+      <button
+        onClick={fetchTrace}
+        disabled={disabled}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 8,
+          padding: "10px 22px",
+          background: disabled ? "#e8e8e8" : "linear-gradient(135deg, #173354 0%, #1b437c 100%)",
+          color: disabled ? "#bbb" : "#fff",
+          border: "none",
+          borderRadius: 10,
+          fontSize: 14,
+          fontWeight: 600,
+          cursor: disabled ? "not-allowed" : "pointer",
+          fontFamily: "inherit",
+          boxShadow: disabled ? "none" : "0 4px 18px rgba(23,51,84,0.22)",
+          transition: "transform 0.2s ease, box-shadow 0.2s ease",
+          letterSpacing: "0.3px",
+        }}
+        onMouseEnter={e => { if (!disabled) { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(23,51,84,0.28)"; }}}
+        onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = disabled ? "none" : "0 4px 18px rgba(23,51,84,0.22)"; }}
+      >
+        <SafetyOutlined style={{ fontSize: 16 }} />
+        Xem nguồn gốc sản phẩm
+      </button>
 
       <Modal
         open={open}
         onCancel={() => setOpen(false)}
+        title={
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{
+              width: 36, height: 36, borderRadius: 9,
+              background: "linear-gradient(135deg, #173354, #1b437c)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              flexShrink: 0,
+            }}>
+              <SafetyOutlined style={{ color: "#f0d58d", fontSize: 17 }} />
+            </div>
+            <div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: "#173354", lineHeight: 1.25 }}>
+                Truy xuất nguồn gốc sản phẩm
+              </div>
+            </div>
+          </div>
+        }
         footer={null}
-        width={800} /* Đã thu nhỏ Modal lại cho vừa cấu trúc 2 cột */
+        width={680}
         destroyOnClose
-        closeIcon={<div style={{ color: "#f0d58d", fontSize: 18, marginTop: 10 }}>✕</div>}
         styles={{
-          content: { 
-            background: "#173354",
-            padding: "32px 24px",
-            border: "1px solid #f0d58d"
-          }
+          header: { borderBottom: "1px solid #f0ede8", paddingBottom: 16, marginBottom: 0 },
+          body: { padding: "20px 24px 28px" },
         }}
       >
-        {renderDashboard()}
+        {renderContent()}
       </Modal>
     </>
   );
