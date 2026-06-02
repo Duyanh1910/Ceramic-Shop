@@ -1,9 +1,8 @@
 import { useNavigate, useParams, Navigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { ArrowLeftOutlined } from '@ant-design/icons';
-import { Button } from 'antd';
-import styles from './Supportpage.module.css';
 import { useEffect } from 'react';
+import styles from './Supportpage.module.css';
 
 const PAGES = {
   'huong-dan-mua-hang': {
@@ -50,10 +49,10 @@ const PAGES = {
         <h2>Chính sách thanh toán</h2>
         <p>Ceramic Shop chấp nhận nhiều hình thức thanh toán để phù hợp với nhu cầu của mọi khách hàng.</p>
 
-        <h3>1. Thanh toán khi nhận hàng (COD)</h3>
+        <h3>Thanh toán khi nhận hàng (COD)</h3>
         <p>Bạn thanh toán bằng tiền mặt trực tiếp cho nhân viên giao hàng khi nhận được sản phẩm. Áp dụng cho tất cả đơn hàng trong nước.</p>
 
-        <h3>2. Ví điện tử (MoMo / ZaloPay)</h3>
+        <h3>Ví điện tử (MoMo / ZaloPay)</h3>
         <p>Bạn sẽ được chuyển sang cổng thanh toán MoMo hoặc ZaloPay sau khi xác nhận đơn hàng.</p>
 
         <h3>Lưu ý quan trọng</h3>
@@ -206,17 +205,17 @@ const PAGES = {
 };
 
 const MENU = [
-  { slug: 'huong-dan-mua-hang',     icon: '🛒', label: 'Hướng dẫn mua hàng' },
-  { slug: 'chinh-sach-thanh-toan',  icon: '💳', label: 'Chính sách thanh toán' },
-  { slug: 'chinh-sach-giao-hang',   icon: '🚚', label: 'Chính sách giao hàng' },
-  { slug: 'chinh-sach-doi-tra',     icon: '🔄', label: 'Chính sách đổi trả' },
-  { slug: 'chinh-sach-bao-hanh',    icon: '🛡️', label: 'Chính sách bảo hành' },
+  { slug: 'huong-dan-mua-hang',    icon: '🛒', label: 'Hướng dẫn mua hàng' },
+  { slug: 'chinh-sach-thanh-toan', icon: '💳', label: 'Chính sách thanh toán' },
+  { slug: 'chinh-sach-giao-hang',  icon: '🚚', label: 'Chính sách giao hàng' },
+  { slug: 'chinh-sach-doi-tra',    icon: '🔄', label: 'Chính sách đổi trả' },
+  { slug: 'chinh-sach-bao-hanh',   icon: '🛡️', label: 'Chính sách bảo hành' },
 ];
 
 export default function SupportPage() {
   const navigate = useNavigate();
   const { slug } = useParams();
-  
+
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   }, [slug]);
@@ -234,10 +233,10 @@ export default function SupportPage() {
 
       <header className={styles.topHeader}>
         <div className={styles.logoBox} onClick={() => navigate('/')}>
-          <img 
-            src="https://res.cloudinary.com/dcmwz0uis/image/upload/v1774819165/IMG_20260330_041641_qwo8lc.jpg" 
-            alt="Ceramic Shop Logo" 
-            className={styles.logoImg} 
+          <img
+            src="https://res.cloudinary.com/dcmwz0uis/image/upload/v1774819165/IMG_20260330_041641_qwo8lc.jpg"
+            alt="Ceramic Shop"
+            className={styles.logoImg}
           />
           <div className={styles.logoTextWrap}>
             <h1 className={styles.logoText}>CERAMIC-SHOP</h1>
@@ -245,22 +244,26 @@ export default function SupportPage() {
           </div>
         </div>
 
-        <Button
-          type="link"
-          icon={<ArrowLeftOutlined />}
-          onClick={() => navigate('/')}
-          className={styles.btnBack}
-        >
+        <button className={styles.btnBack} onClick={() => navigate('/')}>
+          <ArrowLeftOutlined style={{ fontSize: 13 }} />
           Quay lại
-        </Button>
+        </button>
       </header>
+
+      <div className={styles.heroStrip}>
+        <div className={styles.heroInner}>
+          <div className={styles.heroLabel}>Hỗ trợ khách hàng</div>
+          <h2 className={styles.heroTitle}>Trung tâm hỗ trợ</h2>
+          <p className={styles.heroDesc}>Tất cả thông tin chính sách và hướng dẫn mua hàng tại Ceramic Shop</p>
+        </div>
+      </div>
 
       <div className={styles.mainContent}>
         <div className={styles.container}>
           <div className={styles.layout}>
 
             <aside className={styles.sidebar}>
-              <div className={styles.sidebarTitle}>Hỗ trợ khách hàng</div>
+              <div className={styles.sidebarTitle}>Danh mục hỗ trợ</div>
               <nav>
                 {MENU.map((item) => (
                   <div
@@ -288,7 +291,7 @@ export default function SupportPage() {
               </div>
             </aside>
 
-            <main className={styles.contentArea}>
+            <main>
               <div className={styles.breadcrumbNav}>
                 <span onClick={() => navigate('/')} className={styles.breadcrumbLink}>Trang chủ</span>
                 <span className={styles.breadcrumbSep}>›</span>
@@ -305,7 +308,6 @@ export default function SupportPage() {
                     <h1 className={styles.articleTitle}>{current.title}</h1>
                   </div>
                 </div>
-
                 <div className={styles.articleBody}>
                   {current.content}
                 </div>
