@@ -1,11 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { Modal, Spin, Alert, Tabs } from "antd";
-import { SafetyOutlined, QrcodeOutlined, EnvironmentOutlined, CheckCircleFilled } from "@ant-design/icons";
+import { SafetyOutlined, EnvironmentOutlined } from "@ant-design/icons";
 import axios from "axios";
 import QRCode from "qrcode";
 
 const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1";
-const FRONTEND_BASE = "https://ceramic-shop-rho.vercel.app";
 
 function QRCanvas({ url, size = 160 }) {
   const canvasRef = useRef(null);
@@ -21,7 +20,7 @@ function QRCanvas({ url, size = 160 }) {
 
   const handleDownload = () => {
     const link = document.createElement("a");
-    link.download = `QR-SP${url.split("/").pop()}.png`;
+    link.download = `QR-BanDo-NCC.png`;
     link.href = canvasRef.current.toDataURL();
     link.click();
   };
@@ -72,8 +71,8 @@ function SupplierMap({ diaChi }) {
   }
 
   const encoded = encodeURIComponent(diaChi);
-  const src = `https://maps.google.com/maps?q=$${encoded}&hl=vi&z=15&output=embed`;
-  const externalMapUrl = `https://www.google.com/maps/search/?api=1&query=$${encoded}`;
+  const src = `https://maps.google.com/maps?q=${encoded}&hl=vi&z=15&output=embed`;
+  const externalMapUrl = `https://www.google.com/maps/search/?api=1&query=${encoded}`;
 
   return (
     <div style={{ paddingBottom: 10 }}>
@@ -146,8 +145,6 @@ export default function ProductTrace({ maSanPham, disabled = false }) {
   const [status, setStatus] = useState("idle");
   const [activeTab, setActiveTab] = useState("info");
 
-  const traceUrl = `${FRONTEND_BASE}/product/${maSanPham}?trace=true`;
-
   const fetchTrace = async () => {
     if (!maSanPham || disabled) return;
     setOpen(true);
@@ -172,67 +169,48 @@ export default function ProductTrace({ maSanPham, disabled = false }) {
     }
   };
 
-  useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search);
-    if (searchParams.get("trace") === "true" && maSanPham && !disabled) {
-      fetchTrace();
-    }
-  }, [maSanPham, disabled]);
+  const InfoPanel = () => {
+    const address = data?.diaChiNhaCungCap;
+    const hasValidAddress = address && address !== "Chưa cập nhật";
+    
+    const googleMapsUrl = hasValidAddress 
+      ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`
+      : "";
 
-  const InfoPanel = () => (
-    <div style={{ display: "flex", gap: 28, alignItems: "flex-start" }}>
-      <div style={{ flex: 1, minWidth: 0 }}>
+    return (
+      <div style={{ display: "flex", gap: 28, alignItems: "flex-start" }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <InfoRow label="Tên sản phẩm" value={data?.tenSanPham} />
+          <InfoRow label="Nhà cung cấp" value={data?.tenNhaCungCap} />
+          <InfoRow label="Chất liệu" value={data?.chatLieu} />
+          <InfoRow label="Ngày sản xuất" value={data?.ngaySanXuat} />
+          <InfoRow label="Thời gian ghi lên blockchain" value={data?.thoiGianTao} />
+        </div>
 
-        <InfoRow label="Tên sản phẩm" value={data?.tenSanPham} />
-        <InfoRow label="Nhà cung cấp" value={data?.tenNhaCungCap} />
-        <InfoRow label="Chất liệu" value={data?.chatLieu} />
-        <InfoRow label="Ngày sản xuất" value={data?.ngaySanXuat} />
-        <InfoRow label="Thời gian ghi lên blockchain" value={data?.thoiGianTao} />
+        <div style={{ flexShrink: 0, paddingTop: 2, display: "flex", flexDirection: "column", alignItems: "center" }}>
+          <p style={{ margin: "0 0 8px", fontSize: 10, fontWeight: 600, letterSpacing: "1.5px", textTransform: "uppercase", color: "#bbb", textAlign: "center" }}>
+            Quét để xem bản đồ
+          </p>
+          
+          {/* 3. Truyền link Google Maps vào QR, nếu chưa có địa chỉ thì hiện ô trống */}
+          {hasValidAddress ? (
+            <QRCanvas url={googleMapsUrl} size={148} />
+          ) : (
+            <div style={{ width: 148, height: 148, display: "flex", alignItems: "center", justifyContent: "center", background: "#f5f5f5", borderRadius: 8, border: "1px dashed #d9d9d9" }}>
+              <span style={{ fontSize: 12, color: "#999", textAlign: "center", padding: 10 }}>Chưa có địa chỉ</span>
+            </div>
+          )}
+        </div>
       </div>
-
-      <div style={{ flexShrink: 0, paddingTop: 2 }}>
-        <p style={{ margin: "0 0 8px", fontSize: 10, fontWeight: 600, letterSpacing: "1.5px", textTransform: "uppercase", color: "#bbb", textAlign: "center" }}>
-          Mã QR nguồn gốc
-        </p>
-        <QRCanvas url={traceUrl} size={148} />
-      </div>
-    </div>
-  );
+    );
+  };
 
   const tabItems = [
     {
       key: "info",
       label: <span style={{ fontSize: 13 }}>Thông tin nguồn gốc</span>,
       children: <InfoPanel />,
-    },
-    {
-      key: "map",
-      label: (
-        <span style={{ fontSize: 13 }}>
-          <EnvironmentOutlined style={{ marginRight: 5 }} />Vị trí NCC
-        </span>
-      ),
-      children: <SupplierMap diaChi={data?.diaChiNhaCungCap} />,
-    },
-    {
-      key: "qr",
-      label: (
-        <span style={{ fontSize: 13 }}>
-          <QrcodeOutlined style={{ marginRight: 5 }} />QR
-        </span>
-      ),
-      children: (
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "16px 0" }}>
-          <p style={{ marginBottom: 20, color: "#6b7280", fontSize: 13, textAlign: "center" }}>
-            Khách hàng quét mã này để xem nguồn gốc sản phẩm
-          </p>
-          <QRCanvas url={traceUrl} size={240} />
-          <p style={{ marginTop: 14, fontSize: 11, color: "#aaa", wordBreak: "break-all", textAlign: "center", maxWidth: 320 }}>
-            {traceUrl}
-          </p>
-        </div>
-      ),
-    },
+    }
   ];
 
   const renderContent = () => {
