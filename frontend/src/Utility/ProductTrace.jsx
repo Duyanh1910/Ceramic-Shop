@@ -72,26 +72,43 @@ function SupplierMap({ diaChi }) {
   }
 
   const encoded = encodeURIComponent(diaChi);
-  const src = `https://maps.google.com/maps?q=${encoded}&output=embed&z=15`;
+  const src = `https://maps.google.com/maps?q=$${encoded}&hl=vi&z=15&output=embed`;
+  const externalMapUrl = `https://www.google.com/maps/search/?api=1&query=$${encoded}`;
 
   return (
-    <div>
-      <p style={{ marginBottom: 10, fontWeight: 600, fontSize: 13, color: "#3d4451", display: "flex", alignItems: "center", gap: 6 }}>
-        <EnvironmentOutlined style={{ color: "#e74c3c" }} />
-        {diaChi}
-      </p>
+    <div style={{ paddingBottom: 10 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+        <p style={{ margin: 0, fontWeight: 600, fontSize: 13, color: "#3d4451", display: "flex", alignItems: "center", gap: 6 }}>
+          <EnvironmentOutlined style={{ color: "#e74c3c" }} />
+          {diaChi}
+        </p>
+        <a 
+          href={externalMapUrl} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          style={{
+            fontSize: 12,
+            color: "#1b437c",
+            fontWeight: 500,
+            textDecoration: "underline",
+            whiteSpace: "nowrap"
+          }}
+        >
+          Mở ứng dụng Bản đồ
+        </a>
+      </div>
       <iframe
         title="Vị trí nhà cung cấp"
         src={src}
         width="100%"
         height="280"
-        style={{ border: 0, borderRadius: 10, display: "block" }}
+        style={{ border: 0, borderRadius: 10, display: "block", backgroundColor: "#f5f5f5" }}
         allowFullScreen
         loading="lazy"
         referrerPolicy="no-referrer-when-downgrade"
       />
-      <p style={{ marginTop: 8, fontSize: 11, color: "#aaa", fontStyle: "italic" }}>
-        Vị trí hiển thị dựa trên địa chỉ được ghi trên blockchain, không phải GPS thực tế.
+      <p style={{ marginTop: 8, fontSize: 11, color: "#aaa", fontStyle: "italic", textAlign: "center" }}>
+        Vị trí hiển thị dựa trên địa chỉ được ghi trên blockchain.
       </p>
     </div>
   );
@@ -155,6 +172,13 @@ export default function ProductTrace({ maSanPham, disabled = false }) {
     }
   };
 
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.get("trace") === "true" && maSanPham && !disabled) {
+      fetchTrace();
+    }
+  }, [maSanPham, disabled]);
+
   const InfoPanel = () => (
     <div style={{ display: "flex", gap: 28, alignItems: "flex-start" }}>
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -217,7 +241,7 @@ export default function ProductTrace({ maSanPham, disabled = false }) {
       key: "qr",
       label: (
         <span style={{ fontSize: 13 }}>
-          <QrcodeOutlined style={{ marginRight: 5 }} />Mã QR lớn
+          <QrcodeOutlined style={{ marginRight: 5 }} />QR
         </span>
       ),
       children: (
@@ -238,30 +262,43 @@ export default function ProductTrace({ maSanPham, disabled = false }) {
     switch (status) {
       case "loading":
         return (
-          <div style={{ textAlign: "center", padding: "48px 0" }}>
+          <div style={{ textAlign: "center", padding: "80px 0", minHeight: 380 }}>
             <Spin size="large" />
             <p style={{ marginTop: 16, color: "#aaa", fontSize: 13 }}>Đang truy vấn blockchain...</p>
           </div>
         );
       case "found":
-        return <Tabs activeKey={activeTab} onChange={setActiveTab} items={tabItems} />;
+        return (
+          <div style={{ minHeight: 400 }}>
+            <Tabs 
+              activeKey={activeTab} 
+              onChange={setActiveTab} 
+              items={tabItems} 
+              animated={{ inkBar: true, tabPane: false }} 
+            />
+          </div>
+        );
       case "not_found":
         return (
-          <Alert
-            type="warning"
-            showIcon
-            message="Chưa có dữ liệu trên blockchain"
-            description="Sản phẩm này chưa được đăng ký trên Ethereum. Vui lòng liên hệ cửa hàng để biết thêm thông tin."
-          />
+          <div style={{ minHeight: 150, paddingTop: 20 }}>
+            <Alert
+              type="warning"
+              showIcon
+              message="Chưa có dữ liệu trên blockchain"
+              description="Sản phẩm này chưa được đăng ký trên Ethereum. Vui lòng liên hệ cửa hàng để biết thêm thông tin."
+            />
+          </div>
         );
       case "error":
         return (
-          <Alert
-            type="error"
-            showIcon
-            message="Không thể kết nối blockchain"
-            description="Đã xảy ra lỗi khi truy vấn. Vui lòng thử lại sau."
-          />
+          <div style={{ minHeight: 150, paddingTop: 20 }}>
+            <Alert
+              type="error"
+              showIcon
+              message="Không thể kết nối blockchain"
+              description="Đã xảy ra lỗi khi truy vấn. Vui lòng thử lại sau."
+            />
+          </div>
         );
       default:
         return null;
