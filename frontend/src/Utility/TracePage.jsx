@@ -9,7 +9,6 @@ import {
 } from "@ant-design/icons";
 import { Alert, Spin } from "antd";
 import axios from "axios";
-import QRCode from "react-qr-code";
 
 const API_BASE =
   "https://ceramic-shop-u8ak.onrender.com/api/v1";
@@ -270,27 +269,6 @@ export default function TracePage() {
                 <small>
                   {data.nguoiTao}
                 </small>
-              </div>
-            </div>
-
-            <div
-              style={{
-                marginTop: 30,
-                textAlign: "center",
-              }}
-            >
-              <QRCode
-                size={140}
-                value={window.location.href}
-              />
-
-              <div
-                style={{
-                  color: "#94a3b8",
-                  marginTop: 10,
-                }}
-              >
-                Quét để xác minh
               </div>
             </div>
           </div>
