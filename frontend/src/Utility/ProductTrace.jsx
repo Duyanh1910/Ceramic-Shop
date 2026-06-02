@@ -1,323 +1,546 @@
 import { useState, useEffect, useRef } from "react";
-import { Modal, Spin, Alert, Tabs } from "antd";
-import { SafetyOutlined, EnvironmentOutlined } from "@ant-design/icons";
+import { useNavigate, useParams } from "react-router-dom";
+import { Modal, Spin, Alert, Button } from "antd";
+import {
+  EnvironmentOutlined,
+  ArrowRightOutlined,
+  CodeSandboxOutlined,
+  BlockOutlined,
+  FieldTimeOutlined,
+  ScanOutlined,
+  EyeOutlined,
+  CheckCircleOutlined,
+} from "@ant-design/icons";
 import axios from "axios";
 import QRCode from "qrcode";
 
 const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1";
+const FRONTEND_BASE = "https://ceramic-shop-rho.vercel.app";
 
-function QRCanvas({ url, size = 160 }) {
+// ==============================
+// QR CANVAS
+// ==============================
+function QRCanvas({ url, size = 220, light = "#ffffff" }) {
   const canvasRef = useRef(null);
 
   useEffect(() => {
     if (!canvasRef.current || !url) return;
+
     QRCode.toCanvas(canvasRef.current, url, {
       width: size,
-      margin: 2,
-      color: { dark: "#173354", light: "#ffffff" },
+      margin: 1,
+      color: { dark: "#173354", light },
     });
-  }, [url, size]);
+  }, [url, size, light]);
 
-  const handleDownload = () => {
-    const link = document.createElement("a");
-    link.download = `QR-BanDo-NCC.png`;
-    link.href = canvasRef.current.toDataURL();
-    link.click();
-  };
-
-  return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
-      <div style={{
-        padding: 10,
-        background: "#fff",
-        borderRadius: 12,
-        boxShadow: "0 2px 16px rgba(23,51,84,0.10)",
-        border: "1px solid #e8e4dc",
-      }}>
-        <canvas ref={canvasRef} style={{ display: "block", borderRadius: 6 }} />
-      </div>
-      <button
-        onClick={handleDownload}
-        style={{
-          background: "none",
-          border: "1px solid #e8e4dc",
-          borderRadius: 20,
-          padding: "4px 14px",
-          fontSize: 11,
-          color: "#6b7280",
-          cursor: "pointer",
-          transition: "all 0.18s",
-          fontFamily: "inherit",
-        }}
-        onMouseEnter={e => { e.target.style.borderColor = "#1b437c"; e.target.style.color = "#1b437c"; }}
-        onMouseLeave={e => { e.target.style.borderColor = "#e8e4dc"; e.target.style.color = "#6b7280"; }}
-      >
-        Tải xuống
-      </button>
-    </div>
-  );
+  return <canvas ref={canvasRef} style={{ display: "block", borderRadius: 16 }} />;
 }
 
+// ==============================
+// MAP
+// ==============================
 function SupplierMap({ diaChi }) {
   if (!diaChi || diaChi === "Chưa cập nhật") {
     return (
-      <Alert
-        type="warning"
-        showIcon
-        message="Chưa có địa chỉ nhà cung cấp"
-        description="Sản phẩm này chưa được gắn địa chỉ nhà cung cấp trên blockchain."
-      />
+      <div
+        style={{
+          padding: 24,
+          textAlign: "center",
+          color: "#94a3b8",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100%",
+          minHeight: 320,
+          background: "linear-gradient(180deg, rgba(23,51,84,0.15), rgba(13,27,42,0.55))",
+          borderRadius: 16,
+          border: "1px dashed rgba(240,213,141,0.25)",
+        }}
+      >
+        <EnvironmentOutlined style={{ fontSize: 28, marginBottom: 10, color: "#f0d58d" }} />
+        <p style={{ margin: 0 }}>Chưa có tọa độ vị trí</p>
+      </div>
     );
   }
 
   const encoded = encodeURIComponent(diaChi);
   const src = `https://maps.google.com/maps?q=${encoded}&hl=vi&z=15&output=embed`;
-  const externalMapUrl = `https://www.google.com/maps/search/?api=1&query=${encoded}`;
 
   return (
-    <div style={{ paddingBottom: 10 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-        <p style={{ margin: 0, fontWeight: 600, fontSize: 13, color: "#3d4451", display: "flex", alignItems: "center", gap: 6 }}>
-          <EnvironmentOutlined style={{ color: "#e74c3c" }} />
-          {diaChi}
-        </p>
-        <a 
-          href={externalMapUrl} 
-          target="_blank" 
-          rel="noopener noreferrer"
-          style={{
-            fontSize: 12,
-            color: "#1b437c",
-            fontWeight: 500,
-            textDecoration: "underline",
-            whiteSpace: "nowrap"
-          }}
-        >
-          Mở ứng dụng Bản đồ
-        </a>
+    <iframe
+      title="Vị trí nhà cung cấp"
+      src={src}
+      width="100%"
+      height="100%"
+      style={{
+        border: 0,
+        borderRadius: 16,
+        minHeight: 320,
+        filter: "contrast(1.06) saturate(1.05)",
+      }}
+      allowFullScreen
+      loading="lazy"
+      referrerPolicy="no-referrer-when-downgrade"
+    />
+  );
+}
+
+// ==============================
+// UI HELPERS
+// ==============================
+function InfoRow({ icon, label, value, valueColor = "#fff" }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        gap: 10,
+        alignItems: "flex-start",
+        padding: "12px 14px",
+        borderRadius: 14,
+        background: "rgba(23,51,84,0.78)",
+        border: "1px solid rgba(27,67,124,0.9)",
+      }}
+    >
+      <div style={{ color: "#f0d58d", marginTop: 2 }}>{icon}</div>
+      <div style={{ minWidth: 0 }}>
+        <div style={{ fontSize: 11, color: "#94a3b8", marginBottom: 4 }}>{label}</div>
+        <div style={{ color: valueColor, fontSize: 13, fontWeight: 600, lineHeight: 1.45, wordBreak: "break-word" }}>
+          {value || "—"}
+        </div>
       </div>
-      <iframe
-        title="Vị trí nhà cung cấp"
-        src={src}
-        width="100%"
-        height="280"
-        style={{ border: 0, borderRadius: 10, display: "block", backgroundColor: "#f5f5f5" }}
-        allowFullScreen
-        loading="lazy"
-        referrerPolicy="no-referrer-when-downgrade"
-      />
-      <p style={{ marginTop: 8, fontSize: 11, color: "#aaa", fontStyle: "italic", textAlign: "center" }}>
-        Vị trí hiển thị dựa trên địa chỉ được ghi trên blockchain.
-      </p>
     </div>
   );
 }
 
-function InfoRow({ label, value, mono = false }) {
+function StatusPill({ text }) {
   return (
-    <div style={{
-      display: "flex",
-      flexDirection: "column",
-      gap: 3,
-      padding: "10px 0",
-      borderBottom: "1px solid #f0ede8",
-    }}>
-      <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: "1.5px", textTransform: "uppercase", color: "#bbb" }}>
-        {label}
-      </span>
-      <span style={{
-        fontSize: mono ? 11 : 14,
-        color: mono ? "#999" : "#1a1a2e",
-        fontFamily: mono ? "monospace" : "inherit",
-        fontWeight: mono ? 400 : 500,
-        wordBreak: "break-all",
-        lineHeight: 1.5,
-      }}>
-        {value || "—"}
-      </span>
+    <div
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 8,
+        padding: "10px 14px",
+        borderRadius: 999,
+        background: "rgba(16,185,129,0.12)",
+        border: "1px solid rgba(16,185,129,0.5)",
+        color: "#10b981",
+        fontSize: 13,
+        fontWeight: 700,
+      }}
+    >
+      <CheckCircleOutlined />
+      {text}
     </div>
   );
 }
 
-export default function ProductTrace({ maSanPham, disabled = false }) {
-  const [open, setOpen] = useState(false);
+// ==============================
+// TRANG CHI TIẾT TRACE
+// ==============================
+export function ProductTracePage() {
+  const { maSanPham } = useParams();
   const [data, setData] = useState(null);
-  const [status, setStatus] = useState("idle");
-  const [activeTab, setActiveTab] = useState("info");
+  const [status, setStatus] = useState("loading");
 
-  const fetchTrace = async () => {
-    if (!maSanPham || disabled) return;
-    setOpen(true);
-    setStatus("loading");
-    setActiveTab("info");
+  useEffect(() => {
+    const fetchTrace = async () => {
+      if (!maSanPham) return;
 
-    try {
-      const res = await axios.get(`${API_BASE}/products/${maSanPham}/trace`);
-      const result = res.data?.result;
-      if (result?.tonTai) {
-        setData(result);
-        setStatus("found");
-      } else {
-        setStatus("not_found");
+      setStatus("loading");
+      try {
+        const res = await axios.get(`${API_BASE}/products/${maSanPham}/trace`);
+        const result = res.data?.result;
+
+        if (result?.tonTai) {
+          setData(result);
+          setStatus("found");
+        } else {
+          setStatus("not_found");
+        }
+      } catch (e) {
+        setStatus("error");
       }
-    } catch (e) {
-      const msg = e?.response?.data?.message || "";
-      setStatus(
-        msg.toLowerCase().includes("khong ton tai") || msg.toLowerCase().includes("không tồn tại")
-          ? "not_found" : "error"
-      );
-    }
-  };
+    };
 
-  const InfoPanel = () => {
-    const address = data?.diaChiNhaCungCap;
-    const hasValidAddress = address && address !== "Chưa cập nhật";
-    
-    const googleMapsUrl = hasValidAddress 
-      ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`
-      : "";
+    fetchTrace();
+  }, [maSanPham]);
 
+  if (status === "loading") {
     return (
-      <div style={{ display: "flex", gap: 28, alignItems: "flex-start" }}>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <InfoRow label="Tên sản phẩm" value={data?.tenSanPham} />
-          <InfoRow label="Nhà cung cấp" value={data?.tenNhaCungCap} />
-          <InfoRow label="Chất liệu" value={data?.chatLieu} />
-          <InfoRow label="Ngày sản xuất" value={data?.ngaySanXuat} />
-          <InfoRow label="Thời gian ghi lên blockchain" value={data?.thoiGianTao} />
-        </div>
-
-        <div style={{ flexShrink: 0, paddingTop: 2, display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <p style={{ margin: "0 0 8px", fontSize: 10, fontWeight: 600, letterSpacing: "1.5px", textTransform: "uppercase", color: "#bbb", textAlign: "center" }}>
-            Quét để xem bản đồ
-          </p>
-          
-          {/* 3. Truyền link Google Maps vào QR, nếu chưa có địa chỉ thì hiện ô trống */}
-          {hasValidAddress ? (
-            <QRCanvas url={googleMapsUrl} size={148} />
-          ) : (
-            <div style={{ width: 148, height: 148, display: "flex", alignItems: "center", justifyContent: "center", background: "#f5f5f5", borderRadius: 8, border: "1px dashed #d9d9d9" }}>
-              <span style={{ fontSize: 12, color: "#999", textAlign: "center", padding: 10 }}>Chưa có địa chỉ</span>
-            </div>
-          )}
-        </div>
+      <div style={{ padding: 80, textAlign: "center" }}>
+        <Spin size="large" />
       </div>
     );
-  };
+  }
 
-  const tabItems = [
-    {
-      key: "info",
-      label: <span style={{ fontSize: 13 }}>Thông tin nguồn gốc</span>,
-      children: <InfoPanel />,
-    }
-  ];
+  if (status === "not_found") {
+    return <Alert type="warning" message="Chưa có dữ liệu Blockchain" style={{ margin: 24 }} />;
+  }
 
-  const renderContent = () => {
-    switch (status) {
-      case "loading":
-        return (
-          <div style={{ textAlign: "center", padding: "80px 0", minHeight: 380 }}>
-            <Spin size="large" />
-            <p style={{ marginTop: 16, color: "#aaa", fontSize: 13 }}>Đang truy vấn blockchain...</p>
+  if (status === "error") {
+    return <Alert type="error" message="Lỗi kết nối Blockchain" style={{ margin: 24 }} />;
+  }
+
+  return (
+    <>
+      <style>{`
+        .trace-page {
+          padding: 24px;
+          background: linear-gradient(180deg, #08111d 0%, #0d1b2a 100%);
+          min-height: 100vh;
+        }
+
+        .trace-grid {
+          display: grid;
+          grid-template-columns: 1fr 1.15fr;
+          gap: 20px;
+          align-items: stretch;
+        }
+
+        .trace-card {
+          background: linear-gradient(180deg, rgba(13,27,42,0.98), rgba(10,20,33,0.98));
+          border: 1px solid rgba(27,67,124,0.95);
+          border-radius: 20px;
+          padding: 20px;
+          box-shadow: 0 18px 45px rgba(0,0,0,0.24);
+        }
+
+        .scan-frame {
+          position: relative;
+          overflow: hidden;
+          border-radius: 18px;
+          background: radial-gradient(circle at top, rgba(240,213,141,0.16), rgba(23,51,84,0.06));
+          padding: 22px;
+          border: 1px solid rgba(240,213,141,0.18);
+        }
+
+        .scan-frame::after {
+          content: "";
+          position: absolute;
+          left: 18px;
+          right: 18px;
+          height: 3px;
+          top: 18px;
+          border-radius: 999px;
+          background: linear-gradient(90deg, transparent, rgba(240,213,141,0.95), transparent);
+          box-shadow: 0 0 16px rgba(240,213,141,0.65);
+          animation: scanMove 2.2s linear infinite;
+          pointer-events: none;
+        }
+
+        @keyframes scanMove {
+          0%   { transform: translateY(0); opacity: 0.2; }
+          15%  { opacity: 1; }
+          50%  { transform: translateY(210px); opacity: 1; }
+          85%  { opacity: 1; }
+          100% { transform: translateY(0); opacity: 0.2; }
+        }
+
+        @media (max-width: 900px) {
+          .trace-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+      `}</style>
+
+      <div className="trace-page">
+        <div
+          style={{
+            maxWidth: 1240,
+            margin: "0 auto",
+          }}
+        >
+          <div
+            style={{
+              marginBottom: 18,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 12,
+              flexWrap: "wrap",
+            }}
+          >
+            <div>
+              <div style={{ color: "#f0d58d", fontSize: 12, fontWeight: 700, letterSpacing: 1.2 }}>
+                TRACEABILITY DASHBOARD
+              </div>
+              <h2 style={{ margin: "6px 0 0", color: "#fff", fontSize: 26, lineHeight: 1.2 }}>
+                Truy xuất nguồn gốc sản phẩm
+              </h2>
+            </div>
+
+            <StatusPill text="Xuất xưởng / Lên chuỗi" />
           </div>
-        );
-      case "found":
-        return (
-          <div style={{ minHeight: 400 }}>
-            <Tabs 
-              activeKey={activeTab} 
-              onChange={setActiveTab} 
-              items={tabItems} 
-              animated={{ inkBar: true, tabPane: false }} 
-            />
+
+          <div className="trace-grid">
+            <div className="trace-card">
+              <div
+                style={{
+                  color: "#f0d58d",
+                  fontSize: 13,
+                  fontWeight: 700,
+                  marginBottom: 16,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                }}
+              >
+                <BlockOutlined /> Thông tin sản phẩm
+              </div>
+
+              <div
+                style={{
+                  background: "linear-gradient(135deg, #173354, #1b437c)",
+                  height: 160,
+                  borderRadius: 18,
+                  marginBottom: 18,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  border: "1px solid rgba(240,213,141,0.15)",
+                }}
+              >
+                <CodeSandboxOutlined style={{ fontSize: 54, color: "#f0d58d", opacity: 0.9 }} />
+              </div>
+
+              <div style={{ display: "grid", gap: 12 }}>
+                <InfoRow icon={<BlockOutlined />} label="Tên sản phẩm" value={data?.tenSanPham} />
+                <InfoRow icon={<EnvironmentOutlined />} label="Nhà cung cấp" value={data?.tenNhaCungCap} />
+                <InfoRow icon={<FieldTimeOutlined />} label="Ngày sản xuất" value={data?.ngaySanXuat} />
+                <InfoRow icon={<FieldTimeOutlined />} label="Ghi on-chain" value={data?.thoiGianTao} valueColor="#f0d58d" />
+                <InfoRow
+                  icon={<ScanOutlined />}
+                  label="Mã serial (định danh)"
+                  value={maSanPham}
+                  valueColor="#f0d58d"
+                />
+              </div>
+            </div>
+
+            <div className="trace-card">
+              <div
+                style={{
+                  color: "#f0d58d",
+                  fontSize: 13,
+                  fontWeight: 700,
+                  marginBottom: 16,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 12,
+                }}
+              >
+                <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <EnvironmentOutlined /> Bản đồ vị trí
+                </span>
+                <span
+                  style={{
+                    background: "rgba(240,213,141,0.12)",
+                    color: "#f0d58d",
+                    padding: "6px 11px",
+                    borderRadius: 999,
+                    fontSize: 11,
+                    fontWeight: 700,
+                  }}
+                >
+                  Điểm xuất phát
+                </span>
+              </div>
+
+              <div style={{ borderRadius: 18, overflow: "hidden" }}>
+                <SupplierMap diaChi={data?.diaChiNhaCungCap} />
+              </div>
+
+              <p style={{ margin: "12px 0 0", fontSize: 11, color: "#64748b", textAlign: "center", fontStyle: "italic" }}>
+                Vị trí hiển thị dựa trên địa chỉ được ghi trên blockchain.
+              </p>
+            </div>
           </div>
-        );
-      case "not_found":
-        return (
-          <div style={{ minHeight: 150, paddingTop: 20 }}>
-            <Alert
-              type="warning"
-              showIcon
-              message="Chưa có dữ liệu trên blockchain"
-              description="Sản phẩm này chưa được đăng ký trên Ethereum. Vui lòng liên hệ cửa hàng để biết thêm thông tin."
-            />
-          </div>
-        );
-      case "error":
-        return (
-          <div style={{ minHeight: 150, paddingTop: 20 }}>
-            <Alert
-              type="error"
-              showIcon
-              message="Không thể kết nối blockchain"
-              description="Đã xảy ra lỗi khi truy vấn. Vui lòng thử lại sau."
-            />
-          </div>
-        );
-      default:
-        return null;
-    }
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ==============================
+// NÚT / THẺ MỞ QR
+// ==============================
+export default function ProductTrace({ maSanPham, disabled = false }) {
+  const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const webTraceUrl = `${FRONTEND_BASE}/trace/${maSanPham}`;
+
+  const goToDetailPage = () => {
+    setOpen(false);
+    navigate(`/trace/${maSanPham}`);
   };
 
   return (
     <>
-      <button
-        onClick={fetchTrace}
-        disabled={disabled}
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 8,
-          padding: "10px 22px",
-          background: disabled ? "#e8e8e8" : "linear-gradient(135deg, #173354 0%, #1b437c 100%)",
-          color: disabled ? "#bbb" : "#fff",
-          border: "none",
-          borderRadius: 10,
-          fontSize: 14,
-          fontWeight: 600,
-          cursor: disabled ? "not-allowed" : "pointer",
-          fontFamily: "inherit",
-          boxShadow: disabled ? "none" : "0 4px 18px rgba(23,51,84,0.22)",
-          transition: "transform 0.2s ease, box-shadow 0.2s ease",
-          letterSpacing: "0.3px",
-        }}
-        onMouseEnter={e => { if (!disabled) { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(23,51,84,0.28)"; }}}
-        onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = disabled ? "none" : "0 4px 18px rgba(23,51,84,0.22)"; }}
-      >
-        <SafetyOutlined style={{ fontSize: 16 }} />
-        Xem nguồn gốc sản phẩm
-      </button>
+      <style>{`
+        .trace-trigger {
+          background: linear-gradient(180deg, #173354 0%, #11263f 100%);
+          border-radius: 20px;
+          padding: 20px;
+          display: flex;
+          flex-direction: column;
+          gap: 18px;
+          max-width: 520px;
+          box-shadow: 0 12px 34px rgba(23,51,84,0.18);
+          border: 1px solid rgba(27,67,124,0.95);
+        }
+
+        .trace-qr-wrap {
+          position: relative;
+          overflow: hidden;
+          background: #fff;
+          padding: 12px;
+          border-radius: 18px;
+          min-width: 244px;
+          max-width: 244px;
+          cursor: pointer;
+        }
+
+        .trace-qr-wrap::after {
+          content: "";
+          position: absolute;
+          left: 10px;
+          right: 10px;
+          height: 3px;
+          top: 10px;
+          border-radius: 999px;
+          background: linear-gradient(90deg, transparent, rgba(23,51,84,0.95), transparent);
+          box-shadow: 0 0 16px rgba(23,51,84,0.45);
+          animation: scanMove 2.2s linear infinite;
+          pointer-events: none;
+        }
+
+        .trace-card-row {
+          display: flex;
+          gap: 18px;
+          align-items: center;
+        }
+
+        @media (max-width: 560px) {
+          .trace-card-row {
+            flex-direction: column;
+            align-items: stretch;
+          }
+
+          .trace-qr-wrap {
+            max-width: 100%;
+            min-width: 0;
+          }
+        }
+      `}</style>
+
+      <div className="trace-trigger">
+        <div className="trace-card-row">
+          <div className="trace-qr-wrap" onClick={goToDetailPage} title="Quét hoặc bấm để xem chi tiết">
+            <QRCodeCanvas url={webTraceUrl} />
+          </div>
+
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ color: "#f0d58d", fontSize: 11, fontWeight: 800, letterSpacing: 1.5, marginBottom: 6 }}>
+              GENUINE PRODUCT
+            </div>
+
+            <div style={{ color: "#fff", fontSize: 18, fontWeight: 800, marginBottom: 8, wordBreak: "break-word" }}>
+              {maSanPham}
+            </div>
+
+            <div style={{ color: "#94a3b8", fontSize: 13, lineHeight: 1.6, marginBottom: 14 }}>
+              Bấm để hiện QR. Quét QR để mở trang truy xuất nguồn gốc có thông tin sản phẩm và bản đồ.
+            </div>
+
+            <Button
+              type="primary"
+              onClick={() => setOpen(true)}
+              disabled={disabled}
+              style={{
+                height: 44,
+                borderRadius: 12,
+                background: disabled ? "#475569" : "#f0d58d",
+                borderColor: disabled ? "#475569" : "#f0d58d",
+                color: disabled ? "#94a3b8" : "#173354",
+                fontWeight: 800,
+                width: "100%",
+              }}
+            >
+              Xem mã QR <ArrowRightOutlined />
+            </Button>
+          </div>
+        </div>
+      </div>
 
       <Modal
         open={open}
         onCancel={() => setOpen(false)}
-        title={
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{
-              width: 36, height: 36, borderRadius: 9,
-              background: "linear-gradient(135deg, #173354, #1b437c)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              flexShrink: 0,
-            }}>
-              <SafetyOutlined style={{ color: "#f0d58d", fontSize: 17 }} />
-            </div>
-            <div>
-              <div style={{ fontSize: 15, fontWeight: 700, color: "#173354", lineHeight: 1.25 }}>
-                Truy xuất nguồn gốc sản phẩm
-              </div>
-            </div>
-          </div>
-        }
         footer={null}
-        width={680}
+        width={560}
         destroyOnClose
+        closeIcon={<div style={{ color: "#f0d58d", fontSize: 18, marginTop: 8 }}>✕</div>}
         styles={{
-          header: { borderBottom: "1px solid #f0ede8", paddingBottom: 16, marginBottom: 0 },
-          body: { padding: "20px 24px 28px" },
+          content: {
+            background: "linear-gradient(180deg, #173354 0%, #0d1b2a 100%)",
+            padding: "28px 22px",
+            border: "1px solid rgba(240,213,141,0.45)",
+            borderRadius: 22,
+          },
         }}
       >
-        {renderContent()}
+        <div style={{ textAlign: "center", marginBottom: 18 }}>
+          <div style={{ color: "#f0d58d", fontSize: 12, fontWeight: 800, letterSpacing: 1.4 }}>
+            QUÉT MÃ ĐỂ TRUY XUẤT
+          </div>
+          <h3 style={{ margin: "8px 0 0", color: "#fff", fontSize: 22 }}>QR truy xuất nguồn gốc</h3>
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr",
+            gap: 16,
+            justifyItems: "center",
+          }}
+        >
+          <div
+            style={{
+              background: "#fff",
+              padding: 14,
+              borderRadius: 20,
+              width: "fit-content",
+              boxShadow: "0 14px 36px rgba(0,0,0,0.25)",
+            }}
+          >
+            <div className="scan-frame">
+              <QRCodeCanvas url={webTraceUrl} size={240} />
+            </div>
+          </div>
+
+          <div style={{ color: "#94a3b8", fontSize: 13, lineHeight: 1.7, textAlign: "center" }}>
+            Dùng điện thoại quét QR để mở trang chi tiết.
+            <br />
+            Hoặc bấm nút dưới đây để vào trang truy xuất ngay.
+          </div>
+
+          <Button
+            onClick={goToDetailPage}
+            style={{
+              height: 46,
+              borderRadius: 14,
+              width: "100%",
+              background: "#f0d58d",
+              borderColor: "#f0d58d",
+              color: "#173354",
+              fontWeight: 800,
+            }}
+          >
+            Xem chi tiết nguồn gốc <EyeOutlined />
+          </Button>
+        </div>
       </Modal>
     </>
   );
