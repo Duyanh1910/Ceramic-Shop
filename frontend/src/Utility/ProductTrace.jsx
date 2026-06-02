@@ -5,7 +5,7 @@ import axios from "axios";
 import QRCode from "qrcode";
 
 const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1";
-const FRONTEND_BASE = "https://ceramic-shop.vercel.app";
+const FRONTEND_BASE = "https://ceramic-shop-rho.vercel.app";
 
 function QRCanvas({ url, size = 160 }) {
   const canvasRef = useRef(null);
