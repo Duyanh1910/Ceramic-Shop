@@ -125,6 +125,8 @@ export const createReportWorksheet = (
     worksheet.getColumn(index + 1).width = width;
   });
 
+  worksheet.getColumn(1).width = 15;
+
   rowHeights.forEach((height, index) => {
     worksheet.getRow(index + 1).height = height;
   });
