@@ -31,7 +31,7 @@ import ChatBot from "./Utility/ChatBot.jsx";
 import ContactIcons from "./Utility/ContactIcons.jsx";
 import PaymentResult from "./Utility/PaymentResult.jsx";
 import OrderTracking from "./Utility/OrderTracking.jsx";
-import TracePage from "./Customer/TracePage.jsx";
+import TracePage from "./Utility/TracePage.jsx";
 
 import AdminLayout from "./Admin/AdminLayout.jsx";
 import AdminDashboard from "./Admin/AdminDashboard.jsx";
