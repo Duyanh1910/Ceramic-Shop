@@ -169,35 +169,19 @@ export default function TracePage() {
                 "0 10px 40px rgba(0,0,0,.25)",
             }}
           >
-            <div
+            <img
+              src={productImage}
+              alt={data.tenSanPham}
               style={{
-                width: 130,
-                height: 130,
-                borderRadius: "50%",
-                background:
-                  "linear-gradient(135deg,#f0d58d,#d4a84f)",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                margin: "0 auto 20px",
+                width: "100%",
+                height: 280,
+                objectFit: "cover",
+                borderRadius: 16,
+                marginBottom: 20,
+                border: "2px solid rgba(255,255,255,.08)",
+                boxShadow: "0 8px 30px rgba(0,0,0,.35)",
               }}
-            >
-              <img
-                src={productImage}
-                alt={data.tenSanPham}
-                style={{
-                  width: "100%",
-                  height: 280,
-                  objectFit: "cover",
-                  borderRadius: 16,
-                  marginBottom: 20,
-                  border: "2px solid rgba(255,255,255,.08)",
-                  boxShadow:
-                    "0 8px 30px rgba(0,0,0,.35)",
-                }}
-              />
-            </div>
-
+            />
             <h2
               style={{
                 color: "#fff",
