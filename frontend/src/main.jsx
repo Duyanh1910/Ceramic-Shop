@@ -256,7 +256,7 @@ createRoot(document.getElementById("root")).render(
             }
           />
           <Route path="/support/:slug" element={<SupportPage />} />
-          <Route path="/trace/:maSanPham" element={<ProductTracePage />} />
+          <Route path="/trace/:maSanPham" element={<ProductTrace />} />
         </Routes>
         <ConditionalContactIcons />
         <ConditionalChatBot />
