@@ -52,6 +52,7 @@ export default function TracePage() {
   const { maSanPham } = useParams();
 
   const [data, setData] = useState(null);
+  const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -60,11 +61,17 @@ export default function TracePage() {
 
   const loadTrace = async () => {
     try {
-      const res = await axios.get(
-        `${API_BASE}/products/${maSanPham}/trace`
-      );
+      const [traceRes, productRes] = await Promise.all([
+        axios.get(
+          `${API_BASE}/products/${maSanPham}/trace`
+        ),
+        axios.get(
+          `${API_BASE}/products/${maSanPham}`
+        ),
+      ]);
 
-      setData(res.data.result);
+      setData(traceRes.data.result);
+      setProduct(productRes.data.result);
     } catch (err) {
       console.log(err);
     }
@@ -93,7 +100,10 @@ export default function TracePage() {
       />
     );
   }
-
+  const productImage =
+  product?.BienTheSanPhams?.[0]
+    ?.HinhAnhBienThes?.[0]?.DuongDan ||
+  product?.Thumbnail;
   return (
     <div
       style={{
@@ -172,10 +182,18 @@ export default function TracePage() {
                 margin: "0 auto 20px",
               }}
             >
-              <CodeSandboxOutlined
+              <img
+                src={productImage}
+                alt={data.tenSanPham}
                 style={{
-                  fontSize: 60,
-                  color: "#173354",
+                  width: "100%",
+                  height: 280,
+                  objectFit: "cover",
+                  borderRadius: 16,
+                  marginBottom: 20,
+                  border: "2px solid rgba(255,255,255,.08)",
+                  boxShadow:
+                    "0 8px 30px rgba(0,0,0,.35)",
                 }}
               />
             </div>
