@@ -278,7 +278,7 @@ export default function SupportPage() {
               </nav>
 
               <div className={styles.contactBox}>
-                <div className={styles.contactTitle}>Cần hỗ trợ thêm?</div>
+                <div className={styles.contactTitle}>Cần hỗ trợ trực tiếp?</div>
                 <a href="tel:0329835725" className={styles.contactItem}>
                   📞 0329 835 725
                 </a>
@@ -291,7 +291,7 @@ export default function SupportPage() {
               </div>
             </aside>
 
-            <main>
+            <main className={styles.contentArea}>
               <div className={styles.breadcrumbNav}>
                 <span onClick={() => navigate('/')} className={styles.breadcrumbLink}>Trang chủ</span>
                 <span className={styles.breadcrumbSep}>›</span>
@@ -304,7 +304,7 @@ export default function SupportPage() {
                 <div className={styles.articleHeader}>
                   <span className={styles.articleIcon}>{current.icon}</span>
                   <div className={styles.articleMeta}>
-                    <div className={styles.articleCategory}>Hỗ trợ khách hàng</div>
+                    <div className={styles.articleCategory}>Chính sách & Hướng dẫn</div>
                     <h1 className={styles.articleTitle}>{current.title}</h1>
                   </div>
                 </div>
@@ -314,7 +314,7 @@ export default function SupportPage() {
               </div>
 
               <div className={styles.otherPages}>
-                <div className={styles.otherTitle}>Xem thêm</div>
+                <div className={styles.otherTitle}>Xem thêm các chính sách khác</div>
                 <div className={styles.otherGrid}>
                   {MENU.filter((m) => m.slug !== currentSlug).map((item) => (
                     <div
