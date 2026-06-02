@@ -146,7 +146,7 @@ export default function ProductTrace({ maSanPham, disabled = false }) {
   const [status, setStatus] = useState("idle");
   const [activeTab, setActiveTab] = useState("info");
 
-  const traceUrl = `${FRONTEND_BASE}/products/${maSanPham}?trace=true`;
+  const traceUrl = `${FRONTEND_BASE}/product/${maSanPham}?trace=true`;
 
   const fetchTrace = async () => {
     if (!maSanPham || disabled) return;
@@ -182,28 +182,12 @@ export default function ProductTrace({ maSanPham, disabled = false }) {
   const InfoPanel = () => (
     <div style={{ display: "flex", gap: 28, alignItems: "flex-start" }}>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          marginBottom: 18,
-          padding: "9px 14px",
-          background: "linear-gradient(90deg, rgba(27,67,124,0.07), rgba(27,67,124,0.02))",
-          borderRadius: 8,
-          borderLeft: "3px solid #bb9244",
-        }}>
-        </div>
 
         <InfoRow label="Tên sản phẩm" value={data?.tenSanPham} />
         <InfoRow label="Nhà cung cấp" value={data?.tenNhaCungCap} />
         <InfoRow label="Chất liệu" value={data?.chatLieu} />
         <InfoRow label="Ngày sản xuất" value={data?.ngaySanXuat} />
         <InfoRow label="Thời gian ghi lên blockchain" value={data?.thoiGianTao} />
-        <div style={{ paddingTop: 10 }}>
-          <p style={{ margin: "4px 0 0", fontSize: 11, color: "#999", fontFamily: "monospace", wordBreak: "break-all", lineHeight: 1.6 }}>
-            {data?.nguoiTao}
-          </p>
-        </div>
       </div>
 
       <div style={{ flexShrink: 0, paddingTop: 2 }}>
