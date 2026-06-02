@@ -1,6 +1,197 @@
+@import url('https://fonts.googleapis.com/css2?family=Arsenal:wght@400;600;700&display=swap');
+
+:global(body) {
+  margin: 0 !important;
+  padding: 0 !important;
+  background-color: #fdfdfd !important;
+  font-family: 'Arsenal', sans-serif !important;
+  color: #333;
+  overflow-x: hidden !important;
+}
+
+:global(#root) {
+  min-height: 100vh;
+}
+
+.returnWrapper {
+  min-height: 100vh;
+  background-color: #fdfdfd;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.82), rgba(213, 233, 255, 0.92)),
+    url('https://res.cloudinary.com/dcmwz0uis/image/upload/v1774819412/bghome_dnne19.avif') center/cover no-repeat fixed;
+  background-size: cover;
+  background-attachment: fixed;
+}
+
+.topHeader {
+  height: 75px !important;
+  padding: 0 50px !important;
+  background-color: rgba(255, 255, 255, 0.88) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  line-height: normal !important;
+}
+
+.logoBox {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  cursor: pointer;
+  min-width: 0;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  text-align: left;
+}
+
+.logoImg {
+  width: 58px;
+  height: 58px;
+  object-fit: contain;
+  mix-blend-mode: multiply;
+  flex-shrink: 0;
+}
+
+.logoTextWrap {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.logoText {
+  font-family: 'Arsenal', serif;
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 5px 0;
+  color: #173354;
+  letter-spacing: 2px;
+  line-height: 1;
+}
+
+.logoSub {
+  font-size: 11px;
+  letter-spacing: 2.5px;
+  color: #bb9244;
+  font-weight: 600;
+  margin: 0;
+  line-height: 1;
+}
+
+.btnBack {
+  color: #1b437c !important;
+  font-weight: 700;
+  font-size: 15px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btnBack:hover {
+  color: #c48c46 !important;
+}
+
+.mainContent {
+  padding: 38px 20px 70px !important;
+  background: transparent !important;
+}
+
+.container {
+  max-width: 1180px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.pageHero {
+  background:
+    radial-gradient(circle at 10% 20%, rgba(196, 140, 70, 0.25), transparent 32%),
+    linear-gradient(135deg, #1b437c 0%, #102b4f 100%);
+  color: #fff;
+  border-radius: 18px;
+  padding: 32px 38px;
+  margin-bottom: 22px;
+  box-shadow: 0 12px 32px rgba(27, 67, 124, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.pageHero::after {
+  content: '';
+  position: absolute;
+  right: -80px;
+  top: -90px;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.heroLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #f2c276;
+  font-weight: 700;
+  margin-bottom: 10px;
+  letter-spacing: 0.4px;
+}
+
+.pageHero h1 {
+  margin: 0 0 8px;
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.pageHero p {
+  max-width: 760px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.contentCard {
+  background: rgba(255, 255, 255, 0.96);
+  border-radius: 18px;
+  box-shadow: 0 10px 35px rgba(21, 55, 100, 0.1);
+  padding: 30px 34px;
+  border: 1px solid rgba(230, 236, 246, 0.9);
+}
+
 .returnsCard {
   border-radius: 12px;
   box-shadow: 0 4px 18px rgba(27, 67, 124, 0.06);
+}
+
+.pageCard {
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+.pageCard :global(.ant-card-head) {
+  min-height: auto !important;
+  padding: 0 0 18px !important;
+  border-bottom: 0 !important;
+}
+
+.pageCard :global(.ant-card-head-title) {
+  padding: 0 !important;
+}
+
+.pageCard :global(.ant-card-extra) {
+  padding: 0 !important;
+}
+
+.pageCard :global(.ant-card-body) {
+  padding: 0 !important;
 }
 
 .compact {
@@ -9,6 +200,7 @@
 
 .notice {
   margin-bottom: 16px;
+  border-radius: 10px;
 }
 
 .tabs {
@@ -123,6 +315,46 @@
   border-color: #1b437c !important;
 }
 
+@media (max-width: 900px) {
+  .topHeader {
+    padding: 0 18px !important;
+  }
+
+  .logoImg {
+    width: 48px;
+    height: 48px;
+  }
+
+  .logoText {
+    font-size: 22px;
+  }
+
+  .logoSub {
+    font-size: 9px;
+    letter-spacing: 1.8px;
+  }
+
+  .btnBack {
+    font-size: 13px;
+  }
+
+  .mainContent {
+    padding: 24px 14px 50px !important;
+  }
+
+  .pageHero {
+    padding: 24px;
+  }
+
+  .pageHero h1 {
+    font-size: 26px;
+  }
+
+  .contentCard {
+    padding: 20px;
+  }
+}
+
 @media (max-width: 768px) {
   .orderHeader,
   .returnHeader {
@@ -140,5 +372,31 @@
 
   .loadMoreBtn {
     width: 100%;
+  }
+}
+
+@media (max-width: 576px) {
+  .topHeader {
+    height: auto !important;
+    min-height: 72px;
+    padding: 12px 14px !important;
+    align-items: flex-start !important;
+    gap: 10px;
+  }
+
+  .logoText {
+    font-size: 18px;
+  }
+
+  .logoSub {
+    display: none;
+  }
+
+  .btnBack {
+    padding: 0 !important;
+  }
+
+  .pageHero h1 {
+    font-size: 22px;
   }
 }
