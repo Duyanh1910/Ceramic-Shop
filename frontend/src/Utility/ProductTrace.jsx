@@ -146,7 +146,7 @@ export default function ProductTrace({ maSanPham, disabled = false }) {
   const [status, setStatus] = useState("idle");
   const [activeTab, setActiveTab] = useState("info");
 
-  const traceUrl = `${FRONTEND_BASE}/products/${maSanPham}?trace=true`;
+  const traceUrl = `${FRONTEND_BASE}/product/${maSanPham}?trace=true`;
 
   const fetchTrace = async () => {
     if (!maSanPham || disabled) return;
@@ -155,7 +155,7 @@ export default function ProductTrace({ maSanPham, disabled = false }) {
     setActiveTab("info");
 
     try {
-      const res = await axios.get(`${API_BASE}/products/${maSanPham}/trace`);
+      const res = await axios.get(`${API_BASE}/product/${maSanPham}/trace`);
       const result = res.data?.result;
       if (result?.tonTai) {
         setData(result);
@@ -192,10 +192,6 @@ export default function ProductTrace({ maSanPham, disabled = false }) {
           borderRadius: 8,
           borderLeft: "3px solid #bb9244",
         }}>
-          <CheckCircleFilled style={{ color: "#52c41a", fontSize: 14 }} />
-          <span style={{ fontSize: 12, fontWeight: 600, color: "#1b437c", letterSpacing: "0.3px" }}>
-            Đã xác thực trên Ethereum Sepolia
-          </span>
         </div>
 
         <InfoRow label="Tên sản phẩm" value={data?.tenSanPham} />
@@ -204,9 +200,6 @@ export default function ProductTrace({ maSanPham, disabled = false }) {
         <InfoRow label="Ngày sản xuất" value={data?.ngaySanXuat} />
         <InfoRow label="Thời gian ghi lên blockchain" value={data?.thoiGianTao} />
         <div style={{ paddingTop: 10 }}>
-          <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: "1.5px", textTransform: "uppercase", color: "#bbb" }}>
-            Địa chỉ ví
-          </span>
           <p style={{ margin: "4px 0 0", fontSize: 11, color: "#999", fontFamily: "monospace", wordBreak: "break-all", lineHeight: 1.6 }}>
             {data?.nguoiTao}
           </p>
@@ -350,9 +343,6 @@ export default function ProductTrace({ maSanPham, disabled = false }) {
             <div>
               <div style={{ fontSize: 15, fontWeight: 700, color: "#173354", lineHeight: 1.25 }}>
                 Truy xuất nguồn gốc sản phẩm
-              </div>
-              <div style={{ fontSize: 11, color: "#aaa", fontWeight: 400, marginTop: 1 }}>
-                Xác thực trên Blockchain · Ethereum Sepolia
               </div>
             </div>
           </div>
