@@ -715,7 +715,7 @@
   transition: all 0.3s ease;
   cursor: pointer;
 }
-.btnDetail, .btnBuy:hover:not(:disabled) {
+.btnDetail:hover:not(:disabled) {
   background: #00114fcc;
   color: #0ff;
   border-color: #0ff;
@@ -725,7 +725,21 @@
     0 0 12px #0ff,         
     0 7px 0 #1a5edb;       
 }
-.btnDetail, .btnBuy:active:not(:disabled) {
+.btnBuy:hover:not(:disabled) {
+  background: #00114fcc;
+  color: #0ff;
+  border-color: #0ff;
+  text-shadow: 0 0 5px #0ff;
+  transform: translateY(-2px);
+  box-shadow: 
+    0 0 12px #0ff,         
+    0 7px 0 #1a5edb;       
+}
+.btnDetail:active:not(:disabled) {
+  transform: translateY(5px);
+  box-shadow: 0 0 8px #0ff; 
+}
+.btnBuy:active:not(:disabled) {
   transform: translateY(5px);
   box-shadow: 0 0 8px #0ff; 
 }
