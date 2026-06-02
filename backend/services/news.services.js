@@ -11,7 +11,10 @@ export const getAllNewsService = async () => {
         attributes: ["TenNhanVien"],
       },
     ],
-    order: [["NgayTao", "DESC"]],
+    order: [
+      ["TrangThai", "DESC"],
+      ["NgayTao", "DESC"],
+    ],
   });
   return news;
 };

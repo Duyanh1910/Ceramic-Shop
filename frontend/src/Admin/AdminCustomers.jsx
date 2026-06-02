@@ -11,12 +11,20 @@ import {
   Form,
   Popconfirm,
   Select,
+  Tag,
 } from "antd";
 import {
   SearchOutlined,
   ReloadOutlined,
   EditOutlined,
   DeleteOutlined,
+  UserOutlined,
+  MailOutlined,
+  PhoneOutlined,
+  HomeOutlined,
+  LinkOutlined,
+  CheckCircleOutlined,
+  StopOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
 import styles from "./AdminTable.module.css";
@@ -124,8 +132,7 @@ export default function AdminCustomers() {
       fetchData();
     } catch (error) {
       message.error(
-        error.response?.data?.message ||
-          "Không thể xóa tài khoản khách hàng!",
+        error.response?.data?.message || "Không thể xóa tài khoản khách hàng!",
       );
     }
   };
@@ -157,8 +164,7 @@ export default function AdminCustomers() {
     {
       title: "Số điện thoại",
       dataIndex: "SDT",
-      render: (v) =>
-        v || <span style={{ color: "#ccc" }}>Chưa cập nhật</span>,
+      render: (v) => v || <span style={{ color: "#ccc" }}>Chưa cập nhật</span>,
     },
     {
       title: "Địa chỉ",
@@ -182,33 +188,63 @@ export default function AdminCustomers() {
       ),
     },
     {
-      title: "Thao tác",
+      title: "Trạng thái",
       width: 140,
       render: (_, row) =>
+        Number(row.TaiKhoan?.TrangThai) === 0 ? (
+          <Tag icon={<StopOutlined />} color="default">
+            Đã xóa
+          </Tag>
+        ) : (
+          <Tag icon={<CheckCircleOutlined />} color="success">
+            Hoạt động
+          </Tag>
+        ),
+    },
+    {
+      title: "Thao tác",
+      width: 150,
+      align: "center",
+      render: (_, row) =>
         isAdmin ? (
-          <Space>
-            <Tooltip title="Sửa khách hàng">
-              <Button icon={<EditOutlined />} onClick={() => openEditModal(row)} />
+          <div className={styles.actionGroup}>
+            <Tooltip title="Cập nhật thông tin">
+              <Button
+                type="text"
+                icon={<EditOutlined />}
+                className={`${styles.actionBtn} ${styles.editBtn}`}
+                onClick={() => openEditModal(row)}
+              />
             </Tooltip>
+
             <Popconfirm
               title="Xóa tài khoản khách hàng?"
               description="Đơn hàng của khách hàng này vẫn được giữ."
               okText="Xóa"
               cancelText="Hủy"
+              okButtonProps={{ danger: true }}
               onConfirm={() => handleSoftDelete(row)}
               disabled={Number(row.TaiKhoan?.TrangThai) === 0}
             >
-              <Tooltip title="Xóa tài khoản">
+              <Tooltip
+                title={
+                  Number(row.TaiKhoan?.TrangThai) === 0
+                    ? "Tài khoản đã bị xóa"
+                    : "Xóa tài khoản"
+                }
+              >
                 <Button
+                  type="text"
                   danger
                   icon={<DeleteOutlined />}
+                  className={`${styles.actionBtn} ${styles.deleteBtn}`}
                   disabled={Number(row.TaiKhoan?.TrangThai) === 0}
                 />
               </Tooltip>
             </Popconfirm>
-          </Space>
+          </div>
         ) : (
-          <span style={{ color: "#999" }}>Chỉ Admin</span>
+          <span className={styles.onlyAdmin}>Chỉ Admin</span>
         ),
     },
   ];
@@ -264,63 +300,160 @@ export default function AdminCustomers() {
       </div>
 
       <Modal
-        title="Sửa thông tin khách hàng"
         open={!!editingCustomer}
         onCancel={closeEditModal}
         onOk={() => form.submit()}
         confirmLoading={saving}
-        okText="Lưu"
+        okText="Lưu thay đổi"
         cancelText="Hủy"
         destroyOnHidden
+        width={720}
+        centered
+        className={styles.customerModal}
+        title={null}
       >
-        <Form form={form} layout="vertical" onFinish={handleUpdateCustomer}>
-          <Form.Item
-            label="Tên khách hàng"
-            name="TenKhachHang"
-            rules={[{ required: true, message: "Vui lòng nhập tên khách hàng!" }]}
-          >
-            <Input maxLength={100} />
-          </Form.Item>
-          <Form.Item label="Tên đăng nhập">
-            <Input value={editingCustomer?.TaiKhoan?.Username || ""} disabled />
-          </Form.Item>
-          <Form.Item
-            label="Email"
-            name="Email"
-            rules={[
-              { required: true, message: "Vui lòng nhập email!" },
-              { type: "email", message: "Email không hợp lệ!" },
-            ]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            label="Số điện thoại"
-            name="SDT"
-            rules={[
-              {
-                pattern: /^0\d{9}$/,
-                message:
-                  "Số điện thoại phải gồm 10 số và bắt đầu bằng 0!",
-              },
-            ]}
-          >
-            <Input maxLength={10} />
-          </Form.Item>
-          <Form.Item label="Địa chỉ" name="DiaChi">
-            <Input maxLength={255} />
-          </Form.Item>
-          <Form.Item label="Avatar URL" name="Avatar">
-            <Input />
-          </Form.Item>
-          <Form.Item label="Trạng thái tài khoản" name="TrangThai">
-            <Select
-              options={[
-                { value: 1, label: "Đang hoạt động" },
-                { value: 0, label: "Đã xóa" },
+        <div className={styles.modalHero}>
+          <div className={styles.modalAvatarWrap}>
+            <Avatar
+              size={76}
+              src={Form.useWatch("Avatar", form) || editingCustomer?.Avatar}
+              icon={<UserOutlined />}
+              className={styles.modalAvatar}
+            >
+              {editingCustomer?.TenKhachHang?.[0] || "?"}
+            </Avatar>
+          </div>
+
+          <div className={styles.modalHeroContent}>
+            <h2>Chỉnh sửa khách hàng</h2>
+            <p>
+              Cập nhật thông tin cá nhân và trạng thái tài khoản khách hàng.
+            </p>
+            <div className={styles.modalMeta}>
+              <Tag color="blue">
+                {editingCustomer?.TaiKhoan?.Username || "-"}
+              </Tag>
+              {Number(editingCustomer?.TaiKhoan?.TrangThai) === 0 ? (
+                <Tag icon={<StopOutlined />} color="default">
+                  Đã xóa
+                </Tag>
+              ) : (
+                <Tag icon={<CheckCircleOutlined />} color="success">
+                  Đang hoạt động
+                </Tag>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleUpdateCustomer}
+          className={styles.customerForm}
+        >
+          <div className={styles.formGrid}>
+            <Form.Item
+              label="Tên khách hàng"
+              name="TenKhachHang"
+              rules={[
+                { required: true, message: "Vui lòng nhập tên khách hàng!" },
               ]}
-            />
-          </Form.Item>
+            >
+              <Input
+                prefix={<UserOutlined />}
+                maxLength={100}
+                placeholder="Nhập tên khách hàng"
+              />
+            </Form.Item>
+
+            <Form.Item label="Tên đăng nhập">
+              <Input
+                prefix={<UserOutlined />}
+                value={editingCustomer?.TaiKhoan?.Username || ""}
+                disabled
+              />
+            </Form.Item>
+
+            <Form.Item
+              label="Email"
+              name="Email"
+              rules={[
+                { required: true, message: "Vui lòng nhập email!" },
+                { type: "email", message: "Email không hợp lệ!" },
+              ]}
+            >
+              <Input
+                prefix={<MailOutlined />}
+                placeholder="example@gmail.com"
+              />
+            </Form.Item>
+
+            <Form.Item
+              label="Số điện thoại"
+              name="SDT"
+              rules={[
+                {
+                  pattern: /^0\d{9}$/,
+                  message: "Số điện thoại phải gồm 10 số và bắt đầu bằng 0!",
+                },
+              ]}
+            >
+              <Input
+                prefix={<PhoneOutlined />}
+                maxLength={10}
+                placeholder="Ví dụ: 0987654321"
+              />
+            </Form.Item>
+
+            <Form.Item label="Địa chỉ" name="DiaChi" className={styles.fullRow}>
+              <Input
+                prefix={<HomeOutlined />}
+                maxLength={255}
+                placeholder="Nhập địa chỉ khách hàng"
+              />
+            </Form.Item>
+
+            <Form.Item
+              label="Avatar URL"
+              name="Avatar"
+              className={styles.fullRow}
+            >
+              <Input
+                prefix={<LinkOutlined />}
+                placeholder="Dán liên kết ảnh đại diện"
+              />
+            </Form.Item>
+
+            <Form.Item
+              label="Trạng thái tài khoản"
+              name="TrangThai"
+              className={styles.fullRow}
+            >
+              <Select
+                options={[
+                  {
+                    value: 1,
+                    label: (
+                      <Space>
+                        <CheckCircleOutlined />
+                        Đang hoạt động
+                      </Space>
+                    ),
+                  },
+                  {
+                    value: 0,
+                    label: (
+                      <Space>
+                        <StopOutlined />
+                        Đã xóa
+                      </Space>
+                    ),
+                  },
+                ]}
+              />
+            </Form.Item>
+          </div>
         </Form>
       </Modal>
     </div>
