@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Form, Input, Button, Avatar, message, Upload, Divider } from 'antd';
-import { UserOutlined, ArrowLeftOutlined, UploadOutlined, ProfileOutlined, ShoppingOutlined, LockOutlined, WalletOutlined, SafetyCertificateOutlined, SwapOutlined } from '@ant-design/icons';
+import { Layout, Form, Input, Button, Avatar, message, Upload, Divider, Modal } from 'antd';
+import { UserOutlined, ArrowLeftOutlined, UploadOutlined, ProfileOutlined, ShoppingOutlined, LockOutlined, WalletOutlined, SafetyCertificateOutlined, SwapOutlined, MailOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
@@ -19,7 +19,11 @@ const { Header, Content, Sider } = Layout;
 function Profile() {
   const navigate = useNavigate();
   const [form] = Form.useForm();
+  const [emailForm] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [emailModalOpen, setEmailModalOpen] = useState(false);
+  const [emailOtpSent, setEmailOtpSent] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState('');
   
   const [activeTab, setActiveTab] = useState('profile');
@@ -115,6 +119,71 @@ function Profile() {
       message.error(errorMsg);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const openChangeEmailModal = () => {
+    emailForm.setFieldsValue({
+      Email: '',
+      OTP: '',
+    });
+    setEmailOtpSent(false);
+    setEmailModalOpen(true);
+  };
+
+  const closeChangeEmailModal = () => {
+    setEmailModalOpen(false);
+    setEmailOtpSent(false);
+    emailForm.resetFields();
+  };
+
+  const handleSendEmailOtp = async () => {
+    try {
+      const values = await emailForm.validateFields(['Email']);
+      setEmailLoading(true);
+      await axios.post(
+        `${API_BASE}/customers/me/email/send-otp`,
+        { email: values.Email },
+        { withCredentials: true },
+      );
+      setEmailOtpSent(true);
+      message.success('OTP đã được gửi tới email mới!');
+    } catch (error) {
+      if (!error.errorFields) {
+        message.error(
+          error.response?.data?.message || 'Không thể gửi OTP đổi email!',
+        );
+      }
+    } finally {
+      setEmailLoading(false);
+    }
+  };
+
+  const handleVerifyChangeEmail = async () => {
+    try {
+      const values = await emailForm.validateFields();
+      setEmailLoading(true);
+      const res = await axios.patch(
+        `${API_BASE}/customers/me/email`,
+        {
+          email: values.Email,
+          otp: values.OTP,
+        },
+        { withCredentials: true },
+      );
+
+      const newEmail = res.data?.result?.Email || values.Email;
+      form.setFieldsValue({ Email: newEmail });
+      message.success('Cập nhật email thành công!');
+      closeChangeEmailModal();
+    } catch (error) {
+      if (!error.errorFields) {
+        message.error(
+          error.response?.data?.message || 'Không thể cập nhật email!',
+        );
+      }
+    } finally {
+      setEmailLoading(false);
     }
   };
 
@@ -230,6 +299,15 @@ function Profile() {
                           <Input className={styles.customInput} disabled /> 
                         </Form.Item>
 
+                        <Form.Item>
+                          <Button
+                            icon={<MailOutlined />}
+                            onClick={openChangeEmailModal}
+                          >
+                            Đổi email
+                          </Button>
+                        </Form.Item>
+
                         <Form.Item 
                           label="Số điện thoại" 
                           name="SDT"
@@ -300,6 +378,46 @@ function Profile() {
           </Layout>
         </div>
       </Content>
+
+      <Modal
+        title="Đổi email tài khoản"
+        open={emailModalOpen}
+        onCancel={closeChangeEmailModal}
+        onOk={handleVerifyChangeEmail}
+        confirmLoading={emailLoading}
+        okText="Xác nhận"
+        cancelText="Hủy"
+        destroyOnHidden
+      >
+        <Form form={emailForm} layout="vertical">
+          <Form.Item
+            label="Email mới"
+            name="Email"
+            rules={[
+              { required: true, message: 'Vui lòng nhập email mới!' },
+              { type: 'email', message: 'Email không hợp lệ!' },
+            ]}
+          >
+            <Input disabled={emailOtpSent} />
+          </Form.Item>
+          <Button
+            icon={<MailOutlined />}
+            onClick={handleSendEmailOtp}
+            loading={emailLoading}
+            disabled={emailOtpSent}
+            style={{ marginBottom: 16 }}
+          >
+            Gửi OTP
+          </Button>
+          <Form.Item
+            label="OTP"
+            name="OTP"
+            rules={[{ required: true, message: 'Vui lòng nhập OTP!' }]}
+          >
+            <Input maxLength={6} placeholder="Nhập mã OTP 6 số" />
+          </Form.Item>
+        </Form>
+      </Modal>
     </Layout>
   );
 }

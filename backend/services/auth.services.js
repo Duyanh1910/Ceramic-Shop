@@ -34,7 +34,7 @@ export const customerRegisterService = async (
       throw new ErrorHandler("Tài khoản này đã tồn tại!", 400);
     }
     if (existingAccount.Email === email) {
-      throw new ErrorHandler("Đã tồn tại Email này!", 400);
+      throw new ErrorHandler("Đã tồn tại email này!", 400);
     }
   }
 
@@ -50,7 +50,7 @@ export const customerRegisterService = async (
       },
       { transaction },
     );
-    const newCustomer = await CustomerModel.create(
+    await CustomerModel.create(
       {
         MaTaiKhoan: newAccount.MaTaiKhoan,
         TenKhachHang: name || newAccount.Username,
@@ -94,16 +94,25 @@ export const loginService = async (identifier, password, rememberMe) => {
     ],
   });
   if (account == null) {
-    throw new ErrorHandler("Tên đăng nhập hoặc mật khẩu không chính xác!", 401);
+    throw new ErrorHandler(
+      "Tên đăng nhập hoặc mật khẩu không chính xác!",
+      401,
+    );
   }
 
   if (!account.Password) {
-    throw new ErrorHandler("Tài khoản được xác thực qua Google/Facebook!", 400);
+    throw new ErrorHandler(
+      "Tài khoản được xác thực qua Google/Facebook!",
+      400,
+    );
   }
   const isMatch = await bcrypt.compare(password, account.Password);
 
   if (!isMatch) {
-    throw new ErrorHandler("Tên đăng nhập hoặc mật khẩu không chính xác!", 401);
+    throw new ErrorHandler(
+      "Tên đăng nhập hoặc mật khẩu không chính xác!",
+      401,
+    );
   }
   const role = account.PhanQuyen.TenQuyen;
   const expiresIn = rememberMe ? REMEMBER_ME_EXPIRES_IN : EXPIRES_IN;
@@ -128,7 +137,8 @@ export const loginService = async (identifier, password, rememberMe) => {
 };
 
 export const getMeService = async (id) => {
-  const user = await AccountModel.findByPk(id, {
+  const user = await AccountModel.findOne({
+    where: { MaTaiKhoan: id, TrangThai: 1 },
     attributes: ["Username", "Email", "Password"],
     include: [
       {
@@ -181,8 +191,9 @@ export const changePasswordService = async (id, oldPassword, newPassword) => {
       await account.save();
       return;
     }
-    if (!oldPassword)
+    if (!oldPassword) {
       throw new ErrorHandler("Vui lòng nhập mật khẩu hiện tại!", 400);
+    }
     const isMatch = await bcrypt.compare(oldPassword, account.Password);
     if (!isMatch) {
       throw new ErrorHandler("Mật khẩu không chính xác!", 401);
@@ -204,7 +215,7 @@ export const OAuthService = async (profile, provider, rememberMe) => {
       ? profile.emails[0].value
       : null;
   if (!email) {
-    throw new ErrorHandler("Không thế lấy email!", 400);
+    throw new ErrorHandler("Không thể lấy email!", 400);
   }
   const avatarUrl =
     profile.photos && profile.photos.length > 0
@@ -232,11 +243,24 @@ export const OAuthService = async (profile, provider, rememberMe) => {
     });
     if (Linked) {
       account = Linked.TaiKhoan;
+      if (!account || account.TrangThai !== 1) {
+        throw new ErrorHandler(
+          "Tài khoản đã bị khóa hoặc không tồn tại!",
+          401,
+        );
+      }
     } else {
       account = await AccountModel.findOne({
         where: { Email: email },
         include: [{ model: RoleModel }],
       });
+
+      if (account && account.TrangThai !== 1) {
+        throw new ErrorHandler(
+          "Tài khoản đã bị khóa hoặc không tồn tại!",
+          401,
+        );
+      }
 
       if (!account) {
         const base = email.split("@")[0];
