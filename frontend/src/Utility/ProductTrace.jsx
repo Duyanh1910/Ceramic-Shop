@@ -93,7 +93,7 @@ export default function ProductTrace({ maSanPham, disabled = false }) {
     setActiveTab("info");
 
     try {
-      const res = await axios.get(`${API_BASE}/products/${maSanPham}/blockchain`);
+      const res = await axios.get(`${API_BASE}/products/${maSanPham}/trace`);
       const result = res.data?.result;
 
       if (result?.tonTai) {
