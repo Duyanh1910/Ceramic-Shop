@@ -146,7 +146,7 @@ export default function ProductTrace({ maSanPham, disabled = false }) {
   const [status, setStatus] = useState("idle");
   const [activeTab, setActiveTab] = useState("info");
 
-  const traceUrl = `${FRONTEND_BASE}/product/${maSanPham}?trace=true`;
+  const traceUrl = `${FRONTEND_BASE}/products/${maSanPham}?trace=true`;
 
   const fetchTrace = async () => {
     if (!maSanPham || disabled) return;
@@ -155,7 +155,7 @@ export default function ProductTrace({ maSanPham, disabled = false }) {
     setActiveTab("info");
 
     try {
-      const res = await axios.get(`${API_BASE}/product/${maSanPham}/trace`);
+      const res = await axios.get(`${API_BASE}/products/${maSanPham}/trace`);
       const result = res.data?.result;
       if (result?.tonTai) {
         setData(result);
