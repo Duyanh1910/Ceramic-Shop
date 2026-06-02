@@ -1,13 +1,30 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import axios from "axios";
+
+import {
+  Alert,
+  Spin,
+  Card,
+  Row,
+  Col,
+  Image,
+  Tag,
+  Statistic,
+  Descriptions,
+  Timeline,
+  Table,
+  Typography,
+} from "antd";
+
 import {
   EnvironmentOutlined,
   FieldTimeOutlined,
   BlockOutlined,
-  CodeSandboxOutlined,
+  CheckCircleOutlined,
 } from "@ant-design/icons";
-import { Alert, Spin } from "antd";
-import axios from "axios";
+
+const { Title, Paragraph, Text } = Typography;
 
 const API_BASE =
   "https://ceramic-shop-u8ak.onrender.com/api/v1";
@@ -50,22 +67,30 @@ function SupplierMap({ diaChi }) {
 export default function TracePage() {
   const { maSanPham } = useParams();
 
-  const [data, setData] = useState(null);
+  const [traceData, setTraceData] = useState(null);
+  const [productData, setProductData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadTrace();
-  }, []);
+    loadData();
+  }, [maSanPham]);
 
-  const loadTrace = async () => {
+  const loadData = async () => {
     try {
-      const res = await axios.get(
-        `${API_BASE}/products/${maSanPham}/trace`
-      );
+      const [traceRes, productRes] =
+        await Promise.all([
+          axios.get(
+            `${API_BASE}/products/${maSanPham}/trace`
+          ),
+          axios.get(
+            `${API_BASE}/products/${maSanPham}`
+          ),
+        ]);
 
-      setData(res.data.result);
+      setTraceData(traceRes.data.result);
+      setProductData(productRes.data.result);
     } catch (err) {
-      console.log(err);
+      console.error(err);
     }
 
     setLoading(false);
@@ -75,7 +100,7 @@ export default function TracePage() {
     return (
       <div
         style={{
-          padding: 80,
+          padding: 100,
           textAlign: "center",
         }}
       >
@@ -84,163 +109,306 @@ export default function TracePage() {
     );
   }
 
-  if (!data?.tonTai) {
+  if (!productData) {
     return (
       <Alert
-        type="warning"
-        message="Không tìm thấy dữ liệu Blockchain"
+        type="error"
+        message="Không tìm thấy sản phẩm"
       />
     );
   }
+
+  const variants =
+    productData.BienTheSanPhams || [];
+
+  const minPrice =
+    variants.length > 0
+      ? Math.min(
+          ...variants.map((v) =>
+            Number(v.Gia)
+          )
+        )
+      : 0;
+
+  const totalStock =
+    variants.reduce(
+      (sum, v) =>
+        sum + Number(v.SoLuong || 0),
+      0
+    );
+
+  const columns = [
+    {
+      title: "Biến thể",
+      dataIndex: "TenBienThe",
+    },
+    {
+      title: "Giá",
+      render: (_, record) =>
+        Number(record.Gia).toLocaleString(
+          "vi-VN"
+        ) + " đ",
+    },
+    {
+      title: "Tồn kho",
+      dataIndex: "SoLuong",
+    },
+  ];
 
   return (
     <div
       style={{
         minHeight: "100vh",
-        background: "#08111d",
+        background: "#f5f7fb",
         padding: 24,
       }}
     >
       <div
         style={{
-          maxWidth: 1300,
-          margin: "auto",
+          maxWidth: 1400,
+          margin: "0 auto",
         }}
       >
-        <h1
+        <Card
+          bordered={false}
           style={{
-            color: "white",
-            marginBottom: 20,
+            borderRadius: 20,
+            marginBottom: 24,
           }}
         >
-          Truy xuất nguồn gốc
-        </h1>
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns:
-              "420px 1fr",
-            gap: 20,
-          }}
-        >
-          <div
-            style={{
-              background: "#0d1b2a",
-              borderRadius: 16,
-              padding: 20,
-              border: "1px solid #173354",
-            }}
-          >
-            <div
-              style={{
-                height: 180,
-                borderRadius: 12,
-                background:
-                  "linear-gradient(135deg,#173354,#1b437c)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                marginBottom: 20,
-              }}
-            >
-              <CodeSandboxOutlined
+          <Row gutter={[24, 24]}>
+            <Col xs={24} md={10}>
+              <Image
+                src={productData.Thumbnail}
+                width="100%"
                 style={{
-                  fontSize: 60,
-                  color: "#f0d58d",
+                  borderRadius: 16,
                 }}
               />
-            </div>
+            </Col>
 
-            <h2
-              style={{
-                color: "white",
-              }}
-            >
-              {data.tenSanPham}
-            </h2>
-
-            <div
-              style={{
-                color: "#94a3b8",
-                marginBottom: 20,
-              }}
-            >
-              {data.tenNhaCungCap}
-            </div>
-
-            <div
-              style={{
-                display: "grid",
-                gap: 12,
-              }}
-            >
-              <div
-                style={{
-                  background: "#173354",
-                  padding: 12,
-                  borderRadius: 10,
-                  color: "white",
-                }}
-              >
-                <FieldTimeOutlined /> Ngày sản xuất:
-                {" "}
-                {data.ngaySanXuat}
-              </div>
+            <Col xs={24} md={14}>
+              <Title level={2}>
+                {productData.TenSanPham}
+              </Title>
 
               <div
                 style={{
-                  background: "#173354",
-                  padding: 12,
-                  borderRadius: 10,
-                  color: "#f0d58d",
+                  marginBottom: 16,
                 }}
               >
-                <BlockOutlined /> Blockchain:
-                {" "}
-                {data.thoiGianTao}
+                <Tag color="green">
+                  <CheckCircleOutlined />
+                  Blockchain Verified
+                </Tag>
+
+                <Tag color="blue">
+                  {productData.ThuongHieu}
+                </Tag>
+
+                <Tag color="gold">
+                  {
+                    productData
+                      ?.DanhMucSanPham
+                      ?.TenDanhMuc
+                  }
+                </Tag>
               </div>
 
-              <div
-                style={{
-                  background: "#173354",
-                  padding: 12,
-                  borderRadius: 10,
-                  color: "white",
-                }}
-              >
-                Mã sản phẩm:
-                {" "}
-                {maSanPham}
-              </div>
-            </div>
-          </div>
+              <Paragraph>
+                {productData.MoTa}
+              </Paragraph>
+            </Col>
+          </Row>
+        </Card>
 
-          <div
-            style={{
-              background: "#0d1b2a",
-              borderRadius: 16,
-              padding: 20,
-              border: "1px solid #173354",
-            }}
-          >
-            <div
-              style={{
-                color: "#f0d58d",
-                marginBottom: 16,
-                fontWeight: 700,
-              }}
-            >
-              <EnvironmentOutlined />
-              {" "}
-              Vị trí nhà cung cấp
-            </div>
+        <Row gutter={[16, 16]}>
+          <Col xs={12} md={6}>
+            <Card>
+              <Statistic
+                title="Giá thấp nhất"
+                value={minPrice}
+                precision={0}
+              />
+            </Card>
+          </Col>
 
-            <SupplierMap
-              diaChi={data.diaChiNhaCungCap}
+          <Col xs={12} md={6}>
+            <Card>
+              <Statistic
+                title="Tồn kho"
+                value={totalStock}
+              />
+            </Card>
+          </Col>
+
+          <Col xs={12} md={6}>
+            <Card>
+              <Statistic
+                title="Lượt xem"
+                value={
+                  productData.LuotXem
+                }
+              />
+            </Card>
+          </Col>
+
+          <Col xs={12} md={6}>
+            <Card>
+              <Statistic
+                title="Biến thể"
+                value={
+                  variants.length
+                }
+              />
+            </Card>
+          </Col>
+        </Row>
+
+        <Row
+          gutter={[24, 24]}
+          style={{
+            marginTop: 24,
+          }}
+        >
+          <Col xs={24} lg={12}>
+            <Card title="Thông tin Blockchain">
+              <Descriptions column={1}>
+                <Descriptions.Item label="Mã sản phẩm">
+                  {traceData?.maSanPham}
+                </Descriptions.Item>
+
+                <Descriptions.Item label="Chất liệu">
+                  {traceData?.chatLieu}
+                </Descriptions.Item>
+
+                <Descriptions.Item label="Ngày sản xuất">
+                  {traceData?.ngaySanXuat}
+                </Descriptions.Item>
+
+                <Descriptions.Item label="Wallet tạo">
+                  <Text copyable>
+                    {traceData?.nguoiTao}
+                  </Text>
+                </Descriptions.Item>
+
+                <Descriptions.Item label="Thời gian ghi Blockchain">
+                  {traceData?.thoiGianTao}
+                </Descriptions.Item>
+
+                <Descriptions.Item label="Tx Hash">
+                  {productData?.BlockchainTxHash
+                    ? (
+                      <Text copyable>
+                        {
+                          productData.BlockchainTxHash
+                        }
+                      </Text>
+                    )
+                    : "Chưa có"}
+                </Descriptions.Item>
+              </Descriptions>
+            </Card>
+          </Col>
+
+          <Col xs={24} lg={12}>
+            <Card title="Lịch sử truy xuất">
+              <Timeline
+                items={[
+                  {
+                    color: "green",
+                    children:
+                      "Sản phẩm được sản xuất: " +
+                      traceData?.ngaySanXuat,
+                  },
+                  {
+                    color: "blue",
+                    children:
+                      "Nhà cung cấp: " +
+                      (
+                        traceData?.tenNhaCungCap ||
+                        "Chưa cập nhật"
+                      ),
+                  },
+                  {
+                    color: "gold",
+                    children:
+                      "Đăng ký Blockchain",
+                  },
+                  {
+                    color: "purple",
+                    children:
+                      traceData?.thoiGianTao,
+                  },
+                ]}
+              />
+            </Card>
+          </Col>
+        </Row>
+
+        <Card
+          title="Danh sách biến thể"
+          style={{
+            marginTop: 24,
+          }}
+        >
+          <Table
+            rowKey="MaBienThe"
+            columns={columns}
+            dataSource={variants}
+            pagination={false}
+          />
+        </Card>
+
+        <Card
+          title="Nhà cung cấp"
+          style={{
+            marginTop: 24,
+          }}
+        >
+          {productData.NhaCungCap ? (
+            <>
+              <Descriptions column={1}>
+                <Descriptions.Item label="Tên">
+                  {
+                    productData
+                      .NhaCungCap
+                      .TenNhaCC
+                  }
+                </Descriptions.Item>
+
+                <Descriptions.Item label="SĐT">
+                  {
+                    productData
+                      .NhaCungCap
+                      .SDT
+                  }
+                </Descriptions.Item>
+
+                <Descriptions.Item label="Địa chỉ">
+                  {
+                    productData
+                      .NhaCungCap
+                      .Diachi
+                  }
+                </Descriptions.Item>
+              </Descriptions>
+
+              <SupplierMap
+                diaChi={
+                  productData
+                    .NhaCungCap
+                    .Diachi
+                }
+              />
+            </>
+          ) : (
+            <Alert
+              type="info"
+              message="Chưa có thông tin nhà cung cấp"
             />
-          </div>
-        </div>
+          )}
+        </Card>
       </div>
     </div>
   );
