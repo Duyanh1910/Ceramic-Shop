@@ -195,7 +195,7 @@ router.post("/webhook", async (req, res) => {
 
         let cauTraLoi = `Dạ, mẫu ${sp.TenBienThe} hiện đang có giá là ${giaFormat}. `;
         if (sp.SoLuong > 0) {
-          cauTraLoi += `Bên em đang sẵn hàng (${sp.SoLuong} bộ) ạ.`;
+          cauTraLoi += `Bên em đang sẵn hàng (${sp.SoLuong} sản phẩm/phân loại) ạ. Bạn có thể xem chi tiết và đặt mua ngay tại link dưới đây nhé!`;
         } else {
           cauTraLoi += `Tiếc quá, mẫu này đang tạm hết hàng ạ.`;
         }
@@ -1030,8 +1030,8 @@ router.post("/webhook", async (req, res) => {
       LEFT JOIN LoaiKhuyenMai lkm ON km.MaLoaiKM = lkm.MaLoaiKM
       LEFT JOIN DanhMucSanPham dm ON km.MaDanhMuc = dm.MaDanhMuc
       WHERE km.TrangThai = 1
-        AND km.NgayBatDau <= NOW()
-        AND km.NgayKetThuc >= NOW()
+        AND (km.NgayBatDau IS NULL OR km.NgayBatDau <= NOW())
+        AND (km.NgayKetThuc IS NULL OR km.NgayKetThuc >= NOW())
         AND km.SoLuong > 0
     `;
 
@@ -1043,7 +1043,10 @@ router.post("/webhook", async (req, res) => {
     }
 
     sqlQuery += `
-      ORDER BY km.NgayKetThuc ASC, km.MaKhuyenMai ASC
+      ORDER BY
+        km.NgayKetThuc IS NULL ASC,
+        km.NgayKetThuc ASC,
+        km.MaKhuyenMai ASC
       LIMIT 10
     `;
 
@@ -1133,7 +1136,9 @@ router.post("/webhook", async (req, res) => {
       ];
 
       rows.forEach((km, index) => {
-        const ngayKT = new Date(km.NgayKetThuc).toLocaleDateString("vi-VN");
+        const ngayKT = km.NgayKetThuc
+          ? new Date(km.NgayKetThuc).toLocaleDateString("vi-VN")
+          : "Không giới hạn";
 
         const maCodeText = km.MaCode ? ` | Mã: ${km.MaCode}` : "";
         const minimumOrderText = getMinimumOrderText(km.GiaTriToiThieu);
@@ -1534,32 +1539,36 @@ router.post("/webhook", async (req, res) => {
 
     try {
       let sqlQuery = `
-          SELECT
-            sp.MaSanPham,
-            bt.MaBienThe,
-            bt.TenBienThe,
-            bt.SoLuong,
-            sp.TenSanPham
-          FROM BienTheSanPham bt
-          JOIN SanPham sp ON bt.MaSanPham = sp.MaSanPham
-          WHERE sp.TenSanPham LIKE ?
-            AND sp.TrangThai = 1
-            AND sp.deleted_at IS NULL
-            AND bt.TrangThai = 1
-        `;
+        SELECT
+          sp.MaSanPham,
+          bt.MaBienThe,
+          bt.TenBienThe,
+          bt.SoLuong,
+          sp.TenSanPham
+        FROM BienTheSanPham bt
+        JOIN SanPham sp ON bt.MaSanPham = sp.MaSanPham
+        WHERE sp.TenSanPham LIKE ?
+          AND sp.TrangThai = 1
+          AND sp.deleted_at IS NULL
+          AND bt.TrangThai = 1
+      `;
 
-        const searchTenSP = `%${tenSanPham.replace(/\s+/g, "%")}%`;
-        let queryParams = [searchTenSP];
+      const searchTenSP = `%${tenSanPham.replace(/\s+/g, "%")}%`;
+      let queryParams = [searchTenSP];
 
-        const attributeFilter = buildVariantAttributeFilter({
-          thuocTinhList,
-          menhList,
-        });
+      const attributeFilter = buildVariantAttributeFilter({
+        thuocTinhList,
+        menhList,
+      });
 
-        sqlQuery += attributeFilter.sql;
-        queryParams.push(...attributeFilter.params);
+      sqlQuery += attributeFilter.sql;
+      queryParams.push(...attributeFilter.params);
 
-        const [rows] = await pool.execute(sqlQuery, queryParams);
+      sqlQuery += `
+        ORDER BY bt.SoLuong > 0 DESC, bt.SoLuong DESC, bt.MaBienThe ASC
+      `;
+
+      const [rows] = await pool.execute(sqlQuery, queryParams);
 
       if (rows.length === 1) {
         const sp = rows[0];
@@ -1607,7 +1616,7 @@ router.post("/webhook", async (req, res) => {
 
         rows.forEach((r) => {
           let trangThai =
-            r.SoLuong > 0 ? `Còn ${r.SoLuong} bộ` : "Tạm hết hàng";
+            r.SoLuong > 0 ? `Còn ${r.SoLuong} sản phẩm` : "Tạm hết hàng";
           danhSachTonKho.push(`🔸 ${r.TenBienThe}: ${trangThai}`);
         });
 
@@ -2422,7 +2431,48 @@ router.post("/webhook", async (req, res) => {
           "Dạ hệ thống đang tải dữ liệu, bạn chờ chút xíu nhé.",
       });
     }
-  }
+  } else if (intentName === "Gap_Nhan_Vien_Tu_Van") {
+  const textResponse =
+    "Dạ được ạ, bạn có thể liên hệ trực tiếp nhân viên CeramicShop qua các kênh dưới đây để được hỗ trợ nhanh nhất nhé.";
+
+  return res.json({
+    fulfillmentMessages: [
+      { text: { text: [textResponse] } },
+      {
+        payload: {
+          richContent: [
+            [
+              {
+                type: "button",
+                icon: { type: "phone", color: "#34A853" },
+                text: "Gọi Hotline",
+                link: phoneLink,
+              },
+              {
+                type: "button",
+                icon: { type: "chat", color: "#0068FF" },
+                text: "Chat Zalo",
+                link: zaloLink,
+              },
+              {
+                type: "button",
+                icon: { type: "facebook", color: "#0866FF" },
+                text: "Nhắn Fanpage",
+                link: fbLink,
+              },
+              {
+                type: "button",
+                icon: { type: "mail", color: "#EA4335" },
+                text: "Gửi Email",
+                link: emailLink,
+              },
+            ],
+          ],
+        },
+      },
+    ],
+  });
+}
 
   return res.json({
     fulfillmentText: "Dạ hệ thống đang kiểm tra thông tin này...",
