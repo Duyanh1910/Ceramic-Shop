@@ -313,9 +313,16 @@ export default function AdminOrder() {
         </Button>
       </div>
 
-      <Row gutter={[20, 20]} className={styles.statsRow}>
+      <Row gutter={[20, 20]} justify="center" align="middle" className={styles.statsRow}>
         {statCards.map((card, i) => (
-          <Col xs={24} sm={12} xl={6} key={i}>
+          <Col
+            key={i}
+            xs={24}
+            sm={12}
+            md={8}
+            lg={7}
+            xl={6}
+          >
             <div className={styles.statCard}>
               <div className={styles.statIcon} style={{ background: card.bg, color: card.color }}>
                 {card.icon}
