@@ -1797,8 +1797,6 @@ router.post("/webhook", async (req, res) => {
 
     const capacityAttributes = extractCapacityAttributes(queryText);
 
-    const capacityAttributes = extractCapacityAttributes(queryText);
-
     const thuocTinhList = mergeUniqueTextList(
       parameters.Thuoc_Tinh,
       capacityAttributes,
