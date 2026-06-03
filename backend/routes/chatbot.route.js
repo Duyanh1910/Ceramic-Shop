@@ -2,6 +2,7 @@ import express from "express";
 import { pool, CHATBOT_LINKS } from "../config/chatbot.config.js";
 import {
   toArray,
+  mergeUniqueTextList,
   buildVariantAttributeFilter,
   buildCategorySearchCondition,
   extractCapacityAttributes,
@@ -135,10 +136,10 @@ router.post("/webhook", async (req, res) => {
       });
     }
 
-    const thuocTinhList = [
-      ...toArray(parameters.Thuoc_Tinh),
-      ...extractCapacityAttributes(req.body.queryResult.queryText),
-    ];
+    const thuocTinhList = mergeUniqueTextList(
+      parameters.Thuoc_Tinh,
+      extractCapacityAttributes(req.body.queryResult.queryText),
+    );
     const menhList = toArray(parameters.Menh);
 
     const tenSanPham = rawTenSP.trim();
@@ -1361,10 +1362,10 @@ router.post("/webhook", async (req, res) => {
       let nganSachRaw = parameters.ngan_sach;
       if (Array.isArray(nganSachRaw)) nganSachRaw = nganSachRaw[0];
 
-      const thuocTinhList = [
-        ...toArray(parameters.Thuoc_Tinh),
-        ...extractCapacityAttributes(queryText),
-      ];
+      const thuocTinhList = mergeUniqueTextList(
+        parameters.Thuoc_Tinh,
+        extractCapacityAttributes(queryText),
+      );
 
       const nganSach = extractBudgetAmount({
         nganSachRaw,
@@ -1529,10 +1530,10 @@ router.post("/webhook", async (req, res) => {
       });
     }
 
-    const thuocTinhList = [
-      ...toArray(parameters.Thuoc_Tinh),
-      ...extractCapacityAttributes(req.body.queryResult.queryText),
-    ];
+    const thuocTinhList = mergeUniqueTextList(
+      parameters.Thuoc_Tinh,
+      extractCapacityAttributes(req.body.queryResult.queryText),
+    );
     const menhList = toArray(parameters.Menh);
 
     const tenSanPham = rawTenSP.trim();
@@ -1796,10 +1797,12 @@ router.post("/webhook", async (req, res) => {
 
     const capacityAttributes = extractCapacityAttributes(queryText);
 
-    const thuocTinhList = [
-      ...toArray(parameters.Thuoc_Tinh),
-      ...capacityAttributes,
-    ];
+    const capacityAttributes = extractCapacityAttributes(queryText);
+
+    const thuocTinhList = mergeUniqueTextList(
+      parameters.Thuoc_Tinh,
+      capacityAttributes,
+    );
 
     const menhList = toArray(parameters.Menh);
 

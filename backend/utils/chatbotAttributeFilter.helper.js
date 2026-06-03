@@ -2,7 +2,14 @@ export const toArray = (value) => {
   if (!value) return [];
   return Array.isArray(value) ? value : [value];
 };
-
+export const mergeUniqueTextList = (...sources) => [
+  ...new Set(
+    sources
+      .flatMap((source) => toArray(source))
+      .map((value) => String(value || "").trim())
+      .filter(Boolean),
+  ),
+];
 const normalizeTextParam = (value) => {
   if (!value) return "";
 
@@ -25,12 +32,14 @@ export const buildVariantAttributeFilter = ({
   let sql = "";
   const params = [];
 
-  thuocTinhList
-    .map(normalizeTextParam)
-    .filter(Boolean)
-    .forEach((thuocTinh) => {
-      sql += `
-        AND EXISTS (
+  mergeUniqueTextList(thuocTinhList.map(normalizeTextParam))
+  .filter(Boolean)
+  .forEach((thuocTinh) => {
+    const likePattern = toLikePattern(thuocTinh);
+
+    sql += `
+      AND (
+        EXISTS (
           SELECT 1
           FROM ChiTietBienThe ctt
           JOIN GiaTriThuocTinh gtt ON gtt.MaGiaTri = ctt.MaGiaTri
@@ -40,10 +49,12 @@ export const buildVariantAttributeFilter = ({
               OR gtt.GiaTri LIKE ?
             )
         )
-      `;
+        OR bt.TenBienThe LIKE ?
+      )
+    `;
 
-      params.push(thuocTinh, toLikePattern(thuocTinh));
-    });
+    params.push(thuocTinh, likePattern, likePattern);
+  });
 
   menhList
     .map(normalizeTextParam)
