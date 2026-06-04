@@ -4,27 +4,18 @@ import {
   EnvironmentOutlined,
   FieldTimeOutlined,
   BlockOutlined,
-  CodeSandboxOutlined,
   CheckCircleOutlined,
 } from "@ant-design/icons";
 import { Alert, Spin } from "antd";
 import axios from "axios";
+import styles from "./TracePage.module.css";
 
-const API_BASE =
-  "https://ceramic-shop-u8ak.onrender.com/api/v1";
+const API_BASE = "https://ceramic-shop-u8ak.onrender.com/api/v1";
 
 function SupplierMap({ diaChi }) {
   if (!diaChi) {
     return (
-      <div
-        style={{
-          height: 350,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: "#94a3b8",
-        }}
-      >
+      <div className={styles.mapFallback}>
         Không có dữ liệu vị trí
       </div>
     );
@@ -36,14 +27,9 @@ function SupplierMap({ diaChi }) {
 
   return (
     <iframe
+      className={styles.mapFrame}
       title="map"
       src={src}
-      width="100%"
-      height="350"
-      style={{
-        border: 0,
-        borderRadius: 16,
-      }}
     />
   );
 }
@@ -62,12 +48,8 @@ export default function TracePage() {
   const loadTrace = async () => {
     try {
       const [traceRes, productRes] = await Promise.all([
-        axios.get(
-          `${API_BASE}/products/${maSanPham}/trace`
-        ),
-        axios.get(
-          `${API_BASE}/products/${maSanPham}`
-        ),
+        axios.get(`${API_BASE}/products/${maSanPham}/trace`),
+        axios.get(`${API_BASE}/products/${maSanPham}`),
       ]);
 
       setData(traceRes.data.result);
@@ -81,12 +63,7 @@ export default function TracePage() {
 
   if (loading) {
     return (
-      <div
-        style={{
-          padding: 100,
-          textAlign: "center",
-        }}
-      >
+      <div className={styles.loadingState}>
         <Spin size="large" />
       </div>
     );
@@ -95,307 +72,164 @@ export default function TracePage() {
   if (!data?.tonTai) {
     return (
       <Alert
+        className={styles.traceAlert}
         type="warning"
         message="Không tìm thấy dữ liệu Blockchain"
       />
     );
   }
+
   const productImage =
-  product?.BienTheSanPhams?.[0]
-    ?.HinhAnhBienThes?.[0]?.DuongDan ||
-  product?.Thumbnail;
+    product?.BienTheSanPhams?.[0]?.HinhAnhBienThes?.[0]?.DuongDan ||
+    product?.Thumbnail;
+  const productionFacility = data.tenNhaCungCap || "Chưa cập nhật";
+  const productionAddress = data.diaChiNhaCungCap || "Chưa cập nhật";
+  const productionDate = data.ngaySanXuat || "Chưa cập nhật";
+  const material = data.chatLieu || "Gốm sứ";
+
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background:
-          "linear-gradient(135deg,#071018 0%,#0f1f35 50%,#132743 100%)",
-        padding: 24,
-      }}
-    >
-      <div
-        style={{
-          maxWidth: 1400,
-          margin: "0 auto",
-        }}
-      >
-        <h1
-          style={{
-            color: "#fff",
-            fontSize: 36,
-            marginBottom: 10,
-            fontWeight: 700,
-          }}
-        >
+    <div className={styles.page}>
+      <div className={styles.shell}>
+        <h1 className={styles.title}>
           Truy xuất nguồn gốc sản phẩm
         </h1>
 
-        <div
-          style={{
-            background: "rgba(34,197,94,.15)",
-            border: "1px solid rgba(34,197,94,.3)",
-            color: "#4ade80",
-            padding: "12px 20px",
-            borderRadius: 12,
-            marginBottom: 24,
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 10,
-            fontWeight: 600,
-          }}
-        >
+        <div className={styles.verifiedBadge}>
           <CheckCircleOutlined />
           Đã xác thực trên Blockchain
         </div>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns:
-              "420px 1fr",
-            gap: 24,
-          }}
-        >
-          {/* LEFT */}
-          <div
-            style={{
-              background: "rgba(255,255,255,.05)",
-              backdropFilter: "blur(15px)",
-              borderRadius: 20,
-              padding: 24,
-              border:
-                "1px solid rgba(255,255,255,.08)",
-              boxShadow:
-                "0 10px 40px rgba(0,0,0,.25)",
-            }}
-          >
+        <div className={styles.mainGrid}>
+          <div className={styles.productCard}>
             <img
+              className={styles.productImage}
               src={productImage}
               alt={data.tenSanPham}
-              style={{
-                width: "100%",
-                height: 280,
-                objectFit: "cover",
-                borderRadius: 16,
-                marginBottom: 20,
-                border: "2px solid rgba(255,255,255,.08)",
-                boxShadow: "0 8px 30px rgba(0,0,0,.35)",
-              }}
             />
-            <h2
-              style={{
-                color: "#fff",
-                textAlign: "center",
-                marginBottom: 8,
-              }}
-            >
+
+            <h2 className={styles.productName}>
               {data.tenSanPham}
             </h2>
 
-            <div
-              style={{
-                textAlign: "center",
-                color: "#94a3b8",
-                marginBottom: 24,
-              }}
-            >
+            <div className={styles.supplierName}>
               {data.tenNhaCungCap}
             </div>
 
-            <div
-              style={{
-                display: "grid",
-                gap: 12,
-              }}
-            >
-              <div
-                style={{
-                  background: "#173354",
-                  padding: 14,
-                  borderRadius: 12,
-                  color: "#fff",
-                }}
-              >
-                <FieldTimeOutlined />
-                {" "}
-                Ngày sản xuất:
+            <div className={styles.infoGrid}>
+              <div className={styles.infoItem}>
+                <FieldTimeOutlined /> Ngày sản xuất:
                 <br />
-                <strong>
-                  {data.ngaySanXuat}
-                </strong>
+                <strong>{data.ngaySanXuat}</strong>
               </div>
 
-              <div
-                style={{
-                  background: "#173354",
-                  padding: 14,
-                  borderRadius: 12,
-                  color: "#f0d58d",
-                }}
-              >
-                <BlockOutlined />
-                {" "}
-                Blockchain:
+              <div className={`${styles.infoItem} ${styles.infoItemAccent}`}>
+                <BlockOutlined /> Blockchain:
                 <br />
-                <strong>
-                  {data.thoiGianTao}
-                </strong>
+                <strong>{data.thoiGianTao}</strong>
               </div>
 
-              <div
-                style={{
-                  background: "#173354",
-                  padding: 14,
-                  borderRadius: 12,
-                  color: "#fff",
-                }}
-              >
+              <div className={styles.infoItem}>
                 Mã sản phẩm:
                 <br />
-                <strong>
-                  {data.maSanPham}
-                </strong>
+                <strong>{data.maSanPham}</strong>
               </div>
 
-              <div
-                style={{
-                  background: "#173354",
-                  padding: 14,
-                  borderRadius: 12,
-                  color: "#fff",
-                  wordBreak: "break-all",
-                }}
-              >
+              <div className={`${styles.infoItem} ${styles.walletItem}`}>
                 Wallet tạo:
                 <br />
-                <small>
-                  {data.nguoiTao}
-                </small>
+                <small>{data.nguoiTao}</small>
               </div>
             </div>
           </div>
 
-          {/* RIGHT */}
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 24,
-            }}
-          >
-            <div
-              style={{
-                background: "rgba(255,255,255,.05)",
-                backdropFilter: "blur(15px)",
-                borderRadius: 20,
-                padding: 24,
-                border:
-                  "1px solid rgba(255,255,255,.08)",
-              }}
-            >
-              <h2
-                style={{
-                  color: "#f0d58d",
-                  marginBottom: 20,
-                }}
-              >
+          <div className={styles.rightColumn}>
+            <div className={styles.sectionCard}>
+              <h2 className={styles.sectionTitle}>
                 Hành trình sản phẩm
               </h2>
 
-              <div
-                style={{
-                  borderLeft:
-                    "3px solid #f0d58d",
-                  paddingLeft: 24,
-                  display: "grid",
-                  gap: 24,
-                }}
-              >
+              <div className={styles.timeline}>
                 <div>
-                  <div
-                    style={{
-                      color: "#fff",
-                      fontWeight: 600,
-                    }}
-                  >
+                  <div className={styles.timelineLabel}>
                     Sản xuất
                   </div>
 
-                  <div
-                    style={{
-                      color: "#94a3b8",
-                    }}
-                  >
-                    {data.ngaySanXuat}
+                  <div className={styles.productionDetails}>
+                    <div className={styles.productionRow}>
+                      <span className={styles.productionLabel}>
+                        Sản xuất tại
+                      </span>
+                      <strong className={styles.productionValue}>
+                        {productionFacility}
+                      </strong>
+                    </div>
+
+                    <div className={styles.productionRow}>
+                      <span className={styles.productionLabel}>
+                        Xưởng / cơ sở
+                      </span>
+                      <strong className={styles.productionValue}>
+                        {productionFacility}
+                      </strong>
+                    </div>
+
+                    <div className={styles.productionRow}>
+                      <span className={styles.productionLabel}>
+                        Địa chỉ
+                      </span>
+                      <strong className={styles.productionValue}>
+                        {productionAddress}
+                      </strong>
+                    </div>
+
+                    <div className={styles.productionRow}>
+                      <span className={styles.productionLabel}>
+                        Ngày sản xuất
+                      </span>
+                      <strong className={styles.productionValue}>
+                        {productionDate}
+                      </strong>
+                    </div>
+
+                    <div className={styles.productionRow}>
+                      <span className={styles.productionLabel}>
+                        Chất liệu
+                      </span>
+                      <strong className={styles.productionValue}>
+                        {material}
+                      </strong>
+                    </div>
                   </div>
                 </div>
 
                 <div>
-                  <div
-                    style={{
-                      color: "#fff",
-                      fontWeight: 600,
-                    }}
-                  >
+                  <div className={styles.timelineLabel}>
                     Nhà cung cấp
                   </div>
 
-                  <div
-                    style={{
-                      color: "#94a3b8",
-                    }}
-                  >
+                  <div className={styles.timelineValue}>
                     {data.tenNhaCungCap}
                   </div>
                 </div>
 
                 <div>
-                  <div
-                    style={{
-                      color: "#fff",
-                      fontWeight: 600,
-                    }}
-                  >
+                  <div className={styles.timelineLabel}>
                     Đăng ký Blockchain
                   </div>
 
-                  <div
-                    style={{
-                      color: "#94a3b8",
-                    }}
-                  >
+                  <div className={styles.timelineValue}>
                     {data.thoiGianTao}
                   </div>
                 </div>
               </div>
             </div>
 
-            <div
-              style={{
-                background: "rgba(255,255,255,.05)",
-                backdropFilter: "blur(15px)",
-                borderRadius: 20,
-                padding: 24,
-                border:
-                  "1px solid rgba(255,255,255,.08)",
-              }}
-            >
-              <div
-                style={{
-                  color: "#f0d58d",
-                  fontWeight: 700,
-                  marginBottom: 16,
-                  fontSize: 18,
-                }}
-              >
-                <EnvironmentOutlined />
-                {" "}
-                Vị trí nhà cung cấp
+            <div className={styles.sectionCard}>
+              <div className={styles.locationTitle}>
+                <EnvironmentOutlined /> Vị trí nhà cung cấp
               </div>
 
-              <SupplierMap
-                diaChi={data.diaChiNhaCungCap}
-              />
+              <SupplierMap diaChi={data.diaChiNhaCungCap} />
             </div>
           </div>
         </div>

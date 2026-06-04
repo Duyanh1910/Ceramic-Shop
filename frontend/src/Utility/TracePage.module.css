@@ -1,0 +1,347 @@
+.page {
+  min-height: 100vh;
+  overflow-x: hidden;
+  padding: 24px;
+  background: linear-gradient(135deg, #071018 0%, #0f1f35 50%, #132743 100%);
+}
+
+.shell {
+  max-width: 1400px;
+  min-width: 0;
+  margin: 0 auto;
+}
+
+.title {
+  margin: 0 0 10px;
+  color: #fff;
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1.18;
+  overflow-wrap: anywhere;
+}
+
+.verifiedBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 100%;
+  margin-bottom: 24px;
+  padding: 12px 20px;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 12px;
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+  font-weight: 600;
+}
+
+.mainGrid {
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  gap: 24px;
+  min-width: 0;
+}
+
+.productCard,
+.sectionCard {
+  min-width: 0;
+  padding: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(15px);
+}
+
+.productCard {
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+}
+
+.productImage {
+  display: block;
+  width: 100%;
+  height: 280px;
+  margin-bottom: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  object-fit: cover;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+}
+
+.productName {
+  margin: 0 0 8px;
+  color: #fff;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.supplierName {
+  margin-bottom: 24px;
+  color: #94a3b8;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.infoGrid {
+  display: grid;
+  min-width: 0;
+  gap: 12px;
+}
+
+.infoItem {
+  padding: 14px;
+  border-radius: 12px;
+  background: #173354;
+  color: #fff;
+  overflow-wrap: anywhere;
+}
+
+.infoItemAccent {
+  color: #f0d58d;
+}
+
+.walletItem {
+  word-break: break-all;
+}
+
+.infoItem strong,
+.infoItem small {
+  max-width: 100%;
+  line-height: 1.45;
+}
+
+.rightColumn {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.sectionTitle {
+  margin: 0 0 20px;
+  color: #f0d58d;
+  overflow-wrap: anywhere;
+}
+
+.timeline {
+  display: grid;
+  gap: 24px;
+  padding-left: 24px;
+  border-left: 3px solid #f0d58d;
+  overflow-wrap: anywhere;
+}
+
+.timelineLabel {
+  color: #fff;
+  font-weight: 600;
+}
+
+.timelineValue {
+  color: #94a3b8;
+  overflow-wrap: anywhere;
+}
+
+.productionDetails {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.productionRow {
+  display: grid;
+  grid-template-columns: minmax(130px, 0.32fr) 1fr;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: rgba(23, 51, 84, 0.72);
+}
+
+.productionLabel {
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.productionValue {
+  color: #fff;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.locationTitle {
+  margin-bottom: 16px;
+  color: #f0d58d;
+  font-size: 18px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.mapFrame,
+.mapFallback {
+  width: 100%;
+  max-width: 100%;
+  height: 350px;
+  border-radius: 16px;
+}
+
+.mapFrame {
+  display: block;
+  border: 0;
+}
+
+.mapFallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+}
+
+.loadingState {
+  padding: 100px;
+  text-align: center;
+}
+
+.traceAlert {
+  margin: 24px;
+}
+
+@media (max-width: 1024px) {
+  .mainGrid {
+    grid-template-columns: minmax(320px, 380px) 1fr;
+    gap: 18px;
+  }
+
+  .productCard,
+  .sectionCard {
+    padding: 20px;
+  }
+
+  .productImage {
+    height: 240px;
+  }
+}
+
+@media (max-width: 820px) {
+  .page {
+    padding: 18px;
+  }
+
+  .mainGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .rightColumn {
+    gap: 18px;
+  }
+
+  .title {
+    font-size: 30px;
+  }
+
+  .verifiedBadge {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .productImage {
+    height: clamp(210px, 48vw, 280px);
+  }
+
+  .mapFrame,
+  .mapFallback {
+    height: 300px;
+  }
+}
+
+@media (max-width: 560px) {
+  .page {
+    padding: 14px;
+  }
+
+  .title {
+    margin-bottom: 12px;
+    font-size: 26px;
+  }
+
+  .verifiedBadge {
+    align-items: flex-start;
+    padding: 10px 14px;
+    font-size: 14px;
+    line-height: 1.35;
+  }
+
+  .productCard,
+  .sectionCard {
+    padding: 16px;
+    border-radius: 16px;
+  }
+
+  .productImage {
+    height: 220px;
+    margin-bottom: 16px;
+    border-radius: 12px;
+  }
+
+  .productName {
+    font-size: 22px;
+    line-height: 1.25;
+  }
+
+  .supplierName {
+    margin-bottom: 18px;
+  }
+
+  .infoGrid {
+    gap: 10px;
+  }
+
+  .infoItem {
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 14px;
+  }
+
+  .infoItem strong,
+  .infoItem small {
+    display: inline-block;
+  }
+
+  .sectionTitle {
+    margin-bottom: 16px;
+    font-size: 20px;
+  }
+
+  .timeline {
+    gap: 18px;
+    padding-left: 16px;
+  }
+
+  .productionRow {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 11px 12px;
+  }
+
+  .locationTitle {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 16px;
+    line-height: 1.35;
+  }
+
+  .mapFrame,
+  .mapFallback {
+    height: 260px;
+    border-radius: 12px;
+  }
+
+  .loadingState {
+    padding: 64px 16px;
+  }
+
+  .traceAlert {
+    margin: 14px;
+  }
+}
