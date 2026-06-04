@@ -80,6 +80,79 @@ const findCategoryByKeyword = async (categoryKeyword) => {
   return rows[0] || null;
 };
 
+const getPromotionCategoryScope = async ({ tenSanPham = "", danhMuc = "" }) => {
+  const categoryIds = new Set();
+  let displayText = "";
+
+  const cleanTenSanPham = String(tenSanPham || "").trim();
+  const cleanDanhMuc = String(danhMuc || "").trim();
+
+  if (cleanTenSanPham) {
+    const searchTenSP = `%${cleanTenSanPham.replace(/\s+/g, "%")}%`;
+
+    const [productRows] = await pool.execute(
+      `
+        SELECT
+          sp.MaDanhMuc,
+          dm.TenDanhMuc,
+          dm.ParentID
+        FROM SanPham sp
+        LEFT JOIN DanhMucSanPham dm ON sp.MaDanhMuc = dm.MaDanhMuc
+        WHERE sp.TenSanPham LIKE ?
+          AND sp.TrangThai = 1
+          AND sp.deleted_at IS NULL
+        ORDER BY
+          CASE WHEN sp.TenSanPham = ? THEN 0 ELSE 1 END,
+          sp.MaSanPham ASC
+        LIMIT 1
+      `,
+      [searchTenSP, cleanTenSanPham],
+    );
+
+    const productCategory = productRows[0];
+
+    if (productCategory?.MaDanhMuc) {
+      categoryIds.add(productCategory.MaDanhMuc);
+      displayText = cleanTenSanPham;
+
+      if (productCategory.ParentID) {
+        categoryIds.add(productCategory.ParentID);
+      }
+    }
+  }
+
+  if (!categoryIds.size && cleanDanhMuc) {
+    const category = await findCategoryByKeyword(cleanDanhMuc);
+
+    if (category?.MaDanhMuc) {
+      categoryIds.add(category.MaDanhMuc);
+      displayText = category.TenDanhMuc;
+
+      if (category.ParentID) {
+        categoryIds.add(category.ParentID);
+      }
+
+      const [childRows] = await pool.execute(
+        `
+          SELECT MaDanhMuc
+          FROM DanhMucSanPham
+          WHERE ParentID = ?
+        `,
+        [category.MaDanhMuc],
+      );
+
+      childRows.forEach((child) => {
+        categoryIds.add(child.MaDanhMuc);
+      });
+    }
+  }
+
+  return {
+    categoryIds: [...categoryIds],
+    displayText,
+  };
+};
+
 const buildHomeCategoryOrSearchLink = async ({
   categoryKeywords = [],
   fallbackSearchKeyword = "",
@@ -1043,6 +1116,30 @@ router.post("/webhook", async (req, res) => {
       queryParams.push(requestedVoucherType);
     }
 
+    let tenSPRaw = parameters.Ten_San_Pham || "";
+    if (Array.isArray(tenSPRaw)) tenSPRaw = tenSPRaw[0] || "";
+
+    let danhMucRaw = parameters.Danh_Muc_San_Pham || "";
+    if (Array.isArray(danhMucRaw)) danhMucRaw = danhMucRaw[0] || "";
+
+    const promotionScope = await getPromotionCategoryScope({
+      tenSanPham: tenSPRaw,
+      danhMuc: danhMucRaw,
+    });
+
+    if (promotionScope.categoryIds.length > 0) {
+      const placeholders = promotionScope.categoryIds.map(() => "?").join(", ");
+
+      sqlQuery += `
+        AND (
+          km.MaDanhMuc IS NULL
+          OR km.MaDanhMuc IN (${placeholders})
+        )
+      `;
+
+      queryParams.push(...promotionScope.categoryIds);
+    }
+
     sqlQuery += `
       ORDER BY
         km.NgayKetThuc IS NULL ASC,
@@ -1121,20 +1218,26 @@ router.post("/webhook", async (req, res) => {
       return ` | Giảm tối đa: ${formatCurrency(maxDiscount)}`;
     };
 
+    const scopeText = promotionScope.displayText
+      ? ` cho ${promotionScope.displayText}`
+      : "";
+
     const title = requestedVoucherType === 2
-      ? "🚚 Mã freeship đang hoạt động"
+      ? `🚚 Mã freeship đang hoạt động${scopeText}`
       : requestedVoucherType === 1
-        ? "🎁 Mã giảm giá đang hoạt động"
-        : "🎉 Khuyến mãi đang hoạt động";
+        ? `🎁 Mã giảm giá đang hoạt động${scopeText}`
+        : `🎉 Khuyến mãi đang hoạt động${scopeText}`;
 
     if (rows.length > 0) {
-      const textArray = [
-        requestedVoucherType === 2
-          ? "Dạ, hiện tại shop đang có các mã freeship/giảm phí vận chuyển còn hiệu lực sau ạ:"
-          : requestedVoucherType === 1
-            ? "Dạ, hiện tại shop đang có các mã giảm giá đơn hàng còn hiệu lực sau ạ:"
-            : "Dạ, hiện tại shop đang có các chương trình khuyến mãi còn hiệu lực sau ạ:",
-      ];
+    const introText = promotionScope.displayText
+      ? `Dạ, với ${promotionScope.displayText}, shop đang có các ưu đãi phù hợp sau ạ:`
+      : requestedVoucherType === 2
+        ? "Dạ, hiện tại shop đang có các mã freeship/giảm phí vận chuyển còn hiệu lực sau ạ:"
+        : requestedVoucherType === 1
+          ? "Dạ, hiện tại shop đang có các mã giảm giá đơn hàng còn hiệu lực sau ạ:"
+          : "Dạ, hiện tại shop đang có các chương trình khuyến mãi còn hiệu lực sau ạ:";
+
+    const textArray = [introText];
 
       rows.forEach((km, index) => {
         const ngayKT = km.NgayKetThuc
@@ -1162,6 +1265,12 @@ router.post("/webhook", async (req, res) => {
         );
       }
 
+      const promotionShopLink = promotionScope.categoryIds.length > 0
+        ? buildWebLink(`/home/?category=${promotionScope.categoryIds[0]}`)
+        : promotionScope.displayText
+          ? buildWebLink(`/home/?search=${encodeURIComponent(promotionScope.displayText)}`)
+          : buildWebLink("/home");
+
       const richContent = [
         {
           type: "description",
@@ -1171,8 +1280,10 @@ router.post("/webhook", async (req, res) => {
         {
           type: "button",
           icon: { type: "storefront", color: "#C06E52" },
-          text: "Xem gian hàng",
-          link: buildWebLink("/home"),
+          text: promotionScope.displayText
+            ? `Xem sản phẩm ${promotionScope.displayText}`
+            : "Xem gian hàng",
+          link: promotionShopLink,
         },
       ];
 
@@ -1196,13 +1307,16 @@ router.post("/webhook", async (req, res) => {
       });
     }
 
-    const emptyMessage = requestedVoucherType === 2
-      ? "Dạ, hiện tại shop chưa có mã freeship còn hiệu lực hoặc mã freeship đã hết lượt sử dụng. Bạn theo dõi thêm trên website để cập nhật ưu đãi mới nhé ạ."
-      : requestedVoucherType === 1
-        ? "Dạ, hiện tại shop chưa có mã giảm giá đơn hàng còn hiệu lực hoặc mã đã hết lượt sử dụng. Bạn theo dõi thêm trên website để cập nhật ưu đãi mới nhé ạ."
-        : "Dạ, hiện tại shop chưa có chương trình khuyến mãi còn hiệu lực hoặc các mã đã hết lượt sử dụng. Bạn theo dõi website để cập nhật đợt sale sắp tới nhé ạ.";
+    const emptyScopeText = promotionScope.displayText
+      ? ` cho ${promotionScope.displayText}`
+      : "";
 
-    return res.json({ fulfillmentText: emptyMessage });
+    const emptyMessage = requestedVoucherType === 2
+      ? `Dạ, hiện tại shop chưa có mã freeship còn hiệu lực${emptyScopeText} hoặc mã freeship đã hết lượt sử dụng. Bạn theo dõi thêm trên website để cập nhật ưu đãi mới nhé ạ.`
+      : requestedVoucherType === 1
+        ? `Dạ, hiện tại shop chưa có mã giảm giá đơn hàng còn hiệu lực${emptyScopeText} hoặc mã đã hết lượt sử dụng. Bạn theo dõi thêm trên website để cập nhật ưu đãi mới nhé ạ.`
+        : `Dạ, hiện tại shop chưa có chương trình khuyến mãi còn hiệu lực${emptyScopeText} hoặc các mã đã hết lượt sử dụng. Bạn theo dõi website để cập nhật đợt sale sắp tới nhé ạ.`;
+        return res.json({ fulfillmentText: emptyMessage });
   } catch (error) {
     console.error(error);
     return res.json({
