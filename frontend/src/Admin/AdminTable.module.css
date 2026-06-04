@@ -224,6 +224,51 @@
   margin-right: 8px;
 }
 
+.receivedNoteProductCell {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  max-width: 460px;
+}
+
+.receivedNoteProductImage {
+  width: 72px !important;
+  height: 72px !important;
+  min-width: 72px;
+  border-radius: 12px;
+  object-fit: contain;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  padding: 6px;
+}
+
+.receivedNoteProductImagePlaceholder {
+  width: 72px;
+  height: 72px;
+  min-width: 72px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px dashed #d1d5db;
+}
+
+.receivedNoteProductName {
+  flex: 1;
+  min-width: 0;
+  max-width: 340px;
+  font-weight: 600;
+  color: #1f2937;
+  line-height: 1.5;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 @media (max-width: 768px) {
   .modalHero {
     flex-direction: column;

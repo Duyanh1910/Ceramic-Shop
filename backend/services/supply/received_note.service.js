@@ -11,11 +11,65 @@ import {
 } from "../../models/index.js";
 import {Op} from "sequelize";
 import ErrorHandler from "../../utils/error_handler.js";
+import { bcThemSanPham } from "../../utils/blockchain.js";
 
 export const NOTE_STATUS = {
   PENDING: 0,
   COMPLETED: 1,
   CANCELED: 2,
+};
+
+const syncReceivedNoteProductsToBlockchain = async (idNote) => {
+  const note = await ReceivedNoteModel.findByPk(idNote, {
+    include: [
+      {
+        model: SupplierModel,
+      },
+      {
+        model: ReceivedNoteDetailModel,
+        include: [
+          {
+            model: VariantModel,
+            include: [
+              {
+                model: ProductModel,
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  });
+
+  if (!note?.NhaCungCap) {
+    throw new Error(`Không tìm thấy nhà cung cấp của phiếu nhập #${idNote}`);
+  }
+
+  const productsById = new Map();
+
+  for (const detail of note.ChiTietPhieuNhaps || []) {
+    const product = detail.BienTheSanPham?.SanPham;
+
+    if (product) {
+      productsById.set(product.MaSanPham, product);
+    }
+  }
+
+  for (const product of productsById.values()) {
+    const txHash = await bcThemSanPham(product, note.NhaCungCap);
+
+    await ProductModel.update(
+      {
+        MaNhaCC: note.NhaCungCap.MaNhaCC,
+        BlockchainTxHash: txHash,
+      },
+      {
+        where: {
+          MaSanPham: product.MaSanPham,
+        },
+      },
+    );
+  }
 };
 
 export const getAllReceivedNotesService = async (
@@ -269,6 +323,7 @@ export const updateReceivedNoteService = async (idNote, data) => {
 
     await transaction.commit();
 
+
     return await getReceivedNoteService(idNote);
   } catch (err) {
     await transaction.rollback();
@@ -359,6 +414,15 @@ export const completeReceivedNoteService = async (idNote) => {
     await note.save({ transaction });
 
     await transaction.commit();
+
+    try {
+      await syncReceivedNoteProductsToBlockchain(idNote);
+    } catch (error) {
+      console.error(
+        "Lỗi ghi Blockchain từ phiếu nhập (không ảnh hưởng nhập kho):",
+        error,
+      );
+    }
 
     return await getReceivedNoteService(idNote);
   } catch (err) {

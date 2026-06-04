@@ -11,56 +11,7 @@ import {
 } from "../models/index.js";
 import { Sequelize, Op } from "sequelize";
 import ErrorHandler from "../utils/error_handler.js";
-import { bcThemSanPham } from "../utils/blockchain.js";
 
-const normalizeNullablePositiveInteger = (value, message) => {
-  if (value === undefined || value === null || value === "") {
-    return null;
-  }
-
-  const numberValue = Number(value);
-
-  if (!Number.isInteger(numberValue) || numberValue <= 0) {
-    throw new ErrorHandler(message, 400);
-  }
-
-  return numberValue;
-};
-
-const ensureSupplierExistsIfNeeded = async (supplierId, transaction) => {
-  if (!supplierId) return null;
-
-  const supplier = await SupplierModel.findByPk(supplierId, { transaction });
-
-  if (!supplier) {
-    throw new ErrorHandler("Nhà cung cấp không tồn tại!", 400);
-  }
-
-  return supplier;
-};
-
-const syncProductToBlockchain = async (product) => {
-  try {
-    const fullProduct = await ProductModel.findByPk(product.MaSanPham, {
-      include: [{ model: SupplierModel }],
-    });
-
-    const txHash = await bcThemSanPham(
-      fullProduct || product,
-      fullProduct?.NhaCungCap || {},
-    );
-
-    await ProductModel.update(
-      { BlockchainTxHash: txHash },
-      { where: { MaSanPham: product.MaSanPham } },
-    );
-  } catch (error) {
-    console.error(
-      "Lỗi ghi Blockchain (không ảnh hưởng tiến trình lưu DB):",
-      error,
-    );
-  }
-};
 
 const getProductsHelper = async (
   page = 1,
@@ -276,7 +227,6 @@ export const addNewProductService = async (
   description,
   status = 1,
   BienThe,
-  MaNhaCC = null,
   ChatLieu = "Gốm sứ",
 ) => {
   const transaction = await sequelize.transaction();
@@ -294,16 +244,9 @@ export const addNewProductService = async (
       throw new ErrorHandler("Chỉ được thêm sản phẩm vào danh mục con!", 400);
     }
 
-    const supplierId = normalizeNullablePositiveInteger(
-      MaNhaCC,
-      "Mã nhà cung cấp không hợp lệ!",
-    );
-    await ensureSupplierExistsIfNeeded(supplierId, transaction);
-
     const product = await ProductModel.create(
       {
         MaDanhMuc: categoryID,
-        MaNhaCC: supplierId,
         TenSanPham: productName,
         Thumbnail: thumbnail,
         ThuongHieu: brand,
@@ -357,19 +300,6 @@ export const addNewProductService = async (
 
     await transaction.commit();
 
-    try {
-      let nhaCungCapInfo = {};
-      if (product.MaNhaCC) {
-        nhaCungCapInfo = await SupplierModel.findByPk(product.MaNhaCC);
-      }
-
-      const txHash = await bcThemSanPham(product, nhaCungCapInfo);
-      
-      await product.update({ BlockchainTxHash: txHash });
-    } catch (error) {
-      console.error("Lỗi ghi Blockchain (Không ảnh hưởng tiến trình tạo DB):", error);
-    }
-
     return product;
 
   } catch (err) {
@@ -393,7 +323,6 @@ export const updateProductInfoService = async (
   description,
   status = 1,
   BienThe,
-  MaNhaCC = null,
   ChatLieu = "Gốm sứ",
 ) => {
   const transaction = await sequelize.transaction();
@@ -413,16 +342,9 @@ export const updateProductInfoService = async (
       throw new ErrorHandler("Chỉ được thêm sản phẩm vào danh mục con!", 400);
     }
 
-    const supplierId = normalizeNullablePositiveInteger(
-      MaNhaCC,
-      "Mã nhà cung cấp không hợp lệ!",
-    );
-    await ensureSupplierExistsIfNeeded(supplierId, transaction);
-
     await existProduct.update(
       {
         MaDanhMuc: categoryID,
-        MaNhaCC: supplierId,
         TenSanPham: productName,
         Thumbnail: thumbnail,
         ThuongHieu: brand,
@@ -518,7 +440,6 @@ export const updateProductInfoService = async (
       }
     }
     await transaction.commit();
-    await syncProductToBlockchain(existProduct);
     return existProduct;
   } catch (err) {
     await transaction.rollback();

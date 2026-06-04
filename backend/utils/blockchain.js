@@ -246,6 +246,7 @@ const ABI = [
 
 let readContract = null;
 let writeContract = null;
+let contractValidation = null;
 
 const getProvider = () => {
   if (!process.env.ALCHEMY_API_KEY || !process.env.CONTRACT_ADDRESS) {
@@ -287,7 +288,41 @@ const getWriteContract = () => {
   return writeContract;
 };
 
+const validateConfiguredContract = async () => {
+  if (contractValidation) return contractValidation;
+
+  contractValidation = (async () => {
+    const address = process.env.CONTRACT_ADDRESS;
+
+    if (!ethers.isAddress(address)) {
+      throw new Error("CONTRACT_ADDRESS không đúng định dạng địa chỉ ví EVM");
+    }
+
+    const provider = getProvider();
+    const code = await provider.getCode(address);
+
+    if (code === "0x") {
+      throw new Error(
+        "CONTRACT_ADDRESS không có contract code trên Sepolia. Kiểm tra lại địa chỉ contract/network.",
+      );
+    }
+
+    try {
+      const c = new ethers.Contract(address, ABI, provider);
+      await c.admin();
+    } catch {
+      throw new Error(
+        "CONTRACT_ADDRESS không phải contract CeramicTrace đúng ABI trên Sepolia. Không thực hiện ghi/đọc blockchain để tránh tốn gas.",
+      );
+    }
+  })();
+
+  return contractValidation;
+};
+
 export const bcThemSanPham = async (product, nhaCungCap = {}) => {
+  await validateConfiguredContract();
+
   const c = getWriteContract();
 
   const tx = await c.themSanPham(
@@ -304,6 +339,8 @@ export const bcThemSanPham = async (product, nhaCungCap = {}) => {
 };
 
 export const bcXemSanPham = async (maSanPham) => {
+  await validateConfiguredContract();
+
   const c = getReadContract();
   const data = await c.xemSanPham(String(maSanPham));
 

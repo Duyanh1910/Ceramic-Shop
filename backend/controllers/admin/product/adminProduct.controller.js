@@ -30,7 +30,6 @@ export const addNewProductController = async (req, res, next) => {
       description,
       status = 1,
       BienThe,
-      MaNhaCC,
       ChatLieu,
     } = req.body;
 
@@ -57,7 +56,6 @@ export const addNewProductController = async (req, res, next) => {
       description,
       Number(status),
       normalizedVariants,
-      MaNhaCC,
       ChatLieu,
     );
 
@@ -137,7 +135,6 @@ export const updateProductController = async (req, res, next) => {
       description,
       status = 1,
       BienThe,
-      MaNhaCC,
       ChatLieu,
     } = req.body;
 
@@ -163,7 +160,6 @@ export const updateProductController = async (req, res, next) => {
       description,
       Number(status),
       normalizedVariants,
-      MaNhaCC,
       ChatLieu,
     );
 

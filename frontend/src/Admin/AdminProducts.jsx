@@ -326,8 +326,6 @@ export default function AdminProducts() {
         brand: values.brand,
         description: values.description,
         status: Number(values.status ?? 1),
-        
-        MaNhaCC: values.MaNhaCC ? Number(values.MaNhaCC) : null,
         ChatLieu: values.ChatLieu || "Gốm sứ",
         
         BienThe: (values.variants || []).map((v) => ({
@@ -753,7 +751,11 @@ export default function AdminProducts() {
             }}
           >
             <Form.Item name="MaNhaCC" label="Nhà cung cấp gốc">
-              <Select size="large" placeholder="Chọn nhà cung cấp (nếu có)" allowClear>
+              <Select
+                size="large"
+                placeholder="Sẽ được cập nhật từ phiếu nhập"
+                disabled
+              >
                 {suppliers.map((s) => (
                   <Select.Option key={s.MaNhaCC} value={s.MaNhaCC}>
                     {s.TenNhaCC}
