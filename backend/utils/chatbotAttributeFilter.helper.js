@@ -319,7 +319,7 @@ const findShoppingNeedRule = (text) => {
   );
 };
 
-export const resolveShoppingNeedSearch = ({
+export const resolveProductNeedSearch = ({
   danhMucRaw = "",
   queryText = "",
 }) => {
@@ -365,8 +365,6 @@ export const resolveShoppingNeedSearch = ({
     isNeed: false,
   };
 };
-
-export const resolveFengShuiCategorySearch = resolveShoppingNeedSearch;
 
 export const buildCategorySearchCondition = ({ searchKeywords = [] }) => {
   const keywords = [

@@ -9,7 +9,7 @@ import {
   getMenhByBirthYear,
   extractBirthYear,
   extractBudgetAmount,
-  resolveFengShuiCategorySearch,
+  resolveProductNeedSearch,
 } from "../utils/chatbotAttributeFilter.helper.js";
 const router = express.Router();
 
@@ -1330,7 +1330,7 @@ router.post("/webhook", async (req, res) => {
     let danhMuc = parameters.Danh_Muc_San_Pham || "";
     if (Array.isArray(danhMuc)) danhMuc = danhMuc[0] || "";
 
-    const categorySearch = resolveFengShuiCategorySearch({
+    const categorySearch = resolveProductNeedSearch({
       danhMucRaw: danhMuc,
       queryText,
     });
@@ -1487,7 +1487,7 @@ router.post("/webhook", async (req, res) => {
         birthYear,
       });
 
-      const categorySearch = resolveFengShuiCategorySearch({
+      const categorySearch = resolveProductNeedSearch({
         danhMucRaw,
         queryText,
       });
@@ -1989,7 +1989,7 @@ router.post("/webhook", async (req, res) => {
 
       let searchKeyword = tenSPRaw || danhMucRaw;
 
-      const categorySearch = resolveFengShuiCategorySearch({
+      const categorySearch = resolveProductNeedSearch({
         danhMucRaw: searchKeyword,
         queryText,
       });
