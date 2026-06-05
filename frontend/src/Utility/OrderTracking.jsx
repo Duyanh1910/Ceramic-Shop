@@ -42,6 +42,12 @@ const TIMELINE_STEPS = [
   { title: 'Hoàn thành', description: 'Đã giao thành công' },
 ];
 
+const getPaymentMethodName = (order) =>
+  order?.PhuongThucThanhToan?.TenPhuongThuc ||
+  order?.PaymentMethodModel?.TenPhuongThuc ||
+  order?.PaymentMethod?.TenPhuongThuc ||
+  (order?.MaPhuongThuc ? `#${order.MaPhuongThuc}` : 'Khong ro');
+
 export default function OrderTracking() {
   const navigate = useNavigate();
   const token = localStorage.getItem('customer_token') || localStorage.getItem('token');
@@ -395,9 +401,7 @@ export default function OrderTracking() {
                   {selectedOrder.DiaChiGiaoHang}
                 </Descriptions.Item>
                 <Descriptions.Item label="Thanh toán">
-                  {selectedOrder.MaPhuongThuc === 1 ? 'Thanh toán COD' :
-                   selectedOrder.MaPhuongThuc === 4 ? 'MoMo' :
-                   selectedOrder.MaPhuongThuc === 5 ? 'ZaloPay' : 'Không rõ'}
+                  {getPaymentMethodName(selectedOrder)}
                 </Descriptions.Item>
                 {selectedOrder.GhiChu && (
                   <Descriptions.Item label="Ghi chú">

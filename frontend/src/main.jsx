@@ -49,6 +49,7 @@ import AdminReviews from "./Admin/AdminReviews.jsx";
 import AdminCategories from "./Admin/AdminCategory.jsx";
 import AdminReturns from "./Admin/AdminReturns.jsx";
 import AdminPayments from "./Admin/AdminPayments.jsx";
+import AdminPaymentMethods from "./Admin/AdminPaymentMethods.jsx";
 import AdminSuppliers from "./Admin/AdminSupplier.jsx";
 import AdminReceivedNotes from "./Admin/AdminReceivedNote.jsx";
 import AdminNotifications from "./Admin/AdminNotifications.jsx";
@@ -227,6 +228,7 @@ createRoot(document.getElementById("root")).render(
             <Route path="risks" element={<AdminRisks />} />
             <Route path="returns" element={<AdminReturns />} />
             <Route path="payments" element={<AdminPayments />} />
+            <Route path="payment-methods" element={<AdminPaymentMethods />} />
             <Route
               path="promotions"
               element={

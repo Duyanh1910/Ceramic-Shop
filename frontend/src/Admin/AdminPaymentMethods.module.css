@@ -1,0 +1,31 @@
+.card {
+  border-radius: 12px;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.03),
+    0 1px 6px -1px rgba(0, 0, 0, 0.02),
+    0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.titleIcon {
+  color: #1677ff;
+  font-size: 22px;
+}
+
+.table :global(.ant-table-thead > tr > th) {
+  background: #f7f9fc !important;
+  color: #1b437c !important;
+  font-weight: 700 !important;
+}
+
+@media (max-width: 768px) {
+  .card :global(.ant-card-extra) {
+    width: 100%;
+    margin-top: 12px;
+  }
+
+  .card :global(.ant-card-extra .ant-space) {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+}

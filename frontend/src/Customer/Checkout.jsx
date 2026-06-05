@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   Form, Input, Button, message, Divider,
-  Radio, Tag, Spin, Steps, Modal
+  Radio, Tag, Spin, Steps, Modal, Empty
 } from 'antd';
 import {
   ArrowLeftOutlined, UserOutlined, PhoneOutlined,
@@ -39,6 +39,51 @@ const ACTIVE_PAYMENT_METHODS = [
   { id: 5, icon: null, name: 'ZaloPay', desc: 'Thanh toán qua ZaloPay, chuyển hướng tới cổng thanh toán', gateway: 'zalopay', logo: 'https://cdn.haitrieu.com/wp-content/uploads/2022/10/Logo-ZaloPay-Square.png' },
 ];
 
+const PAYMENT_METHOD_META = {
+  1: {
+    icon: 'COD',
+    desc: 'Tra tien mat khi nhan duoc hang',
+    gateway: null,
+  },
+  4: {
+    icon: null,
+    desc: 'Thanh toan qua vi MoMo, chuyen huong toi cong thanh toan',
+    gateway: 'momo',
+    logo: 'https://w7.pngwing.com/pngs/924/499/png-transparent-momo-hd-logo-thumbnail.png',
+  },
+  5: {
+    icon: null,
+    desc: 'Thanh toan qua ZaloPay, chuyen huong toi cong thanh toan',
+    gateway: 'zalopay',
+    logo: 'https://cdn.haitrieu.com/wp-content/uploads/2022/10/Logo-ZaloPay-Square.png',
+  },
+};
+
+const getGatewayByMethod = (method) => {
+  const id = Number(method?.MaPhuongThuc);
+  const name = String(method?.TenPhuongThuc || '').toLowerCase();
+
+  if (id === 4 || name.includes('momo')) return 'momo';
+  if (id === 5 || name.includes('zalopay') || name.includes('zalo')) return 'zalopay';
+
+  return PAYMENT_METHOD_META[id]?.gateway || null;
+};
+
+const normalizePaymentMethod = (method) => {
+  const id = Number(method.MaPhuongThuc);
+  const meta = PAYMENT_METHOD_META[id] || {};
+  const legacyMethod = ACTIVE_PAYMENT_METHODS.find((item) => item.id === id);
+
+  return {
+    id,
+    icon: meta.icon || legacyMethod?.icon || 'PAY',
+    name: method.TenPhuongThuc || legacyMethod?.name || `Phuong thuc #${id}`,
+    desc: method.MoTa || meta.desc || legacyMethod?.desc || 'Thanh toan theo cau hinh cua cua hang',
+    gateway: getGatewayByMethod(method),
+    logo: meta.logo || legacyMethod?.logo,
+  };
+};
+
 export default function Checkout() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -68,6 +113,8 @@ export default function Checkout() {
   const [orderId, setOrderId] = useState(null);
   const [orderCode, setOrderCode] = useState(null);
   const [redirectingModal, setRedirectingModal] = useState(false);
+  const [paymentMethods, setPaymentMethods] = useState([]);
+  const [paymentMethodsLoading, setPaymentMethodsLoading] = useState(true);
 
   const [shippingMethod, setShippingMethod] = useState(1); 
   const [addressData, setAddressData] = useState({ string: '', obj: null });
@@ -172,7 +219,7 @@ export default function Checkout() {
   const totalDiscount = productDiscount + shippingDiscount;
   const total = Math.max(0, subtotal - productDiscount + shippingFee - shippingDiscount);
 
-  const selectedPayment = ACTIVE_PAYMENT_METHODS.find((m) => m.id === paymentMethod);
+  const selectedPayment = paymentMethods.find((m) => m.id === paymentMethod);
 
   useEffect(() => {
     if (appliedProductVoucher && !productVoucherEligible) {
@@ -193,7 +240,16 @@ export default function Checkout() {
     if (orderItems.length === 0) navigate('/cart');
     fetchProfile(); 
     fetchMyVouchers();
+    fetchPaymentMethods();
   }, []);
+
+  useEffect(() => {
+    if (paymentMethods.length === 0) return;
+
+    if (!paymentMethods.some((method) => method.id === paymentMethod)) {
+      setPaymentMethod(paymentMethods[0].id);
+    }
+  }, [paymentMethods, paymentMethod]);
 
   useEffect(() => {
     const fetchOrderSummary = async () => {
@@ -268,6 +324,21 @@ export default function Checkout() {
       const res = await axios.get(`${API_BASE}/vouchers/me?tab=usable`, authHeader);
       setMyVouchers(res.data?.vouchers || []);
     } catch (err) {
+    }
+  };
+
+  const fetchPaymentMethods = async () => {
+    setPaymentMethodsLoading(true);
+
+    try {
+      const res = await axios.get(`${API_BASE}/payment`);
+      const methods = res.data?.result || [];
+      setPaymentMethods(methods.map(normalizePaymentMethod));
+    } catch (err) {
+      message.error(err.response?.data?.message || 'Khong the tai phuong thuc thanh toan');
+      setPaymentMethods([]);
+    } finally {
+      setPaymentMethodsLoading(false);
     }
   };
 
@@ -352,6 +423,11 @@ export default function Checkout() {
   };
 
   const handleOrder = async (values) => {
+    if (!selectedPayment) {
+      message.error('Vui long chon phuong thuc thanh toan');
+      return;
+    }
+
     if (shippingMethod !== 3 && (!addressData.string || addressData.string.split(',').length < 3)) {
       setAddressError('Vui lòng chọn đầy đủ tỉnh/huyện/xã và nhập số nhà!');
       return;
@@ -374,7 +450,7 @@ export default function Checkout() {
         return;
       }
 
-      if (paymentMethod === 4) {
+      if (selectedPayment.gateway === 'momo') {
         setRedirectingModal(true);
         const payUrl = await createMomoPayment(newOrder.orderID);
         if (payUrl) window.location.href = payUrl;
@@ -382,13 +458,16 @@ export default function Checkout() {
         return;
       }
 
-      if (paymentMethod === 5) {
+      if (selectedPayment.gateway === 'zalopay') {
         setRedirectingModal(true);
         const payUrl = await createZaloPayPayment(newOrder.orderID);
         if (payUrl) window.location.href = payUrl;
         else throw new Error('Không nhận được link thanh toán ZaloPay');
         return;
       }
+
+      setStep(1);
+      message.success('Dat hang thanh cong!');
 
     } catch (err) {
       setRedirectingModal(false);
@@ -556,7 +635,11 @@ export default function Checkout() {
                   <div className={styles.section}>
                     <div className={styles.sectionTitle}><CreditCardOutlined /> Phương thức thanh toán</div>
                     <div className={styles.paymentList}>
-                      {ACTIVE_PAYMENT_METHODS.map((pm) => (
+                      {paymentMethodsLoading ? (
+                        <div className={styles.loadingWrap}><Spin /></div>
+                      ) : paymentMethods.length === 0 ? (
+                        <Empty description="Chua co phuong thuc thanh toan dang bat" />
+                      ) : paymentMethods.map((pm) => (
                         <div key={pm.id}
                           className={`${styles.paymentOption} ${paymentMethod === pm.id ? styles.paymentActive : ''}`}
                           onClick={() => setPaymentMethod(pm.id)}>
@@ -685,6 +768,7 @@ export default function Checkout() {
                   </div>
 
                   <Button type="primary" htmlType="submit" block loading={loading || calculatingFee}
+                    disabled={paymentMethodsLoading || paymentMethods.length === 0}
                     className={styles.btnOrder} size="large">
                     <SafetyOutlined />
                     {selectedPayment?.gateway

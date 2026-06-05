@@ -62,6 +62,11 @@ const STAFF_MENU = [
         label: "Thanh toán / Hoàn tiền",
     },
     {
+        key: "/admin/payment-methods",
+        icon: <CreditCardOutlined/>,
+        label: "Phuong thuc thanh toan",
+    },
+    {
         key: "/admin/inventories",
         icon: <AuditOutlined/>,
         label: "Lịch sử tồn kho",
@@ -79,6 +84,11 @@ const STAFF_MENU = [
 ];
 
 const ADMIN_MENU = [
+    {
+        key: "/admin/payment-methods",
+        icon: <CreditCardOutlined/>,
+        label: "Phuong thuc thanh toan",
+    },
     {key: "/admin", icon: <DashboardOutlined/>, label: "Đơn hàng"},
     {key: "/admin/products", icon: <ShoppingOutlined/>, label: "Sản phẩm"},
     {

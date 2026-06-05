@@ -41,8 +41,6 @@ const PAYMENT_METHOD = {
   ZALOPAY: 5,
 };
 
-const ACTIVE_PAYMENT_METHOD_IDS = Object.values(PAYMENT_METHOD);
-
 const VALID_ORDER_TRANSITIONS = {
   [ORDER_STATUS.PENDING]: [ORDER_STATUS.PREPARING, ORDER_STATUS.CANCELED],
   [ORDER_STATUS.PREPARING]: [ORDER_STATUS.SHIPPING, ORDER_STATUS.CANCELED],
@@ -90,7 +88,24 @@ export const checkOutService = async (
       GhiChu,
     } = orderData;
 
-    if (!ACTIVE_PAYMENT_METHOD_IDS.includes(Number(MaPhuongThuc))) {
+    const normalizedPaymentMethodId = Number(MaPhuongThuc);
+
+    if (
+      !Number.isInteger(normalizedPaymentMethodId) ||
+      normalizedPaymentMethodId <= 0
+    ) {
+      throw new ErrorHandler("Phuong thuc thanh toan khong hop le!", 400);
+    }
+
+    const activePaymentMethod = await PaymentMethodModel.findOne({
+      where: {
+        MaPhuongThuc: normalizedPaymentMethodId,
+        TrangThai: 1,
+      },
+      transaction,
+    });
+
+    if (!activePaymentMethod) {
       throw new ErrorHandler("Phương thức thanh toán không hợp lệ!", 400);
     }
 
@@ -201,7 +216,7 @@ export const checkOutService = async (
         SDT,
         TrangThaiDonHang: ORDER_STATUS.PENDING,
         TrangThaiThanhToan: 0,
-        MaPhuongThuc: Number(MaPhuongThuc),
+        MaPhuongThuc: normalizedPaymentMethodId,
         MaLoaiPhi: MaPhi ? Number(MaPhi) : null,
         GhiChu,
       },
@@ -382,6 +397,7 @@ export const getMyOrderService = async (idAccount) => {
         ],
       },
       { model: ShippingTypeModel },
+      { model: PaymentMethodModel },
     ],
   });
 };

@@ -120,6 +120,7 @@ export default function AdminPayments() {
   const [type, setType] = useState(ALL_VALUE);
   const [status, setStatus] = useState(ALL_VALUE);
   const [method, setMethod] = useState(ALL_VALUE);
+  const [methodOptions, setMethodOptions] = useState(METHOD_OPTIONS);
 
   const [detailOpen, setDetailOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -139,6 +140,10 @@ export default function AdminPayments() {
   useEffect(() => {
     fetchData();
   }, [page, search, type, status, method]);
+
+  useEffect(() => {
+    fetchPaymentMethods();
+  }, []);
 
   const fetchData = async () => {
     setLoading(true);
@@ -165,6 +170,23 @@ export default function AdminPayments() {
       );
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchPaymentMethods = async () => {
+    try {
+      const res = await axios.get(`${API_BASE}/admin/payment-methods`, authConfig());
+      const options = (res.data?.result || []).map((item) => ({
+        label: item.TenPhuongThuc || `#${item.MaPhuongThuc}`,
+        value: item.MaPhuongThuc,
+      }));
+
+      setMethodOptions([
+        { label: "Táº¥t cáº£ phÆ°Æ¡ng thá»©c", value: ALL_VALUE },
+        ...options,
+      ]);
+    } catch (err) {
+      setMethodOptions(METHOD_OPTIONS);
     }
   };
 
@@ -464,7 +486,7 @@ export default function AdminPayments() {
 
         <Select
           value={method}
-          options={METHOD_OPTIONS}
+          options={methodOptions}
           className={styles.filterSelect}
           onChange={(value) => {
             setMethod(value);
