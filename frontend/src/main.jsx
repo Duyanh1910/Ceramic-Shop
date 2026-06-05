@@ -229,22 +229,8 @@ createRoot(document.getElementById("root")).render(
             <Route path="returns" element={<AdminReturns />} />
             <Route path="payments" element={<AdminPayments />} />
             <Route path="payment-methods" element={<AdminPaymentMethods />} />
-            <Route
-              path="promotions"
-              element={
-                <ProtectedRoute allowedRoles={["Admin"]}>
-                  <AdminPromotions />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="news"
-              element={
-                <ProtectedRoute allowedRoles={["Admin"]}>
-                  <AdminNews />
-                </ProtectedRoute>
-              }
-            />
+            <Route path="promotions" element={<AdminPromotions />} />
+            <Route path="news" element={<AdminNews />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />

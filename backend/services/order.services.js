@@ -94,7 +94,7 @@ export const checkOutService = async (
       !Number.isInteger(normalizedPaymentMethodId) ||
       normalizedPaymentMethodId <= 0
     ) {
-      throw new ErrorHandler("Phuong thuc thanh toan khong hop le!", 400);
+      throw new ErrorHandler("Phương thức thanh toán không hợp lệ!", 400);
     }
 
     const activePaymentMethod = await PaymentMethodModel.findOne({

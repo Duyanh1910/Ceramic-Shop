@@ -41,19 +41,19 @@ const ACTIVE_PAYMENT_METHODS = [
 
 const PAYMENT_METHOD_META = {
   1: {
-    icon: 'COD',
-    desc: 'Tra tien mat khi nhan duoc hang',
+    icon: '💵',
+    desc: 'Trả tiền mặt khi nhận được hàng',
     gateway: null,
   },
   4: {
     icon: null,
-    desc: 'Thanh toan qua vi MoMo, chuyen huong toi cong thanh toan',
+    desc: 'Thanh toán qua ví MoMo, chuyển hướng tới cổng thanh toán',
     gateway: 'momo',
     logo: 'https://w7.pngwing.com/pngs/924/499/png-transparent-momo-hd-logo-thumbnail.png',
   },
   5: {
     icon: null,
-    desc: 'Thanh toan qua ZaloPay, chuyen huong toi cong thanh toan',
+    desc: 'Thanh toán qua ZaloPay, chuyển hướng tới cổng thanh toán',
     gateway: 'zalopay',
     logo: 'https://cdn.haitrieu.com/wp-content/uploads/2022/10/Logo-ZaloPay-Square.png',
   },
@@ -77,8 +77,8 @@ const normalizePaymentMethod = (method) => {
   return {
     id,
     icon: meta.icon || legacyMethod?.icon || 'PAY',
-    name: method.TenPhuongThuc || legacyMethod?.name || `Phuong thuc #${id}`,
-    desc: method.MoTa || meta.desc || legacyMethod?.desc || 'Thanh toan theo cau hinh cua cua hang',
+    name: method.TenPhuongThuc || legacyMethod?.name || `Phương thức #${id}`,
+    desc: method.MoTa || meta.desc || legacyMethod?.desc || 'Thanh toán theo cấu hình của cửa hàng',
     gateway: getGatewayByMethod(method),
     logo: meta.logo || legacyMethod?.logo,
   };
@@ -335,7 +335,7 @@ export default function Checkout() {
       const methods = res.data?.result || [];
       setPaymentMethods(methods.map(normalizePaymentMethod));
     } catch (err) {
-      message.error(err.response?.data?.message || 'Khong the tai phuong thuc thanh toan');
+      message.error(err.response?.data?.message || 'Không thể tải phương thức thanh toán');
       setPaymentMethods([]);
     } finally {
       setPaymentMethodsLoading(false);
@@ -424,7 +424,7 @@ export default function Checkout() {
 
   const handleOrder = async (values) => {
     if (!selectedPayment) {
-      message.error('Vui long chon phuong thuc thanh toan');
+      message.error('Vui lòng chọn phương thức thanh toán');
       return;
     }
 
@@ -467,7 +467,7 @@ export default function Checkout() {
       }
 
       setStep(1);
-      message.success('Dat hang thanh cong!');
+      message.success('Đặt hàng thành công!');
 
     } catch (err) {
       setRedirectingModal(false);
@@ -638,7 +638,7 @@ export default function Checkout() {
                       {paymentMethodsLoading ? (
                         <div className={styles.loadingWrap}><Spin /></div>
                       ) : paymentMethods.length === 0 ? (
-                        <Empty description="Chua co phuong thuc thanh toan dang bat" />
+                        <Empty description="Chưa có phương thức thanh toán đang bật" />
                       ) : paymentMethods.map((pm) => (
                         <div key={pm.id}
                           className={`${styles.paymentOption} ${paymentMethod === pm.id ? styles.paymentActive : ''}`}

@@ -10,7 +10,7 @@ const parseId = (value) => {
   const id = Number(value);
 
   if (!Number.isInteger(id) || id <= 0) {
-    throw new ErrorHandler("ID phuong thuc thanh toan khong hop le!", 422);
+    throw new ErrorHandler("ID phương thức thanh toán không hợp lệ!", 422);
   }
 
   return id;
@@ -36,7 +36,7 @@ export const getAllPaymentMethodsAdmin = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: "Lay danh sach phuong thuc thanh toan thanh cong!",
+      message: "Lấy danh sách phương thức thanh toán thành công!",
       result: methods,
     });
   } catch (err) {
@@ -50,7 +50,7 @@ export const createPaymentMethodAdmin = async (req, res, next) => {
 
     res.status(201).json({
       success: true,
-      message: "Tao phuong thuc thanh toan thanh cong!",
+      message: "Tạo phương thức thanh toán thành công!",
       result: method,
     });
   } catch (err) {
@@ -68,7 +68,7 @@ export const updatePaymentMethodAdmin = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: "Cap nhat phuong thuc thanh toan thanh cong!",
+      message: "Cập nhật phương thức thanh toán thành công!",
       result: method,
     });
   } catch (err) {

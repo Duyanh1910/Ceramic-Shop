@@ -5,11 +5,11 @@ const normalizeText = (value, fieldName, maxLength) => {
   const text = String(value || "").trim();
 
   if (!text) {
-    throw new ErrorHandler(`${fieldName} khong duoc de trong!`, 422);
+    throw new ErrorHandler(`${fieldName} không được để trống!`, 422);
   }
 
   if (maxLength && text.length > maxLength) {
-    throw new ErrorHandler(`${fieldName} khong duoc vuot qua ${maxLength} ky tu!`, 422);
+    throw new ErrorHandler(`${fieldName} không được vượt quá ${maxLength} ký tự!`, 422);
   }
 
   return text;
@@ -23,7 +23,7 @@ const normalizeOptionalText = (value, maxLength) => {
   if (!text) return null;
 
   if (maxLength && text.length > maxLength) {
-    throw new ErrorHandler(`Mo ta khong duoc vuot qua ${maxLength} ky tu!`, 422);
+    throw new ErrorHandler(`Mô tả không được vượt quá ${maxLength} ký tự!`, 422);
   }
 
   return text;
@@ -35,7 +35,7 @@ const normalizeStatus = (value, defaultValue = 1) => {
   const numberValue = Number(value);
 
   if (![0, 1].includes(numberValue)) {
-    throw new ErrorHandler("Trang thai phuong thuc thanh toan khong hop le!", 422);
+    throw new ErrorHandler("Trạng thái phương thức thanh toán không hợp lệ!", 422);
   }
 
   return numberValue;
@@ -45,7 +45,7 @@ const findPaymentMethodOrFail = async (MaPhuongThuc) => {
   const method = await PaymentMethodModel.findByPk(MaPhuongThuc);
 
   if (!method) {
-    throw new ErrorHandler("Khong tim thay phuong thuc thanh toan!", 404);
+    throw new ErrorHandler("Không tìm thấy phương thức thanh toán!", 404);
   }
 
   return method;
@@ -68,7 +68,7 @@ export const getAllPaymentMethodsAdminService = async () => {
 };
 
 export const createPaymentMethodAdminService = async (payload) => {
-  const TenPhuongThuc = normalizeText(payload?.TenPhuongThuc, "Ten phuong thuc", 100);
+  const TenPhuongThuc = normalizeText(payload?.TenPhuongThuc, "Tên phương thức", 100);
   const MoTa = normalizeOptionalText(payload?.MoTa, 255);
   const TrangThai = normalizeStatus(payload?.TrangThai, 1);
 
@@ -86,7 +86,7 @@ export const updatePaymentMethodAdminService = async (MaPhuongThuc, payload) => 
   if (payload?.TenPhuongThuc !== undefined) {
     updateData.TenPhuongThuc = normalizeText(
       payload.TenPhuongThuc,
-      "Ten phuong thuc",
+      "Tên phương thức",
       100,
     );
   }

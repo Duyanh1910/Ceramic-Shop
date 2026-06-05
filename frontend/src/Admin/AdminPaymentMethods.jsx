@@ -10,18 +10,16 @@ import {
   Space,
   Switch,
   Table,
-  Tag,
   Tooltip,
   Typography,
 } from "antd";
 import {
   CreditCardOutlined,
   EditOutlined,
-  PlusOutlined,
   ReloadOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
-import styles from "./AdminPaymentMethods.module.css";
+import styles from "./AdminTable.module.css";
 import { API_BASE } from "../config/api";
 
 const { Title, Text } = Typography;
@@ -38,13 +36,6 @@ const authConfig = () => {
   };
 };
 
-const renderStatus = (value) =>
-  Number(value) === 1 ? (
-    <Tag color="green">Dang bat</Tag>
-  ) : (
-    <Tag color="default">Dang tat</Tag>
-  );
-
 export default function AdminPaymentMethods() {
   const [form] = Form.useForm();
   const [data, setData] = useState([]);
@@ -52,6 +43,7 @@ export default function AdminPaymentMethods() {
   const [saving, setSaving] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingMethod, setEditingMethod] = useState(null);
+  const [togglingId, setTogglingId] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -69,18 +61,11 @@ export default function AdminPaymentMethods() {
     } catch (err) {
       message.error(
         err.response?.data?.message ||
-          "Khong the tai danh sach phuong thuc thanh toan!",
+          "Không thể tải danh sách phương thức thanh toán!",
       );
     } finally {
       setLoading(false);
     }
-  };
-
-  const openCreate = () => {
-    setEditingMethod(null);
-    form.resetFields();
-    form.setFieldsValue({ TrangThai: true });
-    setModalOpen(true);
   };
 
   const openEdit = (record) => {
@@ -100,7 +85,13 @@ export default function AdminPaymentMethods() {
   };
 
   const saveMethod = async () => {
+    if (!editingMethod?.MaPhuongThuc) {
+      message.error("Không tìm thấy phương thức thanh toán cần cập nhật!");
+      return;
+    }
+
     const values = await form.validateFields();
+
     const payload = {
       TenPhuongThuc: values.TenPhuongThuc,
       MoTa: values.MoTa || null,
@@ -110,27 +101,18 @@ export default function AdminPaymentMethods() {
     setSaving(true);
 
     try {
-      if (editingMethod?.MaPhuongThuc) {
-        await axios.patch(
-          `${API_BASE}/admin/payment-methods/${editingMethod.MaPhuongThuc}`,
-          payload,
-          authConfig(),
-        );
-        message.success("Da cap nhat phuong thuc thanh toan!");
-      } else {
-        await axios.post(
-          `${API_BASE}/admin/payment-methods`,
-          payload,
-          authConfig(),
-        );
-        message.success("Da tao phuong thuc thanh toan!");
-      }
+      await axios.patch(
+        `${API_BASE}/admin/payment-methods/${editingMethod.MaPhuongThuc}`,
+        payload,
+        authConfig(),
+      );
 
+      message.success("Đã cập nhật phương thức thanh toán!");
       closeModal();
       await fetchData();
     } catch (err) {
       message.error(
-        err.response?.data?.message || "Khong the luu phuong thuc thanh toan!",
+        err.response?.data?.message || "Không thể lưu phương thức thanh toán!",
       );
     } finally {
       setSaving(false);
@@ -138,6 +120,8 @@ export default function AdminPaymentMethods() {
   };
 
   const toggleStatus = async (record, checked) => {
+    setTogglingId(record.MaPhuongThuc);
+
     try {
       await axios.patch(
         `${API_BASE}/admin/payment-methods/${record.MaPhuongThuc}`,
@@ -152,66 +136,65 @@ export default function AdminPaymentMethods() {
             : item,
         ),
       );
-      message.success("Da cap nhat trang thai phuong thuc thanh toan!");
+
+      message.success(
+        checked
+          ? "Đã bật phương thức thanh toán!"
+          : "Đã tắt phương thức thanh toán!",
+      );
     } catch (err) {
       message.error(
         err.response?.data?.message ||
-          "Khong the cap nhat trang thai phuong thuc thanh toan!",
+          "Không thể cập nhật trạng thái phương thức thanh toán!",
       );
+    } finally {
+      setTogglingId(null);
     }
   };
 
   const columns = [
     {
-      title: "Ma",
-      dataIndex: "MaPhuongThuc",
-      key: "MaPhuongThuc",
-      width: 90,
-      render: (value) => <Text strong>#{value}</Text>,
-    },
-    {
-      title: "Ten phuong thuc",
+      title: "Tên phương thức",
       dataIndex: "TenPhuongThuc",
       key: "TenPhuongThuc",
       width: 240,
       render: (value) => <Text strong>{value}</Text>,
     },
     {
-      title: "Mo ta",
+      title: "Mô tả",
       dataIndex: "MoTa",
       key: "MoTa",
-      render: (value) => value || <Text type="secondary">Chua co mo ta</Text>,
+      render: (value) => value || <Text type="secondary">Chưa có mô tả</Text>,
     },
     {
-      title: "Trang thai",
+      title: "Trạng thái",
       dataIndex: "TrangThai",
       key: "TrangThai",
       width: 130,
-      render: renderStatus,
-    },
-    {
-      title: "Bat/Tat",
-      key: "toggle",
-      width: 120,
+      align: "center",
       render: (_, record) => (
         <Switch
           checked={Number(record.TrangThai) === 1}
+          checkedChildren="Bật"
+          unCheckedChildren="Tắt"
+          loading={togglingId === record.MaPhuongThuc}
           onChange={(checked) => toggleStatus(record, checked)}
         />
       ),
     },
     {
-      title: "Thao tac",
+      title: "Thao tác",
       key: "actions",
       width: 120,
+      align: "center",
       render: (_, record) => (
-        <Tooltip title="Chinh sua">
+        <Tooltip title="Chỉnh sửa">
           <Button
             size="small"
             icon={<EditOutlined />}
             onClick={() => openEdit(record)}
           >
-            Sua
+            Sửa
           </Button>
         </Tooltip>
       ),
@@ -226,19 +209,14 @@ export default function AdminPaymentMethods() {
         <Space>
           <CreditCardOutlined className={styles.titleIcon} />
           <Title level={4} style={{ margin: 0 }}>
-            Phuong thuc thanh toan
+            Phương thức thanh toán
           </Title>
         </Space>
       }
       extra={
-        <Space>
-          <Button icon={<ReloadOutlined />} onClick={fetchData}>
-            Tai lai
-          </Button>
-          <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
-            Them phuong thuc
-          </Button>
-        </Space>
+        <Button icon={<ReloadOutlined />} onClick={fetchData}>
+          Tải lại
+        </Button>
       }
     >
       <Table
@@ -252,7 +230,7 @@ export default function AdminPaymentMethods() {
           emptyText: (
             <Empty
               image={Empty.PRESENTED_IMAGE_SIMPLE}
-              description="Chua co phuong thuc thanh toan"
+              description="Chưa có phương thức thanh toán"
             />
           ),
         }}
@@ -262,11 +240,11 @@ export default function AdminPaymentMethods() {
         open={modalOpen}
         title={
           editingMethod
-            ? `Sua phuong thuc #${editingMethod.MaPhuongThuc}`
-            : "Them phuong thuc thanh toan"
+            ? `Sửa phương thức #${editingMethod.MaPhuongThuc}`
+            : "Sửa phương thức thanh toán"
         }
-        okText={editingMethod ? "Cap nhat" : "Tao moi"}
-        cancelText="Huy"
+        okText="Cập nhật"
+        cancelText="Hủy"
         onOk={saveMethod}
         onCancel={closeModal}
         confirmLoading={saving}
@@ -275,32 +253,32 @@ export default function AdminPaymentMethods() {
         <Form form={form} layout="vertical">
           <Form.Item
             name="TenPhuongThuc"
-            label="Ten phuong thuc"
+            label="Tên phương thức"
             rules={[
-              { required: true, message: "Vui long nhap ten phuong thuc!" },
-              { max: 100, message: "Ten phuong thuc toi da 100 ky tu!" },
+              { required: true, message: "Vui lòng nhập tên phương thức!" },
+              { max: 100, message: "Tên phương thức tối đa 100 ký tự!" },
             ]}
           >
-            <Input placeholder="VD: COD, MoMo, ZaloPay, Chuyen khoan" />
+            <Input placeholder="VD: COD, MoMo, ZaloPay, Chuyển khoản" />
           </Form.Item>
 
           <Form.Item
             name="MoTa"
-            label="Mo ta"
-            rules={[{ max: 255, message: "Mo ta toi da 255 ky tu!" }]}
+            label="Mô tả"
+            rules={[{ max: 255, message: "Mô tả tối đa 255 ký tự!" }]}
           >
             <Input.TextArea
               rows={3}
-              placeholder="Mo ta ngan hien thi o man hinh thanh toan"
+              placeholder="Mô tả ngắn hiển thị ở màn hình thanh toán"
             />
           </Form.Item>
 
           <Form.Item
             name="TrangThai"
-            label="Trang thai"
+            label="Trạng thái"
             valuePropName="checked"
           >
-            <Switch checkedChildren="Bat" unCheckedChildren="Tat" />
+            <Switch checkedChildren="Bật" unCheckedChildren="Tắt" />
           </Form.Item>
         </Form>
       </Modal>

@@ -44,7 +44,7 @@ const getPaymentMethodName = (order) =>
   order?.PhuongThucThanhToan?.TenPhuongThuc ||
   order?.PaymentMethodModel?.TenPhuongThuc ||
   order?.PaymentMethod?.TenPhuongThuc ||
-  (order?.MaPhuongThuc ? `#${order.MaPhuongThuc}` : 'Khong ro');
+  (order?.MaPhuongThuc ? `#${order.MaPhuongThuc}` : 'Không rõ');
 
 export default function OrderTrackingMini() {
   const navigate = useNavigate();
