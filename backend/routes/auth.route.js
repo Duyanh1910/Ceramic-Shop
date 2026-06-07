@@ -20,6 +20,28 @@ import {
   resetPasswordController,
 } from "../controllers/forgotPassword.controller.js";
 const router = express.Router();
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+
+const oauthFailureRedirect = (provider, err, res) => {
+  if (err) {
+    console.error(`${provider} OAuth failed:`, {
+      message: err.message,
+      type: err.type,
+      code: err.code,
+      subcode: err.subcode,
+      status: err.status,
+      traceID: err.traceID,
+    });
+  }
+
+  const reason =
+    err?.subcode === 36009 ||
+    err?.message === "This authorization code has been used."
+      ? "code_already_used"
+      : "oauth_failed";
+
+  return res.redirect(`${FRONTEND_URL}/login?error=${reason}`);
+};
 
 router.post("/login", login);
 router.post("/register", customerRegister);
@@ -46,10 +68,15 @@ router.get("/google", (req, res, next) => {
 
 router.get(
   "/google/callback",
-  passport.authenticate("google", {
-    session: false,
-    failureRedirect: "/api/auth/fail",
-  }),
+  (req, res, next) => {
+    passport.authenticate("google", { session: false }, (err, user) => {
+      if (err || !user) {
+        return oauthFailureRedirect("Google", err, res);
+      }
+      req.user = user;
+      return next();
+    })(req, res, next);
+  },
   googleCallbackController,
 );
 
@@ -63,10 +90,15 @@ router.get("/facebook", (req, res, next) => {
 
 router.get(
   "/facebook/callback",
-  passport.authenticate("facebook", {
-    session: false,
-    failureRedirect: "/api/auth/fail",
-  }),
+  (req, res, next) => {
+    passport.authenticate("facebook", { session: false }, (err, user) => {
+      if (err || !user) {
+        return oauthFailureRedirect("Facebook", err, res);
+      }
+      req.user = user;
+      return next();
+    })(req, res, next);
+  },
   facebookCallbackController,
 );
 
@@ -87,5 +119,3 @@ router.post("/logout", (req, res) => {
 });
 
 export default router;
-
-

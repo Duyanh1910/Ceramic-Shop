@@ -19,9 +19,14 @@ const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 export const login = async (req, res, next) => {
   try {
     const { username, email, identifier, password, rememberMe } = req.body;
-    const loginIdentifier = String(username || email || identifier || "").trim();
+    const loginIdentifier = String(
+      username || email || identifier || "",
+    ).trim();
     if (!checkValidate(loginIdentifier, password)) {
-      throw new ErrorHandler("Tên đăng nhập/email và password không được để trống!", 400);
+      throw new ErrorHandler(
+        "Tên đăng nhập/email và password không được để trống!",
+        400,
+      );
     }
     const result = await loginService(loginIdentifier, password, rememberMe);
     const maxAge = result.expiresInDays * 24 * 60 * 60 * 1000;
@@ -147,7 +152,7 @@ export const googleCallbackController = async (req, res, next) => {
       sameSite: "none",
       maxAge: maxAge,
     });
-    res.redirect("https://ceramic-shop-rho.vercel.app/login-success");
+    res.redirect(`${FRONTEND_URL}/login-success`);
   } catch (error) {
     console.error(error);
     res.redirect(`${FRONTEND_URL}/login?error=oauth_failed`);
@@ -165,7 +170,7 @@ export const facebookCallbackController = async (req, res, next) => {
       sameSite: "none",
       maxAge: maxAge,
     });
-    res.redirect("https://ceramic-shop-rho.vercel.app/login-success");
+    res.redirect(`${FRONTEND_URL}/login-success`);
   } catch (error) {
     console.error(error);
     res.redirect(`${FRONTEND_URL}/login?error=oauth_failed`);
