@@ -6,6 +6,7 @@ import {
   getMe,
   changePasswordController,
   facebookCallbackController,
+  getCachedOAuthResult,
   googleCallbackController,
 } from "../controllers/auth.controller.js";
 import passport from "../config/passport.js";
@@ -43,6 +44,25 @@ const oauthFailureRedirect = (provider, err, res) => {
   return res.redirect(`${FRONTEND_URL}/login?error=${reason}`);
 };
 
+const redirectWithOAuthResult = (res, result) => {
+  const maxAge = result.expiresInDays * 24 * 60 * 60 * 1000;
+  res.cookie("accessToken", result.token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "none",
+    maxAge: maxAge,
+  });
+  return res.redirect(`${FRONTEND_URL}/login-success`);
+};
+
+const useCachedOAuthResult = (provider, req, res) => {
+  const cachedResult = getCachedOAuthResult(provider, req.query.code);
+  if (!cachedResult) return false;
+
+  redirectWithOAuthResult(res, cachedResult);
+  return true;
+};
+
 router.post("/login", login);
 router.post("/register", customerRegister);
 
@@ -69,6 +89,8 @@ router.get("/google", (req, res, next) => {
 router.get(
   "/google/callback",
   (req, res, next) => {
+    if (useCachedOAuthResult("google", req, res)) return;
+
     passport.authenticate("google", { session: false }, (err, user) => {
       if (err || !user) {
         return oauthFailureRedirect("Google", err, res);
@@ -91,6 +113,8 @@ router.get("/facebook", (req, res, next) => {
 router.get(
   "/facebook/callback",
   (req, res, next) => {
+    if (useCachedOAuthResult("facebook", req, res)) return;
+
     passport.authenticate("facebook", { session: false }, (err, user) => {
       if (err || !user) {
         return oauthFailureRedirect("Facebook", err, res);

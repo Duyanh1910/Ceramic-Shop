@@ -15,6 +15,40 @@ import {
 } from "../utils/helpers.js";
 
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+const OAUTH_CODE_CACHE_TTL_MS = 5 * 60 * 1000;
+const oauthCodeCache = new Map();
+
+const getOAuthCodeCacheKey = (provider, code) => `${provider}:${code}`;
+
+export const getCachedOAuthResult = (provider, code) => {
+  if (!code) return null;
+
+  const key = getOAuthCodeCacheKey(provider, code);
+  const cached = oauthCodeCache.get(key);
+  if (!cached) return null;
+
+  if (cached.expiresAt <= Date.now()) {
+    oauthCodeCache.delete(key);
+    return null;
+  }
+
+  return cached.result;
+};
+
+const cacheOAuthResult = (provider, code, result) => {
+  if (!code || !result?.token) return;
+
+  const key = getOAuthCodeCacheKey(provider, code);
+  oauthCodeCache.set(key, {
+    result,
+    expiresAt: Date.now() + OAUTH_CODE_CACHE_TTL_MS,
+  });
+
+  const timeout = setTimeout(() => {
+    oauthCodeCache.delete(key);
+  }, OAUTH_CODE_CACHE_TTL_MS);
+  timeout.unref?.();
+};
 
 export const login = async (req, res, next) => {
   try {
@@ -145,6 +179,7 @@ export const googleCallbackController = async (req, res, next) => {
   try {
     const rememberMe = req.query.state;
     const result = await OAuthService(req.user, "google", rememberMe);
+    cacheOAuthResult("google", req.query.code, result);
     const maxAge = result.expiresInDays * 24 * 60 * 60 * 1000;
     res.cookie("accessToken", result.token, {
       httpOnly: true,
@@ -163,6 +198,7 @@ export const facebookCallbackController = async (req, res, next) => {
   try {
     const rememberMe = req.query.state;
     const result = await OAuthService(req.user, "facebook", rememberMe);
+    cacheOAuthResult("facebook", req.query.code, result);
     const maxAge = result.expiresInDays * 24 * 60 * 60 * 1000;
     res.cookie("accessToken", result.token, {
       httpOnly: true,
