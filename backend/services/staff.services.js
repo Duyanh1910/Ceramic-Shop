@@ -175,7 +175,11 @@ export const createStaffService = async (
     if (exist) {
       throw new ErrorHandler("Tài khoản này đã tồn tại!", 422);
     }
-    const defaultPassword = "123456";
+    let date = new Date(dob);
+    const defaultPassword =
+      date.getDate().toString().padStart(2, "0") +
+      (date.getMonth() + 1).toString().padStart(2, "0") +
+      date.getFullYear().toString();
     const hashed = await bcrypt.hash(defaultPassword, SALT_ROUNDS);
     const account = await AccountModel.create(
       {
