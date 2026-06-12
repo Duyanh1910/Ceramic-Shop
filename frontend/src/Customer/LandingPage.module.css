@@ -1126,3 +1126,96 @@ ul {
     font-size: 12px;
   }
 }
+
+@media screen and (max-width: 768px) {
+
+  .topbar {
+    display: none;
+  }
+
+  .mainHeader {
+    padding: 15px 0;
+  }
+
+  .headerFlex {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .logoBox {
+    justify-content: center;
+  }
+
+  .logoText {
+    font-size: 22px;
+  }
+
+  .searchBox {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .utilityBox {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .menuList {
+    gap: 20px;
+    overflow-x: auto;
+    justify-content: flex-start;
+    padding: 0 10px;
+    white-space: nowrap;
+  }
+
+  .menuList li a {
+    font-size: 16px;
+    padding: 12px 0;
+  }
+
+  .slideWrapper {
+    height: 350px;
+  }
+
+  .bannerTitle {
+    font-size: 28px;
+    letter-spacing: 1px;
+  }
+
+  .bannerSubtitle {
+    font-size: 14px;
+  }
+
+  .btnBanner {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+
+  .aboutContent {
+    grid-template-columns: 1fr;
+    gap: 25px;
+  }
+
+  .visionMission {
+    grid-template-columns: 1fr;
+  }
+
+  .features {
+    grid-template-columns: 1fr;
+  }
+
+  .sectionHeading h2,
+  .sectionHeadingDark h2 {
+    font-size: 24px;
+  }
+
+  .marqueeItem {
+    width: 220px;
+    height: 320px;
+  }
+
+  .marqueeContainer::before,
+  .marqueeContainer::after {
+    display: none;
+  }
+}
