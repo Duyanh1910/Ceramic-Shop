@@ -427,6 +427,7 @@
   line-height: 1.4;
   overflow-wrap: anywhere;
 }
+
 .adminProfileWrapper {
   width: calc(100% + 48px);
   min-height: calc(100vh - 64px);
@@ -436,7 +437,6 @@
     url('https://res.cloudinary.com/dcmwz0uis/image/upload/v1774819412/bghome_dnne19.avif') center/cover no-repeat fixed;
   background-color: #f5f8fc;
 }
-
 .adminProfileWrapper .mainContent {
   min-height: calc(100vh - 64px);
   padding: 40px 28px;
