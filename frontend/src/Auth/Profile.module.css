@@ -228,12 +228,13 @@
 }
 
 .formRight {
-  flex: 1;
+  flex: 0 0 280px;
   display: flex;
   justify-content: center;
+  align-items: flex-start;
   border-left: 1px solid #eef1f5;
-  padding-left: 42px;
-  min-width: 240px;
+  padding-left: 32px;
+  min-width: 0;
 }
 
 .profileForm :global(.ant-form-item-label > label) {
@@ -569,4 +570,40 @@
   color: #c48c46;
   font-weight: 700;
   background: rgba(196, 140, 70, 0.1);
+}
+@media (max-width: 768px) {
+
+  .formBody {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 24px;
+  }
+
+  .formLeft,
+  .formRight {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .formRight {
+    border-left: none;
+    border-top: 1px solid #eef1f5;
+    padding-left: 0;
+    padding-top: 24px;
+  }
+}
+.profileForm,
+.profileForm :global(.ant-form-item),
+.profileForm :global(.ant-form-item-control),
+.profileForm :global(.ant-form-item-control-input),
+.profileForm :global(.ant-form-item-control-input-content) {
+  width: 100%;
+  min-width: 0;
+}
+
+.profileForm :global(.ant-input),
+.profileForm :global(.ant-input-affix-wrapper),
+.profileForm :global(.ant-btn) {
+  width: 100%;
+  max-width: 100%;
 }
