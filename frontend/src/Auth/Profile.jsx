@@ -218,8 +218,7 @@ function Profile() {
             
             <Sider
               width={250}
-              breakpoint="lg"
-              collapsedWidth="0"
+              breakpoint={null}
               className={styles.sidebar}
             >
               <div className={styles.userInfoMini}>

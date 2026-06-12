@@ -105,8 +105,9 @@
   border: 1px solid rgba(27,67,124,.08);
   box-shadow: 0 16px 36px rgba(23,51,84,.08);
 
-  width: 250px;
-  flex-shrink: 0;
+  width: 250px !important;
+  min-width: 250px !important;
+  max-width: 250px !important;
 }
 
 .userInfoMini {
@@ -180,12 +181,6 @@
   color: #1b437c;
   background: #f4f7fb;
   transform: translateX(2px);
-}
-
-.sidebarMenu li.active {
-  color: #c48c46;
-  font-weight: 700;
-  background: rgba(196, 140, 70, 0.1);
 }
 
 .formContent {
@@ -574,4 +569,32 @@
   .customInput {
     font-size: 16px;
   }
+}
+:global(.ant-layout-sider) {
+  background: transparent !important;
+}
+
+:global(.ant-layout-sider-children) {
+  height: auto !important;
+}
+
+@media (max-width: 992px) {
+
+  :global(.ant-layout-sider) {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    flex: none !important;
+  }
+
+  .sidebar {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+.active {
+  color: #c48c46;
+  font-weight: 700;
+  background: rgba(196, 140, 70, 0.1);
 }
