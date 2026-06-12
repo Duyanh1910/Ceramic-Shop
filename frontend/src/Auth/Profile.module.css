@@ -427,66 +427,6 @@
   line-height: 1.4;
   overflow-wrap: anywhere;
 }
-
-@media (max-width: 992px) {
-  .innerLayout {
-    flex-direction: column;
-  }
-
-  .sidebar {
-    width: 100% !important;
-    min-width: 0 !important;
-    max-width: 100% !important;
-  }
-
-  .formBody {
-    flex-direction: column;
-    gap: 32px;
-  }
-
-  .formRight {
-    border-left: none;
-    border-top: 1px solid #eef1f5;
-    padding-left: 0;
-    padding-top: 32px;
-  }
-}
-
-@media (max-width: 768px) {
-  .topHeader {
-    height: auto;
-    min-height: 72px;
-    padding: 12px 18px;
-    gap: 12px;
-  }
-
-  .logoText {
-    font-size: 20px;
-    letter-spacing: 1.5px;
-  }
-
-  .logoSub {
-    font-size: 9px;
-    letter-spacing: 1.6px;
-  }
-
-  .mainContent {
-    padding: 24px 14px;
-  }
-
-  .formContent {
-    padding: 26px 20px;
-    border-radius: 16px;
-  }
-
-  .formTitle {
-    font-size: 21px;
-  }
-
-  .sidebarMenu li {
-    font-size: 14px;
-  }
-}
 .adminProfileWrapper {
   width: calc(100% + 48px);
   min-height: calc(100vh - 64px);
@@ -503,49 +443,87 @@
   box-sizing: border-box;
 }
 @media (max-width: 992px) {
-  .innerLayout { flex-direction: column; }
-  .sidebar { 
-    width: 100% !important; 
-    max-width: 100% !important; 
-    margin-bottom: 20px; 
-    border-right: none;
-    border-bottom: 1px solid #eef1f5;
+  .innerLayout {
+    flex-direction: column;
   }
-  .formBody { flex-direction: column; gap: 24px; }
-  .formRight { 
-    border-left: none; 
-    border-top: 1px solid #eef1f5; 
-    padding-left: 0; 
-    padding-top: 24px; 
+  .sidebar {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin-bottom: 20px;
+  }
+  .formBody {
+    flex-direction: column;
+    gap: 32px;
+  }
+  .formRight {
+    border-left: none;
+    border-top: 1px solid #eef1f5;
+    padding-left: 0;
+    padding-top: 32px;
   }
 }
 
 @media (max-width: 768px) {
-  .topHeader { 
-    height: auto; 
-    min-height: 72px; 
-    padding: 12px 15px; 
-    flex-wrap: wrap; 
-    gap: 10px; 
+  .topHeader {
+    height: auto;
+    min-height: 72px;
+    padding: 12px 15px;
+    flex-wrap: wrap;
+    gap: 10px;
   }
-  .logoImg { width: 45px; }
-  .logoText { font-size: 20px; }
-  .logoSub { display: none; }
-  .btnHome { padding: 0 10px !important; }
-  
-  .mainContent { padding: 15px !important; }
-  .profileCard { padding: 15px !important; }
+  .logoImg {
+    width: 45px;
+  }
+  .logoText {
+    font-size: 20px;
+  }
+  .logoSub {
+    display: none;
+  }
+  .btnBack {
+    padding: 0 !important;
+  }
+  .mainContent, .adminProfileWrapper .mainContent {
+    padding: 15px !important;
+  }
+  .formContent {
+    padding: 20px 15px;
+    border-radius: 16px;
+  }
+  .formTitle {
+    font-size: 21px;
+  }
 }
 
 @media (max-width: 576px) {
-  .sidebar :global(.ant-menu) {
+  .sidebar {
+    padding: 15px 10px;
+  }
+  .sidebarMenu {
     display: flex;
     overflow-x: auto;
     white-space: nowrap;
-    border-bottom: none !important;
+    gap: 8px;
+    padding-bottom: 8px;
   }
-  .sidebar :global(.ant-menu-item) {
-    padding: 0 14px !important;
+  .sidebarMenu::-webkit-scrollbar {
+    height: 4px;
   }
-  .avatarUploader { margin-bottom: 15px; }
+  .sidebarMenu::-webkit-scrollbar-thumb {
+    background: #d5e9ff;
+    border-radius: 4px;
+  }
+  .sidebarMenu li {
+    flex-shrink: 0;
+    padding: 10px 12px;
+  }
+  .userInfoMini {
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;
+  }
+  .btnBack span:last-child {
+    display: none;
+  }
 }
