@@ -494,3 +494,34 @@
   transition: transform 0.3s, color 0.2s;
 }
 .backButton:hover { transform: translateX(-5px); color: #BB9244 !important; }
+@media (max-width: 640px) {
+  .registerContainer { padding: 15px; }
+  .registerCard { 
+    padding: 30px 20px; 
+    width: 100%; 
+    max-width: 400px; 
+    border-radius: 16px; 
+    max-height: 95vh; 
+    overflow-y: auto; 
+  }
+  .title { font-size: 26px; }
+  
+  .otpGroup { gap: 6px; }
+  .otpInput { 
+    width: 40px !important; 
+    height: 50px !important; 
+    font-size: 20px !important; 
+  }
+
+  .successCheckWrap { width: 60px; height: 60px; }
+  .successCheck { width: 60px; height: 60px; }
+  .successTitle { font-size: 22px; }
+}
+
+@media (max-width: 400px) {
+  .otpInput { 
+    width: 36px !important; 
+    height: 46px !important; 
+    font-size: 18px !important; 
+  }
+}

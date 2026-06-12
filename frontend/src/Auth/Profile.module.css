@@ -502,3 +502,50 @@
   padding: 40px 28px;
   box-sizing: border-box;
 }
+@media (max-width: 992px) {
+  .innerLayout { flex-direction: column; }
+  .sidebar { 
+    width: 100% !important; 
+    max-width: 100% !important; 
+    margin-bottom: 20px; 
+    border-right: none;
+    border-bottom: 1px solid #eef1f5;
+  }
+  .formBody { flex-direction: column; gap: 24px; }
+  .formRight { 
+    border-left: none; 
+    border-top: 1px solid #eef1f5; 
+    padding-left: 0; 
+    padding-top: 24px; 
+  }
+}
+
+@media (max-width: 768px) {
+  .topHeader { 
+    height: auto; 
+    min-height: 72px; 
+    padding: 12px 15px; 
+    flex-wrap: wrap; 
+    gap: 10px; 
+  }
+  .logoImg { width: 45px; }
+  .logoText { font-size: 20px; }
+  .logoSub { display: none; }
+  .btnHome { padding: 0 10px !important; }
+  
+  .mainContent { padding: 15px !important; }
+  .profileCard { padding: 15px !important; }
+}
+
+@media (max-width: 576px) {
+  .sidebar :global(.ant-menu) {
+    display: flex;
+    overflow-x: auto;
+    white-space: nowrap;
+    border-bottom: none !important;
+  }
+  .sidebar :global(.ant-menu-item) {
+    padding: 0 14px !important;
+  }
+  .avatarUploader { margin-bottom: 15px; }
+}

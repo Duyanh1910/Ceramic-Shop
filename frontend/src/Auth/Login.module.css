@@ -283,3 +283,19 @@
   .cardForm { padding: 36px 24px; }
   .socialGroup { flex-direction: column; }
 }
+@media (max-width: 640px) {
+  .loginContainer { padding: 15px; }
+  .loginCard { 
+    padding: 30px 20px; 
+    width: 100%; 
+    max-width: 400px; 
+    border-radius: 16px; 
+  }
+  .title { font-size: 26px; }
+  
+  .socialGroup { 
+    flex-direction: column; 
+    gap: 12px; 
+  }
+  .socialCircle { width: 100%; }
+}
