@@ -216,7 +216,12 @@ function Profile() {
         <div className={styles.container}>
           <Layout className={styles.innerLayout}>
             
-            <Sider width={250} className={styles.sidebar}>
+            <Sider
+              width={250}
+              breakpoint="lg"
+              collapsedWidth="0"
+              className={styles.sidebar}
+            >
               <div className={styles.userInfoMini}>
                 <Avatar src={avatarUrl} size={60} className={styles.avatarMini} />
                 <div className={styles.userNameMini}>

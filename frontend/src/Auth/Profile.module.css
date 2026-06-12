@@ -444,10 +444,6 @@
   box-sizing: border-box;
 }
 
-/* =======================================================
-   ĐOẠN CSS RESPONSIVE CHO ĐIỆN THOẠI & TABLET
-   ======================================================= */
-
 @media (max-width: 992px) {
   .innerLayout {
     flex-direction: column !important;
@@ -507,9 +503,37 @@
 }
 
 @media (max-width: 576px) {
-  .sidebar {
-    padding: 15px 10px;
+
+  .topHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
   }
+
+  .logoBox {
+    width: 100%;
+  }
+
+  .headerActions {
+    width: 100%;
+  }
+
+  .btnBack {
+    width: 100%;
+    text-align: left;
+    padding: 0 !important;
+  }
+
+  .sidebar {
+    padding: 12px;
+  }
+
+  .userInfoMini {
+    flex-direction: row;
+    text-align: left;
+    justify-content: center;
+  }
+
   .sidebarMenu {
     display: flex;
     overflow-x: auto;
@@ -517,23 +541,80 @@
     gap: 8px;
     padding-bottom: 8px;
   }
-  .sidebarMenu::-webkit-scrollbar {
-    height: 4px;
-  }
-  .sidebarMenu::-webkit-scrollbar-thumb {
-    background: #d5e9ff;
-    border-radius: 4px;
-  }
+
   .sidebarMenu li {
     flex-shrink: 0;
-    padding: 10px 12px;
+    font-size: 13px;
+    padding: 10px 14px;
   }
-  .userInfoMini {
-    flex-direction: column;
-    text-align: center;
-    gap: 10px;
+
+  .formContent {
+    padding: 16px 12px !important;
   }
-  .btnBack span:last-child {
-    display: none;
+
+  .formTitle {
+    font-size: 18px;
+    line-height: 1.4;
+  }
+
+  .formSub {
+    font-size: 13px;
+  }
+
+  .formBody {
+    gap: 24px !important;
+  }
+
+  .formRight {
+    min-width: unset;
+    padding-top: 24px !important;
+  }
+
+  .avatarBig {
+    width: 90px !important;
+    height: 90px !important;
+  }
+
+  .btnSave {
+    width: 100%;
+  }
+
+  .customInput {
+    font-size: 16px;
+  }
+}
+.profileForm {
+  width: 100%;
+}
+
+.profileForm .ant-form-item {
+  width: 100%;
+}
+
+.profileForm .ant-input,
+.profileForm .ant-btn {
+  width: 100%;
+}
+.profileWrapper,
+.mainContent,
+.container,
+.innerLayout,
+.formContent {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+@media (max-width: 768px) {
+  .formRight {
+    justify-content: center;
+    align-items: center;
+  }
+
+  .avatarSection {
+    width: 100%;
+  }
+
+  .btnUpload {
+    width: 100%;
+    max-width: 250px;
   }
 }
