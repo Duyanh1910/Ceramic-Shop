@@ -214,13 +214,9 @@ function Profile() {
 
       <Content className={styles.mainContent}>
         <div className={styles.container}>
-          <Layout className={styles.innerLayout}>
+          <div className={styles.innerLayout}>
             
-            <Sider
-              width={250}
-              breakpoint={null}
-              className={styles.sidebar}
-            >
+            <div className={styles.sidebar}>
               <div className={styles.userInfoMini}>
                 <Avatar src={avatarUrl} size={60} className={styles.avatarMini} />
                 <div className={styles.userNameMini}>
@@ -271,7 +267,7 @@ function Profile() {
                   <ShoppingOutlined /> Đơn hàng của tôi
                 </li>
               </ul>
-            </Sider>
+            </div>
 
             <Content className={styles.formContent}>
               
@@ -379,7 +375,7 @@ function Profile() {
                 <CustomerReturns compact />
               )}
             </Content>
-          </Layout>
+          </div>
         </div>
       </Content>
 
