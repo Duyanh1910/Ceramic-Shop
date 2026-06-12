@@ -100,15 +100,13 @@
 
 .sidebar {
   padding: 18px 16px;
-  background: rgba(255, 255, 255, 0.94) !important;
+  background: rgba(255,255,255,.94) !important;
   border-radius: 18px;
-  height: fit-content;
-  width: 250px !important;
-  min-width: 250px !important;
-  max-width: 250px !important;
-  border: 1px solid rgba(27, 67, 124, 0.08);
-  box-shadow: 0 16px 36px rgba(23, 51, 84, 0.08);
-  overflow: hidden;
+  border: 1px solid rgba(27,67,124,.08);
+  box-shadow: 0 16px 36px rgba(23,51,84,.08);
+
+  width: 250px;
+  flex-shrink: 0;
 }
 
 .userInfoMini {
@@ -429,9 +427,9 @@
 }
 
 .adminProfileWrapper {
-  width: calc(100% + 48px);
-  min-height: calc(100vh - 64px);
-  margin: -24px;
+  width: 100%;
+  padding: 40px 28px;
+  margin: 0;
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.76), rgba(213, 233, 255, 0.9)),
     url('https://res.cloudinary.com/dcmwz0uis/image/upload/v1774819412/bghome_dnne19.avif') center/cover no-repeat fixed;
@@ -472,140 +470,85 @@
 
   .sidebar {
     width: 100% !important;
-    min-width: 100% !important;
     max-width: 100% !important;
   }
 
-  .formContent {
-    width: 100%;
-  }
-
-  .formBody {
-    flex-direction: column;
-    gap: 30px;
-  }
-
-  .formRight {
-    width: 100%;
-    min-width: 0;
-    border-left: none;
-    border-top: 1px solid #eef1f5;
-    padding-left: 0;
-    padding-top: 24px;
-  }
-}
-
-@media (max-width: 768px) {
-
-  .topHeader {
-    height: auto;
-    padding: 15px;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 15px;
-  }
-
-  .logoBox {
-    width: 100%;
-  }
-
-  .logoImg {
-    width: 42px;
-  }
-
-  .logoText {
-    font-size: 18px;
-    letter-spacing: 1px;
-  }
-
-  .logoSub {
-    display: none;
-  }
-
-  .headerActions {
-    width: 100%;
-  }
-
-  .btnBack {
-    padding: 0 !important;
-    width: 100%;
-    text-align: left;
-  }
-
-  .mainContent {
-    padding: 12px;
-  }
-
-  .container {
-    width: 100%;
-  }
-
-  .sidebar {
-    padding: 15px;
-  }
-
   .userInfoMini {
-    flex-direction: row;
     justify-content: flex-start;
-    align-items: center;
   }
 
   .sidebarMenu {
     display: flex;
     flex-wrap: nowrap;
     overflow-x: auto;
-    gap: 10px;
+    overflow-y: hidden;
+    gap: 8px;
     padding-bottom: 10px;
+    scrollbar-width: none;
+  }
+
+  .sidebarMenu::-webkit-scrollbar {
+    display: none;
   }
 
   .sidebarMenu li {
-    flex: 0 0 auto;
     white-space: nowrap;
-    padding: 10px 14px;
-    font-size: 13px;
+    flex: 0 0 auto;
+  }
+
+  .formBody {
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .formRight {
+    border-left: none;
+    border-top: 1px solid #eef1f5;
+    padding-left: 0;
+    padding-top: 24px;
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+
+  .topHeader {
+    padding: 12px 16px;
+    height: auto;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .logoText {
+    font-size: 20px;
+  }
+
+  .logoSub {
+    display: none;
+  }
+
+  .mainContent,
+  .adminProfileWrapper .mainContent {
+    padding: 12px !important;
+  }
+
+  .adminProfileWrapper {
+    padding: 12px;
   }
 
   .formContent {
-    padding: 16px;
-  }
-
-  .formTitle {
-    font-size: 18px;
-  }
-
-  .formSub {
-    font-size: 13px;
-  }
-
-  .profileForm {
-    width: 100%;
-  }
-
-  .profileForm .ant-input {
-    width: 100%;
-  }
-
-  .profileForm .ant-btn {
-    width: 100%;
+    padding: 16px !important;
   }
 
   .btnSave {
     width: 100%;
   }
 
-  .avatarSection {
-    width: 100%;
-    text-align: center;
-  }
-
   .avatarBig {
     width: 100px !important;
     height: 100px !important;
-  }
-
-  .btnUpload {
-    width: 100%;
-    max-width: 220px;
   }
 }
 
