@@ -116,3 +116,46 @@ df-messenger:not(.df-ready) {
     position: fixed !important;
     bottom: -9999px !important; 
 }
+@media (max-width: 768px) {
+  .chibi-character {
+    width: 150px;
+    height: 150px;
+    bottom: -100px;
+    right: -30px;
+  }
+
+  .chat-bubble-hint {
+    width: 200px;
+    white-space: normal;
+    font-size: 13px;
+    padding: 8px 12px;
+    bottom: 30px;
+    right: 50px;
+  }
+
+  .change-anim-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+    bottom: 40px;
+    right: 90px;
+  }
+
+  .bot-wrapper.chat-open {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+}
+
+@media (max-width: 576px) {
+  df-messenger {
+    bottom: 15px !important;
+    right: 15px !important;
+  }
+  
+  .bot-wrapper {
+    bottom: 15px;
+  }
+}
