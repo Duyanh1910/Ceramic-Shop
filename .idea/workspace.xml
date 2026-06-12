@@ -4,9 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9d190b9a-02ed-468e-b5d3-28393d9072cd" name="Changes" comment="refactor: add">
+    <list default="true" id="9d190b9a-02ed-468e-b5d3-28393d9072cd" name="Changes" comment="refactor: fixing staff default password when">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/services/order.services.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/services/order.services.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -30,61 +29,61 @@
 }</component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.0" />
-      <entry key="MS500" value="1.0000000000001827" />
-      <entry key="S2" value="1.0008679549935073" />
-      <entry key="S5" value="1.087354070555433" />
-      <entry key="S10" value="1.4154746925630644" />
-      <entry key="S30" value="2.1828995726403617" />
-      <entry key="S60" value="2.5378549553274485" />
-      <entry key="M2" value="2.7536959170076454" />
-      <entry key="M5" value="2.8975590456293707" />
-      <entry key="M10" value="2.9481029824522103" />
-      <entry key="M15" value="2.9652498683186455" />
-      <entry key="M30" value="2.982548424793578" />
-      <entry key="H1" value="2.9912550003286222" />
-      <entry key="H2" value="2.995622686515185" />
-      <entry key="H4" value="2.997810138513714" />
-      <entry key="D1" value="2.9996348556469385" />
-      <entry key="W1" value="2.999947832418976" />
+      <entry key="MS100" value="5.668518907432758E-209" />
+      <entry key="MS500" value="2.242301048053007E-42" />
+      <entry key="S2" value="3.8696659850588606E-11" />
+      <entry key="S5" value="6.840209320773644E-5" />
+      <entry key="S10" value="0.008270585578062945" />
+      <entry key="S30" value="0.2099927669960081" />
+      <entry key="S60" value="0.6294232735603779" />
+      <entry key="M2" value="1.7225964527228954" />
+      <entry key="M5" value="5.957838208440629" />
+      <entry key="M10" value="11.127685557537394" />
+      <entry key="M15" value="14.03095315984138" />
+      <entry key="M30" value="17.878645112059683" />
+      <entry key="H1" value="20.255376377715276" />
+      <entry key="H2" value="21.57818032196675" />
+      <entry key="H4" value="22.276243018280095" />
+      <entry key="D1" value="22.87754812348329" />
+      <entry key="W1" value="22.982461613491818" />
     </decayedCancelled>
     <decayedSelected>
-      <entry key="MS100" value="0.0" />
-      <entry key="MS500" value="0.0" />
-      <entry key="S2" value="0.0" />
-      <entry key="S5" value="0.0" />
-      <entry key="S10" value="0.0" />
-      <entry key="S30" value="0.0" />
-      <entry key="S60" value="0.0" />
-      <entry key="M2" value="0.0" />
-      <entry key="M5" value="0.0" />
-      <entry key="M10" value="0.0" />
-      <entry key="M15" value="0.0" />
-      <entry key="M30" value="0.0" />
-      <entry key="H1" value="0.0" />
-      <entry key="H2" value="0.0" />
-      <entry key="H4" value="0.0" />
-      <entry key="D1" value="0.0" />
-      <entry key="W1" value="0.0" />
+      <entry key="MS100" value="1.0" />
+      <entry key="MS500" value="1.0" />
+      <entry key="S2" value="1.0" />
+      <entry key="S5" value="1.0" />
+      <entry key="S10" value="1.0" />
+      <entry key="S30" value="1.0000000275316594" />
+      <entry key="S60" value="1.0002296198454452" />
+      <entry key="M2" value="1.0213094073479738" />
+      <entry key="M5" value="1.324678011202142" />
+      <entry key="M10" value="1.8056422813304582" />
+      <entry key="M15" value="2.090810850873908" />
+      <entry key="M30" value="2.4769938830502207" />
+      <entry key="H1" value="2.718705986130918" />
+      <entry key="H2" value="2.8540229402705535" />
+      <entry key="H4" value="2.9256279335584656" />
+      <entry key="D1" value="2.9874080076204237" />
+      <entry key="W1" value="2.9981962684214625" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.8766057213160351" />
-      <entry key="MS500" value="0.9740042685434219" />
-      <entry key="S2" value="0.9942965561515184" />
-      <entry key="S5" value="1.0842461769537821" />
-      <entry key="S10" value="1.4128874482996443" />
-      <entry key="S30" value="2.181166008843635" />
-      <entry key="S60" value="2.5367794385926246" />
-      <entry key="M2" value="2.7530939495478384" />
-      <entry key="M5" value="2.8973010324930017" />
-      <entry key="M10" value="2.9479709403907055" />
-      <entry key="M15" value="2.9651611530409188" />
-      <entry key="M30" value="2.98250372031604" />
-      <entry key="H1" value="2.991232560771661" />
-      <entry key="H2" value="2.9956114448306757" />
-      <entry key="H4" value="2.9978045121853656" />
-      <entry key="D1" value="2.9996339171627753" />
-      <entry key="W1" value="2.9999476983311193" />
+      <entry key="MS100" value="0.8585654364377537" />
+      <entry key="MS500" value="0.9699619103417348" />
+      <entry key="S2" value="0.9924043747235355" />
+      <entry key="S5" value="0.9970225024382204" />
+      <entry key="S10" value="1.006704508310834" />
+      <entry key="S30" value="1.2089463458490526" />
+      <entry key="S60" value="1.6267527333434537" />
+      <entry key="M2" value="2.736590310587364" />
+      <entry key="M5" value="7.267726862442591" />
+      <entry key="M10" value="12.918233173402106" />
+      <entry key="M15" value="16.108783798488904" />
+      <entry key="M30" value="20.34720750848658" />
+      <entry key="H1" value="22.969265543327385" />
+      <entry key="H2" value="24.42962741167713" />
+      <entry key="H4" value="25.20053882582891" />
+      <entry key="D1" value="25.864727762725344" />
+      <entry key="W1" value="25.980625099628057" />
     </decayedShown>
   </component>
   <component name="ProjectColorInfo">{
@@ -96,26 +95,27 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;javascript.preferred.runtime.type.id&quot;: &quot;node&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/dy/Code/Ceramic-Shop&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.editor&quot;,
-    &quot;ts.external.directory.path&quot;: &quot;/snap/webstorm/633/plugins/javascript-plugin/jsLanguageServicesImpl/external&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "Node.js.test.js.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "git-widget-placeholder": "main",
+    "javascript.preferred.runtime.type.id": "node",
+    "last_opened_file_path": "/home/dy/Code/Ceramic-Shop",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.editor",
+    "ts.external.directory.path": "/snap/webstorm/633/plugins/javascript-plugin/jsLanguageServicesImpl/external",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -135,8 +135,28 @@
       <workItem from="1780796934340" duration="654000" />
       <workItem from="1780830140455" duration="4000" />
       <workItem from="1780969209340" duration="2599000" />
-      <workItem from="1780972005740" duration="390000" />
+      <workItem from="1780972005740" duration="2308000" />
+      <workItem from="1781076913100" duration="55000" />
+      <workItem from="1781171124436" duration="9000" />
+      <workItem from="1781226406925" duration="2192000" />
     </task>
+    <task id="LOCAL-00001" summary="refactor: add helper to order service">
+      <option name="closed" value="true" />
+      <created>1780972646864</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1780972646865</updated>
+    </task>
+    <task id="LOCAL-00002" summary="refactor: fixing staff default password when">
+      <option name="closed" value="true" />
+      <created>1781228589053</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1781228589053</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -179,5 +199,10 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="refactor: add helper to order service" />
+    <MESSAGE value="refactor: fixing staff default password when" />
+    <option name="LAST_COMMIT_MESSAGE" value="refactor: fixing staff default password when" />
   </component>
 </project>
