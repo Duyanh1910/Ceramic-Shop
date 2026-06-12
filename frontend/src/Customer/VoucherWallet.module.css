@@ -125,28 +125,28 @@
   border: 1px solid #f0f0f0;
 }
 
+@media (max-width: 900px) {
+  .topHeader { padding: 0 20px !important; }
+  .mainContent { padding: 20px 15px 50px !important; }
+  .pageHero { padding: 24px; }
+  .pageHero h1 { font-size: 26px; }
+}
+
 @media (max-width: 768px) {
   .topHeader {
-    padding: 0 18px;
+    height: auto !important;
+    padding: 12px 15px !important;
+    flex-wrap: wrap;
+    gap: 10px;
   }
+  .logoImg { width: 45px; height: 45px; }
+  .logoText { font-size: 22px; }
+  .logoSub { display: none; }
+  .contentCard { padding: 20px 15px; }
+}
 
-  .logoText {
-    font-size: 20px;
-  }
-
-  .logoSub {
-    font-size: 9px;
-  }
-
-  .pageHero {
-    padding: 24px;
-  }
-
-  .pageHero h1 {
-    font-size: 25px;
-  }
-
-  .contentCard {
-    padding: 20px;
-  }
+@media (max-width: 576px) {
+  .logoText { font-size: 18px; }
+  .btnBack span:last-child { display: none; }
+  .pageHero h1 { font-size: 22px; line-height: 1.3; }
 }

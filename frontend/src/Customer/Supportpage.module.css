@@ -460,18 +460,38 @@
 
 @media (max-width: 1024px) {
   .layout { grid-template-columns: 1fr; }
-  .sidebar { position: static; margin-bottom: 32px; }
-  .mainContent { padding: 32px; }
+  .sidebar { position: static; margin-bottom: 24px; }
+  .mainContent { padding: 32px 24px; }
 }
 
 @media (max-width: 768px) {
-  .topHeader { padding: 0 24px; height: 72px; }
-  .heroStrip { padding: 32px 24px; }
-  .heroTitle { font-size: 32px; }
-  .mainContent { padding: 24px; }
-  .articleHeader { padding: 24px; flex-direction: column; align-items: flex-start; gap: 16px; }
-  .articleTitle { font-size: 28px; }
-  .articleBody { padding: 24px; font-size: 15px; }
+  .topHeader { padding: 0 20px; height: auto; min-height: 72px; flex-wrap: wrap; gap: 10px; }
+  .logoText { font-size: 20px; }
+  .logoSub { display: none; }
+  .btnBack span:last-child { display: none; }
+  .btnBack { padding: 8px 16px; }
+
+  .heroStrip { padding: 30px 20px; text-align: center; }
+  .heroTitle { font-size: 28px; }
+
+  .mainContent { padding: 20px 15px; }
+  .articleHeader { padding: 20px; flex-direction: column; align-items: center; text-align: center; gap: 12px; }
+  .articleTitle { font-size: 24px; }
+  .articleBody { padding: 20px; font-size: 15px; }
   .otherGrid { grid-template-columns: 1fr; }
-  .logoText { font-size: 18px; }
+}
+
+@media (max-width: 576px) {
+  .breadcrumbNav { flex-wrap: wrap; }
+  .contactBox { padding: 16px; }
+  .menuItem { padding: 14px 16px; }
+  
+  .tableWrap { 
+    margin: 16px -20px; 
+    border-radius: 0; 
+    border-left: none; 
+    border-right: none; 
+    overflow-x: auto;
+  }
+  .policyTable th, .policyTable td { padding: 12px 15px; white-space: nowrap; }
 }

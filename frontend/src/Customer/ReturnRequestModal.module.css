@@ -38,3 +38,20 @@
   object-fit: cover;
   border: 1px solid #edf0f7;
 }
+@media (max-width: 576px) {
+  .footer { 
+    flex-direction: column-reverse;
+    gap: 10px; 
+    width: 100%; 
+  }
+  .footer :global(.ant-btn) { 
+    width: 100%; 
+    margin: 0 !important; 
+  }
+  .uploadBlock { width: 100%; }
+  .previewImage { 
+    width: 100% !important; 
+    height: auto !important; 
+    max-width: 200px; 
+  }
+}

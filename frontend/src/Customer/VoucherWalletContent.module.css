@@ -215,57 +215,40 @@
 }
 
 @media (max-width: 768px) {
-  .statsRow {
-    grid-template-columns: 1fr;
+  .walletHeader { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .statsRow { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .statCard { padding: 10px; text-align: center; }
+  .statCard strong { font-size: 20px; }
+  
+  .voucherCard, .compact .voucherCard {
+    grid-template-columns: 80px 1fr; 
   }
-
-  .voucherCard,
-  .compact .voucherCard {
-    grid-template-columns: 76px 1fr;
-  }
-
   .actions {
     grid-column: 1 / -1;
     flex-direction: row;
     justify-content: flex-end;
-    padding-top: 0;
+    padding: 12px 16px;
+    border-top: 1px dashed #edf0f7;
   }
+  .primaryBtn, .savedBtn, .outOfStockBtn { width: 100%; }
+  
+  .toolbar { align-items: stretch; flex-direction: column; }
+  .searchInput { width: 100%; }
+  .conditionList { flex-direction: column; gap: 4px; }
+}
 
-  .toolbar {
-    align-items: stretch;
+@media (max-width: 576px) {
+  .statsRow { grid-template-columns: 1fr; }
+  
+  .voucherCard, .compact .voucherCard {
+    display: flex;
     flex-direction: column;
   }
-
-  .searchInput {
-    width: 100%;
+  .voucherLeft {
+    flex-direction: row;
+    padding: 8px 12px;
+    justify-content: flex-start;
   }
-}
-.savedBtn,
-.savedBtn:disabled,
-.savedBtn[disabled] {
-  background: #f0fbf2 !important;
-  border-color: #b7ebc6 !important;
-  color: #2f8f46 !important;
-  border-radius: 8px !important;
-  font-weight: 700 !important;
-  cursor: default !important;
-  opacity: 1 !important;
-  box-shadow: none !important;
-}
-
-.savedBtn :global(.anticon) {
-  color: #2f8f46 !important;
-}
-
-.outOfStockBtn,
-.outOfStockBtn:disabled,
-.outOfStockBtn[disabled] {
-  background: #f5f5f5 !important;
-  border-color: #d9d9d9 !important;
-  color: #8c8c8c !important;
-  border-radius: 8px !important;
-  font-weight: 700 !important;
-  cursor: not-allowed !important;
-  opacity: 1 !important;
-  box-shadow: none !important;
+  .iconCircle { width: 32px; height: 32px; font-size: 16px; }
+  .voucherBody { padding: 16px; }
 }

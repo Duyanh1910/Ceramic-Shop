@@ -65,3 +65,30 @@
 .reviewDate { font-size: 12px; color: #aaa; margin-top: 1px; }
 .reviewStars { font-size: 14px !important; }
 .reviewContent { font-size: 14px; color: #555; line-height: 1.7; padding-left: 44px; }
+@media (max-width: 768px) {
+  .statsRow { 
+    flex-direction: column; 
+    align-items: stretch; 
+    gap: 20px; 
+  }
+  .avgBox { 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-around; 
+    background: #f7f9fc; 
+    padding: 16px; 
+    border-radius: 12px; 
+  }
+  .avgScore { font-size: 40px; margin-bottom: 0; }
+  .avgTotal { margin-top: 0; }
+  
+  .ratingRow { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .reviewHeader { flex-wrap: wrap; }
+  .reviewStars { width: 100%; margin-top: 5px; }
+  .reviewContent { padding-left: 0; margin-top: 10px; }
+}
+
+@media (max-width: 576px) {
+  .avgBox { flex-direction: column; text-align: center; gap: 8px; }
+  .btnSubmit { width: 100%; }
+}

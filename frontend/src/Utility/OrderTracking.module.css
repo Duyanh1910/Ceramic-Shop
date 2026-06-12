@@ -356,3 +356,44 @@
   color: #1b437c !important;
   font-weight: 700 !important;
 }
+@media (max-width: 768px) {
+  .topHeader { 
+    height: auto; 
+    padding: 12px 15px; 
+    flex-wrap: wrap; 
+    gap: 12px; 
+  }
+  .logoImg { width: 45px; }
+  .logoText { font-size: 22px; line-height: 1; }
+  .logoSub { display: none; }
+  .btnBack { padding: 0 !important; font-size: 13px; }
+  
+  .mainContent { padding: 20px 10px 50px; }
+  .pageTitle { font-size: 22px; }
+  
+  .tabs :global(.ant-tabs-nav-list) { width: max-content; }
+  .tabs :global(.ant-tabs-tab) { padding: 12px 16px !important; flex: unset; }
+  
+  .modalTitle { flex-direction: column; align-items: flex-start; gap: 4px; }
+  .timelineWrap { padding: 15px 10px; overflow-x: auto; }
+  
+  .timeline :global(.ant-steps-item-description) { display: none; } 
+  
+  .productItem { flex-direction: column; align-items: flex-start; }
+  .productImg { width: 80px; height: 80px; }
+  .productMeta { 
+    width: 100%; 
+    margin-top: 12px; 
+    border-top: 1px dashed #eee; 
+    padding-top: 10px; 
+  }
+  
+  .btnCancel { width: 100%; margin-top: 10px; }
+}
+
+@media (max-width: 576px) {
+  .summaryRow { font-size: 13px; }
+  .totalAmount { font-size: 16px; }
+  .actionCell { flex-direction: column; width: 100%; }
+  .actionCell button { width: 100%; }
+}

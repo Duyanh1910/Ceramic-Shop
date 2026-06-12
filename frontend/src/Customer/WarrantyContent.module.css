@@ -342,36 +342,40 @@
 }
 
 @media (max-width: 768px) {
-  .statsRow {
-    grid-template-columns: 1fr;
+  .warrantyHeader { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .statsRow { grid-template-columns: 1fr; }
+  
+  .warrantyCard, .compact .warrantyCard {
+    display: flex; 
+    flex-direction: column; 
+    padding: 16px;
   }
-
-  .warrantyCard,
-  .compact .warrantyCard {
-    grid-template-columns: 76px 1fr;
-  }
-
+  
+  .productThumb { justify-content: flex-start; margin-bottom: 10px; }
+  .productImage { width: 80px; height: 80px; }
+  
   .actions {
-    grid-column: 1 / -1;
+    width: 100%;
     flex-direction: row;
     justify-content: flex-end;
+    border-top: 1px dashed #edf0f7;
+    padding-top: 16px;
+    margin-top: 8px;
   }
+  .primaryBtn { flex: 1; }
+  
+  .toolbar { flex-direction: column; align-items: stretch; }
+  .searchInput { width: 100%; }
+  
+  .listFooter { flex-direction: column; justify-content: center; text-align: center; }
+  .loadMoreBtn { width: 100%; }
+}
 
-  .toolbar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .searchInput {
-    width: 100%;
-  }
-
-  .listFooter {
-    justify-content: center;
-    text-align: center;
-  }
-
-  .loadMoreBtn {
-    width: 100%;
-  }
+@media (max-width: 576px) {
+  .title { font-size: 20px; }
+  .statCard { text-align: center; }
+  .statCard strong { font-size: 22px; }
+  
+  .timelineHeader { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .requestEvidencePreview img { width: 100% !important; max-width: 150px; height: auto !important; }
 }
