@@ -375,28 +375,43 @@
   }
 }
 
-@media (max-width: 576px) {
+@media (max-width: 768px) {
   .topHeader {
     height: auto !important;
-    min-height: 72px;
-    padding: 12px 14px !important;
-    align-items: flex-start !important;
+    padding: 12px 15px !important;
+    flex-wrap: wrap;
     gap: 10px;
   }
+  .logoImg { width: 45px; height: 45px; }
+  .logoText { font-size: 22px; }
+  .logoSub { display: none; }
 
-  .logoText {
-    font-size: 18px;
+  .orderHeader, .returnHeader { 
+    flex-direction: column; 
+    align-items: flex-start; 
+    gap: 8px; 
   }
+  .returnBody { 
+    flex-direction: column;
+  }
+  .productImage { 
+    width: 100%; 
+    max-width: 80px; 
+    height: auto; 
+  }
+  
+  .listFooter { 
+    flex-direction: column; 
+    text-align: center; 
+    gap: 12px; 
+  }
+  .loadMoreBtn { width: 100%; }
+  .pageHero::after { display: none; } 
+}
 
-  .logoSub {
-    display: none;
-  }
-
-  .btnBack {
-    padding: 0 !important;
-  }
-
-  .pageHero h1 {
-    font-size: 22px;
-  }
+@media (max-width: 576px) {
+  .logoText { font-size: 18px; }
+  .btnBack span:last-child { display: none; }
+  .pageHero h1 { font-size: 20px; line-height: 1.3; }
+  .orderCard, .returnCard { padding: 12px; }
 }

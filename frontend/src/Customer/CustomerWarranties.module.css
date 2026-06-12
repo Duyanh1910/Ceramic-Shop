@@ -226,3 +226,22 @@
     font-size: 22px;
   }
 }
+@media (max-width: 768px) {
+  .topHeader {
+    height: auto !important;
+    padding: 12px 15px !important;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .logoImg { width: 45px; height: 45px; }
+  .logoText { font-size: 22px; }
+  .logoSub { display: none; }
+  .pageHero::after { display: none; }
+}
+
+@media (max-width: 576px) {
+  .logoText { font-size: 18px; }
+  .btnBack span:last-child { display: none; }
+  .pageHero h1 { font-size: 20px; line-height: 1.3; }
+  .contentCard { padding: 16px; }
+}

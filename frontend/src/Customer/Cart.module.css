@@ -546,8 +546,130 @@
   .cartItemRow { flex-wrap: wrap; gap: 10px; position: relative; padding: 14px 16px; }
   .colCheckbox { position: absolute; top: 18px; left: 16px; }
   .colProduct { flex: 100%; padding-left: 26px; }
-  .colPrice { flex: 1; font-size: 13px; }
-  .colQty { flex: 1; justify-content: flex-end; }
+  .colPrice {
+    flex: 100%;
+    text-align: left;
+    padding-left: 26px;
+  }
+
+  .colQty {
+    flex: 100%;
+    justify-content: flex-start;
+    padding-left: 26px;
+  }
+
+  .colTotal {
+    flex: 100%;
+    text-align: left;
+    padding-left: 26px;
+    font-size: 16px;
+  }
   .colTotal { flex: 100%; text-align: right; }
   .colAction { position: absolute; top: 12px; right: 14px; }
+}
+
+@media (max-width: 768px) {
+
+  .mainContent {
+    padding: 15px 10px 40px;
+  }
+
+  .topHeader {
+    height: auto;
+    padding: 12px;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .logoBox {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .logoImg {
+    width: 48px;
+  }
+
+  .logoText {
+    font-size: 20px;
+    letter-spacing: 1px;
+  }
+
+  .logoSub {
+    font-size: 10px;
+    letter-spacing: 1px;
+  }
+
+  .headerRight {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .cartHero {
+    padding: 16px;
+  }
+
+  .cartTitle {
+    font-size: 22px;
+  }
+
+  .cartSubtitle {
+    font-size: 13px;
+  }
+
+  .cartCountBadge {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .selectAllRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .itemImg {
+    width: 60px;
+    height: 60px;
+  }
+
+  .itemName {
+    font-size: 13px;
+  }
+
+  .qtyControls {
+    height: 32px;
+  }
+
+  .qtyBtn {
+    width: 28px;
+  }
+
+  .qtyInput {
+    width: 32px;
+    font-size: 13px;
+  }
+
+  .checkoutSection {
+    padding: 18px;
+    margin-top: 15px;
+  }
+
+  .summaryRow {
+    font-size: 13px;
+  }
+
+  .btnSubmitOrder {
+    font-size: 14px !important;
+    height: 48px !important;
+    white-space: normal;
+    line-height: 1.3;
+  }
+}
+.cartWrapper {
+  overflow-x: hidden;
+}
+* {
+  box-sizing: border-box;
 }

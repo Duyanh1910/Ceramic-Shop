@@ -498,51 +498,39 @@
 }
 
 @media (max-width: 992px) {
-  .articleBox {
-    padding: 40px;
-  }
-
-  .articleTitle {
-    font-size: 32px !important;
-  }
-
-  .relatedCard {
-    flex-basis: calc((100% - 25px) / 2);
-  }
+  .articleBox { padding: 30px; }
+  .articleTitle { font-size: 32px !important; }
+  .relatedCard { flex-basis: calc((100% - 25px) / 2); }
 }
 
 @media (max-width: 768px) {
-  .articleBox {
-    padding: 25px;
+  .headerContainer { 
+    flex-wrap: wrap; 
+    padding: 10px 15px; 
+    height: auto; 
+    gap: 10px; 
   }
-
-  .articleTitle {
-    font-size: 26px !important;
-  }
-
-  .htmlContent {
-    font-size: 16px;
-  }
-
-  .articleFooter {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .relatedCard {
-    flex-basis: min(88vw, 340px);
-    min-width: min(88vw, 340px);
-  }
+  .logoImg { width: 40px; }
+  .logoText { font-size: 20px !important; }
+  .logoSub { display: none !important; }
+  
+  .articleBox { padding: 20px 15px; }
+  .articleTitle { font-size: 24px !important; line-height: 1.4 !important; }
+  .htmlContent { font-size: 16px; line-height: 1.7; }
+  .htmlContent h1 { font-size: 22px; margin: 25px 0 15px; }
+  .htmlContent h2 { font-size: 20px; margin: 25px 0 15px; }
+  .htmlContent blockquote { font-size: 18px; padding: 15px; margin: 20px 0; }
+  
+  .coverImage { max-height: 250px; } 
+  
+  .articleFooter { flex-direction: column; align-items: flex-start; gap: 15px; }
+  .relatedCard { flex-basis: min(85vw, 280px); min-width: min(85vw, 280px); }
+  .relatedTitle { font-size: 20px; }
 }
 
 @media (max-width: 576px) {
-  .relatedNav {
-    width: 100%;
-    justify-content: space-between;
-    margin-top: 0;
-  }
-
-  .relatedNavLabel {
-    font-size: 12px;
-  }
+  .authorInfo { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .relatedNav { width: 100%; justify-content: space-between; margin-top: 15px; }
+  .relatedNavLabel { font-size: 12px; }
+  .relatedImg { height: 160px; }
 }

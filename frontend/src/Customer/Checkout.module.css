@@ -631,10 +631,26 @@
 }
 
 @media (max-width: 640px) {
-  .topHeader { padding: 0 18px; }
-  .mainContent { padding: 20px 14px 60px; }
+  .topHeader { 
+    padding: 10px 15px; 
+    height: auto; 
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .logoImg { width: 45px; }
+  .logoText { font-size: 22px; }
+  .logoSub { display: none; }
+  .btnBack { font-size: 13px !important; padding: 0 !important; }
+  
+  .mainContent { padding: 15px 10px 60px; }
   .formRow { grid-template-columns: 1fr; }
-  .successCard { padding: 36px 24px; }
-  .successActions { flex-direction: column; }
-  .section { padding: 18px 16px; }
+  .section { padding: 16px 14px; }
+  
+  .checkoutSteps { display: none; }
+  .pageTitle { font-size: 20px; }
+
+  .successCard { padding: 30px 20px; }
+  .successTitle { font-size: 22px; }
+  .successActions { flex-direction: column; gap: 10px; }
+  .btnOrders, .btnHome { width: 100%; }
 }
