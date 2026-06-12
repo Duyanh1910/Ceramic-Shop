@@ -8,7 +8,7 @@
 }
 
 .profileWrapper {
-  min-height: calc(100vh - 64px);
+  min-height: 100vh;
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.78), rgba(213, 233, 255, 0.9)),
     url('https://res.cloudinary.com/dcmwz0uis/image/upload/v1774819412/bghome_dnne19.avif') center/cover no-repeat fixed;
@@ -80,7 +80,7 @@
 }
 
 .mainContent {
-  min-height: calc(100vh - 64px);
+  min-height: auto;
   padding: 40px 28px;
   box-sizing: border-box;
 }
@@ -93,7 +93,7 @@
 
 .innerLayout {
   display: flex;
-  gap: 30px;
+  gap: 24px;
   align-items: flex-start;
 }
 
@@ -185,6 +185,7 @@
 .formContent {
   flex: 1;
   min-width: 0;
+  height: fit-content;
   background: rgba(255, 255, 255, 0.96);
   border-radius: 20px;
   box-shadow: 0 18px 42px rgba(23, 51, 84, 0.08);
@@ -432,7 +433,7 @@
 }
 
 .adminProfileWrapper .mainContent {
-  min-height: calc(100vh - 64px);
+  min-height: auto;
   padding: 40px 28px;
   box-sizing: border-box;
 }
@@ -606,4 +607,14 @@
 .profileForm :global(.ant-btn) {
   width: 100%;
   max-width: 100%;
+}
+html,
+body,
+#root {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.ant-layout {
+  overflow-x: hidden;
 }
