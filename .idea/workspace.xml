@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9d190b9a-02ed-468e-b5d3-28393d9072cd" name="Changes" comment="refactor: fixing staff default password when" />
+    <list default="true" id="9d190b9a-02ed-468e-b5d3-28393d9072cd" name="Changes" comment="fix: fixing mojibake text" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -144,7 +144,7 @@
       <workItem from="1781076913100" duration="55000" />
       <workItem from="1781171124436" duration="9000" />
       <workItem from="1781226406925" duration="2192000" />
-      <workItem from="1781345210505" duration="896000" />
+      <workItem from="1781345210505" duration="1213000" />
     </task>
     <task id="LOCAL-00001" summary="refactor: add helper to order service">
       <option name="closed" value="true" />
@@ -162,7 +162,15 @@
       <option name="project" value="LOCAL" />
       <updated>1781228589053</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="fix: fixing mojibake text">
+      <option name="closed" value="true" />
+      <created>1781346764443</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1781346764443</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -209,6 +217,7 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="refactor: add helper to order service" />
     <MESSAGE value="refactor: fixing staff default password when" />
-    <option name="LAST_COMMIT_MESSAGE" value="refactor: fixing staff default password when" />
+    <MESSAGE value="fix: fixing mojibake text" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix: fixing mojibake text" />
   </component>
 </project>

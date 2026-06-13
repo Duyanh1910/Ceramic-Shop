@@ -182,7 +182,7 @@ export default function AdminPayments() {
       }));
 
       setMethodOptions([
-        { label: "Tất cả các phương ", value: ALL_VALUE },
+        { label: "Tất cả các phương thức", value: ALL_VALUE },
         ...options,
       ]);
     } catch (err) {
