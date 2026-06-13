@@ -16,6 +16,7 @@ import AddressSelector from '../Utility/AddressSelector.jsx';
 import { API_BASE } from "../config/api";
 
 const fmt = (p) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(p ?? 0);
+const HAI_PHONG_PROVINCE_ID = 224;
 
 const getVoucherValueText = (promo) => {
   if (Number(promo?.MaLoaiKM) === 1) {
@@ -432,7 +433,7 @@ export default function Checkout() {
       setAddressError('Vui lòng chọn đầy đủ tỉnh/huyện/xã và nhập số nhà!');
       return;
     }
-    if (shippingMethod === 2 && addressData.string && !addressData.string.toLowerCase().includes('hải phòng')) {
+    if (shippingMethod === 2 && Number(addressData.obj?.ToProvinceID) !== HAI_PHONG_PROVINCE_ID) {
       message.error('Giao hỏa tốc chỉ áp dụng trong khu vực nội thành Hải Phòng!');
       return;
     }
@@ -618,6 +619,7 @@ export default function Checkout() {
                             Địa chỉ giao hàng <span className={styles.req}>*</span>
                         </div>
                             <AddressSelector 
+                                allowedProvinceIds={shippingMethod === 2 ? [HAI_PHONG_PROVINCE_ID] : null}
                                 onChange={(addressString, addressObj) => { 
                                     setAddressData({ string: addressString, obj: addressObj }); 
                                     setAddressError(''); 
