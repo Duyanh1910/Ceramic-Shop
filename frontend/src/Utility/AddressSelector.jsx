@@ -8,7 +8,7 @@ const GHN_TOKEN = 'f65ff050-29e7-11f1-9f4b-f241d8a55f51';
 const GHN_BASE  = 'https://online-gateway.ghn.vn/shiip/public-api/master-data';
 const GHN_HDR   = { Token: GHN_TOKEN, 'Content-Type': 'application/json' };
 
-export default function AddressSelector({ onChange, disabled = false }) {
+export default function AddressSelector({ onChange, disabled = false, allowedProvinceIds = null }) {
   const [provinces, setProvinces] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [wards,     setWards]     = useState([]);
@@ -22,25 +22,10 @@ export default function AddressSelector({ onChange, disabled = false }) {
   const [loadingD, setLoadingD] = useState(false);
   const [loadingW, setLoadingW] = useState(false);
 
-  useEffect(() => { fetchProvinces(); }, []);
-
-  useEffect(() => {
-    const parts = [detail.trim(), selectedWard?.label, selectedDistrict?.label, selectedProvince?.label].filter(Boolean);
-    const str = parts.join(', ') || '';
-    const obj = (selectedDistrict && selectedWard)
-      ? { ToProvinceID: selectedProvince?.id, ToDistrictID: selectedDistrict?.id, ToWardID: selectedWard?.id }
-      : null;
-    if (onChange) onChange(str, obj);
-  }, [selectedProvince, selectedDistrict, selectedWard, detail]);
-
-  const fetchProvinces = async () => {
-    setLoadingP(true);
-    try {
-      const res = await axios.get(`${GHN_BASE}/province`, { headers: GHN_HDR });
-      setProvinces((res.data?.data || []).map(p => ({ value: p.ProvinceID, label: p.ProvinceName })));
-    } catch { setProvinces([]); }
-    finally { setLoadingP(false); }
-  };
+  const allowedProvinceKey = (allowedProvinceIds || []).map(Number).sort((a, b) => a - b).join(',');
+  const isProvinceAllowed = (provinceId) => (
+    !allowedProvinceKey || allowedProvinceKey.split(',').includes(String(Number(provinceId)))
+  );
 
   const fetchDistricts = async (provinceId) => {
     setLoadingD(true);
@@ -63,10 +48,51 @@ export default function AddressSelector({ onChange, disabled = false }) {
     finally { setLoadingW(false); }
   };
 
+  const fetchProvinces = async () => {
+    setLoadingP(true);
+    try {
+      const res = await axios.get(`${GHN_BASE}/province`, { headers: GHN_HDR });
+      const options = (res.data?.data || [])
+        .filter(p => isProvinceAllowed(p.ProvinceID))
+        .map(p => ({ value: p.ProvinceID, label: p.ProvinceName }));
+
+      setProvinces(options);
+
+      const currentProvinceAllowed = selectedProvince && isProvinceAllowed(selectedProvince.id);
+
+      if (selectedProvince && !currentProvinceAllowed && options.length !== 1) {
+        setSelectedProvince(null);
+        setSelectedDistrict(null);
+        setSelectedWard(null);
+        setDistricts([]);
+        setWards([]);
+      }
+
+      if ((!selectedProvince || !currentProvinceAllowed) && options.length === 1) {
+        const onlyProvince = options[0];
+        setSelectedProvince({ id: onlyProvince.value, label: onlyProvince.label });
+        fetchDistricts(onlyProvince.value);
+      }
+    } catch { setProvinces([]); }
+    finally { setLoadingP(false); }
+  };
+
+  useEffect(() => { fetchProvinces(); }, [allowedProvinceKey]);
+
+  useEffect(() => {
+    const parts = [detail.trim(), selectedWard?.label, selectedDistrict?.label, selectedProvince?.label].filter(Boolean);
+    const str = parts.join(', ') || '';
+    const obj = (selectedDistrict && selectedWard)
+      ? { ToProvinceID: selectedProvince?.id, ToDistrictID: selectedDistrict?.id, ToWardID: selectedWard?.id }
+      : null;
+    if (onChange) onChange(str, obj);
+  }, [selectedProvince, selectedDistrict, selectedWard, detail]);
+
   const filterOpt = (input, option) =>
     (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
 
   const handleProvince = (val, opt) => {
+    if (!isProvinceAllowed(val)) return;
     setSelectedProvince({ id: val, label: opt.label });
     setSelectedDistrict(null); setSelectedWard(null);
     fetchDistricts(val);
