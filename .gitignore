@@ -28,3 +28,7 @@ database/.idea/modules.xml
 database/.idea/php.xml
 database/.idea/.gitignore
 database/.idea/vcs.xml
+
+.idea/
+.ai/
+.agents/
