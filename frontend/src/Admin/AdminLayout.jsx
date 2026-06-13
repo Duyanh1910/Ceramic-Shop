@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Avatar, Dropdown, Layout, Menu, notification } from "antd";
+import { Avatar, Drawer, Dropdown, Layout, Menu, notification } from "antd";
 import {
   AlertOutlined,
   AppstoreOutlined,
@@ -13,6 +13,7 @@ import {
   DeploymentUnitOutlined,
   FileTextOutlined,
   LogoutOutlined,
+  MenuOutlined,
   SafetyOutlined,
   SettingOutlined,
   ShoppingOutlined,
@@ -179,6 +180,27 @@ export default function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth <= 768;
+
+      setIsMobile(mobile);
+
+      if (!mobile) {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   const rawRole =
     localStorage.getItem("admin_role") || localStorage.getItem("role") || "";
@@ -399,65 +421,80 @@ export default function AdminLayout() {
 
   return (
     <Layout className={styles.adminWrapper}>
-      <Sider
-        trigger={null}
-        collapsible
-        collapsed={collapsed}
-        width={240}
-        collapsedWidth={88}
-        className={styles.sider}
-        breakpoint="lg"
-        onBreakpoint={(broken) => setCollapsed(broken)}
-      >
-        <button
-          type="button"
-          className={`${styles.siderLogo} ${collapsed ? styles.siderLogoCollapsed : ""}`}
-          onClick={() => setCollapsed(!collapsed)}
-          aria-label={
-            collapsed ? "Mở thanh quản trị" : "Thu gọn thanh quản trị"
-          }
-          title={collapsed ? "Mở thanh quản trị" : "Thu gọn thanh quản trị"}
+      {!isMobile && (
+        <Sider
+          trigger={null}
+          collapsible
+          collapsed={collapsed}
+          width={240}
+          collapsedWidth={88}
+          className={styles.sider}
         >
-          <img
-            src="/logo.png"
-            alt="Ceramic Shop Logo"
-            className={styles.logoImg}
-          />
+          <button
+            type="button"
+            className={`${styles.siderLogo} ${
+              collapsed ? styles.siderLogoCollapsed : ""
+            }`}
+            onClick={() => setCollapsed((current) => !current)}
+            aria-label={collapsed ? "Mở thanh quản trị" : "Thu gọn thanh quản trị"}
+            title={collapsed ? "Mở thanh quản trị" : "Thu gọn thanh quản trị"}
+          >
+            <img
+              src="/logo.png"
+              alt="Ceramic Shop Logo"
+              className={styles.logoImg}
+            />
 
-          {!collapsed && (
-            <div className={styles.logoTextWrap}>
-              <span className={styles.logoText}>CERAMIC-SHOP</span>
-              <span className={styles.logoSub}>TINH HOA GỐM SỨ VIỆT</span>
-            </div>
-          )}
-        </button>
+            {!collapsed && (
+              <div className={styles.logoTextWrap}>
+                <span className={styles.logoText}>CERAMIC-SHOP</span>
+                <span className={styles.logoSub}>TINH HOA GỐM SỨ VIỆT</span>
+              </div>
+            )}
+          </button>
 
-        <div className={styles.menuScroll}>
-          <Menu
-            theme="dark"
-            mode="inline"
-            selectedKeys={[selectedMenuKey]}
-            defaultOpenKeys={["system", "catalog", "sales", "support"]}
-            items={menuItems}
-            onClick={({ key }) => {
-              if (String(key).startsWith("/admin")) {
-                navigate(key);
-              }
-            }}
-            className={styles.siderMenu}
-          />
-        </div>
-      </Sider>
+          <div className={styles.menuScroll}>
+            <Menu
+              theme="dark"
+              mode="inline"
+              selectedKeys={[selectedMenuKey]}
+              defaultOpenKeys={["system", "catalog", "sales", "support"]}
+              items={menuItems}
+              onClick={({ key }) => {
+                if (String(key).startsWith("/admin")) {
+                  navigate(key);
+                }
+              }}
+              className={styles.siderMenu}
+            />
+          </div>
+        </Sider>
+      )}
 
       <Layout>
         <Header className={styles.header}>
+          <div className={styles.headerLeft}>
+            {isMobile && (
+              <button
+                type="button"
+                className={styles.menuBtn}
+                onClick={() => setMobileMenuOpen(true)}
+                aria-label="Mở menu quản trị"
+              >
+                <MenuOutlined />
+              </button>
+            )}
+          </div>
+
           <div className={styles.headerRight}>
             <NotificationBell placement="header" />
+
             <Dropdown menu={userMenu} placement="bottomRight" arrow>
               <div className={styles.userInfo}>
                 <Avatar className={styles.avatar}>
                   {username?.[0]?.toUpperCase()}
                 </Avatar>
+
                 <div className={styles.userMeta}>
                   <span className={styles.userName}>{username}</span>
                   <span className={styles.userRole}>{role}</span>
@@ -466,6 +503,54 @@ export default function AdminLayout() {
             </Dropdown>
           </div>
         </Header>
+        <Drawer
+          placement="left"
+          open={isMobile && mobileMenuOpen}
+          onClose={() => setMobileMenuOpen(false)}
+          width={286}
+          rootClassName={styles.mobileDrawerRoot}
+          className={styles.mobileDrawer}
+          closable={false}
+        >
+          <div className={`${styles.sider} ${styles.drawerSider}`}>
+            <button
+              type="button"
+              className={styles.siderLogo}
+              onClick={() => {
+                setMobileMenuOpen(false);
+                navigate("/admin");
+              }}
+              aria-label="Về trang đơn hàng"
+            >
+              <img
+                src="/logo.png"
+                alt="Ceramic Shop Logo"
+                className={styles.logoImg}
+              />
+              <div className={styles.logoTextWrap}>
+                <span className={styles.logoText}>CERAMIC-SHOP</span>
+                <span className={styles.logoSub}>TINH HOA GỐM SỨ VIỆT</span>
+              </div>
+            </button>
+
+            <div className={styles.menuScroll}>
+              <Menu
+                theme="dark"
+                mode="inline"
+                selectedKeys={[selectedMenuKey]}
+                defaultOpenKeys={["system", "catalog", "sales", "support"]}
+                items={menuItems}
+                onClick={({ key }) => {
+                  if (String(key).startsWith("/admin")) {
+                    setMobileMenuOpen(false);
+                    navigate(key);
+                  }
+                }}
+                className={styles.siderMenu}
+              />
+            </div>
+          </div>
+        </Drawer>
         <Content className={styles.content}>
           <Outlet />
         </Content>

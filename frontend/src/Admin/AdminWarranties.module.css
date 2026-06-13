@@ -83,3 +83,24 @@
   opacity: 0.6;
   filter: grayscale(80%);
 }
+
+@media (max-width: 768px) {
+  .warranty-card {
+    margin: 0;
+  }
+
+  .warranty-toolbar {
+    align-items: stretch;
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .warranty-search-input {
+    width: 100%;
+  }
+
+  .warranty-toolbar :global(.ant-space) {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+}

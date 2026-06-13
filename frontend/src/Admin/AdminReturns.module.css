@@ -57,6 +57,33 @@
 }
 
 @media (max-width: 768px) {
+  .returnsCard {
+    margin: 0;
+  }
+
+  .toolbar {
+    align-items: stretch;
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .searchInput {
+    width: 100%;
+  }
+
+  .toolbar :global(.ant-space) {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .actionBar {
+    justify-content: stretch;
+  }
+
+  .actionBar :global(.ant-btn) {
+    width: 100%;
+  }
+
   .formGrid {
     grid-template-columns: 1fr;
   }

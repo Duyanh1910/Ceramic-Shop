@@ -15,7 +15,6 @@ import {
 } from "antd";
 import {
   SearchOutlined,
-  ReloadOutlined,
   EditOutlined,
   DeleteOutlined,
   UserOutlined,
@@ -140,6 +139,7 @@ export default function AdminCustomers() {
   const columns = [
     {
       title: "Khách hàng",
+      width: 240,
       render: (_, row) => (
         <div className={styles.userCell}>
           <Avatar
@@ -159,17 +159,19 @@ export default function AdminCustomers() {
     {
       title: "Email",
       dataIndex: ["TaiKhoan", "Email"],
+      width: 260,
       render: (v) => <span className={styles.email}>{v}</span>,
     },
     {
       title: "Số điện thoại",
       dataIndex: "SDT",
+      width: 150,
       render: (v) => v || <span style={{ color: "#ccc" }}>Chưa cập nhật</span>,
     },
     {
       title: "Địa chỉ",
       dataIndex: "DiaChi",
-      width: 350,
+      width: 280,
       ellipsis: true,
       render: (v) => (
         <Tooltip title={v} placement="topLeft">
@@ -189,7 +191,7 @@ export default function AdminCustomers() {
     },
     {
       title: "Trạng thái",
-      width: 140,
+      width: 130,
       render: (_, row) =>
         Number(row.TaiKhoan?.TrangThai) === 0 ? (
           <Tag icon={<StopOutlined />} color="default">
@@ -203,7 +205,7 @@ export default function AdminCustomers() {
     },
     {
       title: "Thao tác",
-      width: 150,
+      width: 130,
       align: "center",
       render: (_, row) =>
         isAdmin ? (
@@ -276,11 +278,11 @@ export default function AdminCustomers() {
         >
           Tìm kiếm
         </Button>
-        <Button icon={<ReloadOutlined />} onClick={handleReload} />
       </div>
 
       <div className={styles.tableCard}>
         <Table
+          scroll={{ x: 1190 }}
           dataSource={data}
           columns={columns}
           rowKey="MaKhachHang"

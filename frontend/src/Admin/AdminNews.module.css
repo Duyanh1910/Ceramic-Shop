@@ -345,8 +345,40 @@
 }
 @media (max-width: 640px) {
   .page {
-    padding: 14px;
+    padding: 0;
+    min-width: 0;
   }
+
+  .pageHeader {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .headerLeft {
+    align-items: flex-start;
+  }
+
+  .btnCreate {
+    width: 100%;
+  }
+
+  .toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .searchInput,
+  .toolbar :global(.ant-select),
+  .toolbar :global(.ant-picker),
+  .toolbar :global(.ant-btn) {
+    width: 100% !important;
+  }
+
+  .tableWrap {
+    border-radius: 10px;
+  }
+
   .formRow2 {
     flex-direction: column;
     gap: 0;

@@ -16,7 +16,6 @@ import {
   HistoryOutlined,
   SearchOutlined,
   SafetyCertificateOutlined,
-  ReloadOutlined,
   DownloadOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
@@ -385,11 +384,6 @@ const WarrantyList = () => {
             </Radio.Button>
             <Radio.Button value={WARRANTY_STATUS.EXPIRED}>Hết hạn</Radio.Button>
           </Radio.Group>
-
-          <Button icon={<ReloadOutlined />} onClick={handleReload}>
-            Tải lại
-          </Button>
-
           <Button
             type="primary"
             icon={<DownloadOutlined />}

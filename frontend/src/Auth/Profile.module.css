@@ -464,7 +464,9 @@
   }
 
   .sidebar {
-    width: 100%;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
   }
 
   .sidebarMenu {
@@ -529,6 +531,9 @@
 
   .sidebar {
     padding: 12px;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
   }
 
   .userNameMini strong {

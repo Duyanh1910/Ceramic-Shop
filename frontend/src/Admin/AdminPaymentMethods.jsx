@@ -16,7 +16,6 @@ import {
 import {
   CreditCardOutlined,
   EditOutlined,
-  ReloadOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
 import styles from "./AdminTable.module.css";
@@ -212,11 +211,6 @@ export default function AdminPaymentMethods() {
             Phương thức thanh toán
           </Title>
         </Space>
-      }
-      extra={
-        <Button icon={<ReloadOutlined />} onClick={fetchData}>
-          Tải lại
-        </Button>
       }
     >
       <Table

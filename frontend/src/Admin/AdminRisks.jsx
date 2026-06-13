@@ -26,7 +26,6 @@ import {
   DownloadOutlined,
   EditOutlined,
   EyeOutlined,
-  ReloadOutlined,
   SearchOutlined,
   StopOutlined,
   WarningOutlined,
@@ -723,11 +722,6 @@ export default function AdminRisks() {
           }}
           className={styles.filterSelect}
         />
-
-        <Button icon={<ReloadOutlined />} onClick={resetFilters}>
-          Làm mới
-        </Button>
-
         <Button
           type="primary"
           icon={<DownloadOutlined />}

@@ -1,6 +1,6 @@
 import {useEffect, useState} from "react";
 import {Button, Form, Input, message, Modal, Table, Tooltip} from "antd";
-import {EditOutlined, PlusOutlined, ReloadOutlined, SearchOutlined,} from "@ant-design/icons";
+import {EditOutlined, PlusOutlined, SearchOutlined,} from "@ant-design/icons";
 import axios from "axios";
 import styles from "./AdminTable.module.css";
 import { API_BASE } from "../config/api";
@@ -244,10 +244,6 @@ export default function AdminSuppliers() {
                     allowClear
                     onClear={handleReload}
                 />
-
-                <Button icon={<ReloadOutlined/>} onClick={handleReload}>
-                    Làm mới
-                </Button>
             </div>
 
             <div className={styles.tableCard}>
