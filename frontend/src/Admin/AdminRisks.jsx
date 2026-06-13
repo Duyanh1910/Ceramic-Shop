@@ -265,6 +265,12 @@ export default function AdminRisks() {
   const [form] = Form.useForm();
   const [searchParams, setSearchParams] = useSearchParams();
   const riskIdParam = searchParams.get("riskId");
+  const role = String(
+    localStorage.getItem("admin_role") || localStorage.getItem("role") || "",
+  )
+    .trim()
+    .toLowerCase();
+  const isAdmin = role === "admin";
 
   const [data, setData] = useState([]);
   const [selectedRisk, setSelectedRisk] = useState(null);
@@ -288,6 +294,10 @@ export default function AdminRisks() {
   const [staffLoading, setStaffLoading] = useState(false);
 
   const fetchStaffOptions = async (keyword = "") => {
+    if (!isAdmin) {
+      return;
+    }
+
     setStaffLoading(true);
 
     try {
@@ -312,10 +322,6 @@ export default function AdminRisks() {
       setStaffLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchStaffOptions();
-  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -447,8 +453,11 @@ export default function AdminRisks() {
         MucDo: values.MucDo,
         NguonPhatHien: values.NguonPhatHien,
         GhiChu: values.GhiChu || null,
-        MaNhanVienPhuTrach: values.MaNhanVienPhuTrach || null,
       };
+
+      if (isAdmin) {
+        payload.MaNhanVienPhuTrach = values.MaNhanVienPhuTrach || null;
+      }
 
       const res = await axios.patch(
         `${API_BASE}/admin/after_sales/risks/${selectedRisk.MaRuiRo}`,
@@ -964,38 +973,40 @@ export default function AdminRisks() {
                       <Select options={SOURCE_FORM_OPTIONS} />
                     </Form.Item>
 
-                    <Form.Item
-                      name="MaNhanVienPhuTrach"
-                      label="Nhân viên phụ trách"
-                      tooltip="Có thể để trống nếu chưa cần gán nhân viên."
-                    >
-                      <Select
-                        allowClear
-                        showSearch
-                        loading={staffLoading}
-                        options={staffOptions}
-                        placeholder="Tìm theo tên, SĐT hoặc mã nhân viên"
-                        optionFilterProp="searchText"
-                        filterOption={(input, option) =>
-                          String(option?.searchText || option?.label || "")
-                            .toLowerCase()
-                            .includes(input.toLowerCase())
-                        }
-                        onSearch={fetchStaffOptions}
-                        onFocus={() => {
-                          if (staffOptions.length === 0) {
-                            fetchStaffOptions();
+                    {isAdmin && (
+                      <Form.Item
+                        name="MaNhanVienPhuTrach"
+                        label="Nhân viên phụ trách"
+                        tooltip="Có thể để trống nếu chưa cần gán nhân viên."
+                      >
+                        <Select
+                          allowClear
+                          showSearch
+                          loading={staffLoading}
+                          options={staffOptions}
+                          placeholder="Tìm theo tên, SĐT hoặc mã nhân viên"
+                          optionFilterProp="searchText"
+                          filterOption={(input, option) =>
+                            String(option?.searchText || option?.label || "")
+                              .toLowerCase()
+                              .includes(input.toLowerCase())
                           }
-                        }}
-                        notFoundContent={
-                          staffLoading ? (
-                            <Spin size="small" />
-                          ) : (
-                            "Không tìm thấy nhân viên"
-                          )
-                        }
-                      />
-                    </Form.Item>
+                          onSearch={fetchStaffOptions}
+                          onFocus={() => {
+                            if (staffOptions.length === 0) {
+                              fetchStaffOptions();
+                            }
+                          }}
+                          notFoundContent={
+                            staffLoading ? (
+                              <Spin size="small" />
+                            ) : (
+                              "Không tìm thấy nhân viên"
+                            )
+                          }
+                        />
+                      </Form.Item>
+                    )}
                   </div>
 
                   <Form.Item name="GhiChu" label="Ghi chú xử lý">
