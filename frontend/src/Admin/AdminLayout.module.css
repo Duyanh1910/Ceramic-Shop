@@ -16,7 +16,7 @@
   box-shadow: 4px 0 12px rgba(0, 0, 0, 0.15);
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: auto;
 }
 
 :global(.ant-layout-sider-children) {
@@ -103,25 +103,8 @@
   max-height: calc(100vh - 96px);
   overflow-x: hidden;
   scrollbar-gutter: stable;
+  overflow: unset;
 }
-
-.menuScroll::-webkit-scrollbar {
-  width: 8px;
-}
-
-.menuScroll::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.04);
-}
-
-.menuScroll::-webkit-scrollbar-thumb {
-  background: rgba(196, 140, 70, 0.55);
-  border-radius: 8px;
-}
-
-.menuScroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(196, 140, 70, 0.8);
-}
-
 :global(.ant-menu-dark .ant-menu-item-selected) {
   background: linear-gradient(
     90deg,
