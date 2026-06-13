@@ -19,6 +19,7 @@ import {
   CheckCircleOutlined,
   CloseCircleOutlined,
   EyeOutlined,
+  ReloadOutlined,
   SearchOutlined,
   WalletOutlined,
 } from "@ant-design/icons";
@@ -174,17 +175,14 @@ export default function AdminPayments() {
 
   const fetchPaymentMethods = async () => {
     try {
-      const res = await axios.get(
-        `${API_BASE}/admin/payment-methods`,
-        authConfig(),
-      );
+      const res = await axios.get(`${API_BASE}/admin/payment-methods`, authConfig());
       const options = (res.data?.result || []).map((item) => ({
         label: item.TenPhuongThuc || `#${item.MaPhuongThuc}`,
         value: item.MaPhuongThuc,
       }));
 
       setMethodOptions([
-        { label: "Tất cả các phương thức", value: ALL_VALUE },
+        { label: "Táº¥t cáº£ phÆ°Æ¡ng thá»©c", value: ALL_VALUE },
         ...options,
       ]);
     } catch (err) {
@@ -294,7 +292,8 @@ export default function AdminPayments() {
       }
     } catch (err) {
       message.error(
-        err.response?.data?.message || "Không thể đánh dấu hoàn tiền thất bại!",
+        err.response?.data?.message ||
+          "Không thể đánh dấu hoàn tiền thất bại!",
       );
     } finally {
       setActionLoading(false);
@@ -400,7 +399,8 @@ export default function AdminPayments() {
       width: 210,
       render: (_, record) => {
         const isPendingRefund =
-          record.LoaiGiaoDich === "HOAN_TIEN" && record.TrangThai === "PENDING";
+          record.LoaiGiaoDich === "HOAN_TIEN" &&
+          record.TrangThai === "PENDING";
 
         return (
           <Space size={4}>
@@ -493,6 +493,10 @@ export default function AdminPayments() {
             setPage(1);
           }}
         />
+
+        <Button icon={<ReloadOutlined />} onClick={resetFilters}>
+          Làm mới
+        </Button>
       </div>
 
       <Table
@@ -705,7 +709,11 @@ export default function AdminPayments() {
             <Text strong>#{selectedDetail?.MaGiaoDich}</Text>
           </Form.Item>
 
-          <Form.Item name="MaLoi" label="Mã lỗi" initialValue="REFUND_FAILED">
+          <Form.Item
+            name="MaLoi"
+            label="Mã lỗi"
+            initialValue="REFUND_FAILED"
+          >
             <Input />
           </Form.Item>
 

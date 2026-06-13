@@ -296,38 +296,6 @@
 }
 
 @media (max-width: 768px) {
-  .pageHeader {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-  }
-
-  .pageTitle {
-    font-size: 22px;
-    line-height: 1.2;
-  }
-
-  .filters {
-    align-items: stretch;
-    width: 100%;
-  }
-
-  .modeGroup,
-  .filterSelect {
-    width: 100%;
-  }
-
-  .modeGroup :global(.ant-radio-button-wrapper) {
-    text-align: center;
-    flex: 1;
-  }
-
-  .modeGroup:global(.ant-radio-group),
-  .modeGroup :global(.ant-radio-group) {
-    display: flex;
-    width: 100%;
-  }
-
   .chartHeader {
     align-items: flex-start;
     flex-direction: column;

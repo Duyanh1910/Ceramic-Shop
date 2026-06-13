@@ -22,6 +22,7 @@ import {
   EditOutlined,
   DeleteOutlined,
   EyeOutlined,
+  ReloadOutlined,
   UploadOutlined,
   FileImageOutlined,
 } from "@ant-design/icons";
@@ -565,6 +566,10 @@ export default function AdminProducts() {
           allowClear
           onClear={handleReload}
         />
+
+        <Button icon={<ReloadOutlined />} onClick={handleReload}>
+          Làm mới
+        </Button>
       </div>
 
       <div className={styles.tableCard}>

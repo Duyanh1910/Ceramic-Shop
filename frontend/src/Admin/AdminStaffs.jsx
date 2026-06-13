@@ -15,6 +15,7 @@ import {
 import {
   SearchOutlined,
   PlusOutlined,
+  ReloadOutlined,
   DeleteOutlined,
   EditOutlined,
 } from "@ant-design/icons";
@@ -287,6 +288,7 @@ export default function AdminStaffs() {
         >
           Tìm kiếm
         </Button>
+        <Button icon={<ReloadOutlined />} onClick={handleReload} />
       </div>
 
       <div className={styles.tableCard}>

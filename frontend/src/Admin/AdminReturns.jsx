@@ -24,6 +24,7 @@ import {
   CheckCircleOutlined,
   DownloadOutlined,
   EyeOutlined,
+  ReloadOutlined,
   RollbackOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
@@ -623,6 +624,11 @@ export default function AdminReturns() {
               </Radio.Button>
             ))}
           </Radio.Group>
+
+          <Button icon={<ReloadOutlined />} onClick={handleReload}>
+            Tải lại
+          </Button>
+
           <Button
             type="primary"
             icon={<DownloadOutlined />}
