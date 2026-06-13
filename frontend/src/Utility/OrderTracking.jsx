@@ -325,7 +325,7 @@ export default function OrderTracking() {
                   description="Bạn chưa có đơn hàng nào"
                 >
                   <Button type="primary" className={styles.btnShop}
-                    onClick={() => navigate('/')}>
+                    onClick={() => navigate('/home')}>
                     Mua sắm ngay
                   </Button>
                 </Empty>

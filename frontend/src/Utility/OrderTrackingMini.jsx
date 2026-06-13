@@ -261,7 +261,7 @@ export default function OrderTrackingMini() {
       ) : orders.length === 0 ? (
         <div className={styles.emptyWrap} style={{ padding: '40px 0' }}>
           <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Bạn chưa có đơn hàng nào">
-             <Button type="primary" onClick={() => navigate('/')} style={{ background: '#1b437c', marginTop: 10 }}>
+             <Button type="primary" onClick={() => navigate('/home')} style={{ background: '#1b437c', marginTop: 10 }}>
                 Mua sắm ngay
              </Button>
           </Empty>
