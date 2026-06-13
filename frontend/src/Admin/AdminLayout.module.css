@@ -16,7 +16,9 @@
   box-shadow: 4px 0 12px rgba(0, 0, 0, 0.15);
   display: flex;
   flex-direction: column;
-  height: auto;
+  height: 100vh;
+  position: sticky;
+  top: 0;
 }
 
 :global(.ant-layout-sider-children) {
@@ -99,11 +101,25 @@
 }
 
 .menuScroll {
+  flex: 1;
   overflow-y: auto;
-  max-height: calc(100vh - 96px);
   overflow-x: hidden;
-  scrollbar-gutter: stable;
-  overflow: unset;
+}
+.menuScroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.menuScroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.menuScroll::-webkit-scrollbar-thumb {
+  background: rgba(196, 140, 70, 0.55);
+  border-radius: 10px;
+}
+
+.menuScroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(196, 140, 70, 0.8);
 }
 :global(.ant-menu-dark .ant-menu-item-selected) {
   background: linear-gradient(
@@ -366,11 +382,6 @@
   ) {
   display: none !important;
 }
-.adminWrapper {
-  display: flex;
-  align-items: stretch;
-}
-
 .sider {
   min-height: 100%;
 }
