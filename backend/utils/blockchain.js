@@ -321,10 +321,15 @@ const validateConfiguredContract = async () => {
 };
 
 export const bcThemSanPham = async (product, nhaCungCap = {}) => {
+  console.log("A: validate");
+
   await validateConfiguredContract();
+
+  console.log("B: get contract");
 
   const c = getWriteContract();
 
+  console.log("C: send tx");
   const tx = await c.themSanPham(
     product.MaSanPham.toString(),
     product.TenSanPham,
@@ -334,7 +339,16 @@ export const bcThemSanPham = async (product, nhaCungCap = {}) => {
     product.NgaySanXuat || new Date().toISOString().split("T")[0],
   );
 
+  const txInfo = await getProvider().getTransaction(tx.hash);
+
+  console.log("TX INFO:", txInfo);
+  
+  console.log("D: waiting confirm");
+
   await tx.wait();
+
+  console.log("E: confirmed");
+
   return tx.hash;
 };
 
