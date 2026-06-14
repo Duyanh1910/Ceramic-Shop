@@ -20,6 +20,7 @@ export const NOTE_STATUS = {
 };
 
 const syncReceivedNoteProductsToBlockchain = async (idNote) => {
+  console.log("SYNC BLOCKCHAIN START:", idNote);
   const note = await ReceivedNoteModel.findByPk(idNote, {
     include: [
       {
@@ -414,15 +415,12 @@ export const completeReceivedNoteService = async (idNote) => {
     await note.save({ transaction });
 
     await transaction.commit();
-
+    console.log("CALLING BLOCKCHAIN SYNC:", idNote);
     try {
       await syncReceivedNoteProductsToBlockchain(idNote);
+      console.log("SYNC BLOCKCHAIN SUCCESS:", idNote);
     } catch (error) {
-      console.error("Blockchain sync failed:");
-      console.error("message:", error.message);
-      console.error("reason:", error.reason);
-      console.error("code:", error.code);
-      console.error("full error:", error);
+      console.error("BLOCKCHAIN SYNC FAILED", error);
       console.error(
         "Lỗi ghi Blockchain từ phiếu nhập (không ảnh hưởng nhập kho):",
         error,
