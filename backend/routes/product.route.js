@@ -14,6 +14,7 @@ router.get("/:id/trace", async (req, res) => {
     const data = await bcXemSanPham(req.params.id);
     return res.json({ success: true, result: data });
   } catch (err) {
+    console.error("TRACE ERROR:", err);
     return res.status(404).json({
       success: false,
       message: err.message || "Không thể truy xuất nguồn gốc sản phẩm!",
