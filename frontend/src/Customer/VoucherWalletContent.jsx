@@ -162,7 +162,7 @@ export default function VoucherWalletContent({ compact = false }) {
         setWalletItems(res.data?.vouchers || []);
       }
     } catch (err) {
-      message.error(err.response?.data?.message || 'Không thể tải ví khuyến mại!');
+      message.error(err.response?.data?.message || 'Không thể tải ví khuyến mãi!');
     } finally {
       setLoading(false);
     }
@@ -245,7 +245,7 @@ export default function VoucherWalletContent({ compact = false }) {
       <div className={styles.walletHeader}>
         <div>
           <h2 className={styles.title}>
-            <WalletOutlined /> Ví khuyến mại
+            <WalletOutlined /> Ví khuyến mãi của tôi
           </h2>
           <p className={styles.subTitle}>
             Quản lý voucher đang có, đã dùng và hết hạn.
@@ -311,7 +311,7 @@ export default function VoucherWalletContent({ compact = false }) {
       {loading ? (
         <div className={styles.loadingWrap}>
           <Spin />
-          <span>Đang tải ví khuyến mại...</span>
+          <span>Đang tải ví khuyến mãi...</span>
         </div>
       ) : visibleVouchers.length === 0 ? (
         <div className={styles.emptyWrap}>

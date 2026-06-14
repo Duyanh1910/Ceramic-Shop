@@ -242,7 +242,7 @@ function Profile() {
                   className={activeTab === 'vouchers' ? styles.active : ''} 
                   onClick={() => setActiveTab('vouchers')}
                 >
-                  <WalletOutlined /> Ví khuyến mại
+                  <WalletOutlined /> Ví khuyến mãi của tôi
                 </li>
               {isCustomer && (
                 <li 

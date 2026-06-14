@@ -46,7 +46,7 @@ export default function VoucherWallet() {
               <div className={styles.heroLabel}>
                 <WalletOutlined /> Ví của tôi
               </div>
-              <h1>Quản lý khuyến mại của bạn</h1>
+              <h1>Quản lý khuyến mãi của bạn</h1>
               <p>
                 Xem voucher đang có, voucher đã dùng, voucher hết hạn và chọn mã để dùng khi thanh toán.
               </p>
