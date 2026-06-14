@@ -5,7 +5,7 @@ export const getAllPromotionsController = async (req, res, next) => {
     const vouchers = await getAllPromotionsService();
     res.status(200).json({
       success: true,
-      message: "Lấy danh sách khuyến mãi hành công!",
+      message: "Lấy danh sách khuyến mãi thành công!",
       vouchers,
     });
   } catch (err) {
