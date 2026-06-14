@@ -418,6 +418,11 @@ export const completeReceivedNoteService = async (idNote) => {
     try {
       await syncReceivedNoteProductsToBlockchain(idNote);
     } catch (error) {
+      console.error("Blockchain sync failed:");
+      console.error("message:", error.message);
+      console.error("reason:", error.reason);
+      console.error("code:", error.code);
+      console.error("full error:", error);
       console.error(
         "Lỗi ghi Blockchain từ phiếu nhập (không ảnh hưởng nhập kho):",
         error,
