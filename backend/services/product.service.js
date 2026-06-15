@@ -227,6 +227,7 @@ export const addNewProductService = async (
   description,
   status = 1,
   BienThe,
+  MaNhaCC,
   ChatLieu = "Gốm sứ",
 ) => {
   const transaction = await sequelize.transaction();
@@ -254,6 +255,7 @@ export const addNewProductService = async (
         MoTa: description,
         TrangThai: status,
         ChatLieu: ChatLieu,
+        MaNhaCC: MaNhaCC || null,
       },
       {
         transaction: transaction,
@@ -299,7 +301,30 @@ export const addNewProductService = async (
     }
 
     await transaction.commit();
+    try {
+      let nhaCungCap = {};
+      if (MaNhaCC) {
+        const supplier = await SupplierModel.findByPk(MaNhaCC);
+        if (supplier) nhaCungCap = supplier;
+      }
 
+      const txHash = await bcThemSanPham(
+        {
+          MaSanPham: String(product.MaSanPham),
+          TenSanPham: product.TenSanPham,
+          ChatLieu: product.ChatLieu || "Gốm sứ",
+        },
+        {
+          TenNhaCC: nhaCungCap.TenNhaCC || "Chưa cập nhật",
+          Diachi:   nhaCungCap.Diachi   || "Chưa cập nhật",
+        }
+      );
+
+      await product.update({ BlockchainTxHash: txHash });
+      console.log(`[BC] SP ${product.MaSanPham} hash: ${txHash}`);
+    } catch (bcErr) {
+      console.error(`[BC] Lỗi ghi blockchain SP ${product.MaSanPham}:`, bcErr.message);
+    }
     return product;
 
   } catch (err) {
