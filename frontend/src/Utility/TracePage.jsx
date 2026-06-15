@@ -48,7 +48,7 @@ export default function TracePage() {
   const loadTrace = async () => {
     try {
       const [traceRes, productRes] = await Promise.all([
-        axios.get(`${API_BASE}/products/${maSanPham}/trace`),
+        axios.get(`${API_BASE}/products/trace/${maSanPham}`),
         axios.get(`${API_BASE}/products/${maSanPham}`),
       ]);
 
