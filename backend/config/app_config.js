@@ -1,4 +1,6 @@
-import "dotenv/config";
+import dotenv from "dotenv";
+
+dotenv.config({ path: new URL("../.env", import.meta.url) });
 const APP_PORT = process.env.APP_PORT;
 const SALT_ROUNDS = process.env.SALT_ROUNDS;
 const DB_PORT = process.env.DB_PORT;
