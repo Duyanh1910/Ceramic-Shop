@@ -254,8 +254,8 @@ export const addNewProductService = async (
         LuotXem: 0,
         MoTa: description,
         TrangThai: status,
+        MaNhaCC: MaNhaCC ? Number(MaNhaCC) : null,
         ChatLieu: ChatLieu,
-        MaNhaCC: MaNhaCC || null,
       },
       {
         transaction: transaction,
@@ -304,10 +304,9 @@ export const addNewProductService = async (
     try {
       let nhaCungCap = {};
       if (MaNhaCC) {
-        const supplier = await SupplierModel.findByPk(MaNhaCC);
+        const supplier = await SupplierModel.findByPk(Number(MaNhaCC));
         if (supplier) nhaCungCap = supplier;
       }
-
       const txHash = await bcThemSanPham(
         {
           MaSanPham: String(product.MaSanPham),
@@ -319,11 +318,10 @@ export const addNewProductService = async (
           Diachi:   nhaCungCap.Diachi   || "Chưa cập nhật",
         }
       );
-
       await product.update({ BlockchainTxHash: txHash });
-      console.log(`[BC] SP ${product.MaSanPham} hash: ${txHash}`);
+      console.log(`[BC] SP ${product.MaSanPham}: ${txHash}`);
     } catch (bcErr) {
-      console.error(`[BC] Lỗi ghi blockchain SP ${product.MaSanPham}:`, bcErr.message);
+      console.error(`[BC] Lỗi:`, bcErr.message);
     }
     return product;
 
