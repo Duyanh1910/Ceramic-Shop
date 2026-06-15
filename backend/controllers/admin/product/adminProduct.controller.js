@@ -30,6 +30,7 @@ export const addNewProductController = async (req, res, next) => {
       description,
       status = 1,
       BienThe,
+      MaNhaCC,
       ChatLieu,
     } = req.body;
 
