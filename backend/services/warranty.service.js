@@ -8,6 +8,7 @@ import {
   ProductModel,
   InventoryHistoryModel,
   CustomerModel,
+  RiskModel,
 } from "../models/index.js";
 import ErrorHandler from "../utils/error_handler.js";
 import { Op } from "sequelize";
@@ -53,6 +54,13 @@ export const WARRANTY_ACTION = {
 };
 
 const DEFAULT_WARRANTY_MONTHS = 12;
+
+const RISK_STATUS = {
+  UNHANDLED: 0,
+  RESOLVED: 1,
+  PROCESSING: 2,
+  IGNORED: 3,
+};
 
 const isValidWarrantyStatus = (status) => {
   return Object.values(WARRANTY_STATUS).includes(Number(status));
@@ -130,6 +138,94 @@ const assertValidWarrantyTransition = (currentStatus, nextStatus) => {
       400,
     );
   }
+};
+
+const getWarrantyRiskStatus = (status) => {
+  const statusNumber = Number(status);
+
+  if (statusNumber === WARRANTY_STATUS.REQUESTED) return RISK_STATUS.UNHANDLED;
+  if (statusNumber === WARRANTY_STATUS.PROCESSING) return RISK_STATUS.PROCESSING;
+  if (statusNumber === WARRANTY_STATUS.COMPLETED) return RISK_STATUS.RESOLVED;
+  if (
+    statusNumber === WARRANTY_STATUS.REJECTED ||
+    statusNumber === WARRANTY_STATUS.EXPIRED
+  ) {
+    return RISK_STATUS.IGNORED;
+  }
+
+  return RISK_STATUS.UNHANDLED;
+};
+
+const applyRiskResolutionTime = (risk, status) => {
+  if (status === RISK_STATUS.RESOLVED || status === RISK_STATUS.IGNORED) {
+    if (!risk.NgayXuLy) risk.NgayXuLy = new Date();
+    return;
+  }
+
+  risk.NgayXuLy = null;
+};
+
+const buildWarrantyRiskMarker = (MaBaoHanh) => `[BaoHanh#${MaBaoHanh}]`;
+
+const syncWarrantyRisk = async ({
+  warranty,
+  order,
+  note,
+  staffId,
+  status,
+  transaction,
+}) => {
+  if (!warranty || !order) {
+    return { risk: null, created: false };
+  }
+
+  const marker = buildWarrantyRiskMarker(warranty.MaBaoHanh);
+  const nextStatus = getWarrantyRiskStatus(status ?? warranty.TrangThai);
+
+  const existed = await RiskModel.findOne({
+    where: {
+      MaDonHang: order.MaDonHang,
+      LoaiRuiRo: "Yêu cầu bảo hành",
+      GhiChu: { [Op.like]: `%${marker}%` },
+    },
+    transaction,
+  });
+
+  if (existed) {
+    existed.MucDo = "CAO";
+    existed.NguonPhatHien = "KHACH_HANG";
+    existed.TrangThai = nextStatus;
+    existed.MoTa =
+      note ||
+      existed.MoTa ||
+      `Phát sinh từ yêu cầu bảo hành #${warranty.MaBaoHanh}`;
+    if (staffId) {
+      existed.MaNhanVienPhuTrach = staffId;
+    }
+    applyRiskResolutionTime(existed, nextStatus);
+    await existed.save({ transaction });
+
+    return { risk: existed, created: false };
+  }
+
+  const risk = await RiskModel.create(
+    {
+      MaDonHang: order.MaDonHang,
+      LoaiRuiRo: "Yêu cầu bảo hành",
+      MucDo: "CAO",
+      NguonPhatHien: "KHACH_HANG",
+      MoTa: note || `Phát sinh từ yêu cầu bảo hành #${warranty.MaBaoHanh}`,
+      TrangThai: nextStatus,
+      GhiChu: `${marker} Tự động đồng bộ từ yêu cầu bảo hành #${warranty.MaBaoHanh}`,
+      MaNhanVienPhuTrach: staffId || null,
+    },
+    { transaction },
+  );
+
+  applyRiskResolutionTime(risk, nextStatus);
+  await risk.save({ transaction });
+
+  return { risk, created: true };
 };
 
 export const generateWarrantiesForOrderService = async (
@@ -498,6 +594,14 @@ export const requestWarrantyService = async (
       { transaction },
     );
 
+    const riskResult = await syncWarrantyRisk({
+      warranty,
+      order,
+      note: NoiDungXuLy || "Khách hàng gửi yêu cầu bảo hành",
+      status: WARRANTY_STATUS.REQUESTED,
+      transaction,
+    });
+
     await transaction.commit();
 
     await safeCreateAdminNotificationService({
@@ -506,6 +610,16 @@ export const requestWarrantyService = async (
       NoiDung: `Phiếu bảo hành #${MaBaoHanh} của đơn ${order.MaHienThi} vừa được yêu cầu`,
       DuongDan: `/admin/warranties?warrantyId=${MaBaoHanh}`,
     });
+
+    if (riskResult.created && riskResult.risk) {
+      await safeCreateAdminNotificationService({
+        LoaiThongBao: NOTIFICATION_TYPES.RISK_CREATED,
+        MaNhanVien: riskResult.risk.MaNhanVienPhuTrach,
+        TieuDe: "Rủi ro mới",
+        NoiDung: `Rủi ro #${riskResult.risk.MaRuiRo} được tạo từ bảo hành #${MaBaoHanh}`,
+        DuongDan: `/admin/risks?riskId=${riskResult.risk.MaRuiRo}`,
+      });
+    }
 
     return await getMyWarrantyByIdService(idAccount, MaBaoHanh);
   } catch (err) {
@@ -561,12 +675,25 @@ export const updateWarrantyStatusService = async (
 
   try {
     const warranty = await WarrantyModel.findByPk(MaBaoHanh, {
+      include: [
+        {
+          model: OrderDetailModel,
+          required: true,
+          include: [{ model: OrderModel, required: true }],
+        },
+      ],
       transaction,
       lock: transaction.LOCK.UPDATE,
     });
 
     if (!warranty) {
       throw new ErrorHandler("Không tìm thấy phiếu bảo hành!", 404);
+    }
+
+    const order = warranty.ChiTietDonHang?.DonHang;
+
+    if (!order) {
+      throw new ErrorHandler("Không tìm thấy đơn hàng của phiếu bảo hành!", 404);
     }
 
     if (
@@ -597,6 +724,15 @@ export const updateWarrantyStatusService = async (
       },
       { transaction },
     );
+
+    await syncWarrantyRisk({
+      warranty,
+      order,
+      note: NoiDungXuLy || "Admin cập nhật trạng thái bảo hành",
+      staffId: MaNhanVienXuLy,
+      status: TrangThai,
+      transaction,
+    });
 
     await transaction.commit();
 
@@ -632,12 +768,25 @@ export const replaceWarrantyProductService = async (
 
   try {
     const warranty = await WarrantyModel.findByPk(MaBaoHanh, {
+      include: [
+        {
+          model: OrderDetailModel,
+          required: true,
+          include: [{ model: OrderModel, required: true }],
+        },
+      ],
       transaction,
       lock: transaction.LOCK.UPDATE,
     });
 
     if (!warranty) {
       throw new ErrorHandler("Không tìm thấy phiếu bảo hành!", 404);
+    }
+
+    const order = warranty.ChiTietDonHang?.DonHang;
+
+    if (!order) {
+      throw new ErrorHandler("Không tìm thấy đơn hàng của phiếu bảo hành!", 404);
     }
 
     if (Number(warranty.TrangThai) !== WARRANTY_STATUS.PROCESSING) {
@@ -699,6 +848,15 @@ export const replaceWarrantyProductService = async (
       },
       { transaction },
     );
+
+    await syncWarrantyRisk({
+      warranty,
+      order,
+      note: NoiDungXuLy || "Admin đổi mới sản phẩm bảo hành",
+      staffId: MaNhanVienXuLy,
+      status: WARRANTY_STATUS.COMPLETED,
+      transaction,
+    });
 
     await transaction.commit();
 

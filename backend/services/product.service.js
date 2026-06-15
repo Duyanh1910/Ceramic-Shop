@@ -11,6 +11,7 @@ import {
 } from "../models/index.js";
 import { Sequelize, Op } from "sequelize";
 import ErrorHandler from "../utils/error_handler.js";
+import { bcThemSanPham } from "../utils/blockchain.js";
 
 
 const getProductsHelper = async (
@@ -245,6 +246,25 @@ export const addNewProductService = async (
       throw new ErrorHandler("Chỉ được thêm sản phẩm vào danh mục con!", 400);
     }
 
+    const supplierID =
+      MaNhaCC === undefined || MaNhaCC === null || MaNhaCC === ""
+        ? null
+        : Number(MaNhaCC);
+    if (
+      supplierID !== null &&
+      (!Number.isInteger(supplierID) || supplierID <= 0)
+    ) {
+      throw new ErrorHandler("ID nhà cung cấp không hợp lệ!", 400);
+    }
+
+    let nhaCungCap = {};
+    if (supplierID !== null) {
+      nhaCungCap = await SupplierModel.findByPk(supplierID, { transaction });
+      if (!nhaCungCap) {
+        throw new ErrorHandler("Không tồn tại nhà cung cấp này!", 400);
+      }
+    }
+
     const product = await ProductModel.create(
       {
         MaDanhMuc: categoryID,
@@ -254,7 +274,7 @@ export const addNewProductService = async (
         LuotXem: 0,
         MoTa: description,
         TrangThai: status,
-        MaNhaCC: MaNhaCC ? Number(MaNhaCC) : null,
+        MaNhaCC: supplierID,
         ChatLieu: ChatLieu,
       },
       {
@@ -302,11 +322,6 @@ export const addNewProductService = async (
 
     await transaction.commit();
     try {
-      let nhaCungCap = {};
-      if (MaNhaCC) {
-        const supplier = await SupplierModel.findByPk(Number(MaNhaCC));
-        if (supplier) nhaCungCap = supplier;
-      }
       const txHash = await bcThemSanPham(
         {
           MaSanPham: String(product.MaSanPham),

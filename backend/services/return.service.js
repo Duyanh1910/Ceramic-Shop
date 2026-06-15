@@ -63,6 +63,13 @@ export const RETURN_PROCESS_TYPE = {
 const ORDER_STATUS_COMPLETED = 3;
 const PAYMENT_STATUS_PAID = 1;
 
+const RISK_STATUS = {
+  UNHANDLED: 0,
+  RESOLVED: 1,
+  PROCESSING: 2,
+  IGNORED: 3,
+};
+
 const validRequestTypes = Object.values(RETURN_REQUEST_TYPE);
 const validConditions = Object.values(RETURN_CONDITION);
 const validCompleteProcessTypes = Object.values(RETURN_PROCESS_TYPE);
@@ -74,6 +81,21 @@ const evidenceRequiredTypes = [
 ];
 
 const riskTypeMap = {
+  [RETURN_REQUEST_TYPE.DOI_HANG]: {
+    LoaiRuiRo: "Yêu cầu đổi hàng",
+    MucDo: "BINH_THUONG",
+    NguonPhatHien: "KHACH_HANG",
+  },
+  [RETURN_REQUEST_TYPE.TRA_HANG]: {
+    LoaiRuiRo: "Yêu cầu trả hàng",
+    MucDo: "BINH_THUONG",
+    NguonPhatHien: "KHACH_HANG",
+  },
+  [RETURN_REQUEST_TYPE.HOAN_TIEN]: {
+    LoaiRuiRo: "Yêu cầu hoàn tiền",
+    MucDo: "CAO",
+    NguonPhatHien: "KHACH_HANG",
+  },
   [RETURN_REQUEST_TYPE.VO_HONG_VAN_CHUYEN]: {
     LoaiRuiRo: "Vỡ hỏng do vận chuyển",
     MucDo: "CAO",
@@ -434,6 +456,118 @@ const createRiskIfNeeded = async ({
   };
 };
 
+const getReturnRiskStatus = (status) => {
+  const statusNumber = Number(status);
+
+  if (statusNumber === RETURN_STATUS.WAITING) return RISK_STATUS.UNHANDLED;
+  if (
+    statusNumber === RETURN_STATUS.APPROVED ||
+    statusNumber === RETURN_STATUS.PROCESSING
+  ) {
+    return RISK_STATUS.PROCESSING;
+  }
+  if (statusNumber === RETURN_STATUS.COMPLETED) return RISK_STATUS.RESOLVED;
+  if (
+    statusNumber === RETURN_STATUS.REJECTED ||
+    statusNumber === RETURN_STATUS.CUSTOMER_CANCELED
+  ) {
+    return RISK_STATUS.IGNORED;
+  }
+
+  return RISK_STATUS.UNHANDLED;
+};
+
+const applyRiskResolutionTime = (risk, status) => {
+  if (status === RISK_STATUS.RESOLVED || status === RISK_STATUS.IGNORED) {
+    if (!risk.NgayXuLy) risk.NgayXuLy = new Date();
+    return;
+  }
+
+  risk.NgayXuLy = null;
+};
+
+const buildReturnRiskMarker = (MaDoiTra) => `[DoiTra#${MaDoiTra}]`;
+
+const syncReturnRisk = async ({
+  returnRequest,
+  order,
+  note,
+  staffId,
+  status,
+  transaction,
+}) => {
+  const riskInfo = riskTypeMap[returnRequest.LoaiYeuCau];
+
+  if (!riskInfo || !order) {
+    return { risk: null, created: false };
+  }
+
+  const marker = buildReturnRiskMarker(returnRequest.MaDoiTra);
+  const nextStatus = getReturnRiskStatus(status ?? returnRequest.TrangThai);
+
+  let existed = await RiskModel.findOne({
+    where: {
+      MaDonHang: order.MaDonHang,
+      LoaiRuiRo: riskInfo.LoaiRuiRo,
+      GhiChu: { [Op.like]: `%${marker}%` },
+    },
+    transaction,
+  });
+
+  if (!existed) {
+    existed = await RiskModel.findOne({
+      where: {
+        MaDonHang: order.MaDonHang,
+        LoaiRuiRo: riskInfo.LoaiRuiRo,
+        GhiChu: { [Op.like]: `%#${returnRequest.MaDoiTra}%` },
+      },
+      transaction,
+    });
+  }
+
+  if (existed) {
+    existed.MucDo = riskInfo.MucDo;
+    existed.NguonPhatHien = riskInfo.NguonPhatHien;
+    existed.TrangThai = nextStatus;
+    existed.MoTa =
+      note ||
+      existed.MoTa ||
+      `Phát sinh từ yêu cầu đổi trả #${returnRequest.MaDoiTra}`;
+
+    if (staffId || returnRequest.MaNhanVienXuLy) {
+      existed.MaNhanVienPhuTrach =
+        staffId || returnRequest.MaNhanVienXuLy || existed.MaNhanVienPhuTrach;
+    }
+    if (!String(existed.GhiChu || "").includes(marker)) {
+      existed.GhiChu = `${marker} ${existed.GhiChu || ""}`.trim();
+    }
+
+    applyRiskResolutionTime(existed, nextStatus);
+    await existed.save({ transaction });
+
+    return { risk: existed, created: false };
+  }
+
+  const risk = await RiskModel.create(
+    {
+      MaDonHang: order.MaDonHang,
+      LoaiRuiRo: riskInfo.LoaiRuiRo,
+      MucDo: riskInfo.MucDo,
+      NguonPhatHien: riskInfo.NguonPhatHien,
+      MoTa: note || `Phát sinh từ yêu cầu đổi trả #${returnRequest.MaDoiTra}`,
+      TrangThai: nextStatus,
+      GhiChu: `${marker} Tự động đồng bộ từ yêu cầu đổi trả #${returnRequest.MaDoiTra}`,
+      MaNhanVienPhuTrach: staffId || returnRequest.MaNhanVienXuLy || null,
+    },
+    { transaction },
+  );
+
+  applyRiskResolutionTime(risk, nextStatus);
+  await risk.save({ transaction });
+
+  return { risk, created: true };
+};
+
 export const getMyReturnsService = async (idAccount) => {
   const customer = await getCustomerByAccount(idAccount);
 
@@ -578,6 +712,14 @@ export const createReturnRequestService = async (idAccount, payload) => {
       transaction,
     );
 
+    const riskResult = await syncReturnRisk({
+      returnRequest,
+      order,
+      note: payload.LyDo || "Khách hàng tạo yêu cầu đổi trả",
+      status: RETURN_STATUS.WAITING,
+      transaction,
+    });
+
     await transaction.commit();
 
     await safeCreateAdminNotificationService({
@@ -586,6 +728,16 @@ export const createReturnRequestService = async (idAccount, payload) => {
       NoiDung: `Yêu cầu đổi trả #${returnRequest.MaDoiTra} của đơn ${order.MaHienThi} vừa được tạo`,
       DuongDan: `/admin/returns?returnId=${returnRequest.MaDoiTra}`,
     });
+
+    if (riskResult.created && riskResult.risk) {
+      await safeCreateAdminNotificationService({
+        LoaiThongBao: NOTIFICATION_TYPES.RISK_CREATED,
+        MaNhanVien: riskResult.risk.MaNhanVienPhuTrach,
+        TieuDe: "Rủi ro mới",
+        NoiDung: `Rủi ro #${riskResult.risk.MaRuiRo} được tạo từ đổi trả #${returnRequest.MaDoiTra}`,
+        DuongDan: `/admin/risks?riskId=${riskResult.risk.MaRuiRo}`,
+      });
+    }
 
     return await getMyReturnByIdService(idAccount, returnRequest.MaDoiTra);
   } catch (err) {
@@ -655,6 +807,14 @@ export const cancelReturnRequestService = async (
       reason || "Khách hàng hủy yêu cầu đổi trả",
       transaction,
     );
+
+    await syncReturnRisk({
+      returnRequest,
+      order,
+      note: reason || "Khách hàng hủy yêu cầu đổi trả",
+      status: RETURN_STATUS.CUSTOMER_CANCELED,
+      transaction,
+    });
 
     await transaction.commit();
 
@@ -839,6 +999,16 @@ export const updateReturnStatusAdminService = async (
       throw new ErrorHandler("Không tìm thấy yêu cầu đổi trả!", 404);
     }
 
+    const orderDetail = await OrderDetailModel.findByPk(returnRequest.MaCTDH, {
+      include: [{ model: OrderModel, required: true }],
+      transaction,
+    });
+    const order = orderDetail?.DonHang;
+
+    if (!order) {
+      throw new ErrorHandler("Không tìm thấy đơn hàng của yêu cầu đổi trả!", 404);
+    }
+
     assertCanUpdateReturn(returnRequest);
 
     const currentStatus = Number(returnRequest.TrangThai);
@@ -906,6 +1076,15 @@ export const updateReturnStatusAdminService = async (
       note || "Admin cập nhật trạng thái yêu cầu đổi trả",
       transaction,
     );
+
+    await syncReturnRisk({
+      returnRequest,
+      order,
+      note: note || "Admin cập nhật trạng thái yêu cầu đổi trả",
+      staffId,
+      status: normalizedNextStatus,
+      transaction,
+    });
 
     await transaction.commit();
 
@@ -1152,13 +1331,7 @@ export const processReturnAdminService = async (MaDoiTra, payload) => {
       });
     }
 
-    const riskResult = await createRiskIfNeeded({
-      returnRequest,
-      order,
-      note,
-      staffId,
-      transaction,
-    });
+    let riskResult = { risk: null, created: false };
 
     returnRequest.HinhThucXuLy = HinhThucXuLy;
     returnRequest.CoNhapLaiKho = CoNhapLaiKho;
@@ -1186,6 +1359,15 @@ export const processReturnAdminService = async (MaDoiTra, payload) => {
 
       await createReturnProcess(MaDoiTra, HinhThucXuLy, note, transaction);
     }
+
+    riskResult = await syncReturnRisk({
+      returnRequest,
+      order,
+      note,
+      staffId,
+      status: returnRequest.TrangThai,
+      transaction,
+    });
 
     await transaction.commit();
 
@@ -1231,6 +1413,13 @@ export const confirmReturnRefundAdminService = async (
 
   try {
     const returnRequest = await ReturnModel.findByPk(MaDoiTra, {
+      include: [
+        {
+          model: OrderDetailModel,
+          required: true,
+          include: [{ model: OrderModel, required: true }],
+        },
+      ],
       transaction,
       lock: transaction.LOCK.UPDATE,
     });
@@ -1244,6 +1433,12 @@ export const confirmReturnRefundAdminService = async (
         "Chỉ có thể xác nhận hoàn tiền khi yêu cầu đang ở trạng thái Đang xử lý!",
         400,
       );
+    }
+
+    const order = returnRequest.ChiTietDonHang?.DonHang;
+
+    if (!order) {
+      throw new ErrorHandler("Không tìm thấy đơn hàng của yêu cầu đổi trả!", 404);
     }
 
     const refundTransaction = await PaymentTransactionModel.findOne({
@@ -1279,6 +1474,15 @@ export const confirmReturnRefundAdminService = async (
     returnRequest.NgayHoanTat = new Date();
 
     await returnRequest.save({ transaction });
+
+    await syncReturnRisk({
+      returnRequest,
+      order,
+      note: note || "Admin xác nhận hoàn tiền cho khách",
+      staffId,
+      status: RETURN_STATUS.COMPLETED,
+      transaction,
+    });
 
     await createReturnProcess(
       MaDoiTra,

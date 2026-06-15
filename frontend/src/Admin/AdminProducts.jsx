@@ -327,7 +327,8 @@ export default function AdminProducts() {
         description: values.description,
         status: Number(values.status ?? 1),
         ChatLieu: values.ChatLieu || "Gốm sứ",
-        
+        MaNhaCC: values.MaNhaCC ? Number(values.MaNhaCC) : null,
+
         BienThe: (values.variants || []).map((v) => ({
           MaBienThe: v.MaBienThe,
           TenBienThe: v.TenBienThe,

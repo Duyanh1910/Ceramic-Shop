@@ -46,6 +46,17 @@ export const addNewProductController = async (req, res, next) => {
       return next(new ErrorHandler("Trạng thái không hợp lệ!", 400));
     }
 
+    const supplierID =
+      MaNhaCC === undefined || MaNhaCC === null || MaNhaCC === ""
+        ? null
+        : Number(MaNhaCC);
+    if (
+      supplierID !== null &&
+      (!Number.isInteger(supplierID) || supplierID <= 0)
+    ) {
+      return next(new ErrorHandler("ID nhà cung cấp không hợp lệ!", 400));
+    }
+
     const normalizedVariants = normalizeProductVariantsPayload(BienThe);
     validateVariants(normalizedVariants);
 
@@ -57,6 +68,7 @@ export const addNewProductController = async (req, res, next) => {
       description,
       Number(status),
       normalizedVariants,
+      supplierID,
       ChatLieu,
     );
 
