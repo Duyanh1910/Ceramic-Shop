@@ -165,39 +165,53 @@
   .topHeader {
     padding: 0 18px !important;
   }
-
   .logoImg {
     width: 48px;
     height: 48px;
   }
-
   .logoText {
     font-size: 22px;
   }
-
   .logoSub {
     font-size: 9px;
     letter-spacing: 1.8px;
   }
-
   .btnBack {
     font-size: 13px;
   }
-
   .mainContent {
     padding: 24px 14px 50px !important;
   }
-
   .pageHero {
     padding: 24px;
   }
-
   .pageHero h1 {
     font-size: 26px;
   }
-
   .contentCard {
     padding: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .topHeader {
+    height: auto !important;
+    padding: 12px 15px !important;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .logoImg { 
+    width: 45px; 
+    height: 45px; 
+  }
+  .logoText { 
+    font-size: 22px; 
+  }
+  .logoSub { 
+    display: none; 
+  }
+  .pageHero::after { 
+    display: none; 
   }
 }
 
@@ -209,39 +223,23 @@
     align-items: flex-start !important;
     gap: 10px;
   }
-
-  .logoText {
-    font-size: 18px;
+  .logoText { 
+    font-size: 18px; 
   }
-
-  .logoSub {
-    display: none;
+  .logoSub { 
+    display: none; 
   }
-
-  .btnBack {
-    padding: 0 !important;
+  .btnBack { 
+    padding: 0 !important; 
   }
-
-  .pageHero h1 {
-    font-size: 22px;
+  .btnBack span:last-child { 
+    display: none; 
   }
-}
-@media (max-width: 768px) {
-  .topHeader {
-    height: auto !important;
-    padding: 12px 15px !important;
-    flex-wrap: wrap;
-    gap: 10px;
+  .pageHero h1 { 
+    font-size: 20px; 
+    line-height: 1.3; 
   }
-  .logoImg { width: 45px; height: 45px; }
-  .logoText { font-size: 22px; }
-  .logoSub { display: none; }
-  .pageHero::after { display: none; }
-}
-
-@media (max-width: 576px) {
-  .logoText { font-size: 18px; }
-  .btnBack span:last-child { display: none; }
-  .pageHero h1 { font-size: 20px; line-height: 1.3; }
-  .contentCard { padding: 16px; }
+  .contentCard { 
+    padding: 16px; 
+  }
 }
