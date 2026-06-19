@@ -213,7 +213,10 @@ export default function Checkout() {
     const applicableSubtotal = getApplicableSubtotal(promo);
     const meetsMinOrder =
       !minOrderValue || applicableSubtotal >= minOrderValue;
-    const matchesCategory = !promoCategoryId || orderCategoryIds.has(promoCategoryId);
+    const matchesCategory =
+      !promoCategoryId ||
+      orderCategoryIds.has(promoCategoryId) ||
+      categories.length === 0;
 
     if (!matchesCategory) {
       return {
@@ -274,7 +277,6 @@ export default function Checkout() {
   }
   shippingDiscount = Math.min(shippingDiscount, shippingFee);
 
-  const totalDiscount = productDiscount + shippingDiscount;
   const total = Math.max(0, subtotal - productDiscount + shippingFee - shippingDiscount);
 
   const selectedPayment = paymentMethods.find((m) => m.id === paymentMethod);
@@ -382,7 +384,8 @@ export default function Checkout() {
     try {
       const res = await axios.get(`${API_BASE}/vouchers/me?tab=usable`, authHeader);
       setMyVouchers(res.data?.vouchers || []);
-    } catch (err) {
+    } catch {
+      setMyVouchers([]);
     }
   };
 
@@ -392,7 +395,7 @@ export default function Checkout() {
       const list =
         res.data?.result || res.data?.categories || res.data?.data || [];
       setCategories(Array.isArray(list) ? list : []);
-    } catch (err) {
+    } catch {
       setCategories([]);
     }
   };
