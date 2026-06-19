@@ -702,8 +702,7 @@ export const adminUpdateOrderStatusService = async (
         ? `${order.GhiChu}\n[${now}]Admin hủy: ${note}`
         : `[${now}]Admin hủy: ${note}`;
       if (Number(order.TrangThaiThanhToan) === 1) {
-        order.GhiChu += `\nVui lòng inbox/đến trực tiếp cửa hàng để yêu cầu hoàn tiền.
-Thông tin liên hệ:
+        order.GhiChu += `\nYêu cầu hoàn tiền:
 📍 Địa chỉ: 484 Lạch Tray, Lê Chân, Hải Phòng.
 📞 Hotline: 0329.835.725
 📧 Email: theceramicshop24@gmail.com
