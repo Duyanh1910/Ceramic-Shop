@@ -52,6 +52,10 @@ const PAYMENT_METHOD = {
   ZALOPAY: 5,
 };
 
+const MAX_ORDER_NOTE_LENGTH = 255;
+const truncateOrderNote = (note) =>
+  Array.from(String(note || "")).slice(0, MAX_ORDER_NOTE_LENGTH).join("");
+
 const VALID_ORDER_TRANSITIONS = {
   [ORDER_STATUS.PENDING]: [ORDER_STATUS.PREPARING, ORDER_STATUS.CANCELED],
   [ORDER_STATUS.PREPARING]: [ORDER_STATUS.SHIPPING, ORDER_STATUS.CANCELED],
@@ -422,9 +426,11 @@ export const cancelOrderService = async (idAccount, orderCode, reason) => {
     assertCancelableOrder(order, ORDER_STATUS);
 
     order.TrangThaiDonHang = ORDER_STATUS.CANCELED;
-    order.GhiChu = order.GhiChu
-      ? `${order.GhiChu} | Khách tự hủy: ${reason}`
-      : `Khách tự hủy: ${reason}`;
+    order.GhiChu = truncateOrderNote(
+      order.GhiChu
+        ? `${order.GhiChu} | Khách tự hủy: ${reason}`
+        : `Khách tự hủy: ${reason}`,
+    );
     await order.save({ transaction });
     const inventoryHistories = [];
     for (const detail of order.ChiTietDonHangs) {
@@ -702,13 +708,12 @@ export const adminUpdateOrderStatusService = async (
         ? `${order.GhiChu}\n[${now}]Admin hủy: ${note}`
         : `[${now}]Admin hủy: ${note}`;
       if (Number(order.TrangThaiThanhToan) === 1) {
-        order.GhiChu += `\nYêu cầu hoàn tiền:
+        order.GhiChu += `\nYêu cầu hoàn tiền liên hệ:
 📍 Địa chỉ: 484 Lạch Tray, Lê Chân, Hải Phòng.
 📞 Hotline: 0329.835.725
-📧 Email: theceramicshop24@gmail.com
-📘 Facebook: https://www.facebook.com/tran.duy.anh.714185
 💬 Zalo: https://zalo.me/0329835725`;
       }
+      order.GhiChu = truncateOrderNote(order.GhiChu);
       await order.save({
         transaction,
       });

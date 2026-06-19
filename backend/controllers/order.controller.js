@@ -105,10 +105,10 @@ export const calculateDiscount = async (req, res, next) => {
       },
     });
     if (!customer) {
-      return new ErrorHandler("Không tồn tại khách hàng này", 404);
+      return next(new ErrorHandler("Không tồn tại khách hàng này", 404));
     }
     if (!items || !addressObj || !MaPhi) {
-      return new ErrorHandler("Dữ liệu đầu vào không hợp lệ", 400);
+      return next(new ErrorHandler("Dữ liệu đầu vào không hợp lệ", 400));
     }
     const totalProductFee = await calculateProduct(items);
     const shippingFee = await calculateShippingFee(
