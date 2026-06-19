@@ -1,4 +1,5 @@
 import {
+  CategoryModel,
   PromotionModel,
   PromotionWalletModel,
   VariantModel,
@@ -6,6 +7,80 @@ import {
 } from "../../models/index.js";
 import ErrorHandler from "../error_handler.js";
 import { Op } from "sequelize";
+
+const getDescendantCategoryIds = async (categoryId) => {
+  const rootCategoryId = Number(categoryId);
+
+  if (!Number.isInteger(rootCategoryId) || rootCategoryId <= 0) {
+    return new Set();
+  }
+
+  const categories = await CategoryModel.findAll({
+    attributes: ["MaDanhMuc", "ParentID"],
+    raw: true,
+  });
+
+  const childrenByParent = new Map();
+
+  categories.forEach((category) => {
+    const parentId = Number(category.ParentID);
+
+    if (!Number.isInteger(parentId) || parentId <= 0) {
+      return;
+    }
+
+    if (!childrenByParent.has(parentId)) {
+      childrenByParent.set(parentId, []);
+    }
+
+    childrenByParent.get(parentId).push(Number(category.MaDanhMuc));
+  });
+
+  const categoryIds = new Set([rootCategoryId]);
+  const queue = [...(childrenByParent.get(rootCategoryId) || [])];
+
+  while (queue.length > 0) {
+    const currentId = queue.shift();
+
+    if (categoryIds.has(currentId)) {
+      continue;
+    }
+
+    categoryIds.add(currentId);
+    queue.push(...(childrenByParent.get(currentId) || []));
+  }
+
+  return categoryIds;
+};
+
+const getItemVariantId = (item) => Number(item.id || item.MaBienThe);
+
+const getItemQuantity = (item) => Number(item.soLuong || item.SoLuong || 0);
+
+const getApplicableProductValue = async (promotion, cartItems, variantMap) => {
+  if (!promotion.MaDanhMuc) {
+    return null;
+  }
+
+  const applicableCategoryIds = await getDescendantCategoryIds(
+    promotion.MaDanhMuc,
+  );
+
+  return cartItems.reduce((sum, item) => {
+    const variant = variantMap[getItemVariantId(item)];
+    const itemCategoryId = Number(
+      item.MaDanhMuc || variant?.SanPham?.MaDanhMuc,
+    );
+
+    if (applicableCategoryIds.has(itemCategoryId)) {
+      return (
+        sum + Number(item.donGia || variant?.Gia || 0) * getItemQuantity(item)
+      );
+    }
+
+    return sum;
+  }, 0);
+};
 
 export const calculateOrderDiscount = async (
   listCode,
@@ -84,15 +159,18 @@ export const calculateOrderDiscount = async (
     let applicableValue = totalProductPrice;
 
     if (p.MaDanhMuc) {
-      applicableValue = cartItems.reduce((sum, item) => {
-        const variant = variantMap[item.id || item.MaBienThe];
-        if (variant && variant.SanPham?.MaDanhMuc === p.MaDanhMuc) {
-          return (
-            sum + Number(variant.Gia) * Number(item.soLuong || item.SoLuong)
-          );
-        }
-        return sum;
-      }, 0);
+      applicableValue = await getApplicableProductValue(
+        p,
+        cartItems,
+        variantMap,
+      );
+
+      if (applicableValue <= 0) {
+        throw new ErrorHandler(
+          `Không có sản phẩm thuộc danh mục áp dụng cho mã ${p.MaCode}!`,
+          400,
+        );
+      }
 
       if (applicableValue < Number(p.GiaTriToiThieu)) {
         throw new ErrorHandler(
@@ -127,6 +205,28 @@ export const calculateOrderDiscount = async (
       throw new ErrorHandler(`Mã ${p.MaCode} hết hạn!`, 400);
     if (totalProductPrice < Number(p.GiaTriToiThieu))
       throw new ErrorHandler(`Đơn hàng chưa đạt tối thiểu cho Freeship`, 400);
+
+    if (p.MaDanhMuc) {
+      const applicableValue = await getApplicableProductValue(
+        p,
+        cartItems,
+        variantMap,
+      );
+
+      if (applicableValue <= 0) {
+        throw new ErrorHandler(
+          `Không có sản phẩm thuộc danh mục áp dụng cho mã ${p.MaCode}!`,
+          400,
+        );
+      }
+
+      if (applicableValue < Number(p.GiaTriToiThieu)) {
+        throw new ErrorHandler(
+          `Sản phẩm thuộc danh mục chưa đạt tối thiểu để dùng mã ${p.MaCode}!`,
+          400,
+        );
+      }
+    }
 
     let discount = Number(p.GiaTri);
     shippingDiscount = p.GiamToiDa

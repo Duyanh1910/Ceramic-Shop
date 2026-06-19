@@ -111,6 +111,7 @@ export default function Checkout() {
   );
   const [voucherLoading, setVoucherLoading] = useState(false);
   const [myVouchers, setMyVouchers] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [orderId, setOrderId] = useState(null);
   const [orderCode, setOrderCode] = useState(null);
   const [redirectingModal, setRedirectingModal] = useState(false);
@@ -138,6 +139,8 @@ export default function Checkout() {
     Number(
       item?.categoryId ||
       item?.MaDanhMuc ||
+      item?.BienTheSanPham?.SanPham?.MaDanhMuc ||
+      item?.BienTheSanPham?.MaDanhMuc ||
       item?.SanPham?.MaDanhMuc ||
       item?.DanhMuc?.MaDanhMuc ||
       item?.DanhMucSanPham?.MaDanhMuc ||
@@ -155,12 +158,61 @@ export default function Checkout() {
     ) || null
   );
 
-  const orderCategoryIds = new Set(orderItems.map(getItemCategoryId).filter(Boolean));
+  const categoryById = new Map(
+    categories.map((category) => [Number(category.MaDanhMuc), category]),
+  );
+
+  const getCategoryWithAncestors = (categoryId) => {
+    const ids = [];
+    let currentId = Number(categoryId);
+
+    while (
+      Number.isInteger(currentId) &&
+      currentId > 0 &&
+      !ids.includes(currentId)
+    ) {
+      ids.push(currentId);
+      currentId = Number(categoryById.get(currentId)?.ParentID);
+    }
+
+    return ids;
+  };
+
+  const orderCategoryIds = new Set(
+    orderItems
+      .map(getItemCategoryId)
+      .filter(Boolean)
+      .flatMap(getCategoryWithAncestors),
+  );
+
+  const getApplicableSubtotal = (promo) => {
+    const promoCategoryId = getPromoCategoryId(promo);
+
+    if (!promoCategoryId) {
+      return subtotal;
+    }
+
+    return orderItems.reduce((sum, item) => {
+      const itemCategoryId = getItemCategoryId(item);
+      const categoryIds = getCategoryWithAncestors(itemCategoryId);
+
+      if (!categoryIds.includes(promoCategoryId)) {
+        return sum;
+      }
+
+      const price = Number(item.price || item.DonGia || item.GiaBan || 0);
+      const qty = Number(item.quantity || item.soLuong || 1);
+
+      return sum + price * qty;
+    }, 0);
+  };
 
   const getVoucherEligibility = (promo) => {
     const minOrderValue = Number(promo?.GiaTriToiThieu || 0);
     const promoCategoryId = getPromoCategoryId(promo);
-    const meetsMinOrder = !minOrderValue || subtotal >= minOrderValue;
+    const applicableSubtotal = getApplicableSubtotal(promo);
+    const meetsMinOrder =
+      !minOrderValue || applicableSubtotal >= minOrderValue;
     const matchesCategory = !promoCategoryId || orderCategoryIds.has(promoCategoryId);
 
     if (!matchesCategory) {
@@ -196,13 +248,18 @@ export default function Checkout() {
 
   let productDiscount = 0;
   if(appliedProductVoucher && productVoucherEligible){
+    const applicableSubtotal = getApplicableSubtotal(appliedProductVoucher);
+
     if(Number(appliedProductVoucher.MaLoaiKM) === 1){
-      const calculateDiscount = (subtotal * Number(appliedProductVoucher.GiaTri || 0))/100;
+      const calculateDiscount =
+        (applicableSubtotal * Number(appliedProductVoucher.GiaTri || 0)) / 100;
       productDiscount = appliedProductVoucher.GiamToiDa ? Math.min(calculateDiscount, Number(appliedProductVoucher.GiamToiDa)) : calculateDiscount;
     }
     else {
       productDiscount = Number(appliedProductVoucher.GiaTri || 0);
     }
+
+    productDiscount = Math.min(productDiscount, applicableSubtotal);
   }
   productDiscount = Math.min(productDiscount, subtotal);
 
@@ -241,6 +298,7 @@ export default function Checkout() {
     if (orderItems.length === 0) navigate('/cart');
     fetchProfile(); 
     fetchMyVouchers();
+    fetchCategories();
     fetchPaymentMethods();
   }, []);
 
@@ -325,6 +383,17 @@ export default function Checkout() {
       const res = await axios.get(`${API_BASE}/vouchers/me?tab=usable`, authHeader);
       setMyVouchers(res.data?.vouchers || []);
     } catch (err) {
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const res = await axios.get(`${API_BASE}/categories`, authHeader);
+      const list =
+        res.data?.result || res.data?.categories || res.data?.data || [];
+      setCategories(Array.isArray(list) ? list : []);
+    } catch (err) {
+      setCategories([]);
     }
   };
 
