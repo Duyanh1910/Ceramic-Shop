@@ -32,14 +32,17 @@ export const getCartService = async (id) => {
           include: [
             {
               model: VariantModel,
+              as: "BienTheSanPham",
               attributes: ["MaSanPham", "TenBienThe", "Gia", "SoLuong"],
               include: [
                 {
                   model: ProductModel,
+                  as: "SanPham",
                   attributes: ["TenSanPham", "Thumbnail", "MaDanhMuc"],
                 },
                 {
                   model: VariantImageModel,
+                  as: "HinhAnhBienThes",
                   attributes: ["DuongDan"],
                 },
               ],
